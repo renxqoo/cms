@@ -29,6 +29,7 @@ export function SearchBar({
   disabled,
 }: SearchBarProps) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const input = useRef<HTMLInputElement | null>(null);
   const composing = useRef(false);
   const lastSearch = useRef<string | null>(value);
   const localValue = useRef(value);
@@ -73,7 +74,11 @@ export function SearchBar({
       className="flex w-full min-w-0 items-center gap-2 sm:max-w-lg"
       onSubmit={(event) => {
         event.preventDefault();
-        if (!disabled && !composing.current) search(value);
+        if (disabled || composing.current) return;
+        const next = input.current?.value ?? value;
+        localValue.current = next;
+        if (next !== value) onValueChange(next);
+        search(next);
       }}
     >
       <div className="relative min-w-0 flex-1">
@@ -82,6 +87,7 @@ export function SearchBar({
           className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
         />
         <Input
+          ref={input}
           type="search"
           aria-label={label}
           value={value}

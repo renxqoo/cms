@@ -33,7 +33,7 @@ test('regression: date text hydrates identically on the server and browser', asy
 });
 
 test('opens the OneAster workbench and composed list directly', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/ui');
   await expect(page).toHaveURL(/\/ui$/);
   await expect(page.getByRole('heading', { name: 'UI 组件工作台' })).toBeVisible();
   await page.getByRole('link', { name: '打开场景', exact: true }).click();

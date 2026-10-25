@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
@@ -19,6 +20,23 @@ export default defineConfig({
         },
       },
       {
+        resolve: {
+          alias: {
+            'server-only': fileURLToPath(
+              new URL('./apps/admin/node_modules/server-only/empty.js', import.meta.url),
+            ),
+          },
+        },
+        test: {
+          name: 'admin-server',
+          include: ['apps/admin/src/{server,contracts,api}/**/__test__/*.test.ts'],
+          environment: 'node',
+          testTimeout: 30000,
+          hookTimeout: 30000,
+          maxWorkers: 2,
+        },
+      },
+      {
         plugins: [react()],
         test: {
           name: 'ui',
@@ -26,6 +44,7 @@ export default defineConfig({
             'packages/ui/**/__test__/*.test.{ts,tsx}',
             'apps/admin/**/__test__/*.test.{ts,tsx}',
           ],
+          exclude: ['apps/admin/src/{server,contracts,api}/**'],
           environment: 'jsdom',
           environmentOptions: { jsdom: { pretendToBeVisual: true } },
           setupFiles: ['./test/support/react.ts'],

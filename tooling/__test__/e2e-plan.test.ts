@@ -15,6 +15,11 @@ it('routes browser specifications and Playwright filters together', () => {
   expect(e2ePlan(args)).toEqual([{ kind: 'browser', args }]);
 });
 
+it('routes the real application journey through the browser build and process lifecycle', () => {
+  const args = ['e2e/admin-application.browser.spec.ts', '--project', 'development'];
+  expect(e2ePlan(args)).toEqual([{ kind: 'browser', args }]);
+});
+
 it('rejects mixed runners rather than silently ignoring part of the requested journey', () => {
   expect(() => e2ePlan(['e2e/user-rbac.spec.ts', 'e2e/admin-ui.browser.spec.ts'])).toThrow(
     'separate commands',

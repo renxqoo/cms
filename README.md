@@ -4,7 +4,7 @@
 
 后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册69个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
 
-应用配置启用 articles、pages、media 和 settings 集合。管理后台已提供完整UI组件库、布局和隔离组件工作台；真实业务界面按接口联调专项实施。尚未注册业务前端页面，不开放任意菜单 URL 或运行时建表。
+应用配置启用 articles、pages、media 和 settings 集合。管理后台提供UI组件库、隔离组件工作台，以及真实登录、会话验证、账户概览和退出流程；账户/RBAC与内容资源界面按[应用联调方案](docs/design/admin-application-design.md)继续实施。不开放任意菜单 URL 或运行时建表。
 
 ## 设计入口
 
@@ -30,7 +30,9 @@ bun install --frozen-lockfile
 bun run dev:admin
 ```
 
-访问开发服务输出地址下的/ui，总览、七类组件页（/ui/actions、inputs、layout、feedback、data、overlays、documents）和/ui/lists组合列表均可直接访问或刷新。代码编辑引擎与worker在dev/build前从锁定的Monaco依赖生成到本地public目录，无需第三方CDN。工作台仅使用隔离合成示例，组件通过受控数据与事件验证；真实登录、权限和内容/媒体服务在业务阶段接入。前端工作台无需数据库或管理员凭据。构建后通过bun run start:admin启动Next服务。
+访问开发服务输出地址下的/ui，总览、七类组件页（/ui/actions、inputs、layout、feedback、data、overlays、documents）和/ui/lists组合列表均可直接访问或刷新。代码编辑引擎与worker在dev/build前从锁定的Monaco依赖生成到本地public目录，无需第三方CDN。工作台仅使用隔离合成示例，组件通过受控数据与事件验证，无需数据库或管理员凭据。构建后通过bun run start:admin启动Next服务。
+
+根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；开发默认API为127.0.0.1:3001、后台为localhost:3000。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
 
 ## 本地运行
 

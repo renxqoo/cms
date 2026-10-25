@@ -1,5 +1,6 @@
 'use client';
 
+import { ClientInteractionBoundary } from '../../components/client-interaction-boundary';
 import { useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '../../components/shell/navigation/provider';
@@ -82,7 +83,7 @@ export function ListWorkbench() {
   }
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
+    <ClientInteractionBoundary className="flex flex-col gap-4 md:gap-6">
       <PageHeader
         title={t('title')}
         description={
@@ -161,6 +162,6 @@ export function ListWorkbench() {
         </ListFooter>
       </ListPanel>
       <ExampleDialog open={open} onOpenChange={setOpen} editing={editing} onApply={apply} />
-    </div>
+    </ClientInteractionBoundary>
   );
 }

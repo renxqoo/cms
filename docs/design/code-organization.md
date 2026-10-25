@@ -252,4 +252,4 @@ http/content/publications.routes.ts 与协议 schema
 
 ## 9. OneAster 前端与共享UI
 
-前端归属见[专项设计](admin-ui-design.md#3-目录与依赖)：apps/admin/src/app装配路由和服务端边界；components/shell负责导航和偏好；components/cms负责内容管理交互组合；features/ui-lab保存隔离验收场景与合成示例。packages/ui提供实际复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，React公共装置仍在test/support，浏览器旅程位于e2e/*.browser.spec.ts，与现有Vitest进程旅程分开运行、共用test:e2e入口。依赖检查约束ui不导入Next，所有前端不导入后端实现或数据库。
+前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力；features/auth与session拥有认证和真实布局装配，features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口并连接隔离真实API/Next。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。

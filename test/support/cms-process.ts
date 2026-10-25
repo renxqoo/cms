@@ -7,28 +7,38 @@ import { createTestRuntimeDatabase } from './runtime-database.ts';
 import { createTestSmtp } from './smtp.ts';
 import { runCommand, startProcess } from './process.ts';
 import { nodeExecutable } from './node-runtime.ts';
+import { cleanupAll } from './cleanup.ts';
 import type { ApiClient, ApiOptions } from './cms-api.ts';
 
-export async function createCmsProcess(mode: 'bun' | 'node') {
+export interface CmsProcessOptions {
+  frontendUrl?: string;
+  navigationPaths?: readonly string[];
+}
+
+export async function createCmsProcess(mode: 'bun' | 'node', options: CmsProcessOptions = {}) {
   const store = await createTestRuntimeDatabase();
-  const smtp = await createTestSmtp();
-  const storage = await mkdtemp(join(tmpdir(), 'cms-network-assets-'));
-  const { binary, folder, extension, env } = settings(mode, { store, smtp, storage });
+  let smtp: Awaited<ReturnType<typeof createTestSmtp>> | undefined;
+  let storage: string | undefined;
   let server: Awaited<ReturnType<typeof startProcess>> | undefined;
   const request = requestClient(() => server);
-  async function start() {
-    server = await startProcess(binary, `${folder}/main.${extension}`, env);
-  }
   async function close() {
     try {
       await server?.close();
     } finally {
-      await smtp.close();
-      await store.close();
-      await rm(storage, { recursive: true, force: true });
+      await cleanupAll([
+        () => smtp?.close(),
+        () => store.close(),
+        () => storage && rm(storage, { recursive: true, force: true }),
+      ]);
     }
   }
   try {
+    smtp = await createTestSmtp();
+    storage = await mkdtemp(join(tmpdir(), 'cms-network-assets-'));
+    const { binary, folder, extension, env } = settings(mode, { store, smtp, storage }, options);
+    async function start() {
+      server = await startProcess(binary, `${folder}/main.${extension}`, env);
+    }
     initializeProcesses({ binary, folder, extension, env });
     await start();
     const owner = await loginOwner(request);
@@ -79,6 +89,7 @@ function settings(
     smtp: Awaited<ReturnType<typeof createTestSmtp>>;
     storage: string;
   },
+  options: CmsProcessOptions,
 ) {
   const binary = mode === 'bun' ? process.execPath : nodeExecutable();
   const folder = mode === 'bun' ? 'apps/api/src' : 'apps/api/dist';
@@ -99,6 +110,8 @@ function settings(
     SMTP_HOST: input.smtp.host,
     SMTP_PORT: String(input.smtp.port),
     SMTP_SECURE: 'false',
+    ...(options.frontendUrl ? { CMS_FRONTEND_URL: options.frontendUrl } : {}),
+    ...(options.navigationPaths ? { CMS_NAVIGATION_PATHS: options.navigationPaths.join(',') } : {}),
   };
   return { binary, folder, extension, env };
 }

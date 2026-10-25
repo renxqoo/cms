@@ -692,3 +692,30 @@ it('uses supplied Chinese labels without private English dismissal controls', as
   expect(screen.getByRole('option', { name: '草稿' })).toBeVisible();
   expect(screen.queryAllByRole('button', { name: 'Dismiss' })).toHaveLength(0);
 });
+
+it('preserves caller password field sizing and padding after visibility changes', async () => {
+  const user = userEvent.setup();
+  const view = render(
+    <PasswordInput
+      aria-label="Custom password"
+      className="h-11 pl-9"
+      showLabel="Show"
+      hideLabel="Hide"
+    />,
+  );
+  const input = screen.getByLabelText('Custom password');
+  expect(input).toHaveClass('h-11', 'pl-9', 'pr-9');
+  await user.click(screen.getByRole('button', { name: 'Show' }));
+  expect(input).toHaveClass('h-11', 'pl-9', 'pr-9');
+  view.rerender(
+    <PasswordInput
+      aria-label="Custom password"
+      className="h-11 pl-9"
+      showLabel="Show"
+      hideLabel="Hide"
+      disabled
+    />,
+  );
+  expect(screen.getByRole('button', { name: 'Hide' })).toBeDisabled();
+  expect(input).toBeDisabled();
+});

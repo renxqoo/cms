@@ -199,4 +199,4 @@ root AGENTS.md 为规则来源；Claude/Cursor 如需入口只引用它，模块
 
 ## 10. OneAster 前端边界
 
-apps/admin为独立Next.js App Router入口，packages/ui为框架无关的React/Base UI组件库。前端不导入CMS、数据库或API实现；只在后续业务接入阶段消费HTTP契约。UI包精确分组出口、组件状态、工作台与测试归属见[UI设计](admin-ui-design.md)和[组件映射](admin-ui-components.md)。共享组件不依赖Next、next-intl或应用配置，Next导航适配归shell，CMS组合归admin/components/cms。界面以Tillgate实际admin视觉为基准，表格与表单弹窗各保持一套实现。
+apps/admin为独立Next.js App Router入口，packages/ui为框架无关的React/Base UI组件库。前端不导入CMS、数据库或API实现，通过[应用联调契约](admin-application-contracts.md)消费HTTP；server拥有同源封闭BFF、服务端请求与HttpOnly会话，contracts保存安全DTO及操作定义，features拥有流程和界面。UI包精确分组出口、组件状态、工作台与测试归属见[UI设计](admin-ui-design.md)和[组件映射](admin-ui-components.md)。共享组件不依赖Next、next-intl或应用配置，Next导航适配归shell，CMS组合归admin/components/cms。界面以Tillgate实际admin视觉为基准，表格与表单弹窗各保持一套实现。

@@ -17,7 +17,7 @@
     "import/no-cycle": "error",
     "import/no-unassigned-import": [
       "error",
-      { "allow": ["**/*.css", "@testing-library/jest-dom/vitest"] }
+      { "allow": ["**/*.css", "@testing-library/jest-dom/vitest", "server-only"] }
     ],
     "typescript/no-unsafe-assignment": "error",
     "typescript/no-unsafe-argument": "error",
