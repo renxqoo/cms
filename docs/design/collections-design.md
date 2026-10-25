@@ -70,3 +70,8 @@ content 的上传型集合客户端仅提交 uploadId，内部解析后绑定不
 content 拥有文件夹/移动/目录防环、非空删除和媒体引用查询。资源路径沿用 modules-and-contracts.md §5，操作/输入 schema 单源注册。下载支持 Content-Disposition 安全文件名、实际 Content-Type、Content-Length、ETag 和私有 no-store；鉴权后返回可取消有界流，不暴露对象键/存储凭据。处理/重新处理通过持久化任务，状态 queued/running/succeeded/failed/cancelled 和代次 CAS；批量逐项结果可查询。
 
 部署不在本次授权中；S3 驱动使用本地可编程兼容装置验证接缝，真实账号 opt-in。共享生产桶生命周期/PITR/多故障域仍须部署阶段配置及演练，本地门禁不能证明基础设施 SLA。
+
+
+## 9. 后台身份参与能力
+
+access/composition 的 authorizeActor(tx,{actorId,operationId,scope}) 仅供可信任务装配。它从 writer 重新读取账户，要求 active/activated，再复用普通请求相同的角色、操作绑定、范围和权限判断；拒绝 public/authenticated 操作，不能把任意管理员身份当作后台登录接口。调用者持安全共享锁，任务租约/代次、业务及审计仍在同事务。注销会话不撤销已受理任务，账户禁用、角色禁用或撤权则阻止后续任务执行。HTTP 不导入该能力，也不接收 actorId 作为主体。
