@@ -3,6 +3,7 @@ import { assetResponseSchemas } from './assets-schemas.ts';
 import { managementResponseSchemas } from './management-schemas.ts';
 import { editorResponseSchemas } from './editor-schemas.ts';
 import { discoveryResponseSchemas } from './discovery-schemas.ts';
+import { recoveryResponseSchemas } from './recovery-schemas.ts';
 import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
 import { id, time, integer, text, object, reference, array, page } from './schema.ts';
 import type { Schema } from './schema.ts';
@@ -135,6 +136,7 @@ export function responseSchemas(): Record<string, Schema> {
     ...managementResponseSchemas(),
     ...editorResponseSchemas(),
     ...discoveryResponseSchemas(),
+    ...recoveryResponseSchemas(),
     AllowedOperation: object({ operationId: text, ...scope }),
     Endpoint: object({
       operationId: text,
@@ -197,6 +199,7 @@ const responses: Record<string, string> = {
   'access.updateOwnProfile': 'Admin',
   'access.myNavigation': 'MyNavigation',
   'access.myOperations': 'AllowedOperationPage',
+  'access.readRecovery': 'RecoveryPage',
   'audit.list': 'AuditPage',
   'collections.list': 'ContentCollectionList',
   'collections.get': 'ContentCollection',

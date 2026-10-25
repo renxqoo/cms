@@ -25,7 +25,11 @@ export function context(token?: string, idempotencyKey = randomUUID()): RequestC
 }
 
 export async function createFixture(
-  options: { policy?: Partial<CmsPolicy>; operations?: OperationDefinition[] } = {},
+  options: {
+    policy?: Partial<CmsPolicy>;
+    operations?: OperationDefinition[];
+    recoveryMaxResponseBytes?: number;
+  } = {},
 ) {
   const kit = await createTestDatabase();
   const policy = createTestPolicy({
@@ -53,6 +57,7 @@ export async function createFixture(
   const accessOptions = {
     database: kit.database,
     policy,
+    recoveryMaxResponseBytes: options.recoveryMaxResponseBytes ?? 2_097_152,
     identity: identity.participants,
     operations: [...accessOperations, ...identityOperations, ...(options.operations ?? [])],
     collectionKeys: ['articles', 'pages'],

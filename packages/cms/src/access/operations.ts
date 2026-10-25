@@ -90,6 +90,7 @@ const declarations: Declaration[] = [
     access: 'security',
   },
   { id: 'access.me', method: 'GET', path: '/me', access: 'authenticated' },
+  { id: 'access.readRecovery', method: 'GET', path: '/security/recovery', access: 'security' },
   { id: 'access.updateOwnProfile', method: 'PATCH', path: '/me', access: 'authenticated' },
   { id: 'access.myNavigation', method: 'GET', path: '/me/navigation', access: 'authenticated' },
   { id: 'access.myOperations', method: 'GET', path: '/me/operations', access: 'authenticated' },

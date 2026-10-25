@@ -145,7 +145,13 @@ test('permission and role disabling affect the next request while own profile re
 test('catalog reconcile preserves intentional unbinding and only runtime registrations are visible', async () => {
   const fixture = await createFixture();
   const directory = await fixture.access.api.listEndpoints(fixture.owner, { pageSize: 100 });
-  expect(directory.total).toBe(34);
+  expect(directory.total).toBe(35);
+  expect(directory.rows.find((item) => item.operationId === 'access.readRecovery')).toMatchObject({
+    accessKind: 'security',
+    bindingConfigurable: false,
+    scopeKind: 'global',
+    binding: null,
+  });
   expect(
     directory.rows.some((item) => item.method === 'GET' && item.operationId === 'admins.list'),
   ).toBe(true);
@@ -191,7 +197,7 @@ test('catalog reconcile preserves intentional unbinding and only runtime registr
   await fixture.database.query(
     "INSERT INTO operation_catalog(operation_id,module,method,path,access_kind,scope_kind,binding_configurable) VALUES('retired.test','test','GET','/retired','authenticated','global',false)",
   );
-  expect((await fixture.access.api.listEndpoints(fixture.owner, { pageSize: 100 })).total).toBe(34);
+  expect((await fixture.access.api.listEndpoints(fixture.owner, { pageSize: 100 })).total).toBe(35);
   await expect(fixture.access.check(fixture.owner, 'retired.test')).rejects.toMatchObject({
     code: 'not_found',
   });

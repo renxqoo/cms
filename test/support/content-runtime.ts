@@ -126,6 +126,7 @@ function fixtureServices(input: {
   const access = createAccess({
     database: input.database,
     policy: input.policy,
+    recoveryMaxResponseBytes: 2_097_152,
     identity: identity.participants,
     operations: [
       ...identityOperations,

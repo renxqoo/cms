@@ -1,6 +1,6 @@
 # 功能与接口清单
 
-状态：全局功能与接口范围。身份/RBAC、内容和资源后端已实现75个注册操作，具体输入与输出以真实OpenAPI及专项契约为准。匿名内容交付等另行标注的范围仍未启用。
+状态：全局功能与接口范围。身份/RBAC、内容和资源后端已实现76个注册操作，具体输入与输出以真实OpenAPI及专项契约为准。匿名内容交付等另行标注的范围仍未启用。
 
 后台账户与 RBAC 的专项契约见[设计基线](user-rbac-design.md)、[施工图](user-rbac-implementation.md)及[逐字段/接口/测试契约](user-rbac-units.md)。本模块拟统一 UUID 字符串 ID，/me 的生效操作通过有界 /me/operations 投影；身份邮件严格只存摘要且不自动重投，失败由用户显式重新发起。本期实际实现与验证见专项施工图。
 
@@ -56,6 +56,7 @@
 | PATCH /v1/navigation/:id | 修改展示信息或引用，防环和已有子节点类型冲突 |
 | DELETE /v1/navigation/:id | 有子节点时拒绝 |
 | GET /v1/endpoints | 真实操作目录、当前绑定、公开/仅认证/安全管理分类 |
+| GET /v1/security/recovery | 活动超管的独立恢复只读；endpoints/bindings/permissions严格判别分页、当前ID及CAS、2MiB预算，普通读取授权不变 |
 | POST /v1/endpoint-bindings | 为可配置且尚未绑定的真实操作创建绑定 |
 | PATCH /v1/endpoint-bindings/:id | 修改可配置绑定的权限，校验范围一致和预期版本 |
 | DELETE /v1/endpoint-bindings/:id | 解绑后普通访问默认拒绝；受保护操作不允许解绑 |

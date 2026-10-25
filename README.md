@@ -2,7 +2,7 @@
 
 面向结构化内容、文件资料和 RBAC 管理的自研 CMS。后端采用 Hono、PostgreSQL 和 Drizzle；开发与脚本使用 Bun 1.4.4，生产使用 Node.js，测试使用 Vitest。
 
-后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册75个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
+后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册76个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
 
 应用配置启用 articles、pages、media 和 settings 集合。管理后台提供UI组件库、隔离组件工作台，以及真实登录、会话验证、账户概览和退出流程；账户/RBAC与内容资源界面按[应用联调方案](docs/design/admin-application-design.md)继续实施。不开放任意菜单 URL 或运行时建表。
 
@@ -16,6 +16,7 @@
 - [Collections 与资源管理](docs/design/collections-and-assets.md)：完整能力目标、配置编译、集合级关系模型、上传型集合及版本资源一致性。
 - [Collections 后端方案](docs/design/collections-design.md)、[施工与验收](docs/design/collections-implementation.md)、[单元契约](docs/design/collections-units.md)及[资产实现](docs/design/assets-implementation.md)：当前外部契约、迁移回填与验证。
 - [Collections UI 接口](docs/design/collections-ui-api-design.md)及[验证记录](docs/design/collections-ui-api-verification.md)：安全编辑布局、任务/上传发现、超管清理恢复与升级约束。
+- [RBAC 恢复读取](docs/design/rbac-recovery-read-contract.md)及[施工与验证](docs/design/rbac-recovery-read-implementation.md)：普通读取权限或绑定失效时，活动超管通过安全分页取得恢复所需ID和CAS版本。
 - [安全基线](docs/design/security-baseline.md)：入口、Node、Hono 和业务模块的责任。
 - [近期研究证据](docs/design/research-evidence.md)：2026-07-25 至 2026-10-25 官方资料、源码快照及稳定原理。
 - [本地 Payload 架构分析](docs/design/payload-architecture-analysis.md)：真实调用链、配置/权限/事务/文件边界及采纳取舍。

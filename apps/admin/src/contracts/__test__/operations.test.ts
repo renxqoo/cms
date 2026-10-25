@@ -21,10 +21,10 @@ const backend = [
 
 describe('operation manifest HTTP contract', () => {
   it('covers every actual backend operation exactly once with matching access and idempotency', () => {
-    expect(backend).toHaveLength(75);
+    expect(backend).toHaveLength(76);
     expect(
       operations.filter((value) => value.target === 'backend' && value.id !== 'system.openapi'),
-    ).toHaveLength(75);
+    ).toHaveLength(76);
     expect(new Set(operations.map((value) => value.id)).size).toBe(operations.length);
     for (const definition of backend) {
       const operation = operations.find((value) => value.id === definition.id);
@@ -36,6 +36,37 @@ describe('operation manifest HTTP contract', () => {
         idempotency: definition.idempotency ?? 'none',
       });
     }
+  });
+
+  it('routes recovery reads through the protected backend manifest with exact filters', () => {
+    const matched = matchOperation('GET', '/v1/security/recovery');
+    expect(matched).toMatchObject({
+      operation: {
+        id: 'access.readRecovery',
+        access: 'protected',
+        bodyKind: 'none',
+        idempotency: 'none',
+        responseKind: 'json',
+      },
+    });
+    if (!matched) throw new Error('Recovery operation is not registered');
+    expect(
+      operationPath(
+        matched.operation,
+        {},
+        {
+          resource: 'permissions',
+          page: 2,
+          pageSize: 5,
+          code: 'permissions:read',
+          status: 'disabled',
+          scopeKind: 'global',
+        },
+      ),
+    ).toBe(
+      '/v1/security/recovery?resource=permissions&page=2&pageSize=5&code=permissions%3Aread&status=disabled&scopeKind=global',
+    );
+    expect(() => operationPath(matched.operation, {}, { token: 'secret' })).toThrow('Invalid');
   });
 
   it('matches encoded safe params and grants HEAD only for private streams', () => {

@@ -4,8 +4,10 @@ import { operationResponses, responseSchemas } from './responses.ts';
 import type { Schema } from './schema.ts';
 import { bodySchema, inputProperties } from './input-schema.ts';
 import type { InputSchema } from './input-schema.ts';
+import { recoveryOperationInput } from './recovery-schemas.ts';
 
 function operationInput(operation: OperationDefinition, schema: z.ZodType) {
+  if (operation.id === 'access.readRecovery') return recoveryOperationInput(schema);
   const input = z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' });
   const properties = inputProperties(input);
   const parameters: unknown[] = [];

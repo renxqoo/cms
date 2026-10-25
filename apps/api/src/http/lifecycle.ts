@@ -148,7 +148,8 @@ export function requestLifecycle(
 }
 
 function finalizeResponse(c: Context<HttpEnvironment>, config: ApplicationConfig['http']): void {
-  c.res.headers.set('cache-control', 'no-store');
+  const recovery = c.req.path === '/v1/security/recovery' && ['GET', 'HEAD'].includes(c.req.method);
+  c.res.headers.set('cache-control', recovery ? 'private, no-store' : 'no-store');
   c.res.headers.set('x-request-id', c.get('requestId'));
   const origin = c.req.header('origin');
   if (origin && config.allowedOrigins.includes(origin)) {

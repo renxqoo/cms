@@ -61,13 +61,16 @@ test('all endpoint and operation pages are addressable while overlarge offsets a
     await fixture.access.api.listEndpoints(fixture.owner, { module: 'unknown' }),
   ).toMatchObject({ rows: [], total: 0 });
   const operations = await fixture.access.api.myOperations(fixture.owner, { pageSize: 100 });
-  expect(operations.total).toBe(30);
+  expect(operations.total).toBe(31);
+  expect(operations.rows.some((operation) => operation.operationId === 'access.readRecovery')).toBe(
+    true,
+  );
   expect(operations.rows.some((operation) => operation.operationId === 'identity.login')).toBe(
     false,
   );
   expect(
-    await fixture.access.api.myOperations(fixture.owner, { pageSize: 1, page: 31 }),
-  ).toMatchObject({ rows: [], total: 30 });
+    await fixture.access.api.myOperations(fixture.owner, { pageSize: 1, page: 32 }),
+  ).toMatchObject({ rows: [], total: 31 });
   await expect(
     fixture.access.api.listEndpoints(fixture.owner, {
       page: Number.MAX_SAFE_INTEGER,
