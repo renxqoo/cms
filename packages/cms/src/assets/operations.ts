@@ -2,6 +2,7 @@ import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
 
 const declarations = [
   ['assets.createUpload', 'POST', '/uploads'],
+  ['assets.listUploads', 'GET', '/uploads'],
   ['assets.writeUpload', 'PUT', '/uploads/:uploadId/content'],
   ['assets.completeUpload', 'POST', '/uploads/:uploadId/completions'],
   ['assets.readUpload', 'GET', '/uploads/:uploadId'],
@@ -11,7 +12,7 @@ const declarations = [
   ['assets.reprocess', 'POST', '/documents/:id/file-processings'],
 ] as const;
 
-export const assetsOperations: readonly OperationDefinition[] = declarations.map(
+const collectionOperations: readonly OperationDefinition[] = declarations.map(
   ([id, method, path]) => ({
     id,
     method,
@@ -29,3 +30,25 @@ export const assetsOperations: readonly OperationDefinition[] = declarations.map
       : {}),
   }),
 );
+
+const cleanupDeclarations = [
+  ['assets.listCleanup', 'GET', '/v1/asset-cleanups'],
+  ['assets.getCleanup', 'GET', '/v1/asset-cleanups/:id'],
+  ['assets.retryCleanup', 'POST', '/v1/asset-cleanups/:id/retries'],
+] as const;
+
+export const assetsOperations: readonly OperationDefinition[] = [
+  ...collectionOperations,
+  ...cleanupDeclarations.map(([id, method, path]): OperationDefinition => ({
+    id,
+    method,
+    path,
+    module: 'assets',
+    access: 'security',
+    scopeKind: 'global',
+    bindingConfigurable: false,
+    ...(id === 'assets.retryCleanup'
+      ? { idempotency: 'required' as const, successStatus: 202 as const }
+      : {}),
+  })),
+];

@@ -1,3 +1,4 @@
+import { createCleanupApi } from './management/api.ts';
 import { createCapacity } from './uploads/capacity.ts';
 import { createSessionApi } from './uploads/sessions.ts';
 import { createUploadWriter } from './uploads/write-upload.ts';
@@ -23,6 +24,7 @@ export function createAssets(options: AssetsOptions) {
 
   return {
     api: {
+      ...createCleanupApi(runtime),
       ...createSessionApi(runtime),
       writeUpload: createUploadWriter(runtime, capacity),
       download: createDownloader(runtime),
@@ -52,3 +54,13 @@ export type {
   ManifestSummary,
   AssetJobView,
 } from './types.ts';
+
+export { assetDiscoverySources } from './discovery/sources.ts';
+export type { AssetDiscoverySources, DiscoveryRelation } from './discovery/sources.ts';
+
+export {
+  cleanupEntrySchema,
+  cleanupPageSchema,
+  cleanupRetryReceiptSchema,
+} from './management/contracts.ts';
+export type { CleanupEntry, CleanupPage, CleanupRetryReceipt } from './management/contracts.ts';

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { editorInputSchema } from './editor/input.ts';
 
 export interface ContentInputLimits {
   defaultPageSize: number;
@@ -162,6 +163,16 @@ function taskSchemas(limits: ContentInputLimits) {
     }),
     'content.cancelPublicationSchedule': z.strictObject({ ...target, scheduleId: id }),
     'content.getJob': z.strictObject({ ...scope, jobId: id }),
+    'content.listJobs': z.strictObject({
+      ...scope,
+      page: listShape(limits).page,
+      pageSize: listShape(limits).pageSize,
+      action: z.enum(['batch', 'publication', 'extension', 'process', 'reprocess']).optional(),
+      status: z
+        .enum(['queued', 'running', 'succeeded', 'partial', 'failed', 'cancelled'])
+        .optional(),
+      documentId: id.optional(),
+    }),
     'content.batch': batchSchema(limits),
   };
 }
@@ -173,6 +184,7 @@ export function contentInputSchemas(limits: ContentInputLimits) {
     ...taskSchemas(limits),
     'collections.list': z.strictObject({}),
     'collections.get': z.strictObject(scope),
+    'collections.editor': editorInputSchema(limits.maxLocales),
     'resources.list': z.strictObject({ ...readShape(limits), ...listShape(limits) }),
     'resources.references': z.strictObject({
       ...target,

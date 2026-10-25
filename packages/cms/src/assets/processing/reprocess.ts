@@ -13,7 +13,7 @@ import { assertUploadCapacity } from '../uploads/quota.ts';
 async function createJob(
   runtime: AssetsOptions,
   state: AssetState,
-  data: z.infer<(typeof assetsInputSchemas)['assets.reprocess']>,
+  data: z.infer<ReturnType<typeof assetsInputSchemas>['assets.reprocess']>,
 ) {
   const authorization = await runtime.authorizeContent(state.tx, {
     operationId: state.operationId,
@@ -56,7 +56,7 @@ async function createJob(
 
 export function createReprocessor(runtime: AssetsOptions) {
   return function reprocess(ctx: RequestContext, raw: unknown) {
-    const data = parse(assetsInputSchemas['assets.reprocess'], raw);
+    const data = parse(assetsInputSchemas(runtime.policy)['assets.reprocess'], raw);
     return run(
       runtime,
       { ctx, operationId: 'assets.reprocess', collectionKey: data.collection },
@@ -92,7 +92,7 @@ async function insertReprocessing(
   runtime: AssetsOptions,
   state: AssetState,
   input: {
-    data: z.infer<(typeof assetsInputSchemas)['assets.reprocess']>;
+    data: z.infer<ReturnType<typeof assetsInputSchemas>['assets.reprocess']>;
     original: { object_id: string; filename: string; mime_type: string; bytes: number };
     authorization: ContentAuthorization;
   },

@@ -1,3 +1,4 @@
+import { assetDiscoverySources } from '@new-cms/cms/assets/composition';
 import { randomInt, randomUUID } from 'node:crypto';
 import { createAccess } from '@new-cms/cms/access/composition';
 import { accessOperations } from '@new-cms/cms/access';
@@ -125,6 +126,7 @@ function fixtureServices(input: {
   const access = createAccess({
     database: input.database,
     policy: input.policy,
+    recoveryMaxResponseBytes: 2_097_152,
     identity: identity.participants,
     operations: [
       ...identityOperations,
@@ -206,7 +208,20 @@ function fixtureContentOptions(
       maxFolders: 100,
       maxFolderDepth: 8,
     },
-    uploadPolicy: { maxBytes: 20971520, variantQuality: 80, variantFormat: 'webp' },
+    uploadPolicy: {
+      maxBytes: 20971520,
+      variantQuality: 80,
+      variantFormat: 'webp',
+      imageLimits: {
+        maxOutputBytes: 20971520,
+        maxPixels: 40000000,
+        maxFrames: 1,
+        maxWidth: 16384,
+        maxHeight: 16384,
+        maxVariants: 10,
+      },
+    },
+    assetDiscoverySources,
     readAssetJob: () => Promise.reject(new CmsError('not_found')),
     afterCommitHandlers: options.afterCommitHandlers ?? {},
   };

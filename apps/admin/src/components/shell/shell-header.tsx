@@ -5,11 +5,13 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@new-cms/ui/actions';
 import { appConfig } from '../../config/app';
 import { useShell } from './shell-provider';
+import { useShellSurface } from './shell-surface';
 import { RouteBreadcrumbs } from './route-breadcrumbs';
 import { NavigationProgress } from './navigation-progress';
 
 export function ShellHeader() {
   const t = useTranslations('shell');
+  const surface = useShellSurface();
   const locale = useShell((state) => state.locale);
   const theme = useShell((state) => state.theme);
   const setLocale = useShell((state) => state.setLocale);
@@ -60,13 +62,17 @@ export function ShellHeader() {
             <LanguagesIcon />
             <span className="text-xs font-semibold">{locale === 'zh' ? '中' : 'EN'}</span>
           </Button>
-          <span
-            className="flex size-8 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground ring-1 ring-border/50"
-            title={t('workbench')}
-            aria-label={t('workbench')}
-          >
-            OA
-          </span>
+          {surface ? (
+            surface.account
+          ) : (
+            <span
+              className="flex size-8 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground ring-1 ring-border/50"
+              title={t('workbench')}
+              aria-label={t('workbench')}
+            >
+              OA
+            </span>
+          )}
         </div>
       </div>
     </header>

@@ -100,7 +100,7 @@ export function createUploadWriter(
     raw: unknown,
     stream: ReadableStream<Uint8Array>,
   ) {
-    const data = parse(assetsInputSchemas['assets.writeUpload'], raw);
+    const data = parse(assetsInputSchemas(runtime.policy)['assets.writeUpload'], raw);
     const timeout = AbortSignal.timeout(runtime.limits.uploadTimeoutMs);
     const signal = AbortSignal.any([runtime.signal, timeout, ...(ctx.signal ? [ctx.signal] : [])]);
     return capacity.run(signal, async () => {

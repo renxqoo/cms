@@ -42,6 +42,7 @@ export function businessHandlers(
     ['access.updateOwnProfile', access.updateOwnProfile],
     ['access.myNavigation', access.myNavigation],
     ['access.myOperations', access.myOperations],
+    ['access.readRecovery', access.readRecovery],
     ['audit.list', access.listAuditLogs.bind(access)],
   ]);
 }

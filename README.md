@@ -2,9 +2,9 @@
 
 面向结构化内容、文件资料和 RBAC 管理的自研 CMS。后端采用 Hono、PostgreSQL 和 Drizzle；开发与脚本使用 Bun 1.4.4，生产使用 Node.js，测试使用 Vitest。
 
-后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册69个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
+后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册76个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
 
-应用配置启用 articles、pages、media 和 settings 集合。管理后台已提供完整UI组件库、布局和隔离组件工作台；真实业务界面按接口联调专项实施。尚未注册业务前端页面，不开放任意菜单 URL 或运行时建表。
+应用配置启用 articles、pages、media 和 settings 集合。管理后台提供UI组件库、隔离组件工作台，以及真实登录、会话验证、账户概览和退出流程；账户/RBAC与内容资源界面按[应用联调方案](docs/design/admin-application-design.md)继续实施。不开放任意菜单 URL 或运行时建表。
 
 ## 设计入口
 
@@ -15,6 +15,8 @@
 - [导航与管理契约修复](docs/design/navigation-contract-followup.md)：可信导航目录、DELETE版本提示、归档角色维护和兼容扩展的运行权限。
 - [Collections 与资源管理](docs/design/collections-and-assets.md)：完整能力目标、配置编译、集合级关系模型、上传型集合及版本资源一致性。
 - [Collections 后端方案](docs/design/collections-design.md)、[施工与验收](docs/design/collections-implementation.md)、[单元契约](docs/design/collections-units.md)及[资产实现](docs/design/assets-implementation.md)：当前外部契约、迁移回填与验证。
+- [Collections UI 接口](docs/design/collections-ui-api-design.md)及[验证记录](docs/design/collections-ui-api-verification.md)：安全编辑布局、任务/上传发现、超管清理恢复与升级约束。
+- [RBAC 恢复读取](docs/design/rbac-recovery-read-contract.md)及[施工与验证](docs/design/rbac-recovery-read-implementation.md)：普通读取权限或绑定失效时，活动超管通过安全分页取得恢复所需ID和CAS版本。
 - [安全基线](docs/design/security-baseline.md)：入口、Node、Hono 和业务模块的责任。
 - [近期研究证据](docs/design/research-evidence.md)：2026-07-25 至 2026-10-25 官方资料、源码快照及稳定原理。
 - [本地 Payload 架构分析](docs/design/payload-architecture-analysis.md)：真实调用链、配置/权限/事务/文件边界及采纳取舍。
@@ -30,7 +32,9 @@ bun install --frozen-lockfile
 bun run dev:admin
 ```
 
-访问开发服务输出地址下的/ui，总览、七类组件页（/ui/actions、inputs、layout、feedback、data、overlays、documents）和/ui/lists组合列表均可直接访问或刷新。代码编辑引擎与worker在dev/build前从锁定的Monaco依赖生成到本地public目录，无需第三方CDN。工作台仅使用隔离合成示例，组件通过受控数据与事件验证；真实登录、权限和内容/媒体服务在业务阶段接入。前端工作台无需数据库或管理员凭据。构建后通过bun run start:admin启动Next服务。
+访问开发服务输出地址下的/ui，总览、七类组件页（/ui/actions、inputs、layout、feedback、data、overlays、documents）和/ui/lists组合列表均可直接访问或刷新。代码编辑引擎与worker在dev/build前从锁定的Monaco依赖生成到本地public目录，无需第三方CDN。工作台仅使用隔离合成示例，组件通过受控数据与事件验证，无需数据库或管理员凭据。构建后通过bun run start:admin启动Next服务。
+
+根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；开发默认API为127.0.0.1:3001、后台为localhost:3000。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
 
 ## 本地运行
 
@@ -58,12 +62,14 @@ bun run dev
 修改 apps/api/src/config/collections 后运行 bun run content:generate；物理或 schema 注册变化必须指定新的 --migration 迁移文件名。SQL 与同名 .plan.json 快照一同审查提交，已有迁移不能覆盖；API 不执行 DDL。需要显式转换时，保留 previousSchemas 与版本化 migrations，按[演进协议](docs/design/collections-design.md#10-后续-schema-演进与发布完整性)先应用准备迁移，再有界回填：
 
 ```sh
-bun run content:generate --migration 0011_collection_change.sql
+bun run content:generate --migration 0012_collection_change.sql
 bun run db:migrate
 bun run content:backfill --collection articles --from 1 --to 2 --page-size 20 --max-pages 100
 ```
 
 回填逐页输出 processed、cursor、complete；页预算用尽返回退出码2，可带 --cursor 继续，也可从头按持久化标记重跑。旧 writer 停写后必须再次回填尾部，再执行 bun run content:backfill --activate；未排空时拒绝激活，新配置准备态不通过就绪检查。迁移命令仅装配数据库，不要求 SMTP/对象存储。新 schema 开始写入后的回滚需要明确逆向转换或前向修复。失败对象清理由 bun run assets:reconcile 显式重试有界批次，失败账本不会伪报删除成功。
+
+0011_ui_api.sql 增加清理代次和发现索引。旧 API 维护循环及旧 CLI 清理执行者必须先停止并排空，再启动新版清理和 HTTP 重试；新旧清理协议不能混跑。回滚同样先停止并排空新版清理，再恢复旧产物，保留扩展结构。完整步骤见[接口升级约束](docs/design/collections-ui-api-design.md#5-预算迁移和发布)。三个新集合操作需显式配置权限绑定；三个物理清理操作仅活动超管可用。
 
 人工迁移报告不会自动放行。完成 SQL 审查后可在生成命令增加 --reviewed-sql 文件路径；输入文件放在自动扫描 migrations 目录以外，生成器把正文与快照固化到同名 .plan.json，并附加到目标 SQL。集合 API key 重命名还须显式处理权限范围、绑定及在途任务；该选项不执行迁移、不证明人工 SQL 正确，也不跳过 schema 就绪和激活校验。
 

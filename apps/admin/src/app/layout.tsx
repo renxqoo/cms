@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { appConfig } from '../config/app';
 import { parsePreferences, preferenceConfig } from '../config/preferences';
-import { messages } from '../i18n/messages';
+
 import { ShellProvider } from '../components/shell/shell-provider';
 import './globals.css';
 
@@ -13,8 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
     locale: cookieStore.get(preferenceConfig.cookies.locale)?.value,
   });
   return {
-    title: `${appConfig.name} — ${messages[locale].shell.workbench}`,
-    description: messages[locale].overview.description,
+    title: `${appConfig.name} — ${locale === 'zh' ? '内容管理' : 'Content management'}`,
+    description: locale === 'zh' ? 'OneAster 内容管理系统' : 'OneAster content management',
   };
 }
 

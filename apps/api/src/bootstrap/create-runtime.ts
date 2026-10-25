@@ -48,6 +48,7 @@ function createCoreServices(config: ApplicationConfig, collectionKeys: readonly 
   const access = createAccess({
     database,
     policy: config.policy,
+    recoveryMaxResponseBytes: contentLimits().maxResponseBytes,
     identity: identity.participants,
     operations,
     collectionKeys,
@@ -115,7 +116,7 @@ function httpServices(services: Services, config: ApplicationConfig) {
       ...identityInputSchemas,
       ...accessInputSchemas(config.policy),
       ...contentInputSchemas({ ...contentLimits(), ...contentWorkPolicy() }),
-      ...assetsInputSchemas,
+      ...assetsInputSchemas(config.policy),
     },
   };
 }

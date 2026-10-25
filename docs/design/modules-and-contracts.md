@@ -1,6 +1,6 @@
 # 功能与接口清单
 
-状态：全局功能与接口范围。身份/RBAC的34个操作已按专项契约实现；内容、资源与其他未实施能力仍为目标。实际OpenAPI由注册操作及业务输入schema生成，不把全局清单全部视为已实现。
+状态：全局功能与接口范围。身份/RBAC、内容和资源后端已实现76个注册操作，具体输入与输出以真实OpenAPI及专项契约为准。匿名内容交付等另行标注的范围仍未启用。
 
 后台账户与 RBAC 的专项契约见[设计基线](user-rbac-design.md)、[施工图](user-rbac-implementation.md)及[逐字段/接口/测试契约](user-rbac-units.md)。本模块拟统一 UUID 字符串 ID，/me 的生效操作通过有界 /me/operations 投影；身份邮件严格只存摘要且不自动重投，失败由用户显式重新发起。本期实际实现与验证见专项施工图。
 
@@ -56,6 +56,7 @@
 | PATCH /v1/navigation/:id | 修改展示信息或引用，防环和已有子节点类型冲突 |
 | DELETE /v1/navigation/:id | 有子节点时拒绝 |
 | GET /v1/endpoints | 真实操作目录、当前绑定、公开/仅认证/安全管理分类 |
+| GET /v1/security/recovery | 活动超管的独立恢复只读；endpoints/bindings/permissions严格判别分页、当前ID及CAS、2MiB预算，普通读取授权不变 |
 | POST /v1/endpoint-bindings | 为可配置且尚未绑定的真实操作创建绑定 |
 | PATCH /v1/endpoint-bindings/:id | 修改可配置绑定的权限，校验范围一致和预期版本 |
 | DELETE /v1/endpoint-bindings/:id | 解绑后普通访问默认拒绝；受保护操作不允许解绑 |
@@ -72,6 +73,7 @@
 | --- | --- |
 | GET /v1/collections | 调用者可用的集合目录 |
 | GET /v1/collections/:collection | 安全字段定义、查询/上传/版本能力及配置指纹，不返回服务端函数 |
+| GET /v1/collections/:collection/editor | 按真实读写上下文投影布局树、候选schema、动作提示、locale及实际上传预算；隐藏字段和默认值不泄露 |
 | GET /v1/collections/:collection/documents | 嵌套/关系筛选、搜索、多字段排序、分页、投影/展开和 locale；同一权限约束 rows/total |
 | POST /v1/collections/:collection/documents | 按集合模式创建草稿或直接生效内容；上传型集合绑定已验证的清单 |
 | GET /v1/collections/:collection/documents/:id | 显式编辑/已发布读模式，投影与关系/字段权限一致 |
@@ -90,13 +92,14 @@
 | POST /v1/collections/:collection/documents/:id/publication-schedules | 定时发布确定修订；执行时复查主体、授权和当前状态 |
 | DELETE /v1/collections/:collection/documents/:id/publication-schedules/:scheduleId | 有权限且属于本资源的待执行计划取消 |
 | POST /v1/collections/:collection/batches | 有界批量更新、复制、回收/恢复；逐项授权、revision 和真实结果 |
+| GET /v1/collections/:collection/jobs | 内容/资产任务与计划分页发现；先按当前详情及来源授权投影状态、计数，再过滤及分页 |
 | GET /v1/collections/:collection/jobs/:jobId | 查询批量、文件处理及发布计划的持久化状态和经当前权限投影的逐项结果 |
 
 内容元数据、草稿、发布快照和版本不能让客户端跨接口写入。文档关系和文件引用分别执行目标资源授权，不能通过自动展开获取越权数据。
 
 已归档文档重复删除不产生新副作用；恢复回收站与恢复历史是不同操作，各模式的完整语义见能力设计的模式矩阵。永久清除受外部引用及保留策略保护；关系解除创建新修订，逻辑级联不隐式清除历史。历史裁剪保护活跃、已发布、待发布修订，并原子释放引用和登记清理。引用已归档文档不展开，发布新版本时拒绝该引用。批量超过同步事务预算时返回 202、jobId 和状态位置；重新处理和定时发布同样返回可查询身份，不返回假成功。
 
-以上路径为本项目明确拟定的接口范围；各批次先定义 DTO、operationId 和错误契约。单例配置复用该引擎并限制有效文档数量；草稿、历史、上传等按配置声明能力，不能将未实现能力默默解释为禁用。
+以上路径已按专项 DTO、operationId 和错误契约实现，编辑及发现的精确输入、输出和授权见[UI接口设计](collections-ui-api-design.md)。单例配置复用该引擎并限制有效文档数量；草稿、历史、上传等按配置声明能力。
 
 第一阶段管理接口默认需要认证。面向外部站点的匿名已发布内容交付 API 未获单独确认，不默认开放；如纳入，必须独立规定公开字段、草稿隔离和缓存失效。
 
@@ -106,6 +109,7 @@
 
 | 方法与路径 | 功能与关键规则 |
 | --- | --- |
+| GET /v1/collections/:collection/uploads | 仅当前actor的上传会话摘要；复用详情及固定修订授权，返回声明信息，不含manifest或虚构进度 |
 | POST /v1/collections/:collection/uploads | 为创建/替换建立有期限的上传会话，验证权限、配额及用途 |
 | PUT /v1/collections/:collection/uploads/:uploadId/content | 受限流式上传；使用同一会话的确定对象键及用途 |
 | POST /v1/collections/:collection/uploads/:uploadId/completions | 核验字节、类型和处理状态；直传通知也不能跳过验证 |
@@ -120,6 +124,9 @@
 | POST /v1/folders | content 创建集合目录，验证父目录、范围与重名约束 |
 | PATCH /v1/folders/:id | 重命名/移动，防循环与版本冲突；文档移入目录使用内容更新入口 |
 | DELETE /v1/folders/:id | 非空目录拒绝，不隐式递归删除内容 |
+| GET /v1/asset-cleanups | 仅活动超管分页查询清理账本，默认只查blocked；不暴露对象键或提供方错误 |
+| GET /v1/asset-cleanups/:id | 仅活动超管读取清理状态、保留期、在途写和重试时间 |
+| POST /v1/asset-cleanups/:id/retries | 仅活动超管幂等受理blocked对象重试，202后仍由维护检查引用、保留和租约 |
 
 原件和派生对象保持私有；替换创建新存储键，历史引用固定具体清单。批量上传由多个有界会话及逐项状态构成。直传/分片使用所选适配器已声明并验证的能力，不根据客户端自报的对象信息直接标记成功。文件处理在事务外执行，创建/替换文档时在事务内重新授权并绑定 ready 清单。
 

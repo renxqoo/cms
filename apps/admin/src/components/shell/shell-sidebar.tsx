@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@new-cms/ui/actions';
 import { appConfig } from '../../config/app';
 import { navigationGroups, isComponentRouteId } from '../../config/navigation';
+import { useShellSurface } from './shell-surface';
 import { useShell } from './shell-provider';
 
 export function ShellSidebar({
@@ -21,6 +22,14 @@ export function ShellSidebar({
   function itemLabel(label: string) {
     return isComponentRouteId(label) ? categoryCopy(`${label}Title`) : t(label);
   }
+  const surface = useShellSurface();
+  const groups =
+    surface?.groups ??
+    navigationGroups.map((group) => ({
+      ...group,
+      label: t(group.label),
+      items: group.items.map((item) => ({ ...item, label: itemLabel(item.label) })),
+    }));
   const pathname = usePathname();
   const collapsedGroups = useShell((state) => state.collapsedGroups);
   const toggleGroup = useShell((state) => state.toggleGroup);
@@ -32,7 +41,7 @@ export function ShellSidebar({
     <aside className={containerClass} aria-label={t('navigation')}>
       <div className="flex h-full min-h-0 flex-col bg-sidebar text-sidebar-foreground">
         <AppLink
-          href="/ui"
+          href={surface?.homeHref ?? '/ui'}
           prefetch={false}
           onClick={() => closeMobile(false)}
           aria-label={appConfig.name}
@@ -44,14 +53,16 @@ export function ShellSidebar({
           {!collapsed && (
             <span className="flex min-w-0 flex-col leading-tight">
               <span className="text-sm font-semibold">{appConfig.name}</span>
-              <span className="text-[10px] text-muted-foreground">{t('subtitle')}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {surface?.subtitle ?? t('subtitle')}
+              </span>
             </span>
           )}
         </AppLink>
         <nav className="min-h-0 flex-1 overflow-y-auto py-2">
-          {navigationGroups.map((group, index) => {
+          {groups.map((group, index) => {
             const groupOpen = !collapsedGroups.includes(group.id);
-            const groupLabel = t(group.label);
+            const groupLabel = group.label;
             return (
               <section
                 key={group.id}
@@ -89,15 +100,13 @@ export function ShellSidebar({
                             href={item.href}
                             prefetch={false}
                             onClick={() => closeMobile(false)}
-                            title={collapsed ? itemLabel(item.label) : undefined}
+                            title={collapsed ? item.label : undefined}
                             aria-current={active ? 'page' : undefined}
-                            aria-label={collapsed ? itemLabel(item.label) : undefined}
+                            aria-label={collapsed ? item.label : undefined}
                             className={`flex h-8 items-center gap-2 overflow-hidden rounded-md px-2 text-sm outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring ${active ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''}`}
                           >
                             <Icon className="size-4 shrink-0" aria-hidden="true" />
-                            {!collapsed && (
-                              <span className="truncate">{itemLabel(item.label)}</span>
-                            )}
+                            {!collapsed && <span className="truncate">{item.label}</span>}
                           </AppLink>
                         </li>
                       );
@@ -108,19 +117,23 @@ export function ShellSidebar({
             );
           })}
         </nav>
-        <div className="flex shrink-0 items-center gap-2 overflow-hidden rounded-lg p-2">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-medium ring-1 ring-border">
-            OA
-          </span>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{t('workbench')}</p>
-              <p className="truncate text-[10px] text-muted-foreground">
-                {t('workbenchDescription')}
-              </p>
-            </div>
-          )}
-        </div>
+        {surface ? (
+          surface.footer
+        ) : (
+          <div className="flex shrink-0 items-center gap-2 overflow-hidden rounded-lg p-2">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-medium ring-1 ring-border">
+              OA
+            </span>
+            {!collapsed && (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{t('workbench')}</p>
+                <p className="truncate text-[10px] text-muted-foreground">
+                  {t('workbenchDescription')}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   );

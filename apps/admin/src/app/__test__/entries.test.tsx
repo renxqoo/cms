@@ -42,8 +42,8 @@ afterEach(() => {
   request.cookies.clear();
 });
 
-it('the root redirects to the public component workbench', () => {
-  expect(HomePage).toThrow('Redirect to /ui');
+it('the root enters the authenticated application', () => {
+  expect(HomePage).toThrow('Redirect to /dashboard');
 });
 
 it('server rendering restores a matching language and theme before hydration', async () => {
@@ -54,11 +54,11 @@ it('server rendering restores a matching language and theme before hydration', a
   const markup = renderToStaticMarkup(element);
   expect(markup).toContain('<html lang="en" class="dark" style="color-scheme:dark">');
   expect(markup).toContain('Synthetic workbench content');
-  expect(await generateMetadata()).toMatchObject({ title: 'OneAster — Component workbench' });
+  expect(await generateMetadata()).toMatchObject({ title: 'OneAster — Content management' });
   request.cookies.clear();
   const defaults = renderToStaticMarkup(await RootLayout({ children: 'Default language' }));
   expect(defaults).toContain('<html lang="zh-CN" style="color-scheme:light">');
-  expect(await generateMetadata()).toMatchObject({ title: 'OneAster — 组件工作台' });
+  expect(await generateMetadata()).toMatchObject({ title: 'OneAster — 内容管理' });
 });
 
 it('workbench route entries compose the actual overview and list components', () => {

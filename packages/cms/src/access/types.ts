@@ -94,6 +94,7 @@ export interface Principal extends Admin {
 export interface AccessOptions {
   database: Database;
   policy: CmsPolicy;
+  recoveryMaxResponseBytes: number;
   identity: IdentityParticipants;
   operations: readonly OperationDefinition[];
   collectionKeys: readonly string[];

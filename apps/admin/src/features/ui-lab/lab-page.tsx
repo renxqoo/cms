@@ -1,5 +1,6 @@
 'use client';
 
+import { ClientInteractionBoundary } from '../../components/client-interaction-boundary';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Banner } from '@new-cms/ui/feedback';
@@ -11,7 +12,7 @@ export function LabPage({ category, children }: { category: CategoryId; children
   const t = useTranslations('catalog');
   const Icon = categoryCatalog[category].icon;
   return (
-    <div className="flex min-w-0 flex-col gap-4 md:gap-6">
+    <ClientInteractionBoundary className="flex min-w-0 flex-col gap-4 md:gap-6">
       <PageHeader
         title={t(`${category}Title`)}
         description={t(`${category}Description`)}
@@ -19,6 +20,6 @@ export function LabPage({ category, children }: { category: CategoryId; children
       />
       <Banner>{t('notice')}</Banner>
       {children}
-    </div>
+    </ClientInteractionBoundary>
   );
 }

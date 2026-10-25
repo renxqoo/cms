@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { createListQueryNavigation } from './create-list-query-navigation';
+import { createQueryNavigation } from './query-controller';
 
-export function useListQueryNavigation(committedSearch: string) {
-  const [navigation] = useState(() => createListQueryNavigation(committedSearch));
+export function useQueryNavigation(committedSearch: string) {
+  const [navigation] = useState(() => createQueryNavigation(committedSearch));
   const search = useSyncExternalStore(
     navigation.subscribe,
     navigation.getSnapshot,

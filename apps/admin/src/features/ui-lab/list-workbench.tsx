@@ -1,5 +1,6 @@
 'use client';
 
+import { ClientInteractionBoundary } from '../../components/client-interaction-boundary';
 import { useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '../../components/shell/navigation/provider';
@@ -14,18 +15,18 @@ import { useShell } from '../../components/shell/shell-provider';
 import { createExampleDocuments, queryExampleDocuments } from './list-data';
 import type { ExampleDocument } from './list-data';
 import { parseListQuery } from './list-query';
-import type { updateListQuery } from './list-query';
+import { updateListQuery } from './list-query';
 import { ExampleDialog } from './example-dialog';
 import { ListSearch } from './list-search';
 import { createListColumns } from './list-columns';
-import { useListQueryNavigation } from './use-list-query-navigation';
+import { useQueryNavigation } from '../../components/shell/navigation/use-query-navigation';
 
 export function ListWorkbench() {
   const t = useTranslations('lists');
   const locale = useShell((state) => state.locale);
   const router = useAppNavigation();
   const params = useSearchParams();
-  const [search, updateQuery] = useListQueryNavigation(params.toString());
+  const [search, updateQuery] = useQueryNavigation(params.toString());
   const query = parseListQuery(new URLSearchParams(search));
   const [rows, setRows] = useState(createExampleDocuments);
   const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
@@ -42,7 +43,7 @@ export function ListWorkbench() {
 
   function changeQuery(changes: Parameters<typeof updateListQuery>[1]) {
     setSelectedIds([]);
-    const href = updateQuery(changes);
+    const href = updateQuery(changes, updateListQuery);
     startTransition(() => router.push(href, { scroll: false }));
   }
 
@@ -82,7 +83,7 @@ export function ListWorkbench() {
   }
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
+    <ClientInteractionBoundary className="flex flex-col gap-4 md:gap-6">
       <PageHeader
         title={t('title')}
         description={
@@ -161,6 +162,6 @@ export function ListWorkbench() {
         </ListFooter>
       </ListPanel>
       <ExampleDialog open={open} onOpenChange={setOpen} editing={editing} onApply={apply} />
-    </div>
+    </ClientInteractionBoundary>
   );
 }

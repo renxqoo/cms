@@ -144,6 +144,10 @@ packages/cms/src/content/
   queries/
     parse-query.ts
     __test__/query-behavior.test.ts
+  editor/                           安全布局、候选schema与当前动作提示
+    api.ts
+    contracts.ts
+    __test__/context.test.ts
   documents/
     create-document.ts
     read-document.ts
@@ -163,7 +167,7 @@ packages/cms/src/content/
     __test__/restoration.test.ts
   uploads/                          上传型集合与字节能力的编排
   folders/                          文档目录及移动规则
-  jobs/                             定时发布与版本保留任务
+  jobs/                             定时发布、版本保留及内容/资产工作发现
   adapters/postgres/
     compile-schema.ts               字段语义到物理存储计划
     compile-query.ts                查询与权限到 SQL
@@ -183,11 +187,13 @@ content 内部依赖为 collections → fields，documents/versions → collecti
 | 模块 | 内部业务职责 | 持久化与外部能力 |
 | --- | --- | --- |
 | identity | accounts、sessions、action-tokens | accounts/credentials/session/token 查询归 identity；密码算法、邮件传输通过其定义的窄能力注入 |
-| access | authorization、admins、roles、permissions、navigation、endpoints | 所属查询归 access；管理员用例消费 identity 的受限事务参与能力 |
+| access | authorization、admins、roles、permissions、navigation、endpoints、recovery | 所属查询归 access；管理员用例消费 identity 的受限事务参与能力 |
 | content | 集合、字段、查询、文档/版本、上传型集合、文件夹、发布/保留任务 | 生成的集合数据和内容编排归 content；通过注入的 assets 能力处理字节与引用 |
 | assets | uploads、manifests、processing、references、jobs | 上传会话/文件清单/原件派生对象/引用/恢复记录归 assets；对象存储和图片处理能力注入 |
 | audit | 脱敏追加规则、审计查询 | 审计追加能力使用调用者事务；读取能力经注入授权策略保护 |
 | platform | 幂等、原子限流、安全锁各自独立 | 拥有各自 SQL 协作协议；不能导入 identity/access/content/assets/audit |
+
+access/recovery 提供活动超管独立恢复读取，SQL位于access/adapters/postgres/recovery-store.ts，复用共享安全锁及原修复写接口；HTTP只执行注入业务入口，并对该操作采用专用严格query解析。响应字节预算由应用装配注入，正式DTO从access公开入口提供。
 
 外部 SDK 实现位于 apps/api/src/adapters，只依赖相应 CMS composition 公开的能力类型，不在 SDK 适配器中实现角色判断、版本恢复或资产引用策略。配置由 bootstrap 显式传入；模块定义接口，部署选择实现。
 
@@ -196,6 +202,8 @@ PostgreSQL 查询位于 CMS 模块内是本项目固定数据库的明确取舍�
 持久化任务处理器放在所属模块，例如 assets/jobs 的过期上传与删除恢复、identity 的过期令牌清理及投递观察状态收敛。身份邮件按用户裁决不持久化可恢复令牌、不自动重投；有界内存执行器由应用装配和关闭，投递状态规则归 identity。worker.ts 只装配和运行已注册处理器，领取/停止遵守安全基线，不把任务状态机写在进程入口。新增持久化结构由所属模块维护表定义、迁移和恢复测试，详见[专项方案](user-rbac-design.md)。
 
 content/jobs 负责定时发布、版本裁剪及相关权限复查；assets/jobs 负责字节处理和物理清理。媒体自定义字段、文件夹归属和文档替换都进入 content，不另外写一套固定字段 files CRUD。content 固定历史所需清单后调用 assets 的事务参与能力；assets 不读取 content 私有表来猜测可删除性。
+
+content/editor 从现有字段注册和真实读写上下文生成安全编辑描述符，不另建配置引擎。content/jobs 编排内容及资产任务、上传会话的资格与分页，assets/discovery 经 composition 提供限定actor/collection的参数化关系，content不硬编码资产表。assets/management 负责超管清理账本查询和幂等重试；HTTP只调用注入业务入口。精确契约见[Collections UI接口](collections-ui-api-design.md)。
 
 ## 6. 精确导出与依赖约定
 
@@ -252,4 +260,4 @@ http/content/publications.routes.ts 与协议 schema
 
 ## 9. OneAster 前端与共享UI
 
-前端归属见[专项设计](admin-ui-design.md#3-目录与依赖)：apps/admin/src/app装配路由和服务端边界；components/shell负责导航和偏好；components/cms负责内容管理交互组合；features/ui-lab保存隔离验收场景与合成示例。packages/ui提供实际复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，React公共装置仍在test/support，浏览器旅程位于e2e/*.browser.spec.ts，与现有Vitest进程旅程分开运行、共用test:e2e入口。依赖检查约束ui不导入Next，所有前端不导入后端实现或数据库。
+前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力；features/auth与session拥有认证和真实布局装配，features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口并连接隔离真实API/Next。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。

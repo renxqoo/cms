@@ -1,3 +1,4 @@
+import { assertAssetJobVisible } from '../adapters/postgres/asset-job-discovery.ts';
 import { randomUUID } from 'node:crypto';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
@@ -213,12 +214,13 @@ async function getJob(runtime: ContentRuntime, ctx: RequestContext, raw: unknown
         [input.jobId, state.collection.id],
       );
       const [job] = match.rows;
-      return job
-        ? { found: true as const, value: await projectJob(state, { runtime, job }) }
-        : { found: false as const };
+      if (job) return projectJob(state, { runtime, job });
+      const value = await runtime.readAssetJob(ctx, input, state.tx);
+      await assertAssetJobVisible(state, { runtime, id: input.jobId });
+      return value;
     },
   );
-  return result.found ? result.value : runtime.readAssetJob(ctx, input);
+  return result;
 }
 
 export function createJobApi(runtime: ContentRuntime) {

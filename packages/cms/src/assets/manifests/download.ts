@@ -44,7 +44,7 @@ export function createDownloader(runtime: AssetsOptions & { signal: AbortSignal 
       raw !== null && typeof raw === 'object' && 'bindingId' in raw
         ? 'assets.downloadBinding'
         : 'assets.download';
-    const data = parse(assetsInputSchemas[operationId], raw);
+    const data = parse(assetsInputSchemas(runtime.policy)[operationId], raw);
     const bindingId =
       'bindingId' in data && typeof data.bindingId === 'string' ? data.bindingId : undefined;
     const descriptor = await descriptorFor(runtime, { ctx, data, bindingId, operationId });

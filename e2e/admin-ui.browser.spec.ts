@@ -33,7 +33,7 @@ test('regression: date text hydrates identically on the server and browser', asy
 });
 
 test('opens the OneAster workbench and composed list directly', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/ui');
   await expect(page).toHaveURL(/\/ui$/);
   await expect(page.getByRole('heading', { name: 'UI 组件工作台' })).toBeVisible();
   await page.getByRole('link', { name: '打开场景', exact: true }).click();
@@ -208,7 +208,9 @@ test('keyboard sorting applies real order while Escape cancels', async ({ page }
   const first = list.getByRole('button', { name: '移动欢迎使用 OneAster', exact: true });
   await list.scrollIntoViewIfNeeded();
   await expect(first).toHaveAttribute('aria-roledescription', '可排序项目');
-  await first.focus();
+  await first.click();
+  await expect(first).toBeFocused();
+  await expect(first).not.toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Space', { delay: 80 });
   await expect(first).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('ArrowDown', { delay: 80 });
@@ -216,6 +218,7 @@ test('keyboard sorting applies real order while Escape cancels', async ({ page }
   await page.keyboard.press('Space', { delay: 80 });
   await expect(list.getByRole('listitem').first()).toHaveText('内容编辑指南');
   await first.focus();
+  await expect(first).toBeFocused();
   await page.keyboard.press('Space', { delay: 80 });
   await expect(first).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('ArrowDown', { delay: 80 });
@@ -386,13 +389,17 @@ test('searchable selection supports keyboard focus, labels after close and creat
   await trigger.click();
   await expect(popup.getByRole('alert')).toContainText('本地选项示例暂不可用');
   await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
+  await expect(trigger).toBeFocused();
   await page.getByRole('checkbox', { name: '演示选项加载失败', exact: true }).uncheck();
   await trigger.click();
   await input.fill('Browser created');
   await page.getByRole('button', { name: '创建本地选项“Browser created”', exact: true }).click();
   await expect(input).toHaveValue('');
   await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
   await expect(trigger).toHaveText('Browser created');
+  await expect(trigger).toBeFocused();
 });
 
 test.describe('touch sorting', () => {

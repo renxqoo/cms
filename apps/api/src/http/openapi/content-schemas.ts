@@ -131,10 +131,14 @@ function jobSchemas(): Record<string, Schema> {
   );
   return {
     ContentJob: object({
+      kind: { const: 'content' },
       id,
       collection: text,
       action: { enum: ['batch', 'publication', 'extension'] },
       status,
+      documentId: nullable(id),
+      expectedRevision: nullable(integer),
+      requestedVersionId: nullable(id),
       executeAt: time,
       createdAt: time,
       finishedAt: nullable(time),

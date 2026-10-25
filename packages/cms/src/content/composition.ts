@@ -5,6 +5,8 @@ import { createContentStore } from './adapters/postgres/store.ts';
 import { compileContent } from './adapters/postgres/compile-schema.ts';
 import { contentInputSchemas } from './input-schemas.ts';
 import { createCollectionApi } from './collections-api.ts';
+import { createEditorApi } from './editor/api.ts';
+import { relationScopes } from './documents/relation-scopes.ts';
 import { createReadDocumentApi } from './documents/read-document.ts';
 import { createCreateDocumentApi } from './documents/create-document.ts';
 import { createSaveDocumentApi } from './documents/save-document.ts';
@@ -17,6 +19,7 @@ import { createVersionReadApi } from './versions/api.ts';
 import { createVersionRestoreApi } from './versions/restore-version.ts';
 import { createFolderApi } from './folders/api.ts';
 import { createJobApi } from './jobs/api.ts';
+import { createDiscoveryApi } from './jobs/listing.ts';
 import { createResourceApi } from './resources.ts';
 import {
   createMediaAuthorizer,
@@ -79,7 +82,15 @@ function validateUploadPolicy(options: ContentOptions): void {
     options.uploadPolicy.maxBytes < 1 ||
     !Number.isInteger(options.uploadPolicy.variantQuality) ||
     options.uploadPolicy.variantQuality < 1 ||
-    options.uploadPolicy.variantQuality > 100
+    options.uploadPolicy.variantQuality > 100 ||
+    [
+      options.uploadPolicy.imageLimits.maxOutputBytes,
+      options.uploadPolicy.imageLimits.maxPixels,
+      options.uploadPolicy.imageLimits.maxFrames,
+      options.uploadPolicy.imageLimits.maxWidth,
+      options.uploadPolicy.imageLimits.maxHeight,
+      options.uploadPolicy.imageLimits.maxVariants,
+    ].some((value) => !Number.isSafeInteger(value) || value < 1)
   )
     throw new Error('Invalid upload policy');
 }
@@ -87,6 +98,7 @@ function validateUploadPolicy(options: ContentOptions): void {
 function createApi(runtime: ContentRuntime) {
   return {
     ...createCollectionApi(runtime),
+    ...createEditorApi(runtime),
     ...createReadDocumentApi(runtime),
     ...createCreateDocumentApi(runtime),
     ...createSaveDocumentApi(runtime),
@@ -99,6 +111,7 @@ function createApi(runtime: ContentRuntime) {
     ...createVersionRestoreApi(runtime),
     ...createFolderApi(runtime),
     ...createJobApi(runtime),
+    ...createDiscoveryApi(runtime),
     ...createResourceApi(runtime),
   };
 }
@@ -108,6 +121,7 @@ export function createContent(options: ContentOptions) {
   const runtime: ContentRuntime = {
     ...options,
     store: createContentStore({ mapping: options.mapping, limits: options.limits }),
+    resolveRelationScopes: (state) => relationScopes(state, runtime),
     schemas: contentInputSchemas({
       ...options.limits,
       maxBatchItems: options.workPolicy.maxBatchItems,

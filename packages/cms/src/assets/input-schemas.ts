@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 
 const collection = z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/);
 const id = z.uuid().transform((value) => value.toLowerCase());
@@ -26,7 +27,7 @@ export const imageRecipeSchema = z.strictObject({
     .optional(),
 });
 
-export const assetsInputSchemas = {
+const resourceSchemas = {
   'assets.createUpload': z.strictObject({
     collection,
     purpose: z.enum(['create', 'replace']),
@@ -72,3 +73,38 @@ export const assetsInputSchemas = {
   }),
   'assets.reprocess': z.strictObject({ collection, id, revision, recipe: imageRecipeSchema }),
 };
+
+export function assetsInputSchemas(policy: Pick<CmsPolicy, 'defaultPageSize' | 'maxPageSize'>) {
+  const page = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER).default(1);
+  const pageSize = z.number().int().min(1).max(policy.maxPageSize).default(policy.defaultPageSize);
+  return {
+    ...resourceSchemas,
+    'assets.listUploads': z.strictObject({
+      collection,
+      page,
+      pageSize,
+      status: z
+        .enum([
+          'pending',
+          'uploading',
+          'processing',
+          'ready',
+          'consumed',
+          'failed',
+          'cancelled',
+          'expired',
+        ])
+        .optional(),
+      purpose: z.enum(['create', 'replace']).optional(),
+      documentId: id.optional(),
+    }),
+    'assets.listCleanup': z.strictObject({
+      page,
+      pageSize,
+      blocked: z.boolean().default(true),
+      state: z.enum(['pending', 'ready', 'deleting', 'deleted']).optional(),
+    }),
+    'assets.getCleanup': z.strictObject({ id }),
+    'assets.retryCleanup': z.strictObject({ id }),
+  };
+}

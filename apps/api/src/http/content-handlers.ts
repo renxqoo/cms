@@ -5,6 +5,7 @@ export function contentHandlers(api: ContentApi): Map<string, BusinessHandler> {
   return new Map<string, BusinessHandler>([
     ['collections.list', api.listCollections],
     ['collections.get', api.getCollection],
+    ['collections.editor', api.getEditor],
     ['documents.list', api.listDocuments],
     ['documents.create', api.createDocument],
     ['documents.get', api.getDocument],
@@ -24,6 +25,8 @@ export function contentHandlers(api: ContentApi): Map<string, BusinessHandler> {
     ['content.cancelPublicationSchedule', api.cancelPublicationSchedule],
     ['content.batch', api.createBatch],
     ['content.getJob', api.getJob],
+    ['content.listJobs', api.listJobs],
+    ['assets.listUploads', api.listUploads],
     ['folders.list', api.listFolders],
     ['folders.create', api.createFolder],
     ['folders.update', api.updateFolder],

@@ -1,5 +1,6 @@
 import type { ContentRuntime, ContentState } from '../types.ts';
 import type { DocumentRow } from '../model.ts';
+import { policyRelations } from '../runtime.ts';
 
 export async function visibleDocuments(
   state: ContentState,
@@ -7,6 +8,7 @@ export async function visibleDocuments(
 ): Promise<Map<string, DocumentRow>> {
   const visible = new Map<string, DocumentRow>();
   const ids = [...new Set(input.ids)];
+  const scopes = await policyRelations(state, input.runtime);
   for (let offset = 0; offset < ids.length; offset += input.runtime.limits.maxPageSize) {
     const chunk = ids.slice(offset, offset + input.runtime.limits.maxPageSize);
     for (const trashed of input.trashed === undefined || input.trashed === 'both'
@@ -26,6 +28,7 @@ export async function visibleDocuments(
           select: [],
           trashed,
         },
+        ...scopes,
         limits: input.runtime.limits,
       });
       for (const row of page.rows) visible.set(row.document.id, row.document);

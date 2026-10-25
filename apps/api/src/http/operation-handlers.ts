@@ -5,6 +5,7 @@ import type { AccessCheck } from '@new-cms/cms/access';
 import type { BusinessHandler } from './handlers.ts';
 import type { HttpEnvironment } from './contract.ts';
 import { requestContext, routeInput, successResponse } from './contract.ts';
+import { recoveryQueryInput } from './recovery-input.ts';
 
 export type StreamingHandler = (context: Context<HttpEnvironment>) => Promise<Response>;
 
@@ -55,7 +56,10 @@ export async function executeOperation(
   if (stream) return stream(context);
   const handler = handlers.json.get(options.operation.id);
   if (!handler) throw new Error('Operation handler is missing');
-  const input = await routeInput(context, options.maxBody, options.versionedDelete);
+  const input =
+    options.operation.id === 'access.readRecovery'
+      ? recoveryQueryInput(context)
+      : await routeInput(context, options.maxBody, options.versionedDelete);
   if (options.operation.scopeKind === 'collection' && !collectionScope(context)) {
     const scope = collectionScope(context, input);
     if (!scope) throw new CmsError('invalid_scope');

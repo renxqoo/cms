@@ -7,8 +7,10 @@ import { securityTransaction } from '@new-cms/cms/platform/security-lock';
 import { withIdempotency } from '@new-cms/cms/platform/idempotency';
 import { appendAudit } from '@new-cms/cms/audit/composition';
 import { contentOperations } from './operations.ts';
+import { assetsOperations } from '@new-cms/cms/assets';
 import { queryableFields } from './fields/policies.ts';
 import { targetReadContext } from './queries/resolve-locale.ts';
+import { assertWhereBudget } from './queries/parse-query.ts';
 import type { CollectionDefinition, DocumentData, Where } from './definition.ts';
 import type { ContentRuntime, ContentState } from './types.ts';
 import type { DocumentRow, QueryInput } from './model.ts';
@@ -97,8 +99,9 @@ export function createRunner(runtime: ContentRuntime) {
       async work(tx) {
         const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
         if (
-          contentOperations.find((operation) => operation.id === input.operationId)?.method !==
-          'GET'
+          [...contentOperations, ...assetsOperations].find(
+            (operation) => operation.id === input.operationId,
+          )?.method !== 'GET'
         )
           await lockContentMutation(executor, runtime);
         const state = await authorizedState(runtime, executor, input);
@@ -148,6 +151,7 @@ export async function ensureVisible(
         where: { field: 'id', operator: 'eq', value: document.id },
         policy: state.predicate,
       },
+      ...(await policyRelations(state, input.runtime)),
       limits: input.runtime.limits,
     });
     if (page.rows.length === 0) fail('not_found');
@@ -266,4 +270,24 @@ export function budgetedExecutor(tx: SqlExecutor, maximum: number): SqlExecutor 
 
 export function lockContentMutation(tx: SqlExecutor, runtime: ContentRuntime): Promise<unknown> {
   return tx.query('SELECT pg_advisory_xact_lock($1::bigint)', [runtime.workPolicy.resourceLockKey]);
+}
+
+export function policyUsesRelations(state: ContentState, runtime: ContentRuntime): boolean {
+  if (!state.predicate) return false;
+  assertWhereBudget(state.predicate, runtime.limits);
+  const paths = runtime.mapping
+    .get(state.collection.key)
+    .flat.filter(({ field }) => field.type === 'relationship' || field.type === 'upload')
+    .map(({ path }) => `${path}.`);
+  const nodes = [state.predicate];
+  for (const node of nodes) {
+    if ('and' in node) nodes.push(...node.and);
+    else if ('or' in node) nodes.push(...node.or);
+    else if (paths.some((path) => node.field.startsWith(path))) return true;
+  }
+  return false;
+}
+
+export async function policyRelations(state: ContentState, runtime: ContentRuntime) {
+  return policyUsesRelations(state, runtime) ? runtime.resolveRelationScopes(state) : {};
 }
