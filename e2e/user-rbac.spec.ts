@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { expect, it } from 'vitest';
 import { z } from 'zod';
-import { createTestDatabase } from '../test/support/database.ts';
+import { createTestRuntimeDatabase } from '../test/support/runtime-database.ts';
 import { createTestSmtp } from '../test/support/smtp.ts';
 import { nodeExecutable } from '../test/support/node-runtime.ts';
 import { runCommand, startProcess } from '../test/support/process.ts';
@@ -34,14 +34,16 @@ function request(port: number) {
 it.each(['bun', 'node'] as const)(
   '%s serves the real invitation, authorization, revocation and shutdown journey',
   async (mode) => {
-    const store = await createTestDatabase();
+    const store = await createTestRuntimeDatabase();
     const smtp = await createTestSmtp();
     const binary = mode === 'bun' ? process.execPath : nodeExecutable();
     const folder = mode === 'bun' ? 'apps/api/src' : 'apps/api/dist';
     const extension = mode === 'bun' ? 'ts' : 'js';
     const env = {
       ...process.env,
-      DATABASE_URL: store.connectionString,
+      DATABASE_URL: store.runtimeConnectionString,
+      CMS_MIGRATION_DATABASE_URL: store.connectionString,
+      CMS_DATABASE_RUNTIME_ROLE: store.roleName,
       DATABASE_SCHEMA: store.schema,
       CMS_RATE_LIMIT_SECRET: 'network-test-secret-for-an-isolated-postgresql-schema',
       API_HOST: '127.0.0.1',
@@ -55,6 +57,7 @@ it.each(['bun', 'node'] as const)(
     try {
       runCommand(binary, `${folder}/commands/migrate.${extension}`, { env });
       runCommand(binary, `${folder}/commands/reconcile-operations.${extension}`, { env });
+      runCommand(binary, `${folder}/commands/grant-runtime-role.${extension}`, { env });
       runCommand(binary, `${folder}/commands/initialize-admin.${extension}`, {
         env,
         args: ['--email', 'network-owner@example.test'],
@@ -117,6 +120,9 @@ it.each(['bun', 'node'] as const)(
       expect((await request(server.port)('GET', '/v1/admins', editor)).status).toBe(403);
       expect((await request(server.port)('POST', '/v1/auth/logout', editor)).status).toBe(204);
       expect((await request(server.port)('GET', '/v1/me', editor)).status).toBe(401);
+      await store.database.query('DROP TABLE rate_limit_buckets');
+      expect((await request(server.port)('GET', '/livez')).status).toBe(200);
+      expect((await request(server.port)('GET', '/readyz')).status).toBe(503);
       expect(server.output()).not.toContain(owner.token);
       await server.close();
       server = undefined;

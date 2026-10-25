@@ -121,7 +121,7 @@ JSON 与 multipart 使用不同路径。已声明长度的超大请求尽早拒�
 
 ## 7. 日志、失败和生命周期
 
-- 访问日志：requestId、operationId、状态码、耗时、规范化来源、必要的 Actor ID；URL 只记录规范化路径，不记录含令牌查询串。
+- 访问日志：requestId、真实响应operationId、规范化路由模板、状态码、耗时、直连来源及认证后的Actor ID；早期准入失败使用Hono首个已匹配模板，未知路径为null，不记录参数值或含令牌查询串。
 - 审计：操作者、操作、目标、脱敏变更摘要、结果与 requestId；成功业务变更与审计同事务，拒绝事件另作安全日志。
 - 禁止记录 Authorization、Cookie、密码、邀请令牌、重置令牌、数据库连接串和上传正文。
 - 指标只使用受限标签，不将用户 ID、文档 ID、IP、原始路径或 requestId 作为指标标签。
@@ -166,3 +166,6 @@ Vitest 单测、真实 PostgreSQL 的 HTTP 集成测试与真实 Node 产物旅�
 - [Bearer 认证](https://hono.dev/docs/middleware/builtin/bearer-auth)、[JWT](https://hono.dev/docs/middleware/builtin/jwt)、[CSRF](https://hono.dev/docs/middleware/builtin/csrf)、[第三方中间件](https://hono.dev/docs/middleware/third-party)。
 - [Node HTTP 服务器限制](https://nodejs.org/docs/latest-v24.x/api/http.html)、[Drizzle 事务](https://orm.drizzle.team/docs/transactions)。
 - [OWASP 授权边界](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)、[OWASP 上传保护](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)。
+
+
+身份/RBAC本期审查修复：精确GET/HEAD /livez独立于共享限流和业务准入，保留报文/Host/Origin边界；/readyz反映依赖和生产运行账号权限。审计防变更包括TRUNCATE及最小权限账号，迁移与运行凭据分离，具体执行与边界见[修复契约](user-rbac-review-fixes.md)。

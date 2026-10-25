@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { fail } from '@new-cms/cms/platform/contracts';
 
 export const emailSchema = z.string().trim().toLowerCase().max(255).email();
+export const displayNameSchema = z.string().min(1).max(64).nullable();
 const passwordValue = z
   .string()
   .refine((value) => Array.from(value).length <= 128 && Buffer.byteLength(value, 'utf8') <= 512);
@@ -27,14 +28,14 @@ export const identityInputSchemas = {
 };
 export const createAccountSchema = z.strictObject({
   email: emailSchema,
-  displayName: z.string().min(1).max(64).nullable(),
+  displayName: displayNameSchema,
   roleId: z.uuid(),
 });
 export const updateAccountSchema = z
   .strictObject({
     id: z.uuid(),
     version: z.number().int().positive(),
-    displayName: z.string().min(1).max(64).nullable().optional(),
+    displayName: displayNameSchema.optional(),
     roleId: z.uuid().optional(),
     status: z.enum(['active', 'disabled', 'archived']).optional(),
   })

@@ -28,6 +28,7 @@ export async function login(deps: IdentityDependencies, ctx: RequestContext, val
       current.password_hash !== snapshot.password_hash
     )
       fail('invalid_credentials');
+    ctx.onAuthenticated?.(current.admin_id);
     const session = await issueSession(tx, { adminId: current.admin_id, policy: deps.policy });
     await appendAudit(
       tx,
@@ -53,7 +54,8 @@ export async function logout(
   parseInput(identityInputSchemas['identity.logout'], value === undefined ? {} : value);
   const token = checkedToken(ctx.token);
   await secure(deps, ctx, async (tx) => {
-    const { adminId, changed } = await revokeSession(tx, token);
+    const { adminId, changed, authenticated } = await revokeSession(tx, token);
+    if (authenticated) ctx.onAuthenticated?.(adminId);
     if (!changed) return;
     await appendAudit(
       tx,

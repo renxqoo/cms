@@ -18,6 +18,7 @@ async function main(): Promise<void> {
   const { password } = passwordInput.parse({ password: await readPassword(passwordPrompt) });
   const runtime = createRuntime(config);
   try {
+    await runtime.verifyDatabaseAccess();
     await runtime.access.initializeAdmin({
       email: values.email,
       displayName: values.name ?? null,

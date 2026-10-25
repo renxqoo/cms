@@ -5,7 +5,12 @@ import { readJson } from './read-json.ts';
 
 export interface HttpEnvironment {
   Bindings: { incoming?: { socket: { remoteAddress?: string } } };
-  Variables: { requestId: string; signal: AbortSignal; ip: string };
+  Variables: {
+    requestId: string;
+    signal: AbortSignal;
+    ip: string;
+    actorId?: string;
+  };
 }
 
 export function requestContext(c: Context<HttpEnvironment>): RequestContext {
@@ -15,6 +20,7 @@ export function requestContext(c: Context<HttpEnvironment>): RequestContext {
     requestId: c.get('requestId'),
     ip: c.get('ip'),
     signal: c.get('signal'),
+    onAuthenticated: (adminId) => c.set('actorId', adminId),
     ...(authorization?.startsWith('Bearer ') ? { token: authorization.slice(7) } : {}),
     ...(key === undefined ? {} : { idempotencyKey: key }),
   };

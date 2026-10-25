@@ -35,15 +35,24 @@ export async function replacePermissions(
   );
 }
 
-export async function roleCounts(tx: SqlExecutor, id: string) {
-  const result = await tx.query<{ adminCount: string; permissionCount: string }>(
-    'SELECT (SELECT count(*) FROM admins WHERE role_id=$1) AS "adminCount",(SELECT count(*) FROM role_permissions WHERE role_id=$1) AS "permissionCount"',
-    [id],
+export async function roleCounts(tx: SqlExecutor, ids: string[]) {
+  if (ids.length === 0) return new Map<string, { adminCount: number; permissionCount: number }>();
+  const result = await tx.query<{ roleId: string; adminCount: string; permissionCount: string }>(
+    `SELECT selected.id AS "roleId",coalesce(a.total,0)::text AS "adminCount",coalesce(p.total,0)::text AS "permissionCount"
+     FROM unnest($1::uuid[]) AS selected(id)
+     LEFT JOIN (SELECT role_id,count(*) AS total FROM admins WHERE role_id=ANY($1::uuid[]) GROUP BY role_id) a ON a.role_id=selected.id
+     LEFT JOIN (SELECT role_id,count(*) AS total FROM role_permissions WHERE role_id=ANY($1::uuid[]) GROUP BY role_id) p ON p.role_id=selected.id`,
+    [ids],
   );
-  return {
-    adminCount: Number(result.rows[0]?.adminCount),
-    permissionCount: Number(result.rows[0]?.permissionCount),
-  };
+  return new Map(
+    result.rows.map((row) => [
+      row.roleId,
+      {
+        adminCount: Number(row.adminCount),
+        permissionCount: Number(row.permissionCount),
+      },
+    ]),
+  );
 }
 
 export async function bindingPermission(

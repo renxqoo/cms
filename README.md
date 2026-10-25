@@ -39,6 +39,25 @@ bun run dev
 
 邮件配置使用SMTP_HOST、SMTP_PORT、SMTP_SECURE、SMTP_USER、SMTP_PASSWORD、SMTP_FROM及CMS_FRONTEND_URL；未配置SMTP时投递明确失败，账户创建仍返回实际状态。生产非直连TLS使用强制STARTTLS且验证证书。邀请/重置链接只在前端URL fragment携带令牌；令牌只存摘要，不保存可恢复邮件正文或自动重投，失败后需显式重新发起。
 
+## 生产数据库权限
+
+生产使用专用CMS数据库及无其他角色成员身份的LOGIN运行账号。DATABASE_URL只配置运行账号，CMS_MIGRATION_DATABASE_URL是迁移owner连接，仅提供给迁移、目录发布和权限配置命令；两种连接都必须验证TLS。CMS_DATABASE_RUNTIME_ROLE指定已由数据库管理员创建的运行角色，密码通过数据库管理工具交互设置，不放命令行。
+
+运行角色必须为NOSUPERUSER、NOCREATEROLE、NOCREATEDB、NOREPLICATION、NOBYPASSRLS，不拥有数据库、业务schema、表或函数。发布步骤为：
+
+```sh
+bun run db:migrate
+bun run operations:reconcile
+bun run db:grant-runtime
+bun run admin:initialize --email owner@example.com
+```
+
+db:grant-runtime验证并授予必要连接及业务CRUD权限，审计只允许SELECT/INSERT，操作目录与迁移台账只允许SELECT；拒绝额外权限、可执行SECURITY DEFINER或可写业务表上的definer触发器。已有PUBLIC/列授权等无法安全收窄时整体失败，由数据库管理员修正后重跑，不显示假成功。生产API和超管初始化会检查运行账号权限；开发/测试可用owner，迁移与目录发布始终使用迁移连接，开发/测试缺省回退DATABASE_URL。
+
+审计迁移拦截UPDATE、DELETE、TRUNCATE；已应用迁移不改checksum，新保护通过0002追加。生产就绪检查要求该保护启用。迁移owner属于可信管理边界，不能把这些检查视为防恶意数据库管理员。保留数据库原有PUBLIC TEMP权限，连接明确将pg_temp放在业务schema之后，防止临时同名表遮蔽业务表。
+
+GET/HEAD /livez只表示进程存活，不依赖数据库或共享限流；/readyz验证依赖与权限。访问日志记录真实响应操作、规范化路由模板及认证后的账户ID，不记录原始查询、资源参数值、令牌、密码或邮箱。
+
 ## 验证和提交门禁
 
 使用 Bun 1.4.4 安装并运行：
@@ -53,7 +72,7 @@ bun run test
 
 lint包含工作区、HTTP/业务依赖和schema owner导入约束及类型感知Oxlint；typecheck使用用户确认的bun check；build构建Node API、命令、SQL迁移及规范插件；test运行Vitest/Istanbul、真实PostgreSQL集成及Bun/Node网络旅程。覆盖率包含全部本期手写业务代码及原插件范围，门槛为statements/functions/lines90%、branches85%，不排除入口或SQL适配器。
 
-测试默认连接本机Unix socket的postgres数据库，并为每次测试建立随机隔离schema后清理。其他环境必须设置CMS_TEST_DATABASE_URL；CI使用独立PostgreSQL17服务，SMTP使用本地可编程TCP装置，不访问真实收件箱。生产网络测试需要真实Node，可用CMS_NODE_BINARY明确指定；未找到时失败，不跳过。针对性旅程入口为bun run test:e2e e2e/user-rbac.spec.ts。
+测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，测试连接需具备CREATEDB/CREATEROLE。其他环境必须设置CMS_TEST_DATABASE_URL；全部数据库测试都尊重该连接，CI使用独立PostgreSQL17服务，SMTP使用本地可编程TCP装置，不访问真实收件箱。测试命令显式覆盖迁移连接，避免继承部署连接。生产网络测试需要真实Node，可用CMS_NODE_BINARY明确指定；未找到时失败，不跳过。针对性旅程入口为bun run test:e2e e2e/user-rbac.spec.ts。
 
 Husky由bun install时的prepare安装：pre-commit跑lint/typecheck，pre-push跑build/test，失败立即阻断。GitHub Actions对push/PR执行相同四门，固定Bun1.4.4、Node26.9.0和官方Action SHA，不部署。CI仅在安装时禁用本地hook，随后显式执行全部检查。
 

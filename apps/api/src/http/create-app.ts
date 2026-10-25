@@ -75,7 +75,7 @@ function registerInfrastructure(app: Hono<HttpEnvironment>, deps: HttpDependenci
 export function createApp(deps: HttpDependencies, config: ApplicationConfig['http']) {
   const app = new Hono<HttpEnvironment>();
   app.use('*', secureHeaders());
-  app.use('*', requestLifecycle(config, deps));
+  app.use('*', requestLifecycle(config, deps, deps.operations));
   app.onError((error, c) => errorResponse(error, c.get('requestId')));
   app.notFound((c) => errorResponse(new CmsError('not_found'), c.get('requestId')));
   registerInfrastructure(app, deps);

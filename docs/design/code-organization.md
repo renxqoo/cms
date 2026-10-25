@@ -207,6 +207,7 @@ content/jobs 负责定时发布、版本裁剪及相关权限复查；assets/job
 | @new-cms/cms/platform/idempotency、rate-limits、security-lock | CMS 用例、对应装配及测试 | HTTP 绕过用例直接消费 SQL 协作能力 |
 | @new-cms/database/client | bootstrap、数据库所属实现、CMS composition/内部事务代码及测试 | HTTP 直接持有连接或事务 |
 | @new-cms/database/migrate | 一次性迁移 command 及数据库测试 | 普通请求触发迁移 |
+| @new-cms/database/privileges | bootstrap生产就绪校验、一次性权限配置command及真实数据库测试 | HTTP或业务请求执行GRANT、越过部署权限边界 |
 | @new-cms/database/schema-plan | CMS PostgreSQL 编译器、生成能力及测试使用物理计划类型 | 反向导入 CMS 语义或执行环境初始化 |
 | @new-cms/database/codegen | 内容生成 command 及数据库生成测试 | 业务请求生成或修改 schema |
 | @new-cms/database/schema/identity 等逐项列出的 owner 路径 | 对应模块的 adapters/postgres；经审查的跨域授权投影 | HTTP、任意用例或另一个模块直接修改表 |
@@ -243,6 +244,6 @@ http/content/publications.routes.ts 与协议 schema
 
 现有工具检查工作区显式exports、相对路径逃逸、解析目标/别名、包反向依赖应用及私有__test__引用。本期新增真实CMS/HTTP代码后，已扩展HTTP禁止database/composition/SQL平台能力、identity不得依赖access、platform不得导入业务、database不得依赖CMS、跨模块相对私有导入及schema owner导入约束，并有合法与违规CLI样本。HTTP可消费纯platform/contracts类型及错误契约。
 
-当前静态规则不能证明raw SQL表写所有权，也不声称覆盖全部未来领域DAG、提供方到HTTP的导入方向或环境读取限制；这些仍需代码审查。content/assets及生成入口落地时增加对应owner/DAG、无生成物构建和合法/违规样本，不预建空检查。操作注册、OpenAPI、授权目录和HEAD行为已由真实Hono测试验证。
+当前静态规则覆盖已约定领域DAG与适配器到HTTP的禁止方向；它不能证明raw SQL表写所有权、任意新领域或环境读取限制，这些仍需代码审查。content/assets及生成入口落地时增加对应owner/DAG、无生成物构建和合法/违规样本，不预建空检查。操作注册、OpenAPI、授权目录和HEAD行为已由真实Hono测试验证。
 
 身份/RBAC已有单一运行实现、精确公开入口及初始迁移，无旧业务调用方或存量数据迁移。内容相关目录仍是目标设计，只在真实功能实施时创建。当前检查范围与实际结果见[专项施工图](user-rbac-implementation.md)及[交付记录](review-log.md#后台账户rbac后端与工程门禁交付)。

@@ -40,9 +40,15 @@ async function listRoles(runtime: AccessRuntime, ctx: RequestContext, input: unk
     async ({ tx }) => {
       const query = parse(runtime.schemas['roles.list'], input);
       const page = await listResources(tx, { table: 'roles', ...query });
-      const rows = await Promise.all(
-        page.rows.map(async (role) => ({ ...role, ...(await roleCounts(tx, role.id)) })),
+      const counts = await roleCounts(
+        tx,
+        page.rows.map((role) => role.id),
       );
+      const rows = page.rows.map((role) => {
+        const count = counts.get(role.id);
+        if (!count) fail('internal_error');
+        return { ...role, ...count };
+      });
       return { ...page, rows };
     },
   );
@@ -166,7 +172,9 @@ async function deleteRole(runtime: AccessRuntime, ctx: RequestContext, input: un
       const current = await resource(state.tx, { table: 'roles', id: target.id });
       editable(current);
       requireVersion(current, target.version);
-      if ((await roleCounts(state.tx, target.id)).adminCount > 0) fail('resource_in_use');
+      const counts = (await roleCounts(state.tx, [target.id])).get(target.id);
+      if (!counts) fail('internal_error');
+      if (counts.adminCount > 0) fail('resource_in_use');
       await deleteResource(state.tx, { table: 'roles', id: target.id });
       await auditChange(
         state,

@@ -8,7 +8,8 @@
     "./schema/identity": "./src/schema/identity.ts",
     "./schema/access": "./src/schema/access.ts",
     "./schema/audit": "./src/schema/audit.ts",
-    "./schema/platform": "./src/schema/platform.ts"
+    "./schema/platform": "./src/schema/platform.ts",
+    "./privileges": "./src/privileges.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { appendAudit } from '@new-cms/cms/audit/composition';
+import { displayNameSchema } from '@new-cms/cms/identity';
 import { fail } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
 import { effectiveSuperCount } from './adapters/postgres/authorization-store.ts';
@@ -11,7 +12,7 @@ import { parse } from './validation.ts';
 
 const initializeSchema = z.strictObject({
   email: z.string().trim().toLowerCase().max(255),
-  displayName: z.string().max(64).nullable().default(null),
+  displayName: displayNameSchema.default(null),
   password: z.unknown(),
 });
 

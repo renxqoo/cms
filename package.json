@@ -17,6 +17,7 @@
     "dev": "bun --watch apps/api/src/main.ts",
     "start": "node apps/api/dist/main.js",
     "db:migrate": "bun apps/api/src/commands/migrate.ts",
+    "db:grant-runtime": "bun apps/api/src/commands/grant-runtime-role.ts",
     "admin:initialize": "bun apps/api/src/commands/initialize-admin.ts",
     "operations:reconcile": "bun apps/api/src/commands/reconcile-operations.ts",
     "test:e2e": "bun tooling/build-api.ts && bun --bun node_modules/vitest/vitest.mjs run --config e2e/vitest.config.ts",

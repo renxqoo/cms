@@ -1,4 +1,5 @@
 import { createDatabase } from '@new-cms/database/client';
+import { assertRuntimePrivileges } from '@new-cms/database/privileges';
 import { createIdentity } from '@new-cms/cms/identity/composition';
 import { createAccess } from '@new-cms/cms/access/composition';
 import { identityOperations, identityInputSchemas } from '@new-cms/cms/identity';
@@ -41,12 +42,37 @@ function createServices(config: ApplicationConfig) {
   return { database, identity, access, operations };
 }
 
+function createReadiness(
+  services: ReturnType<typeof createServices>,
+  config: ApplicationConfig,
+  accepting: () => boolean,
+) {
+  const { database, access } = services;
+  async function verifyDatabaseAccess(): Promise<void> {
+    if (config.mode === 'production') await assertRuntimePrivileges(database);
+  }
+  const { ready, admitIp } = createAdmission(
+    {
+      database,
+      policy: config.policy,
+      verifyReady: async () => {
+        await verifyDatabaseAccess();
+        await access.verifyReady();
+      },
+    },
+    accepting,
+  );
+  return { ready, admitIp, verifyDatabaseAccess };
+}
+
 export function createRuntime(config: ApplicationConfig) {
-  const { database, identity, access, operations } = createServices(config);
+  const services = createServices(config);
+  const { database, identity, access, operations } = services;
   let accepting = true;
   let closing: Promise<void> | undefined;
-  const { ready, admitIp } = createAdmission(
-    { database, policy: config.policy, verifyReady: access.verifyReady },
+  const { ready, admitIp, verifyDatabaseAccess } = createReadiness(
+    services,
+    config,
     () => accepting,
   );
   const app = createApp(
@@ -79,6 +105,7 @@ export function createRuntime(config: ApplicationConfig) {
     identity,
     database,
     ready,
+    verifyDatabaseAccess,
     close,
     maintenanceIntervalMs: config.policy.cleanupIntervalMs,
     stop: () => {

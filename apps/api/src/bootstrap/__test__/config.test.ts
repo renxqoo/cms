@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { loadConfig, loadDatabaseConfig } from '../load-config.ts';
+import { loadConfig, loadDatabaseConfig, loadMigrationDatabaseConfig } from '../load-config.ts';
 
 const base = {
   DATABASE_URL: 'postgresql:///postgres?host=/tmp',
@@ -72,4 +72,29 @@ it('rejects duplicate sslmode parameters before the driver can override the veri
   };
   expect(() => loadConfig(env)).toThrow('Verified PostgreSQL TLS');
   expect(() => loadDatabaseConfig(env)).toThrow('Verified PostgreSQL TLS');
+});
+
+it('requires a separate explicit migration connection in production and keeps development setup usable', () => {
+  expect(loadMigrationDatabaseConfig(base).connectionString).toBe(base.DATABASE_URL);
+  const migration = 'postgresql://schema_owner@database.example.test/cms?sslmode=verify-full';
+  expect(
+    loadMigrationDatabaseConfig({
+      NODE_ENV: 'production',
+      CMS_MIGRATION_DATABASE_URL: migration,
+      DATABASE_SCHEMA: 'cms',
+    }),
+  ).toMatchObject({ connectionString: migration, schema: 'cms' });
+  expect(() =>
+    loadMigrationDatabaseConfig({
+      NODE_ENV: 'production',
+      DATABASE_URL: migration,
+    }),
+  ).toThrow('CMS_MIGRATION_DATABASE_URL');
+  expect(() =>
+    loadMigrationDatabaseConfig({
+      NODE_ENV: 'production',
+      CMS_MIGRATION_DATABASE_URL: 'postgresql://owner@db.example.test/cms',
+    }),
+  ).toThrow('Verified PostgreSQL TLS');
+  expect(loadConfig(base).mode).toBe('development');
 });
