@@ -1,6 +1,6 @@
 # RBAC 恢复读取施工与验证
 
-状态：定稿，2026-10-26。级别：中。实施基于1477c28，遵循已独立审查的[接口契约](rbac-recovery-read-contract.md)。协调方已授权实际实现；独立分支提交并push，由前端主会话统一集成，不自行合main。
+状态：已核销，2026-10-26。级别：中。实施基于1477c28，遵循已独立审查的[接口契约](rbac-recovery-read-contract.md)。协调方已授权实际实现；独立分支提交并push，由前端主会话统一集成，不自行合main。
 
 ## 1. 受影响面及所有权
 
@@ -34,4 +34,39 @@
 
 ## 4. 收口记录
 
-完成后填入真实四门用例数、覆盖率、独立审查处置和共享差异。契约与本文同步推进已实施/已核销，README及全局目录更新为76操作。无数据兼容窗口或双轨路径，回滚停用本新增读取产物即可，已通过现有写端点进行的修复仍按原审计/CAS语义持久化。
+| 检查 | 实际结果 |
+| --- | --- |
+| bun run lint | 架构/生成产物/类型感知Oxlint/格式通过，零错误零警告；406个格式匹配文件 |
+| bun run typecheck | 399文件无类型错误 |
+| bun run build | Node API、命令、迁移打包及规范插件通过 |
+| bun run test | 101文件、912个单元/真实PG用例全部通过；三文件8条Bun/Node网络旅程全部通过 |
+| 全仓Istanbul | statements92.28%、branches86.60%、functions96.61%、lines95.64%；全局90/85/90/90及插件独立门槛通过 |
+
+修复后完整四门日志为/tmp/recovery-final-{lint,types,build,test}.log。先行定向集成15文件69例通过，新增错误放大回归后再跑完整门禁；不把定向或局部覆盖率当作全仓结论。未执行本分支不存在的Next/browser构建或浏览器旅程；实际脚本未修改。
+
+- [x] 当前super资格在共享安全锁后重新验证；query scope仅作过滤，普通permission授权不变。
+- [x] 三resource严格分页/筛选/DTO，disabled权限、孤儿绑定和已撤除collection范围可发现；catalog只生成当前页并批量关联绑定，持久化rows/total同SQL快照。
+- [x] 必需字节预算在生产及三个共享装置显式注入；UTF-8整页上限、非法预算配置、未知参数线性错误回包均验证。
+- [x] GET/HEAD、private/no-store、无幂等键读取及OpenAPI判别参数/必填resource/输出schema一致；普通query错误信封及cache语义保留。
+- [x] 真实进程验证普通403、跨重启恢复、旧CAS409、FK引用保护409、修复写与幂等重放、注销401；没有用GET自动写入或reconcile掩盖缺口。
+- [x] 独立审查及假绿抽查通过，没有新增skip/only/todo、弱化断言、覆盖范围排除或降低门槛。目录计数34→35、当前超管生效操作30→31及空末页32均有新增security操作依据，并补该操作分类/可见性断言。
+
+## 5. 对抗审查与已修复缺陷
+
+E独立审查J业务8文件，核对实时授权、安全锁、SQL快照、固定排序、目录分页窗口及O(operations+collections+pageSize)内存，没有范围笛卡尔展开或N+1；P独立审查E的HTTP及根装配、DTO/OpenAPI、网络恢复和假绿，无剩余阻断，实现者未审自己的实现。两者均只读，最终结果采用根实际门禁。
+
+已有行为证据：/tmp/recovery-http-missing-before.log在1477c28基线先解绑204、普通GET403，恢复GET实际404；不以新导出缺失导致类型失败充当红证据。/tmp/recovery-j-global-before.log固定global目录的collectionKey曾错误取首个集合，现为null，回归已通过。
+
+对抗核查发现unknown_keys的每条fieldError重复整组Zod键名，500个未知短键的3542字节URL造成2,774,127字节错误信封。新增公开业务回归先失败，修复仅给每键短中性消息；500键为24,127字节、100键为4,927字节，全部逐键fieldErrors、400状态和strict校验保留，验证线性增长。证据为/tmp/recovery-j-unknown-error-before.log及/tmp/recovery-j-unknown-error-metrics-after.log，最终回归入recovery-input.test.ts。
+
+## 6. 精确共享差异及集成
+
+基于1477c28的新codex/rbac-recovery-read分支，无前端、package.json、bun.lock、测试入口或覆盖率配置差异，无数据库迁移。共享文件差异：
+
+- apps/api/src/bootstrap/create-runtime.ts为createAccess注入contentLimits().maxResponseBytes。
+- access/__test__/support.ts、assets/__test__/support.ts、test/support/content-runtime.ts同步必需预算；AccessOptions、composition、input-schemas、operations及index按唯一新公开能力接线。
+- HTTP handlers/operation-handlers/lifecycle/OpenAPI仅为新操作增加专用解析及描述；普通路由和授权不变。现有http.test.ts操作数75→76，两个Access目录用例计数同步新security操作。
+- e2e/user-rbac.spec.ts保留原两条旅程，补非超管/失效会话读取拒绝；增加两条恢复旅程，现有脚本自动覆盖，共8条网络旅程。
+- README操作数76并链接契约；modules-and-contracts新增单路由，code-organization明确access/recovery及所属SQL。
+
+部署前仍需通过现有operations:reconcile发布新增真实操作，API不自动迁移、补绑定或恢复权限。没有数据兼容窗口或双轨路径；回滚停用本新增读取产物即可，已通过现有写端点进行的修复仍按原审计/CAS语义持久化。主会话统一集成main；本分支不合main、不部署。

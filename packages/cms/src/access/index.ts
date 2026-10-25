@@ -1,5 +1,7 @@
 export { accessOperations } from './operations.ts';
 export { accessInputSchemas } from './input-schemas.ts';
+export { recoveryPageSchema } from './recovery/contracts.ts';
+export type { RecoveryPage } from './recovery/contracts.ts';
 export type { AccessApi, AccessCheck } from './composition.ts';
 export type { AccessAuthorization } from './authorization.ts';
 export type {

@@ -5,6 +5,7 @@ import { createTestRuntimeDatabase } from '../test/support/runtime-database.ts';
 import { createTestSmtp, extractToken } from '../test/support/smtp.ts';
 import { nodeExecutable } from '../test/support/node-runtime.ts';
 import { runCommand, startProcess } from '../test/support/process.ts';
+import { createCmsProcess } from '../test/support/cms-process.ts';
 
 function request(port: number) {
   return (method: string, path: string, options: { token?: string; body?: unknown } = {}) =>
@@ -149,6 +150,10 @@ it.each(['bun', 'node'] as const)(
       });
       expect((await request(server.port)('GET', '/v1/admins', editor)).status).toBe(200);
       expect(
+        (await request(server.port)('GET', '/v1/security/recovery?resource=bindings', editor))
+          .status,
+      ).toBe(403);
+      expect(
         (
           await request(server.port)('POST', '/v1/roles', {
             ...editor,
@@ -170,6 +175,10 @@ it.each(['bun', 'node'] as const)(
       );
       expect((await request(server.port)('POST', '/v1/auth/logout', editor)).status).toBe(204);
       expect((await request(server.port)('GET', '/v1/me', editor)).status).toBe(401);
+      expect(
+        (await request(server.port)('GET', '/v1/security/recovery?resource=bindings', editor))
+          .status,
+      ).toBe(401);
       await store.database.query('DROP TABLE rate_limit_buckets');
       expect((await request(server.port)('GET', '/livez')).status).toBe(200);
       expect((await request(server.port)('GET', '/readyz')).status).toBe(503);
@@ -180,6 +189,204 @@ it.each(['bun', 'node'] as const)(
       await server?.close();
       await smtp.close();
       await store.close();
+    }
+  },
+);
+
+const recoveryBinding = z.object({
+  id: z.uuid(),
+  version: z.number().int().positive(),
+  permissionId: z.uuid(),
+});
+const recoveryEndpoint = z.object({
+  resource: z.literal('endpoints'),
+  total: z.literal(1),
+  rows: z.tuple([
+    z.object({
+      operationId: z.string(),
+      scopeKind: z.literal('global'),
+      collectionKey: z.null(),
+      accessKind: z.string(),
+      bindingConfigurable: z.boolean(),
+      binding: recoveryBinding.nullable(),
+    }),
+  ]),
+});
+const recoveryPermission = z.object({
+  resource: z.literal('permissions'),
+  total: z.literal(1),
+  rows: z.tuple([
+    z.object({
+      id: z.uuid(),
+      version: z.number().int().positive(),
+      code: z.string(),
+      status: z.enum(['active', 'disabled']),
+    }),
+  ]),
+});
+
+it.each(['bun', 'node'] as const)(
+  '%s recovers broken RBAC reads after refresh without weakening ordinary authorization',
+  async (mode) => {
+    const kit = await createCmsProcess(mode);
+    const { request: recoveryRequest, owner } = kit;
+    try {
+      const endpointPath = '/v1/security/recovery?resource=endpoints&operationId=endpoints.list';
+      const originalResponse = await recoveryRequest('GET', endpointPath, owner);
+      expect(originalResponse.status).toBe(200);
+      const original = recoveryEndpoint.parse(await originalResponse.json());
+      const {
+        rows: [{ binding }],
+      } = original;
+      if (!binding) throw new Error('Initial endpoint read binding is missing');
+      expect(
+        (
+          await recoveryRequest(
+            'DELETE',
+            `/v1/endpoint-bindings/${binding.id}?version=${binding.version}`,
+            owner,
+          )
+        ).status,
+      ).toBe(204);
+      expect((await recoveryRequest('GET', '/v1/endpoints', owner)).status).toBe(403);
+      await kit.restart();
+      const unbound = await recoveryRequest('GET', endpointPath, owner);
+      expect(unbound.status).toBe(200);
+      expect(recoveryEndpoint.parse(await unbound.json()).rows[0]).toMatchObject({
+        operationId: 'endpoints.list',
+        binding: null,
+      });
+      const rebound = await recoveryRequest('POST', '/v1/endpoint-bindings', {
+        ...owner,
+        body: {
+          operationId: 'endpoints.list',
+          scopeKind: 'global',
+          collectionKey: null,
+          permissionId: binding.permissionId,
+        },
+      });
+      expect(rebound.status).toBe(201);
+      expect((await recoveryRequest('GET', '/v1/endpoints', owner)).status).toBe(200);
+
+      const permissionPath = '/v1/security/recovery?resource=permissions&code=permissions%3Aread';
+      const permissionResponse = await recoveryRequest('GET', permissionPath, owner);
+      expect(permissionResponse.status).toBe(200);
+      const {
+        rows: [permission],
+      } = recoveryPermission.parse(await permissionResponse.json());
+      const disabledResponse = await recoveryRequest('PATCH', `/v1/permissions/${permission.id}`, {
+        ...owner,
+        body: { version: permission.version, status: 'disabled' },
+      });
+      expect(disabledResponse.status).toBe(200);
+      expect((await recoveryRequest('GET', '/v1/permissions', owner)).status).toBe(403);
+      const disabledRead = await recoveryRequest('GET', permissionPath, owner);
+      expect(disabledRead.status).toBe(200);
+      const {
+        rows: [disabled],
+      } = recoveryPermission.parse(await disabledRead.json());
+      expect(disabled).toMatchObject({ id: permission.id, status: 'disabled' });
+      expect(disabled.version).toBeGreaterThan(permission.version);
+      const stale = await recoveryRequest('PATCH', `/v1/permissions/${permission.id}`, {
+        ...owner,
+        body: { version: permission.version, status: 'active' },
+      });
+      expect(stale.status).toBe(409);
+      expect(await stale.json()).toMatchObject({ error: { code: 'version_conflict' } });
+      const enabledResponse = await recoveryRequest('PATCH', `/v1/permissions/${permission.id}`, {
+        ...owner,
+        body: { version: disabled.version, status: 'active' },
+      });
+      expect(enabledResponse.status).toBe(200);
+      const enabled = z
+        .object({ version: z.number().int().positive() })
+        .parse(await enabledResponse.json());
+      expect((await recoveryRequest('GET', '/v1/permissions', owner)).status).toBe(200);
+      const referencedDelete = await recoveryRequest(
+        'DELETE',
+        `/v1/permissions/${permission.id}?version=${enabled.version}`,
+        owner,
+      );
+      expect(referencedDelete.status).toBe(409);
+      expect(await referencedDelete.json()).toMatchObject({ error: { code: 'resource_in_use' } });
+      const bindingResponse = await recoveryRequest(
+        'GET',
+        `/v1/security/recovery?resource=bindings&permissionId=${permission.id}`,
+        owner,
+      );
+      expect(bindingResponse.status).toBe(200);
+      const referencing = z
+        .object({ resource: z.literal('bindings'), rows: z.array(recoveryBinding) })
+        .parse(await bindingResponse.json());
+      expect(referencing.rows).toHaveLength(1);
+      for (const current of referencing.rows) {
+        expect(
+          (
+            await recoveryRequest(
+              'DELETE',
+              `/v1/endpoint-bindings/${current.id}?version=${current.version}`,
+              owner,
+            )
+          ).status,
+        ).toBe(204);
+      }
+      expect(
+        (
+          await recoveryRequest(
+            'DELETE',
+            `/v1/permissions/${permission.id}?version=${enabled.version}`,
+            owner,
+          )
+        ).status,
+      ).toBe(204);
+      expect((await recoveryRequest('GET', '/v1/permissions', owner)).status).toBe(403);
+      await kit.restart();
+      const missing = await recoveryRequest('GET', permissionPath, owner);
+      expect(missing.status).toBe(200);
+      expect(await missing.json()).toMatchObject({ total: 0, rows: [] });
+      const recreated = await recoveryRequest('POST', '/v1/permissions', {
+        ...owner,
+        body: { code: 'permissions:read', name: 'Recovered read', scopeKind: 'global' },
+      });
+      expect(recreated.status).toBe(201);
+      const newPermission = z.object({ id: z.uuid() }).parse(await recreated.json());
+      expect(newPermission.id).not.toBe(permission.id);
+      const bindingRequest = {
+        ...owner,
+        key: randomUUID(),
+        body: {
+          operationId: 'permissions.list',
+          scopeKind: 'global',
+          permissionId: newPermission.id,
+        },
+      };
+      const createdBindingResponse = await recoveryRequest(
+        'POST',
+        '/v1/endpoint-bindings',
+        bindingRequest,
+      );
+      expect(createdBindingResponse.status).toBe(201);
+      const createdBinding = recoveryBinding.parse(await createdBindingResponse.json());
+      const replay = await recoveryRequest('POST', '/v1/endpoint-bindings', bindingRequest);
+      expect(replay.status).toBe(201);
+      expect(recoveryBinding.parse(await replay.json()).id).toBe(createdBinding.id);
+      expect((await recoveryRequest('GET', '/v1/permissions', owner)).status).toBe(200);
+      const securityRead = await recoveryRequest(
+        'GET',
+        '/v1/security/recovery?resource=endpoints&operationId=access.readRecovery',
+        owner,
+      );
+      expect(securityRead.status).toBe(200);
+      expect(recoveryEndpoint.parse(await securityRead.json()).rows[0]).toMatchObject({
+        operationId: 'access.readRecovery',
+        accessKind: 'security',
+        bindingConfigurable: false,
+        binding: null,
+      });
+      expect((await recoveryRequest('POST', '/v1/auth/logout', owner)).status).toBe(204);
+      expect((await recoveryRequest('GET', endpointPath, owner)).status).toBe(401);
+    } finally {
+      await kit.close();
     }
   },
 );
