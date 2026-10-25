@@ -4,6 +4,7 @@ import { Button } from '@new-cms/ui/actions';
 import { Banner, useClientReady } from '@new-cms/ui/feedback';
 import { Card, CardContent, CardDescription, CardHeader } from '@new-cms/ui/layout';
 import { useShell } from '../../components/shell/shell-provider';
+import { recoveryMessages } from './recovery-messages';
 import { authMessages } from './auth-messages';
 import { ExpiredSessionMessage, useExpiredSession } from './expired-session';
 import { LoginFeedbackMessage } from './login-feedback';
@@ -75,6 +76,12 @@ export function LoginForm({ next, expired = false, unavailable = false }: LoginF
               </Button>
             ) : null}
           </div>
+          <a
+            href="/forgot-password"
+            className="block rounded-sm text-center text-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {recoveryMessages[locale].forgotLink}
+          </a>
           <p className="text-center text-sm text-muted-foreground">{t.noAccount}</p>
         </form>
       </CardContent>

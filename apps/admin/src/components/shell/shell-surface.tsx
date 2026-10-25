@@ -7,11 +7,12 @@ import type { LucideIcon } from 'lucide-react';
 export interface ShellGroup {
   id: string;
   label: string;
-  items: readonly { href: string; label: string; icon: LucideIcon }[];
+  items: readonly { href: string; label: string; icon: LucideIcon; disabled?: boolean }[];
 }
 
 export interface ShellSurface {
   homeHref: string;
+  activeHref?: string;
   subtitle: string;
   groups: readonly ShellGroup[];
   footer: ReactNode;

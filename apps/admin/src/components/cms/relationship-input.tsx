@@ -144,6 +144,7 @@ function RelationshipBrowser({ props }: { props: RelationshipInputProps }) {
       ) : (
         <OptionList props={props} options={results.options} />
       )}
+      {props.pagination}
     </div>
   );
 }

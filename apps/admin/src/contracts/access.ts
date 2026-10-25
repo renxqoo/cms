@@ -22,13 +22,14 @@ export interface Page<T> {
   pageSize: number;
 }
 
+const pageMetadata = {
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+};
+
 export function pageSchema<T>(row: z.ZodType<T>): z.ZodType<Page<T>> {
-  return z.object({
-    rows: z.array(row),
-    total: z.number().int().nonnegative(),
-    page: z.number().int().positive(),
-    pageSize: z.number().int().positive(),
-  });
+  return z.object({ rows: z.array(row), ...pageMetadata });
 }
 
 export const adminSchema = meSchema.omit({ role: true });
@@ -140,3 +141,25 @@ export type Permission = z.infer<typeof permissionSchema>;
 export type Binding = z.infer<typeof bindingSchema>;
 export type Endpoint = z.infer<typeof endpointSchema>;
 export type Audit = z.infer<typeof auditSchema>;
+
+export const recoveryEndpointListSchema = z.object({
+  resource: z.literal('endpoints'),
+  rows: z.array(endpointSchema),
+  ...pageMetadata,
+});
+export const recoveryBindingListSchema = z.object({
+  resource: z.literal('bindings'),
+  rows: z.array(bindingSchema),
+  ...pageMetadata,
+});
+export const recoveryPermissionListSchema = z.object({
+  resource: z.literal('permissions'),
+  rows: z.array(permissionSchema),
+  ...pageMetadata,
+});
+export const recoveryReadSchema = z.discriminatedUnion('resource', [
+  recoveryEndpointListSchema,
+  recoveryBindingListSchema,
+  recoveryPermissionListSchema,
+]);
+export type RecoveryRead = z.infer<typeof recoveryReadSchema>;

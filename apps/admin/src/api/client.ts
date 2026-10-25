@@ -4,8 +4,12 @@ import type { OperationDefinition, OperationId } from '../contracts/operations';
 import { apiResponse, failure } from './result';
 import type { ApiResult } from './result';
 import { requestPolicy } from './config';
+import { downloadResponse } from './download';
+import { uploadBytes } from './upload-transport';
+import type { UploadProgress } from './upload-transport';
 
 export type { ApiResult } from './result';
+export type { UploadProgress } from './upload-transport';
 
 interface ApiRequest<T> {
   operation: OperationId;
@@ -15,6 +19,7 @@ interface ApiRequest<T> {
   response: z.ZodType<T>;
   signal: AbortSignal;
   idempotencyKey?: string;
+  onUploadProgress?: (progress: UploadProgress) => void;
 }
 
 function requestBody(operation: OperationDefinition, body: unknown): BodyInit | null {
@@ -81,6 +86,11 @@ export async function requestApi<T>(input: ApiRequest<T>): Promise<ApiResult<T>>
     if (input.signal.aborted) return failure('request_cancelled', 0);
     const init = preparedRequest(operation, input);
     if (exceedsBudget(init.body, operation)) return failure('payload_too_large', 413);
+    if (
+      input.onUploadProgress !== undefined &&
+      (operation.bodyKind !== 'bytes' || typeof XMLHttpRequest === 'undefined')
+    )
+      return failure('invalid_input', 400);
     timer = setTimeout(
       () => {
         timedOut = true;
@@ -91,11 +101,22 @@ export async function requestApi<T>(input: ApiRequest<T>): Promise<ApiResult<T>>
         : requestPolicy.requestTimeoutMs,
     );
     sent = true;
-    const response = await fetch(operation.target === 'frontend' ? path : `/api/cms${path}`, {
-      ...init,
-      signal: controller.signal,
-    });
-    return await apiResponse(response, input.response, write);
+    const url = operation.target === 'frontend' ? path : `/api/cms${path}`;
+    const response =
+      input.onUploadProgress !== undefined &&
+      (init.body instanceof Blob || init.body instanceof ArrayBuffer)
+        ? await uploadBytes({
+            url,
+            method: operation.method,
+            headers: new Headers(init.headers),
+            body: init.body,
+            signal: controller.signal,
+            onProgress: input.onUploadProgress,
+          })
+        : await fetch(url, { ...init, signal: controller.signal });
+    return operation.responseKind === 'stream'
+      ? await downloadResponse(response, input.response)
+      : await apiResponse(response, input.response, write);
   } catch {
     return failure(failureCode(input.signal.aborted, timedOut, sent), sent ? 0 : 400, {
       uncertain: sent && write,

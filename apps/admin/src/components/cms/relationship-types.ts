@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { SortableLabels } from '@new-cms/ui/data';
 
 export interface RelationshipValue {
@@ -44,6 +45,7 @@ interface RelationshipBase {
   options: readonly RelationshipOption[];
   appearance: 'select' | 'drawer';
   maxRows: number;
+  pagination?: ReactNode;
   labels: RelationshipLabels;
   readOnly?: boolean | undefined;
   displayPreview?: boolean;
