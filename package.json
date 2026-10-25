@@ -26,6 +26,7 @@
     "@new-cms/cms": "workspace:*",
     "@new-cms/database": "workspace:*",
     "@oxlint/plugins": "1.89.0",
+    "@types/bun": "1.4.4",
     "@types/node": "26.6.5",
     "@vitest/coverage-istanbul": "5.0.5",
     "husky": "9.1.7",

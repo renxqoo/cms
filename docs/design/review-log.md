@@ -143,3 +143,17 @@ Istanbul全局匹配tooling/oxlint-plugin/**/*.ts、packages/*/src/**/*.ts及app
 本机已创建全新的开发数据库new_cms，按.env.example生成权限0600的.env及随机共享密钥，执行db:migrate与operations:reconcile成功；.env由Git忽略，未创建默认管理员或设定密码。实际运行bun run dev（仅验证时API_PORT=0避免占用用户端口），/livez及/readyz均200，SIGINT正常退出0。
 
 最终四门lint/typecheck/build/test全部通过；Vitest25文件199项通过，另有Bun与真实Node网络旅程2项通过，无跳过。当前配置匹配范围的Istanbul：statements90.88%（1805/1986）、branches87.56%（965/1102）、functions95.03%（536/564）、lines92.98%（1616/1738），全局90/85/90/90门槛及保留的tooling专属门槛通过。未修改匹配范围或阈值。仅本地提交，不push或部署。
+
+
+## 超管初始化错误提示与终端输入修复
+
+2026-10-25，用户确认初始化密码少于15字符，却只得到通用失败。只读核对本机配置和初始化目录可用，尚无账户；使用短测试密码复现相同输出，不修改真实账户或密码。范围与验收契约先落专项施工图§13，身份业务规则维持15—128码点、最多512 UTF-8字节且不trim。
+
+命令在提示输入前验证环境配置，输入时显示规则，复用identity新增精确导出的newPasswordSchema校验；非法密码在装配资源及写库前拒绝。已存在超管、邮箱占用、无效资料与必要目录不可用分别输出固定安全提示；未知故障、连接信息和原异常不外泄。4项实际进程回归在修前均因缺少明确提示失败，修后通过；同时确认非法密码无账户/凭据/审计副作用，15码点中文输入可初始化，第二次仍拒绝且保留原超管。
+
+独立只读审查进一步复现两个问题：TTY按Buffer独立解码UTF-8，使15个“界”跨分块输入变成17码点及替换字符；Ctrl-C/Ctrl-D取消及超过2048字节的输入被误报数据库故障。本轮改为严格流式TextDecoder，已知输入错误采用PasswordInputError有限类别与固定安全文案。Bun原生PTY首批6项回归在修前全部失败，修后通过；复核追加前导U+FEFF保留回归，同样先失败再修复为ignoreBOM:true，最终7项通过，覆盖中文与emoji跨分块、完整码点退格、两种取消、超长、非法UTF-8及前导字符保持，均核对恢复终端raw状态。测试使用实际输入块确认回执再继续写，不靠延时猜分块；Bun1.4.4原生PTY及类型API核实于[官方文档](https://bun.com/docs/runtime/child-process#terminal-pty-support)，仅新增匹配运行时的@types/bun1.4.4开发类型，无PTY框架或Python运行时。
+
+最终四门lint/typecheck/build/test通过，类型感知Oxlint零错误零警告；冻结锁文件安装及Husky prepare通过。Vitest28文件219项通过，另有Bun/真实Node网络旅程2项通过，无跳过。Istanbul当前配置匹配范围实际statements90.60%（1823/2012）、branches87.67%（975/1112）、functions95.06%（539/567）、lines92.62%（1632/1762）；90/85/90/90全局门槛及原tooling专属门槛通过，未排除CLI或缩减范围/阈值。独立审查处置完成后仅本地提交，不push或部署。
+
+
+初始化修复的独立复核全部关闭：原两项TTY缺口及复核发现的前导U+FEFF吞字符均有真实失败证据和修后PTY回归；复核者实际执行命令测试与7项PTY测试通过，未操作真实账户。文档及公开schema调用方同步，未改动原测试断言、覆盖率范围或阈值，无新增条件跳过。只提交本次点名文件，忽略的.env及本机账户数据不进入Git。
