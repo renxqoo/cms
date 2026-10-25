@@ -208,7 +208,9 @@ test('keyboard sorting applies real order while Escape cancels', async ({ page }
   const first = list.getByRole('button', { name: '移动欢迎使用 OneAster', exact: true });
   await list.scrollIntoViewIfNeeded();
   await expect(first).toHaveAttribute('aria-roledescription', '可排序项目');
-  await first.focus();
+  await first.click();
+  await expect(first).toBeFocused();
+  await expect(first).not.toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Space', { delay: 80 });
   await expect(first).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('ArrowDown', { delay: 80 });
@@ -216,6 +218,7 @@ test('keyboard sorting applies real order while Escape cancels', async ({ page }
   await page.keyboard.press('Space', { delay: 80 });
   await expect(list.getByRole('listitem').first()).toHaveText('内容编辑指南');
   await first.focus();
+  await expect(first).toBeFocused();
   await page.keyboard.press('Space', { delay: 80 });
   await expect(first).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('ArrowDown', { delay: 80 });

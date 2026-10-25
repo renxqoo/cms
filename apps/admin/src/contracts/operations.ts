@@ -108,6 +108,9 @@ export const operations = [
   defineOperation('collections.list', ['GET', '/v1/collections']),
   defineOperation('resources.list', ['GET', '/v1/resources'], { queryKeys: documents }),
   defineOperation('collections.get', ['GET', '/v1/collections/:collection']),
+  defineOperation('collections.editor', ['GET', '/v1/collections/:collection/editor'], {
+    queryKeys: ['intent', 'id', 'locale', 'mode', 'fallback'],
+  }),
   defineOperation('documents.list', ['GET', '/v1/collections/:collection/documents'], {
     queryKeys: documents,
   }),
@@ -186,6 +189,9 @@ export const operations = [
   defineOperation('content.batch', ['POST', '/v1/collections/:collection/batches'], {
     idempotency: 'required',
   }),
+  defineOperation('content.listJobs', ['GET', '/v1/collections/:collection/jobs'], {
+    queryKeys: [...page, 'action', 'status', 'documentId'],
+  }),
   defineOperation('content.getJob', ['GET', '/v1/collections/:collection/jobs/:jobId']),
   defineOperation(
     'resources.references',
@@ -200,6 +206,9 @@ export const operations = [
   defineOperation('folders.delete', ['DELETE', '/v1/folders/:id'], {
     queryKeys: ['collection', 'version'],
     responseKind: 'empty',
+  }),
+  defineOperation('assets.listUploads', ['GET', '/v1/collections/:collection/uploads'], {
+    queryKeys: [...page, 'status', 'purpose', 'documentId'],
   }),
   defineOperation('assets.createUpload', ['POST', '/v1/collections/:collection/uploads'], {
     idempotency: 'required',
@@ -238,6 +247,13 @@ export const operations = [
     ['POST', '/v1/collections/:collection/documents/:id/file-processings'],
     { idempotency: 'required' },
   ),
+  defineOperation('assets.listCleanup', ['GET', '/v1/asset-cleanups'], {
+    queryKeys: [...page, 'blocked', 'state'],
+  }),
+  defineOperation('assets.getCleanup', ['GET', '/v1/asset-cleanups/:id']),
+  defineOperation('assets.retryCleanup', ['POST', '/v1/asset-cleanups/:id/retries'], {
+    idempotency: 'required',
+  }),
   defineOperation('system.openapi', ['GET', '/openapi.json']),
   defineOperation('session.expire', ['POST', '/api/auth/expired-session'], {
     target: 'frontend',

@@ -73,7 +73,7 @@ shell读取/me/navigation并按可信前端路由/图标注册表呈现；账号
 
 ## 7. 首切片共享接口冻结
 
-contracts/operations.ts声明唯一OperationDefinition：id、target(backend/frontend)、method、path模板、access(public/protected)、bodyKind(none/json/bytes)、queryKeys、idempotency(required/none)、responseKind(json/empty/stream)。现有69个业务操作及受保护OpenAPI入口逐项声明为target=backend；前端自有session.expire（POST /api/auth/expired-session）在同一注册表声明target=frontend、无body、empty成功响应，只由client编码直达，不被backend代理匹配或SSR直连函数接受。所有条目target必填，无双轨默认。不从浏览器动态指定目标。BFF按此表封闭匹配，client与SSR共用路径编码器；未知key/重复query/非法segment提前返回安全错误，业务字段完整语义仍由后端验证。
+contracts/operations.ts声明唯一OperationDefinition：id、target(backend/frontend)、method、path模板、access(public/protected)、bodyKind(none/json/bytes)、queryKeys、idempotency(required/none)、responseKind(json/empty/stream)。现有75个业务操作及受保护OpenAPI入口逐项声明为target=backend；前端自有session.expire（POST /api/auth/expired-session）在同一注册表声明target=frontend、无body、empty成功响应，只由client编码直达，不被backend代理匹配或SSR直连函数接受。所有条目target必填，无双轨默认。不从浏览器动态指定目标。BFF按此表封闭匹配，client与SSR共用路径编码器；未知key/重复query/非法segment提前返回安全错误，业务字段完整语义仍由后端验证。
 
 浏览器入口api/client.ts只导出requestApi<T>({operation,params?,query?,body?,response:z.ZodType<T>,signal,idempotencyKey?})与ApiResult<T>。ApiResult为{ok:true,status,data,requestId}或{ok:false,status,error:{code,message,requestId,fieldErrors},retryAfterSeconds,uncertain}。不全局缓存用户或结果，不自动重试。未确认写入与明确后端错误区分；Abort由调用方忽略旧会话结果。204用明确的empty响应schema，不尝试JSON。调用方不得自行包装另一套fetch/错误或权限键。
 

@@ -83,7 +83,18 @@ function composeMedia(
     ...options,
     assets: assets.participants,
     uploadApi: assets.api,
-    readAssetJob: (ctx, request) => assets.api.readJob(ctx, request),
+    uploadPolicy: {
+      ...options.uploadPolicy,
+      imageLimits: {
+        maxOutputBytes: limits.maxOutputBytes,
+        maxPixels: limits.maxPixels,
+        maxFrames: limits.maxFrames,
+        maxWidth: limits.maxWidth,
+        maxHeight: limits.maxHeight,
+        maxVariants: limits.maxVariants,
+      },
+    },
+    readAssetJob: (ctx, request, tx) => assets.api.readJob(ctx, request, tx),
   };
   input.capture.assets = assets;
   const content = createContent(configured);

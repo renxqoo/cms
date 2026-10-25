@@ -1,7 +1,21 @@
+import { fail } from '@new-cms/cms/platform/contracts';
 import type { AssetsOptions } from './types.ts';
 import type { createCapacity } from './uploads/capacity.ts';
 import { processJobs } from './jobs/maintenance.ts';
 import { cleanupAssets, reconcileCleanup } from './jobs/cleanup.ts';
+
+async function verifyReady(runtime: AssetsOptions, signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  await runtime.storage.verify(signal);
+  await runtime.database.query(
+    'SELECT u.generation,u.bound_document_id,j.lease_until,o.object_key,o.cleanup_generation,m.processor_version FROM asset_uploads u,asset_jobs j,asset_objects o,asset_manifests m LIMIT 0',
+  );
+  const migration = await runtime.database.query(
+    "SELECT 1 FROM cms_migrations WHERE name='0011_ui_api.sql'",
+  );
+  if (migration.rowCount !== 1) fail('temporarily_unavailable');
+  signal?.throwIfAborted();
+}
 
 export function createAssetLifecycle(input: {
   runtime: AssetsOptions;
@@ -37,14 +51,7 @@ export function createAssetLifecycle(input: {
       });
       return reconciling;
     },
-    async verifyReady(signal?: AbortSignal) {
-      signal?.throwIfAborted();
-      await runtime.storage.verify(signal);
-      await runtime.database.query(
-        'SELECT u.generation,u.bound_document_id,j.lease_until,o.object_key,m.processor_version FROM asset_uploads u,asset_jobs j,asset_objects o,asset_manifests m LIMIT 0',
-      );
-      signal?.throwIfAborted();
-    },
+    verifyReady: (signal?: AbortSignal) => verifyReady(runtime, signal),
     close() {
       closing ??= closeResources();
       return closing;

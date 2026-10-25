@@ -34,7 +34,7 @@ function idempotent<T>(
 async function insertSession(
   runtime: AssetsOptions,
   state: AssetState,
-  data: z.infer<(typeof assetsInputSchemas)['assets.createUpload']>,
+  data: z.infer<ReturnType<typeof assetsInputSchemas>['assets.createUpload']>,
 ) {
   const authorized = await authorizeCreation(runtime, state, data);
   await assertUploadCapacity(state.tx, {
@@ -106,7 +106,7 @@ async function queueProcessing(runtime: AssetsOptions, state: AssetState, row: U
 
 function createUploader(runtime: AssetsOptions) {
   return function createUpload(ctx: RequestContext, raw: unknown) {
-    const data = parse(assetsInputSchemas['assets.createUpload'], raw);
+    const data = parse(assetsInputSchemas(runtime.policy)['assets.createUpload'], raw);
     return run(
       runtime,
       { ctx, operationId: 'assets.createUpload', collectionKey: data.collection },
@@ -128,7 +128,7 @@ function createUploader(runtime: AssetsOptions) {
 
 function createReader(runtime: AssetsOptions) {
   return function readUpload(ctx: RequestContext, raw: unknown) {
-    const data = parse(assetsInputSchemas['assets.readUpload'], raw);
+    const data = parse(assetsInputSchemas(runtime.policy)['assets.readUpload'], raw);
     return run(
       runtime,
       { ctx, operationId: 'assets.readUpload', collectionKey: data.collection },
@@ -139,7 +139,7 @@ function createReader(runtime: AssetsOptions) {
 
 function createCompleter(runtime: AssetsOptions) {
   return function completeUpload(ctx: RequestContext, raw: unknown) {
-    const data = parse(assetsInputSchemas['assets.completeUpload'], raw);
+    const data = parse(assetsInputSchemas(runtime.policy)['assets.completeUpload'], raw);
     return run(
       runtime,
       { ctx, operationId: 'assets.completeUpload', collectionKey: data.collection },
@@ -164,7 +164,7 @@ function createCompleter(runtime: AssetsOptions) {
 
 function createCanceller(runtime: AssetsOptions) {
   return function cancelUpload(ctx: RequestContext, raw: unknown) {
-    const data = parse(assetsInputSchemas['assets.cancelUpload'], raw);
+    const data = parse(assetsInputSchemas(runtime.policy)['assets.cancelUpload'], raw);
     return run(
       runtime,
       { ctx, operationId: 'assets.cancelUpload', collectionKey: data.collection },
@@ -204,7 +204,7 @@ export function createSessionApi(runtime: AssetsOptions) {
 async function authorizeCreation(
   runtime: AssetsOptions,
   state: AssetState,
-  data: z.infer<(typeof assetsInputSchemas)['assets.createUpload']>,
+  data: z.infer<ReturnType<typeof assetsInputSchemas>['assets.createUpload']>,
 ) {
   if ((data.purpose === 'replace') !== Boolean(data.documentId && data.revision))
     fail('invalid_input');

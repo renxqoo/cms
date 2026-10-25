@@ -34,7 +34,7 @@ function queryValue(key: string, value: string | undefined): unknown {
       throw new CmsError('invalid_input');
     return Number(value);
   }
-  if (key === 'trashed') {
+  if (key === 'trashed' || key === 'blocked') {
     if (value !== 'true' && value !== 'false') throw new CmsError('invalid_input');
     return value === 'true';
   }

@@ -1,3 +1,4 @@
+import { resetBlockedObjects } from '../management/retry-object.ts';
 import { assetTransaction } from '../runtime.ts';
 import type { AssetsOptions } from '../types.ts';
 import { failureCode } from '../validation.ts';
@@ -58,12 +59,15 @@ async function claimObjects(runtime: AssetsOptions) {
        ORDER BY o.id LIMIT $1 FOR UPDATE OF o SKIP LOCKED`,
       [runtime.limits.maintenanceBatchSize, runtime.storage.capabilities.writeSettleMs ?? 0],
     );
-    for (const row of rows.rows)
-      await tx.query(
-        `UPDATE asset_objects SET state='deleting',next_cleanup_at=clock_timestamp()+$2*interval '1 millisecond' WHERE id=$1`,
+    const claimed: { id: string; object_key: string; generation: string }[] = [];
+    for (const row of rows.rows) {
+      const next = await tx.query<{ id: string; object_key: string; generation: string }>(
+        `UPDATE asset_objects SET state='deleting',cleanup_generation=cleanup_generation+1,next_cleanup_at=clock_timestamp()+$2*interval '1 millisecond' WHERE id=$1 RETURNING id,object_key,cleanup_generation::text AS generation`,
         [row.id, runtime.limits.leaseMs],
       );
-    return rows.rows;
+      claimed.push(...next.rows);
+    }
+    return claimed;
   });
 }
 
@@ -77,24 +81,25 @@ export async function cleanupAssets(runtime: AssetsOptions, signal: AbortSignal)
     try {
       await runtime.storage.remove({ key: object.object_key, signal });
       const state = runtime.storage.capabilities.writeSettleMs === null ? 'deleting' : 'deleted';
-      await assetTransaction(runtime, (tx) =>
+      const changed = await assetTransaction(runtime, (tx) =>
         tx.query(
-          "UPDATE asset_objects SET state=$2,cleanup_attempts=0,cleanup_failure_code=NULL WHERE id=$1 AND state='deleting'",
-          [object.id, state],
+          "UPDATE asset_objects SET state=$2,cleanup_attempts=0,cleanup_failure_code=NULL WHERE id=$1 AND state='deleting' AND cleanup_generation=$3",
+          [object.id, state, object.generation],
         ),
       );
-      if (state === 'deleted') count += 1;
+      if (state === 'deleted' && changed.rowCount === 1) count += 1;
     } catch (error) {
-      await assetTransaction(runtime, (tx) =>
+      const changed = await assetTransaction(runtime, (tx) =>
         tx.query(
           `UPDATE asset_objects SET cleanup_attempts=cleanup_attempts+1,cleanup_failure_code=$2,
-         cleanup_blocked=(cleanup_attempts+1>=$3) WHERE id=$1 AND state='deleting'`,
-          [object.id, failureCode(error), runtime.limits.jobAttempts],
+         cleanup_blocked=(cleanup_attempts+1>=$3),next_cleanup_at=clock_timestamp() WHERE id=$1 AND state='deleting' AND cleanup_generation=$4`,
+          [object.id, failureCode(error), runtime.limits.jobAttempts, object.generation],
         ),
       );
-      process.stderr.write(
-        `${JSON.stringify({ event: 'asset_cleanup_failed', objectId: object.id, code: failureCode(error) })}\n`,
-      );
+      if (changed.rowCount === 1)
+        process.stderr.write(
+          `${JSON.stringify({ event: 'asset_cleanup_failed', objectId: object.id, code: failureCode(error) })}\n`,
+        );
     }
   }
   return count;
@@ -105,11 +110,7 @@ export async function reconcileCleanup(
   signal: AbortSignal,
 ): Promise<{ retried: number; cleaned: number }> {
   const reset = await assetTransaction(runtime, (tx) =>
-    tx.query(
-      `UPDATE asset_objects SET cleanup_attempts=0,cleanup_blocked=false,cleanup_failure_code=NULL,next_cleanup_at=clock_timestamp()
-     WHERE id IN(SELECT id FROM asset_objects WHERE cleanup_blocked ORDER BY id LIMIT $1 FOR UPDATE SKIP LOCKED)`,
-      [runtime.limits.maintenanceBatchSize],
-    ),
+    resetBlockedObjects(tx, { limit: runtime.limits.maintenanceBatchSize }),
   );
   return { retried: reset.rowCount ?? 0, cleaned: await cleanupAssets(runtime, signal) };
 }

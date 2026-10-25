@@ -3,10 +3,13 @@ import { expect, it } from 'vitest';
 import { z } from 'zod';
 import { createCmsProcess } from '../test/support/cms-process.ts';
 import { bindOperations, contentDocument, waitForJob } from '../test/support/cms-api.ts';
+import { collectionEditorSchema } from '@new-cms/cms/content';
 import { extractToken } from '../test/support/smtp.ts';
 
 const articleOperations = [
   'collections.get',
+  'collections.editor',
+  'content.listJobs',
   'documents.create',
   'documents.list',
   'documents.get',
@@ -81,6 +84,18 @@ it.each(['bun', 'node'] as const)(
       expect(createdResponse.status).toBe(201);
       const created = contentDocument.parse(await createdResponse.json());
       const path = `/v1/collections/articles/documents/${created.id}`;
+      const editContract = await request(
+        'GET',
+        `/v1/collections/articles/editor?intent=update&id=${created.id}`,
+        editor,
+      );
+      expect(editContract.status).toBe(200);
+      const descriptor = collectionEditorSchema.parse(await editContract.json());
+      expect(descriptor.document).toMatchObject({ id: created.id, revision: created.revision });
+      expect(
+        descriptor.actions.find((action) => action.operationId === 'documents.publish')?.state,
+      ).toBe('denied');
+
       const replay = await request('POST', '/v1/collections/articles/documents', create);
       expect(contentDocument.parse(await replay.json()).id).toBe(created.id);
       expect(
@@ -136,11 +151,29 @@ it.each(['bun', 'node'] as const)(
         body: {
           revision: current.revision,
           versionId: current.versionId,
-          executeAt: new Date(Date.now() + 1500).toISOString(),
+          executeAt: new Date(Date.now() + 5000).toISOString(),
         },
       });
       expect(scheduledResponse.status).toBe(202);
       const schedule = z.object({ jobId: z.uuid() }).parse(await scheduledResponse.json());
+      const discovered = await request(
+        'GET',
+        `/v1/collections/articles/jobs?action=publication&documentId=${created.id}`,
+        editor,
+      );
+      expect(discovered.status).toBe(200);
+      expect(await discovered.json()).toMatchObject({
+        total: 1,
+        rows: [
+          {
+            id: schedule.jobId,
+            kind: 'content',
+            requestedVersionId: current.versionId,
+            expectedRevision: current.revision,
+          },
+        ],
+      });
+
       expect(
         (
           await request('PUT', `/v1/roles/${role.id}/permissions`, {
@@ -156,7 +189,26 @@ it.each(['bun', 'node'] as const)(
         status: 'failed',
       });
       expect(failed.failed).toBe(1);
+      const hidden = await request(
+        'GET',
+        '/v1/collections/articles/jobs?action=publication',
+        editor,
+      );
+      expect(hidden.status).toBe(200);
+      expect(await hidden.json()).toMatchObject({ total: 0, rows: [] });
+
       await kit.restart();
+      const rediscovered = await request(
+        'GET',
+        '/v1/collections/articles/jobs?action=publication',
+        owner,
+      );
+      expect(rediscovered.status).toBe(200);
+      expect(await rediscovered.json()).toMatchObject({
+        total: 1,
+        rows: [{ id: schedule.jobId, status: 'failed' }],
+      });
+
       expect(
         (await request('GET', `/v1/collections/articles/jobs/${schedule.jobId}`, owner)).status,
       ).toBe(200);

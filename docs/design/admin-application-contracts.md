@@ -1,6 +1,6 @@
 # OneAster 界面与接口联调矩阵
 
-状态：认证首切片定稿，2026-10-26；事实来自当前后端operations/input schemas/DTO、OpenAPI及真实测试。完整注册69个operationId；按实际范围记录，不抄Tillgate API。
+状态：认证首切片定稿，2026-10-26；事实来自当前后端operations/input schemas/DTO、OpenAPI及真实测试。完整注册75个operationId；按实际范围记录，不抄Tillgate API。
 
 ## 1. 已冻结账户与RBAC页面
 

@@ -1,5 +1,5 @@
 import type { ContentLimits } from '@new-cms/cms/content/generate';
-import type { ContentWorkPolicy } from '@new-cms/cms/content/composition';
+import type { ContentWorkPolicy, ContentOptions } from '@new-cms/cms/content/composition';
 import type { AssetLimits } from '@new-cms/cms/assets/composition';
 
 export function contentLimits(): ContentLimits {
@@ -70,5 +70,21 @@ export function assetLimits(): AssetLimits {
     jobAttempts: 3,
     maintenanceBatchSize: 20,
     maxVariants: 10,
+  };
+}
+
+export function contentUploadPolicy(limits: AssetLimits): ContentOptions['uploadPolicy'] {
+  return {
+    maxBytes: limits.maxUploadBytes,
+    variantQuality: 85,
+    variantFormat: 'webp',
+    imageLimits: {
+      maxOutputBytes: limits.maxOutputBytes,
+      maxPixels: limits.maxPixels,
+      maxFrames: limits.maxFrames,
+      maxWidth: limits.maxWidth,
+      maxHeight: limits.maxHeight,
+      maxVariants: limits.maxVariants,
+    },
   };
 }

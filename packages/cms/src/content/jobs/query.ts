@@ -2,14 +2,16 @@ import { fail } from '@new-cms/cms/platform/contracts';
 import {
   authorizeStateOperation,
   collectionPredicate,
-  ensureVisible,
   resolveLocale,
+  policyUsesRelations,
 } from '../runtime.ts';
 import { denied, targetState } from '../documents/relation-scopes.ts';
 import { itemOperation } from './execute-item.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
 import type { JobItemRow, JobRow } from './store.ts';
 import type { Where } from '../definition.ts';
+import { createDiscoveryPolicy } from './discovery-policy.ts';
+import type { DiscoveryPolicy } from './discovery-policy.ts';
 
 async function operationState(
   state: ContentState,
@@ -35,15 +37,24 @@ async function operationState(
 
 async function visibleIds(
   state: ContentState,
-  input: { runtime: ContentRuntime; ids: readonly string[] },
+  input: {
+    runtime: ContentRuntime;
+    ids: readonly string[];
+    policy: DiscoveryPolicy;
+    includeTrashed?: boolean;
+  },
 ): Promise<Set<string>> {
   const visible = new Set<string>();
+  const relationScopes = policyUsesRelations(state, input.runtime)
+    ? await input.policy.relations()
+    : [];
   const ids = [...new Set(input.ids)];
   for (let offset = 0; offset < ids.length; offset += input.runtime.limits.maxPageSize) {
     const chunk = ids.slice(offset, offset + input.runtime.limits.maxPageSize);
-    for (const trashed of [false, true]) {
+    for (const trashed of input.includeTrashed === false ? [false] : [false, true]) {
       const page = await input.runtime.store.queryDocuments(state.tx, {
         collection: state.collection.key,
+        relationScopes,
         query: {
           locale: state.locale,
           mode: 'editing',
@@ -75,8 +86,9 @@ function projectedStatus(job: JobRow, items: { status: string }[]) {
 
 async function visibleItems(
   state: ContentState,
-  input: { runtime: ContentRuntime; job: JobRow; rows: JobItemRow[] },
+  input: { runtime: ContentRuntime; job: JobRow; rows: JobItemRow[]; policy: DiscoveryPolicy },
 ) {
+  const { policy } = input;
   const original = await operationState(state, {
     runtime: input.runtime,
     operationId: input.job.source_operation,
@@ -88,6 +100,7 @@ async function visibleItems(
   });
   const visibleResults = await visibleIds(reader, {
     runtime: input.runtime,
+    policy,
     ids: input.rows.map((item) => item.result_document_id ?? item.document_id),
   });
   const visibleSources = new Set<string>();
@@ -103,6 +116,7 @@ async function visibleItems(
       });
       const ids = await visibleIds(authorized, {
         runtime: input.runtime,
+        policy,
         ids: group.map((item) => item.document_id),
       });
       for (const id of ids) visibleSources.add(id);
@@ -133,6 +147,36 @@ function projectItems(
     }));
 }
 
+async function assertExtensionVisible(
+  state: ContentState,
+  input: { runtime: ContentRuntime; job: JobRow; policy: DiscoveryPolicy },
+): Promise<void> {
+  if (!input.job.document_id) fail('not_found');
+  const original = await operationState(state, {
+    runtime: input.runtime,
+    operationId: input.job.source_operation,
+    locale: state.locale,
+  });
+  const reader = await targetState(original, {
+    runtime: input.runtime,
+    collection: state.collection.key,
+  });
+  const predicates = [original.predicate, reader.predicate].filter(
+    (value): value is Where => value !== undefined,
+  );
+  const eligible = {
+    ...reader,
+    ...(predicates.length > 0 ? { predicate: { and: predicates } } : {}),
+  };
+  const visible = await visibleIds(eligible, {
+    runtime: input.runtime,
+    ids: [input.job.document_id],
+    policy: input.policy,
+    includeTrashed: false,
+  });
+  if (!visible.has(input.job.document_id)) fail('not_found');
+}
+
 export async function projectJob(
   state: ContentState,
   input: { runtime: ContentRuntime; job: JobRow },
@@ -142,23 +186,16 @@ export async function projectJob(
     [input.job.id, input.runtime.workPolicy.maxBatchItems + 1],
   );
   if (result.rows.length > input.runtime.workPolicy.maxBatchItems) fail('capacity_exceeded');
-  const items = await visibleItems(state, { ...input, rows: result.rows });
+  const policy = createDiscoveryPolicy(state, input.runtime);
+  const items = await visibleItems(state, { ...input, rows: result.rows, policy });
   if (input.job.action !== 'extension' && items.length === 0) fail('not_found');
-  if (input.job.action === 'extension') {
-    if (!input.job.document_id) fail('not_found');
-    const original = await operationState(state, {
-      runtime: input.runtime,
-      operationId: input.job.source_operation,
-      locale: state.locale,
-    });
-    const reader = await targetState(original, {
-      runtime: input.runtime,
-      collection: state.collection.key,
-    });
-    await ensureVisible(reader, { runtime: input.runtime, id: input.job.document_id });
-  }
+  if (input.job.action === 'extension') await assertExtensionVisible(state, { ...input, policy });
   return {
+    kind: 'content' as const,
     id: input.job.id,
+    documentId: input.job.document_id,
+    expectedRevision: input.job.expected_revision,
+    requestedVersionId: input.job.requested_version_id,
     collection: state.collection.key,
     action: input.job.action,
     status: input.job.action === 'extension' ? input.job.status : projectedStatus(input.job, items),

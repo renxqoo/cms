@@ -1,6 +1,7 @@
 import { randomUUID, randomInt } from 'node:crypto';
 import { afterEach } from 'vitest';
 import { createIdentity } from '@new-cms/cms/identity/composition';
+import type { MailMessage } from '@new-cms/cms/identity/composition';
 import { identityOperations } from '@new-cms/cms/identity';
 import { createAccess } from '@new-cms/cms/access/composition';
 import { accessOperations } from '@new-cms/cms/access';
@@ -100,6 +101,7 @@ export async function createFixture(
 ) {
   const store = await createTestDatabase();
   const policy = createTestPolicy({ securityLockKey: randomInt(1, 2000000000) });
+  const messages: MailMessage[] = [];
   const identity = createIdentity({
     database: store.database,
     policy,
@@ -108,7 +110,13 @@ export async function createFixture(
       verify: (value, hash) => Promise.resolve(hash === `test:${value}`),
       close: () => Promise.resolve(),
     },
-    mailer: { send: () => Promise.resolve('accepted'), close: () => Promise.resolve() },
+    mailer: {
+      send: (message) => {
+        messages.push(message);
+        return Promise.resolve('accepted');
+      },
+      close: () => Promise.resolve(),
+    },
   });
   const access = createAccess({
     database: store.database,
@@ -136,7 +144,7 @@ export async function createFixture(
     collectionKey: 'media',
   });
   const bindings = [];
-  for (const operation of assetsOperations)
+  for (const operation of assetsOperations.filter((item) => item.scopeKind === 'collection'))
     bindings.push(
       await access.api.createBinding(context(login.token), {
         operationId: operation.id,
@@ -243,6 +251,7 @@ export async function createFixture(
     assets,
     access,
     identity,
+    messages,
     admin,
     owner,
     options,

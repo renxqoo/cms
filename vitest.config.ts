@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
@@ -41,10 +41,10 @@ export default defineConfig({
         test: {
           name: 'ui',
           include: [
-            'packages/ui/**/__test__/*.test.{ts,tsx}',
-            'apps/admin/**/__test__/*.test.{ts,tsx}',
+            'packages/ui/src/**/__test__/*.test.{ts,tsx}',
+            'apps/admin/src/**/__test__/*.test.{ts,tsx}',
           ],
-          exclude: ['apps/admin/src/{server,contracts,api}/**'],
+          exclude: [...configDefaults.exclude, 'apps/admin/src/{server,contracts,api}/**'],
           environment: 'jsdom',
           environmentOptions: { jsdom: { pretendToBeVisual: true } },
           setupFiles: ['./test/support/react.ts'],

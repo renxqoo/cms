@@ -110,6 +110,7 @@ describe('PostgreSQL migrations and owner schema', () => {
         '0003_collections.sql',
         '0004_content_work.sql',
         '0010_assets.sql',
+        '0011_ui_api.sql',
       ]);
       expect(after.rows[0]).toEqual(before.rows[0]);
       await expect(result.database.query('TRUNCATE audit_events')).rejects.toMatchObject({

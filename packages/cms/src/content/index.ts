@@ -10,3 +10,22 @@ export type {
   Where,
 } from './definition.ts';
 export type { ContentMapping, DocumentView, QueryInput } from './model.ts';
+
+export { collectionEditorSchema, editorNodeSchema } from './editor/contracts.ts';
+export type {
+  CollectionEditor,
+  EditorNode,
+  EditorIntent,
+  EditorAccess,
+  EditorAction,
+} from './editor/contracts.ts';
+
+export type {
+  JobSummary,
+  ContentJobSummary,
+  AssetJobSummary,
+  UploadSummary,
+  DiscoveryPage,
+  JobStatus,
+  JobAction,
+} from './jobs/contracts.ts';

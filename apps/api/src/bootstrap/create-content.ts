@@ -6,11 +6,16 @@ import {
 import type { AccessAuthorization } from '@new-cms/cms/access';
 import type { AccessActorAuthorization } from '@new-cms/cms/access/composition';
 import { createContent } from '@new-cms/cms/content/composition';
-import { createAssets } from '@new-cms/cms/assets/composition';
+import { createAssets, assetDiscoverySources } from '@new-cms/cms/assets/composition';
 import { compileContent } from '@new-cms/cms/content/generate';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import { applicationRegistry } from '../config/content-registry.ts';
-import { contentLimits, contentWorkPolicy, assetLimits } from '../config/content-policy.ts';
+import {
+  contentLimits,
+  contentWorkPolicy,
+  assetLimits,
+  contentUploadPolicy,
+} from '../config/content-policy.ts';
 import { createLocalStorage } from '../adapters/storage/local.ts';
 import { createS3Storage } from '../adapters/storage/s3.ts';
 import { createSharpProcessor } from '../adapters/images/sharp.ts';
@@ -36,6 +41,7 @@ export function createContentServices(input: {
   configuration: ReturnType<typeof contentConfiguration>;
 }) {
   const workPolicy = contentWorkPolicy();
+  const imageLimits = assetLimits();
   const storage =
     input.storage.kind === 'local'
       ? createLocalStorage({ root: input.storage.root })
@@ -44,7 +50,7 @@ export function createContentServices(input: {
   const assets: ReturnType<typeof createAssets> = createAssets({
     database: input.database,
     policy: input.policy,
-    limits: assetLimits(),
+    limits: imageLimits,
     resourceLockKey: workPolicy.resourceLockKey,
     authorize: input.authorize,
     authorizeActor: input.authorizeActor,
@@ -58,16 +64,13 @@ export function createContentServices(input: {
     policy: input.policy,
     ...input.configuration,
     workPolicy,
-    uploadPolicy: {
-      maxBytes: assetLimits().maxUploadBytes,
-      variantQuality: 85,
-      variantFormat: 'webp',
-    },
+    uploadPolicy: contentUploadPolicy(imageLimits),
     authorize: input.authorize,
     authorizeActor: input.authorizeActor,
     assets: assets.participants,
     uploadApi: assets.api,
     readAssetJob: assets.api.readJob,
+    assetDiscoverySources,
     afterCommitHandlers: {},
   });
   return { content, assets };

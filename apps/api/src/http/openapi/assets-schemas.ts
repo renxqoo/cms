@@ -47,6 +47,10 @@ function uploadSchema(): Schema {
     id,
     collection: text,
     purpose: { enum: ['create', 'replace'] },
+    filename: text,
+    declaredMimeType: text,
+    declaredBytes: integer,
+    createdAt: { type: 'string', format: 'date-time' },
     documentId: nullable(id),
     revision: nullable(integer),
     status: {

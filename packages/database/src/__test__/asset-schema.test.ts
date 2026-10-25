@@ -8,7 +8,7 @@ afterEach(async () => {
   for (const store of stores.splice(0)) await store.close();
 });
 
-it('keeps every asset owner column and foreign-key mapping consistent with the independent SQL migration', async () => {
+it('keeps appended asset columns in SQL order and preserves foreign-key mappings', async () => {
   const store = await createTestDatabase();
   stores.push(store);
   for (const table of Object.values(assetSchema)) {

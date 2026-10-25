@@ -1,3 +1,4 @@
+import { relationScopes } from '../../documents/relation-scopes.ts';
 import { randomUUID } from 'node:crypto';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createContent } from '../../composition.ts';
@@ -118,6 +119,7 @@ it('does not let a stale copy claim create duplicate documents after a newer gen
   await kit.content.maintenance();
   const runtime: ContentRuntime = {
     ...kit.contentOptions,
+    resolveRelationScopes: (state) => relationScopes(state, runtime),
     store: createContentStore({ mapping: kit.artifacts.mapping, limits: kit.limits }),
     schemas: contentInputSchemas({
       ...kit.limits,
