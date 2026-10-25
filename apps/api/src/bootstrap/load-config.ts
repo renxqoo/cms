@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { loadStorageConfig } from './storage-config.ts';
 import type { StorageConfig } from './storage-config.ts';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
+import { navigationIconsSchema, navigationPathsSchema } from './navigation-config.ts';
 
 const environmentSchema = z.object({
   DATABASE_URL: z.url().refine((value) => /^postgres(?:ql)?:/.test(value)),
@@ -22,12 +23,16 @@ const environmentSchema = z.object({
   SMTP_FROM: z.email().default('cms@localhost.invalid'),
   CMS_FRONTEND_URL: z.url().default('http://localhost:3000'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  CMS_NAVIGATION_PATHS: z.string().default('').transform(commaList).pipe(navigationPathsSchema),
+  CMS_NAVIGATION_ICONS: z.string().default('').transform(commaList).pipe(navigationIconsSchema),
   CMS_MAINTENANCE_INTERVAL_MS: z.coerce.number().int().min(25).max(3_600_000).default(60_000),
 });
 
 export interface ApplicationConfig {
+  mode: 'development' | 'test' | 'production';
   storage: StorageConfig;
   database: { connectionString: string; schema: string; maxConnections: number };
+  navigation: { paths: readonly string[]; icons: readonly string[] };
   policy: CmsPolicy;
   password: {
     N: number;
@@ -156,11 +161,27 @@ export function loadDatabaseConfig(
   return { connectionString: env.DATABASE_URL, schema: env.DATABASE_SCHEMA, maxConnections: 2 };
 }
 
+export function loadMigrationDatabaseConfig(
+  source: NodeJS.ProcessEnv = process.env,
+): ApplicationConfig['database'] {
+  const env = environmentSchema.pick({ DATABASE_SCHEMA: true, NODE_ENV: true }).parse(source);
+  const selected =
+    source.CMS_MIGRATION_DATABASE_URL ??
+    (env.NODE_ENV === 'production' ? undefined : source.DATABASE_URL);
+  const connectionString = z
+    .object({ CMS_MIGRATION_DATABASE_URL: environmentSchema.shape.DATABASE_URL })
+    .parse({ CMS_MIGRATION_DATABASE_URL: selected }).CMS_MIGRATION_DATABASE_URL;
+  requireDatabaseTls({ NODE_ENV: env.NODE_ENV, DATABASE_URL: connectionString });
+  return { connectionString, schema: env.DATABASE_SCHEMA, maxConnections: 2 };
+}
+
 export function loadConfig(source: NodeJS.ProcessEnv = process.env): ApplicationConfig {
   const env = environmentSchema.parse(source);
   validateProduction(env);
   return {
     storage: loadStorageConfig(source, env.NODE_ENV === 'production'),
+    mode: env.NODE_ENV,
+    navigation: { paths: env.CMS_NAVIGATION_PATHS, icons: env.CMS_NAVIGATION_ICONS },
     database: {
       connectionString: env.DATABASE_URL,
       schema: env.DATABASE_SCHEMA,
@@ -191,5 +212,8 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
 
 export function loadContentMigrationConfig(source: NodeJS.ProcessEnv = process.env) {
   const env = environmentSchema.pick({ CMS_RATE_LIMIT_SECRET: true }).parse(source);
-  return { database: loadDatabaseConfig(source), policy: defaultPolicy(env.CMS_RATE_LIMIT_SECRET) };
+  return {
+    database: loadMigrationDatabaseConfig(source),
+    policy: defaultPolicy(env.CMS_RATE_LIMIT_SECRET),
+  };
 }

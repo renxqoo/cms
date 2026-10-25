@@ -4,6 +4,7 @@ export interface RequestContext {
   token?: string;
   idempotencyKey?: string;
   signal?: AbortSignal;
+  onAuthenticated?(adminId: string): void;
 }
 
 export interface CmsPolicy {

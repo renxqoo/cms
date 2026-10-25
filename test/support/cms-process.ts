@@ -3,14 +3,14 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { z } from 'zod';
-import { createTestDatabase } from './database.ts';
+import { createTestRuntimeDatabase } from './runtime-database.ts';
 import { createTestSmtp } from './smtp.ts';
 import { runCommand, startProcess } from './process.ts';
 import { nodeExecutable } from './node-runtime.ts';
 import type { ApiClient, ApiOptions } from './cms-api.ts';
 
 export async function createCmsProcess(mode: 'bun' | 'node') {
-  const store = await createTestDatabase();
+  const store = await createTestRuntimeDatabase();
   const smtp = await createTestSmtp();
   const storage = await mkdtemp(join(tmpdir(), 'cms-network-assets-'));
   const { binary, folder, extension, env } = settings(mode, { store, smtp, storage });
@@ -58,6 +58,7 @@ type RunningServer = Awaited<ReturnType<typeof startProcess>>;
 function initializeProcesses(config: ReturnType<typeof settings>) {
   const { binary, folder, extension, env } = config;
   runCommand(binary, `${folder}/commands/reconcile-operations.${extension}`, { env });
+  runCommand(binary, `${folder}/commands/grant-runtime-role.${extension}`, { env });
   const activation = runCommand(binary, `${folder}/commands/backfill-content.${extension}`, {
     env,
     args: ['--activate'],
@@ -74,7 +75,7 @@ function initializeProcesses(config: ReturnType<typeof settings>) {
 function settings(
   mode: 'bun' | 'node',
   input: {
-    store: Awaited<ReturnType<typeof createTestDatabase>>;
+    store: Awaited<ReturnType<typeof createTestRuntimeDatabase>>;
     smtp: Awaited<ReturnType<typeof createTestSmtp>>;
     storage: string;
   },
@@ -84,7 +85,9 @@ function settings(
   const extension = mode === 'bun' ? 'ts' : 'js';
   const env = {
     ...process.env,
-    DATABASE_URL: input.store.connectionString,
+    DATABASE_URL: input.store.runtimeConnectionString,
+    CMS_MIGRATION_DATABASE_URL: input.store.connectionString,
+    CMS_DATABASE_RUNTIME_ROLE: input.store.roleName,
     DATABASE_SCHEMA: input.store.schema,
     CMS_RATE_LIMIT_SECRET: 'independent-collections-network-secret-2026',
     API_HOST: '127.0.0.1',

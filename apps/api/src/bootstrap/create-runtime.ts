@@ -1,4 +1,6 @@
 import { createDatabase } from '@new-cms/database/client';
+import { assertRuntimePrivileges } from '@new-cms/database/privileges';
+import { applicationRuntimeProfile } from '../config/runtime-privileges.ts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { createIdentity } from '@new-cms/cms/identity/composition';
 import { createAccess } from '@new-cms/cms/access/composition';
@@ -49,8 +51,8 @@ function createCoreServices(config: ApplicationConfig, collectionKeys: readonly 
     identity: identity.participants,
     operations,
     collectionKeys,
-    navigationPaths: [],
-    navigationIcons: [],
+    navigationPaths: config.navigation.paths,
+    navigationIcons: config.navigation.icons,
   });
   return { database, identity, access, operations };
 }
@@ -69,7 +71,7 @@ function createServices(config: ApplicationConfig) {
     storage: config.storage,
     configuration,
   });
-  return { ...core, ...content };
+  return { ...core, ...content, runtimeProfile: applicationRuntimeProfile(configuration.mapping) };
 }
 
 type Services = ReturnType<typeof createServices>;
@@ -118,11 +120,15 @@ function httpServices(services: Services, config: ApplicationConfig) {
   };
 }
 
-export function createRuntime(config: ApplicationConfig) {
-  const services = createServices(config);
-  let accepting = true;
-  let closing: Promise<void> | undefined;
-  const { ready, admitIp } = createAdmission(
+function readiness(services: Services, config: ApplicationConfig, accepting: () => boolean) {
+  async function verifyDatabaseAccess(signal?: AbortSignal): Promise<void> {
+    if (config.mode === 'production')
+      await services.database.transaction(
+        (tx) => assertRuntimePrivileges(tx, services.runtimeProfile),
+        signal ?? AbortSignal.timeout(config.policy.requestTimeoutMs),
+      );
+  }
+  const admission = createAdmission(
     {
       database: services.database,
       policy: config.policy,
@@ -131,14 +137,23 @@ export function createRuntime(config: ApplicationConfig) {
           AbortSignal.timeout(config.policy.requestTimeoutMs),
           ...(signal ? [signal] : []),
         ]);
+        await verifyDatabaseAccess(deadline);
         await services.access.verifyReady(deadline);
         await services.content.verifyReady(deadline);
         await services.assets.verifyReady(deadline);
         deadline.throwIfAborted();
       },
     },
-    () => accepting,
+    accepting,
   );
+  return { ...admission, verifyDatabaseAccess };
+}
+
+export function createRuntime(config: ApplicationConfig) {
+  const services = createServices(config);
+  let accepting = true;
+  let closing: Promise<void> | undefined;
+  const { ready, admitIp, verifyDatabaseAccess } = readiness(services, config, () => accepting);
   const app = createApp({ ...httpServices(services, config), ready, admitIp }, config.http);
   function close(): Promise<void> {
     accepting = false;
@@ -149,6 +164,7 @@ export function createRuntime(config: ApplicationConfig) {
     ...services,
     app,
     ready,
+    verifyDatabaseAccess,
     close,
     maintenance: () => maintainServices(services),
     maintenanceIntervalMs: config.policy.cleanupIntervalMs,

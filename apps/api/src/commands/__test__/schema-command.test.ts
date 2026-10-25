@@ -109,18 +109,29 @@ it('activation is explicit, emits its committed identity and propagates a failed
 });
 it('schema maintenance loads database and security policy without requiring a storage or SMTP provider', () => {
   const source = {
-    DATABASE_URL: 'postgresql://localhost/cms?sslmode=verify-full',
+    DATABASE_URL: 'postgresql://runtime@localhost/cms?sslmode=verify-full',
+    CMS_MIGRATION_DATABASE_URL: 'postgresql://owner@localhost/cms?sslmode=verify-full',
     CMS_RATE_LIMIT_SECRET: 's'.repeat(32),
     NODE_ENV: 'production',
   };
   expect(loadContentMigrationConfig(source)).toMatchObject({
-    database: { schema: 'public', maxConnections: 2 },
+    database: {
+      connectionString: source.CMS_MIGRATION_DATABASE_URL,
+      schema: 'public',
+      maxConnections: 2,
+    },
     policy: { securityLockKey: 1171904221 },
   });
+  expect(() =>
+    loadContentMigrationConfig({ ...source, CMS_MIGRATION_DATABASE_URL: undefined }),
+  ).toThrowError(Error);
   expect(() => loadContentMigrationConfig({ ...source, CMS_RATE_LIMIT_SECRET: '' })).toThrowError(
     Error,
   );
   expect(() =>
-    loadContentMigrationConfig({ ...source, DATABASE_URL: 'postgresql://localhost/cms' }),
+    loadContentMigrationConfig({
+      ...source,
+      CMS_MIGRATION_DATABASE_URL: 'postgresql://localhost/cms',
+    }),
   ).toThrow('Verified PostgreSQL TLS');
 });

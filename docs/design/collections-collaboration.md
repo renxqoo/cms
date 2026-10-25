@@ -1,6 +1,6 @@
 # Collections 并行协作契约
 
-状态：定稿，2026-10-26。单一实现，各 agent 使用独立 worktree，主线集成后四门及独立审查。
+状态：已核销，2026-10-26。单一实现，各 agent 使用独立 worktree；主线集成验证及独立审查结果见 [验收记录](collections-verification.md)。
 
 ## 1. 模块分工
 

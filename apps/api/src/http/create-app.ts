@@ -5,7 +5,7 @@ import type { AccessApi, AccessCheck } from '@new-cms/cms/access';
 import type { IdentityApi } from '@new-cms/cms/identity';
 import type { OperationDefinition, RequestContext } from '@new-cms/cms/platform/contracts';
 import type { Schema } from './openapi/schema.ts';
-import type { z } from 'zod';
+import { z } from 'zod';
 import type { ApplicationConfig } from '../bootstrap/load-config.ts';
 import { requestContext } from './contract.ts';
 import { checkOperation, executeOperation } from './operation-handlers.ts';
@@ -51,6 +51,13 @@ function registerOperations(
     )
       throw new Error('Invalid operation registration');
     seen.add(operation.id);
+    const schema = deps.inputSchemas[operation.id];
+    if (!schema) throw new Error('Operation input schema is missing');
+    const versionedDelete =
+      operation.method === 'DELETE' &&
+      z
+        .toJSONSchema(schema, { io: 'input', unrepresentable: 'any' })
+        .required?.includes('version') === true;
     app.on(
       operation.method,
       operation.path,
@@ -61,7 +68,7 @@ function registerOperations(
       (c) =>
         executeOperation(
           c,
-          { operation, maxBody, check: deps.check },
+          { operation, maxBody, check: deps.check, versionedDelete },
           { json: handlers, streaming },
         ),
     );
@@ -93,7 +100,7 @@ function registerInfrastructure(app: Hono<HttpEnvironment>, deps: HttpDependenci
 export function createApp(deps: HttpDependencies, config: ApplicationConfig['http']) {
   const app = new Hono<HttpEnvironment>();
   app.use('*', secureHeaders());
-  app.use('*', requestLifecycle(config, deps));
+  app.use('*', requestLifecycle(config, deps, deps.operations));
   app.onError((error, c) => errorResponse(error, c.get('requestId')));
   app.notFound((c) => errorResponse(new CmsError('not_found'), c.get('requestId')));
   registerInfrastructure(app, deps);

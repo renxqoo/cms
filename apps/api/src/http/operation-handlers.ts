@@ -43,14 +43,19 @@ export async function checkOperation(
 
 export async function executeOperation(
   context: Context<HttpEnvironment>,
-  options: { operation: OperationDefinition; maxBody: number; check: AccessCheck },
+  options: {
+    operation: OperationDefinition;
+    maxBody: number;
+    check: AccessCheck;
+    versionedDelete: boolean;
+  },
   handlers: OperationHandlers,
 ): Promise<Response> {
   const stream = handlers.streaming.get(options.operation.id);
   if (stream) return stream(context);
   const handler = handlers.json.get(options.operation.id);
   if (!handler) throw new Error('Operation handler is missing');
-  const input = await routeInput(context, options.maxBody);
+  const input = await routeInput(context, options.maxBody, options.versionedDelete);
   if (options.operation.scopeKind === 'collection' && !collectionScope(context)) {
     const scope = collectionScope(context, input);
     if (!scope) throw new CmsError('invalid_scope');

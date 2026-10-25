@@ -7,6 +7,7 @@ const result = spawnSync(
     'build',
     'apps/api/src/main.ts',
     'apps/api/src/commands/migrate.ts',
+    'apps/api/src/commands/grant-runtime-role.ts',
     'apps/api/src/commands/initialize-admin.ts',
     'apps/api/src/commands/reconcile-operations.ts',
     'apps/api/src/commands/generate-content.ts',

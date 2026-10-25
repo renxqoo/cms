@@ -209,6 +209,7 @@ content/jobs 负责定时发布、版本裁剪及相关权限复查；assets/job
 | @new-cms/cms/platform/idempotency、rate-limits、security-lock | CMS 用例、对应装配及测试 | HTTP 绕过用例直接消费 SQL 协作能力 |
 | @new-cms/database/client | bootstrap、数据库所属实现、CMS composition/内部事务代码及测试 | HTTP 直接持有连接或事务 |
 | @new-cms/database/migrate | 一次性迁移 command 及数据库测试 | 普通请求触发迁移 |
+| @new-cms/database/privileges | bootstrap生产就绪校验、一次性权限配置command及真实数据库测试 | HTTP或业务请求执行GRANT、越过部署权限边界 |
 | @new-cms/database/schema-plan | CMS PostgreSQL 编译器、生成能力及测试使用物理计划类型 | 反向导入 CMS 语义或执行环境初始化 |
 | @new-cms/database/codegen | 内容生成 command 及数据库生成测试 | 业务请求生成或修改 schema |
 | @new-cms/database/schema/identity 等逐项列出的 owner 路径 | 对应模块的 adapters/postgres；经审查的跨域授权投影 | HTTP、任意用例或另一个模块直接修改表 |

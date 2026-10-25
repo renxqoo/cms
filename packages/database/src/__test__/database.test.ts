@@ -1,4 +1,8 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { copyFile, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { getTableConfig } from 'drizzle-orm/pg-core';
@@ -75,6 +79,80 @@ describe('PostgreSQL migrations and owner schema', () => {
     expect(after.rows).toEqual(before.rows);
     expect(after.rows).toContainEqual({ name: '0001_user_rbac.sql' });
     expect(after.rows).toContainEqual({ name: '0002_content.sql' });
+  });
+
+  it('upgrades an applied 0001 without changing its checksum or existing audit records', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'cms-migration-upgrade-'));
+    try {
+      await copyFile(
+        fileURLToPath(new URL('../../migrations/0001_user_rbac.sql', import.meta.url)),
+        join(directory, '0001_user_rbac.sql'),
+      );
+      const result = await createTestDatabase({ migrationDirectory: directory });
+      fixtures.push(result);
+      const id = randomUUID();
+      await result.database.query(
+        `INSERT INTO audit_events(id,actor_kind,operation_id,target_type,request_id,detail)
+        VALUES($1,'system','test.upgrade','test','existing-audit','{}')`,
+        [id],
+      );
+      const before = await result.database.query<{ name: string; checksum: string }>(
+        'SELECT name,checksum FROM cms_migrations',
+      );
+      await migrate(result.database);
+      const after = await result.database.query<{ name: string; checksum: string }>(
+        'SELECT name,checksum FROM cms_migrations ORDER BY name',
+      );
+      expect(after.rows.map((row) => row.name)).toEqual([
+        '0001_user_rbac.sql',
+        '0002_audit_truncate.sql',
+        '0002_content.sql',
+        '0003_collections.sql',
+        '0004_content_work.sql',
+        '0010_assets.sql',
+      ]);
+      expect(after.rows[0]).toEqual(before.rows[0]);
+      await expect(result.database.query('TRUNCATE audit_events')).rejects.toMatchObject({
+        code: '42501',
+      });
+      expect(
+        (await result.database.query('SELECT id FROM audit_events WHERE id=$1', [id])).rowCount,
+      ).toBe(1);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('preserves audit records when the migration owner tries TRUNCATE', async () => {
+    const db = await fixture();
+    const id = randomUUID();
+    await db.query(
+      `INSERT INTO audit_events(id,actor_kind,operation_id,target_type,request_id,detail)
+       VALUES($1,'system','test.append','test','truncate-regression','{}')`,
+      [id],
+    );
+    await expect(db.query('TRUNCATE audit_events')).rejects.toMatchObject({ code: '42501' });
+    expect((await db.query('SELECT id FROM audit_events WHERE id=$1', [id])).rowCount).toBe(1);
+  });
+
+  it('writes audit records to the application schema when a same-named temporary table exists', async () => {
+    const result = await createTestDatabase();
+    fixtures.push(result);
+    const id = randomUUID();
+    await result.database.transaction(async (tx) => {
+      await tx.query(
+        `CREATE TEMP TABLE audit_events(LIKE ${result.schema}.audit_events INCLUDING DEFAULTS) ON COMMIT DROP`,
+      );
+      await tx.query(
+        `INSERT INTO audit_events(id,actor_kind,operation_id,target_type,request_id,detail)
+         VALUES($1,'system','test.append','test','temp-shadow-regression','{}')`,
+        [id],
+      );
+      const persisted = await tx.query(`SELECT id FROM ${result.schema}.audit_events WHERE id=$1`, [
+        id,
+      ]);
+      expect(persisted.rowCount).toBe(1);
+    });
   });
 
   it('rejects unnormalized duplicate identity and invalid token shapes', async () => {
@@ -214,15 +292,24 @@ describe('transaction resources', () => {
   });
 
   it('handles an idle connection failure and creates a replacement connection', async () => {
-    const connectionString = 'postgresql:///postgres?host=/tmp';
+    const connectionString =
+      process.env.CMS_TEST_DATABASE_URL ?? 'postgresql:///postgres?host=/tmp';
     let notify: ((error: Error) => void) | undefined;
     const failed = new Promise<Error>((resolve) => {
       notify = resolve;
     });
     const db = createDatabase({ connectionString, onError: (error) => notify?.(error) });
-    const control = createDatabase({ connectionString });
+    const control = createDatabase({
+      connectionString: process.env.CMS_TEST_DATABASE_URL ?? connectionString,
+    });
     try {
-      const initial = await db.query<{ pid: number }>('SELECT pg_backend_pid() AS pid');
+      const initial = await db.query<{ pid: number; address: string | null }>(
+        'SELECT pg_backend_pid() AS pid,inet_server_addr()::text AS address',
+      );
+      const configured = await control.query<{ address: string | null }>(
+        'SELECT inet_server_addr()::text AS address',
+      );
+      expect(initial.rows[0]?.address).toBe(configured.rows[0]?.address);
       await control.query('SELECT pg_terminate_backend($1)', [initial.rows[0]?.pid]);
       await expect(failed).resolves.toHaveProperty('code', '57P01');
       expect((await db.query('SELECT 1 AS ready')).rows[0]?.['ready']).toBe(1);

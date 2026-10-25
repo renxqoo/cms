@@ -5,7 +5,13 @@ import { readJson } from './read-json.ts';
 
 export interface HttpEnvironment {
   Bindings: { incoming?: { socket: { remoteAddress?: string } } };
-  Variables: { requestId: string; signal: AbortSignal; ip: string; streaming?: boolean };
+  Variables: {
+    requestId: string;
+    signal: AbortSignal;
+    ip: string;
+    streaming?: boolean;
+    actorId?: string;
+  };
 }
 
 export function requestContext(c: Context<HttpEnvironment>): RequestContext {
@@ -15,6 +21,7 @@ export function requestContext(c: Context<HttpEnvironment>): RequestContext {
     requestId: c.get('requestId'),
     ip: c.get('ip'),
     signal: c.get('signal'),
+    onAuthenticated: (adminId) => c.set('actorId', adminId),
     ...(authorization?.startsWith('Bearer ') ? { token: authorization.slice(7) } : {}),
     ...(key === undefined ? {} : { idempotencyKey: key }),
   };
@@ -42,17 +49,46 @@ function queryValue(key: string, value: string | undefined): unknown {
   return value;
 }
 
-function queryInput(c: Context<HttpEnvironment>): Record<string, unknown> {
+function queryInput(
+  c: Context<HttpEnvironment>,
+  versionedDelete: boolean,
+): Record<string, unknown> {
   const result = new Map<string, unknown>();
   for (const [key, values] of Object.entries(c.req.queries())) {
-    if (values.length !== 1) throw new CmsError('invalid_input');
-    result.set(key, queryValue(key, values[0]));
+    if (values.length !== 1) throw queryProblem(key, versionedDelete);
+    try {
+      result.set(key, queryValue(key, values[0]));
+    } catch {
+      throw queryProblem(key, versionedDelete);
+    }
   }
+  if (versionedDelete && !result.has('version')) throw queryProblem('version', true);
   return Object.fromEntries(result);
 }
 
-export async function routeInput(c: Context<HttpEnvironment>, maxBytes: number): Promise<unknown> {
-  const query = queryInput(c);
+function queryProblem(key: string, versionedDelete: boolean): CmsError {
+  return new CmsError(
+    'invalid_input',
+    key === 'version' && versionedDelete
+      ? {
+          fieldErrors: [
+            {
+              field: 'version',
+              message:
+                'Send one positive integer query parameter ?version=N. DELETE request bodies are not read.',
+            },
+          ],
+        }
+      : {},
+  );
+}
+
+export async function routeInput(
+  c: Context<HttpEnvironment>,
+  maxBytes: number,
+  versionedDelete = false,
+): Promise<unknown> {
+  const query = queryInput(c, versionedDelete);
   const params: Record<string, string> = c.req.param();
   if (Object.keys(params).some((key) => Object.hasOwn(query, key)))
     throw new CmsError('invalid_input');

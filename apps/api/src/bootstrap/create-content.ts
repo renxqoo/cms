@@ -7,11 +7,9 @@ import type { AccessAuthorization } from '@new-cms/cms/access';
 import type { AccessActorAuthorization } from '@new-cms/cms/access/composition';
 import { createContent } from '@new-cms/cms/content/composition';
 import { createAssets } from '@new-cms/cms/assets/composition';
-import { contentOperations } from '@new-cms/cms/content';
-import { assetsOperations } from '@new-cms/cms/assets';
-import { createRegistry, compileContent } from '@new-cms/cms/content/generate';
+import { compileContent } from '@new-cms/cms/content/generate';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
-import { collections } from '../config/collections/index.ts';
+import { applicationRegistry } from '../config/content-registry.ts';
 import { contentLimits, contentWorkPolicy, assetLimits } from '../config/content-policy.ts';
 import { createLocalStorage } from '../adapters/storage/local.ts';
 import { createS3Storage } from '../adapters/storage/s3.ts';
@@ -20,11 +18,7 @@ import type { StorageConfig } from './storage-config.ts';
 
 export function contentConfiguration() {
   const limits = contentLimits();
-  const registry = createRegistry({
-    collections,
-    limits,
-    operations: [...contentOperations, ...assetsOperations],
-  });
+  const registry = applicationRegistry(limits);
   if (registry.behaviorHash !== contentBehaviorHash)
     throw new Error('Generated content behavior differs from configuration');
   const mapping = compileContent(registry);

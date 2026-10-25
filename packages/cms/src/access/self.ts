@@ -82,6 +82,11 @@ function visibleNode(
   },
   runtime: AccessRuntime,
 ) {
+  if (
+    input.node.type === 'page' &&
+    (input.node.path === null || !runtime.navigationPaths.includes(input.node.path))
+  )
+    return false;
   if (input.node.visibility !== 'permission') return true;
   const permission = input.permissions.get(input.node.permissionId ?? '');
   if (permission?.status !== 'active' || input.actor.role.status !== 'active') return false;

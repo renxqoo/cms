@@ -1,21 +1,10 @@
 import { readFile, mkdir, writeFile, link, rename, rm } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { join, dirname } from 'node:path';
-import { createRegistry, generateArtifacts } from '@new-cms/cms/content/generate';
+import { generateArtifacts } from '@new-cms/cms/content/generate';
 import type { ContentRegistry } from '@new-cms/cms/content/generate';
-import { contentOperations } from '@new-cms/cms/content';
-import { assetsOperations } from '@new-cms/cms/assets';
 import { contentMigration, snapshotPath } from './content-migration.ts';
-import { collections } from '../config/collections/index.ts';
-import { contentLimits } from '../config/content-policy.ts';
-
-export function applicationRegistry() {
-  return createRegistry({
-    collections,
-    limits: contentLimits(),
-    operations: [...contentOperations, ...assetsOperations],
-  });
-}
+import { applicationRegistry } from '../config/content-registry.ts';
 
 export function contentArtifacts(registry: ContentRegistry = applicationRegistry()) {
   const generated = generateArtifacts(registry);

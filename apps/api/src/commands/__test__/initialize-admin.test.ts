@@ -18,6 +18,7 @@ async function fixture() {
   const env = {
     ...process.env,
     DATABASE_URL: store.connectionString,
+    CMS_MIGRATION_DATABASE_URL: store.connectionString,
     DATABASE_SCHEMA: store.schema,
     CMS_RATE_LIMIT_SECRET: 'an-isolated-command-test-rate-limit-secret',
     NODE_ENV: 'test',

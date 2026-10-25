@@ -6,13 +6,15 @@ export interface TestDatabaseOptions {
   connectionString?: string;
   lockTimeoutMs?: number;
   maxConnections?: number;
+  migrationDirectory?: string;
+}
+
+export function testDatabaseConnectionString(): string {
+  return process.env['CMS_TEST_DATABASE_URL'] ?? 'postgresql:///postgres?host=/tmp';
 }
 
 export async function createTestDatabase(options: TestDatabaseOptions = {}) {
-  const connectionString =
-    options.connectionString ??
-    process.env['CMS_TEST_DATABASE_URL'] ??
-    'postgresql:///postgres?host=/tmp';
+  const connectionString = options.connectionString ?? testDatabaseConnectionString();
   const schema = `cms_test_${randomUUID().replaceAll('-', '')}`;
   const control = createDatabase({ connectionString, maxConnections: 2 });
   const database = createDatabase({
@@ -25,7 +27,10 @@ export async function createTestDatabase(options: TestDatabaseOptions = {}) {
   });
   try {
     await control.query(`CREATE SCHEMA ${schema}`);
-    await migrate(database);
+    await migrate(
+      database,
+      options.migrationDirectory === undefined ? {} : { directory: options.migrationDirectory },
+    );
   } catch (error) {
     await database.close();
     await control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);

@@ -34,7 +34,7 @@ export async function requireWritableSchema(
 ): Promise<void> {
   const { definition } = input.mapping.get(input.collection);
   const result = await tx.query<{ schema_version: number; data_fingerprint: string }>(
-    `SELECT c.schema_version,v.data_fingerprint FROM content_schema_control c JOIN content_schema_versions v USING(collection_id,schema_version) WHERE c.collection_id=$1 FOR SHARE OF c`,
+    `SELECT c.schema_version,v.data_fingerprint FROM content_schema_control c JOIN content_schema_versions v USING(collection_id,schema_version) WHERE c.collection_id=$1`,
     [definition.id],
   );
   const [row] = result.rows;
@@ -113,6 +113,7 @@ export async function verifyDefinitionStamps(
   if (result.rows[0]?.valid !== true) fail('temporarily_unavailable');
 }
 export async function lockPreparedSchemas(tx: SqlExecutor, mapping: ContentMapping): Promise<void> {
+  await tx.query('LOCK TABLE content_schema_control IN ACCESS EXCLUSIVE MODE');
   const expected = currentCollections(mapping).map(({ definition }) => ({
     collection_id: definition.id,
     schema_version: definition.schemaVersion,

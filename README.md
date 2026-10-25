@@ -12,6 +12,7 @@
 - [后端目录与代码组织](docs/design/code-organization.md)：文件归属、公开入口、查询/适配器、测试和人审路径。
 - [功能和接口范围](docs/design/modules-and-contracts.md)：后端实施范围与主要行为约束。
 - [后台账户与 RBAC 方案](docs/design/user-rbac-design.md)：账户及完整授权设计；配套[施工图](docs/design/user-rbac-implementation.md)和[字段、接口及测试矩阵](docs/design/user-rbac-units.md)。
+- [导航与管理契约修复](docs/design/navigation-contract-followup.md)：可信导航目录、DELETE版本提示、归档角色维护和兼容扩展的运行权限。
 - [Collections 与资源管理](docs/design/collections-and-assets.md)：完整能力目标、配置编译、集合级关系模型、上传型集合及版本资源一致性。
 - [Collections 后端方案](docs/design/collections-design.md)、[施工与验收](docs/design/collections-implementation.md)、[单元契约](docs/design/collections-units.md)及[资产实现](docs/design/assets-implementation.md)：当前外部契约、迁移回填与验证。
 - [安全基线](docs/design/security-baseline.md)：入口、Node、Hono 和业务模块的责任。
@@ -55,6 +56,39 @@ bun run content:backfill --collection articles --from 1 --to 2 --page-size 20 --
 
 人工迁移报告不会自动放行。完成 SQL 审查后可在生成命令增加 --reviewed-sql 文件路径；输入文件放在自动扫描 migrations 目录以外，生成器把正文与快照固化到同名 .plan.json，并附加到目标 SQL。集合 API key 重命名还须显式处理权限范围、绑定及在途任务；该选项不执行迁移、不证明人工 SQL 正确，也不跳过 schema 就绪和激活校验。
 
+## 导航与管理接口
+
+CMS_NAVIGATION_PATHS和CMS_NAVIGATION_ICONS是逗号分隔的可信前端路径及图标名目录，默认均为空。路径必须是规范的站内绝对路径，不含查询、fragment、反斜杠或控制字符；图标名以英文字母开头，后续仅允许字母、数字、下划线和连字符；两类目录都不接受重复项。前端接入后只填写实际存在的页面及图标，修改后重启API。当前尚未实现前端页面，因此示例配置保持为空。
+
+未注册任何页面时，group可创建，合法page请求返回503 temporarily_unavailable，path字段说明尚无已注册页面；page缺少path仍返回400。目录非空时，未知path或非null未知icon返回400及对应字段提示；icon可使用null。action必须挂在page下。撤除路径后，相关page及其action不再出现在/me/navigation，空group同时隐藏，管理树保留记录以便修正。
+
+采用version并发控制的DELETE管理接口使用必填查询参数version，例如DELETE /v1/roles/:id?version=3；JSON body不被读取。缺失、非法或重复version返回400 invalid_input，并在fieldErrors.version明确提示使用单一正整数查询参数。PATCH/PUT的version仍放在JSON中。内容归档和取消发布使用revision查询参数，取消发布计划及上传会话按各自输入契约，不强制version。
+
+归档账号保留邮箱与角色引用，不能恢复状态或硬删除。超管可通过PATCH /v1/admins/:id维护其displayName或迁至另一active角色，迁移不会恢复账号。角色的adminCount包含归档账号；仍有引用时删除返回409 resource_in_use并提示停用角色或显式迁移关联账号，完成迁移后才可删除无引用的旧角色。
+
+## 生产数据库权限
+
+生产使用专用CMS数据库及无其他角色成员身份的LOGIN运行账号。DATABASE_URL只配置运行账号，CMS_MIGRATION_DATABASE_URL是迁移owner连接，仅提供给迁移、目录发布、schema回填/激活和权限配置命令；两种连接都必须验证TLS。CMS_DATABASE_RUNTIME_ROLE指定已由数据库管理员创建的运行角色，密码通过数据库管理工具交互设置，不放命令行。
+
+运行角色必须为NOSUPERUSER、NOCREATEROLE、NOCREATEDB、NOREPLICATION、NOBYPASSRLS，不拥有数据库、业务schema、表或函数。发布步骤为：
+
+```sh
+bun run db:migrate
+bun run operations:reconcile
+bun run db:grant-runtime
+bun run admin:initialize --email owner@example.com
+```
+
+db:grant-runtime按固定表策略和当前编译映射的精确表名验证并授予必要连接及业务权限，五张schema控制/版本/清单/回填表仅SELECT，审计只允许SELECT/INSERT，操作目录与迁移台账只允许SELECT；拒绝额外权限、可执行SECURITY DEFINER或可写业务表上的definer触发器。已有PUBLIC/列授权等无法安全收窄时整体失败，由数据库管理员修正后重跑，不显示假成功。生产API和超管初始化会检查运行账号权限；开发/测试可用owner，迁移与目录发布始终使用迁移连接，开发/测试缺省回退DATABASE_URL。
+
+就绪检查要求本产物必需表全部存在且权限精确匹配；新增表或视图只有对当前运行账号没有任何有效表、列或GRANT权限时才允许存在，包含经PUBLIC取得的权限。db:grant-runtime只向本产物明确列出的表授权，不向未知表自动授权。
+
+有结构扩展的滚动发布使用每版本独立运行账号：先执行兼容扩展迁移，保持旧账号无新增对象权限；用新产物及其CMS_DATABASE_RUNTIME_ROLE为新账号配置权限，再以新账号启动新实例。观察新旧实例的/readyz、请求错误及任务排空情况，滚动窗口内不改变旧账号权限。回滚同时恢复旧产物和旧DATABASE_URL，保留扩展结构；schemaVersion切换还需遵守Collections的准备、尾回填、激活协议；产生新schema写入后不能直接退回旧schema。旧实例、请求及任务排空且约定回滚窗口结束后才退役旧账号，破坏性结构删除另走后续迁移。新增危险PUBLIC授权或definer能力不属于兼容扩展。
+
+审计迁移拦截UPDATE、DELETE、TRUNCATE；已应用迁移不改checksum，新保护通过0002追加。生产就绪检查要求该保护启用。迁移owner属于可信管理边界，不能把这些检查视为防恶意数据库管理员。保留数据库原有PUBLIC TEMP权限，连接明确将pg_temp放在业务schema之后，防止临时同名表遮蔽业务表。
+
+GET/HEAD /livez只表示进程存活，不依赖数据库或共享限流；/readyz验证依赖与权限。访问日志记录真实响应操作、规范化路由模板及认证后的账户ID，不记录原始查询、资源参数值、令牌、密码或邮箱。
+
 ## 验证和提交门禁
 
 使用 Bun 1.4.4 安装并运行：
@@ -69,7 +103,7 @@ bun run test
 
 lint包含工作区、HTTP/业务依赖和schema owner导入约束及类型感知Oxlint；typecheck使用用户确认的bun check；build构建Node API、命令、SQL迁移及规范插件；test运行Vitest/Istanbul、真实PostgreSQL集成及Bun/Node网络旅程。覆盖率包含全部本期手写业务代码及原插件范围，门槛为statements/functions/lines90%、branches85%，不排除入口或SQL适配器。
 
-测试默认连接本机Unix socket的postgres数据库，并为每次测试建立随机隔离schema后清理。其他环境必须设置CMS_TEST_DATABASE_URL；CI使用独立PostgreSQL17服务，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。生产网络测试需要真实Node，可用CMS_NODE_BINARY明确指定；未找到时失败，不跳过。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test同时执行账户、内容及媒体三组Bun/Node旅程。
+测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，连接需具备CREATEDB/CREATEROLE。其他环境设置CMS_TEST_DATABASE_URL；所有数据库装置尊重该连接并显式隔离迁移连接，不使用部署凭据。CI使用PostgreSQL17，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。网络测试使用真实Bun与Node（可用CMS_NODE_BINARY指定），缺失运行时直接失败。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test执行账户、内容和媒体三组共6条旅程。
 
 Husky由bun install时的prepare安装：pre-commit跑lint/typecheck，pre-push跑build/test，失败立即阻断。GitHub Actions对push/PR执行相同四门，固定Bun1.4.4、Node26.9.0和官方Action SHA，不部署。CI仅在安装时禁用本地hook，随后显式执行全部检查。
 

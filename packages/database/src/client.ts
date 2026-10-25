@@ -29,7 +29,7 @@ export interface DatabaseOptions {
 function connectionOptions(options: DatabaseOptions): string {
   const schema = options.schema ?? 'public';
   if (!/^[a-z_][a-z0-9_]*$/.test(schema)) throw new Error('Invalid database schema');
-  const settings = [`-c search_path=${schema}`];
+  const settings = [`-c search_path=${schema},pg_temp`];
   if (options.statementTimeoutMs !== undefined) {
     settings.push(`-c statement_timeout=${options.statementTimeoutMs}`);
   }

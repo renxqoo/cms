@@ -71,9 +71,9 @@ erDiagram
     operation_catalog ||--o{ endpoint_bindings : operation
 ```
 
-账户 status：active ↔ disabled；active/disabled → archived；archived 终态。归档保留邮箱唯一性和审计，不提供硬删除。activation 为是否存在 credentials 行的派生投影，pending 或 activated，不另存可漂移的 hasPassword 布尔值。新邀请账户是 active + pending，不能登录；只向 active + pending 账户签发邀请。
+账户 status：active ↔ disabled；active/disabled → archived；archived 为状态终态。归档保留邮箱唯一性和审计，不提供硬删除；超管仍可维护归档资料或将其迁移至另一active角色，迁移不恢复状态。activation 为是否存在 credentials 行的派生投影，pending 或 activated，不另存可漂移的 hasPassword 布尔值。新邀请账户是 active + pending，不能登录；只向 active + pending 账户签发邀请。
 
-角色/权限 status 为 active 或 disabled。系统只有一个 is_super=true 的角色，code=super_admin，由迁移初始化，不能通过 HTTP 创建、修改、停用或删除。其他角色均为自定义角色，不预建无业务需求的固定角色。角色删除要求不存在任何账户引用，包含归档账户；权限删除要求无角色、菜单或接口引用。角色删除可级联清除其授权行，其余引用使用 RESTRICT。
+角色/权限 status 为 active 或 disabled。系统只有一个 is_super=true 的角色，code=super_admin，由迁移初始化，不能通过 HTTP 创建、修改、停用或删除。其他角色均为自定义角色，不预建无业务需求的固定角色。角色删除要求不存在任何账户引用，包含归档账户；冲突提示停用角色或通过现有管理员PATCH显式迁移关联账号。权限删除要求无角色、菜单或接口引用。角色删除可级联清除其授权行，其余引用使用 RESTRICT。
 
 仅 active + activated 且持有有效超级管理员角色的账户计入“有效超管”。首位超管初始化后，任何安全变更提交后必须至少保留一位；禁止自己改角色、停用/归档自己，不能仅用“操作者不是目标”代替全局最后超管检查。
 
@@ -102,9 +102,9 @@ permission.code 全局唯一且不可变，使用小写资源段和动词，例�
 
 navigation_nodes 类型为 group/page/action，层级封闭：group 只能顶层，page 只能位于 group 下，action 只能位于 page 下。group 是展示容器，visibility=container；page/action 显式选择 authenticated 或 permission，后者必须引用有效权限，前者 permissionId 必须为空。停用父节点隐藏整棵展示分支，不撤销业务权限。
 
-path 只用于 page，必须来自应用提供的前端路由允许列表；action 不承载任意脚本或 URL。后端阶段允许路由允许列表为空及菜单为空，不伪造已有页面。后续 UI 批次提供真实路由注册；更换节点类型时同时校验已有子节点。所有结构写在独占安全锁下串行验证父链，删除有子节点时冲突。
+path 只用于 page，必须来自应用配置CMS_NAVIGATION_PATHS的可信前端路由目录，icon为CMS_NAVIGATION_ICONS中的符号名或null；两项均以逗号分隔并在配置层校验，后端阶段默认为空，不伪造已有页面。空路径目录时合法page请求明确返回503及path未配置提示，未知目标返回400。后续UI批次只注册真实路由及图标，变更配置后重启；action 不承载任意脚本或 URL。更换节点类型时同时校验已有子节点。所有结构写在独占安全锁下串行验证父链，删除有子节点时冲突。
 
-GET /me/navigation 返回未停用、符合显式可见策略的页面/操作，移除无可见页面的空 group；不强求每个可访问接口都有菜单。GET /me/operations 返回已注册且当前允许的 operationId + scope，不包含令牌、内部 SQL 或服务端函数。后续 UI 按 operationId 判断按钮可用性，不能只检查菜单权限码来推断接口权限；接口重绑后两个投影均按当前数据库事实计算。
+GET /me/navigation 返回路径仍已注册、未停用、符合显式可见策略的页面/操作，移除隐藏页面的action及无可见页面的空group；管理树保留撤除路径的记录以便修正。不强求每个可访问接口都有菜单。GET /me/operations 返回已注册且当前允许的 operationId + scope，不包含令牌、内部 SQL 或服务端函数。后续 UI 按 operationId 判断按钮可用性，不能只检查菜单权限码来推断接口权限；接口重绑后两个投影均按当前数据库事实计算。
 
 ## 7. 身份与邮件时序
 

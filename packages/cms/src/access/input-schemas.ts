@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { displayNameSchema } from '@new-cms/cms/identity';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import {
   code,
@@ -30,13 +31,13 @@ const adminWrite = {
   'admins.get': targetSchema,
   'admins.create': z.strictObject({
     email: z.string().trim().toLowerCase().max(255),
-    displayName: z.string().max(64).nullable().default(null),
+    displayName: displayNameSchema.default(null),
     roleId: id,
   }),
   'admins.update': z.strictObject({
     id,
     version,
-    displayName: z.string().max(64).nullable().optional(),
+    displayName: displayNameSchema.optional(),
     roleId: id.optional(),
     status: z.enum(['active', 'disabled', 'archived']).optional(),
   }),
@@ -105,7 +106,7 @@ const selfWrite = {
   'access.me': emptySchema,
   'access.updateOwnProfile': z.strictObject({
     version,
-    displayName: z.string().max(64).nullable(),
+    displayName: displayNameSchema,
   }),
   'access.myNavigation': emptySchema,
 };

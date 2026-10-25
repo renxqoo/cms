@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { Context, MiddlewareHandler } from 'hono';
+import { matchedRoutes } from 'hono/route';
 import { CmsError } from '@new-cms/cms/platform/contracts';
+import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
 import type { ApplicationConfig } from '../bootstrap/load-config.ts';
 import type { HttpEnvironment } from './contract.ts';
 import { errorResponse } from './errors.ts';
@@ -58,11 +60,40 @@ function waitForAbort(signal: AbortSignal) {
   };
 }
 
-function recordAccess(c: Context<HttpEnvironment>, startedAt: number): void {
+function requestDeadline(c: Context<HttpEnvironment>, config: ApplicationConfig['http']) {
+  const controller = new AbortController();
+  const signal = AbortSignal.any([controller.signal, c.req.raw.signal]);
+  c.set('signal', signal);
+  const timeoutMs = binaryUpload(c) ? config.uploadTimeoutMs : config.requestTimeoutMs;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const aborted = waitForAbort(signal);
+  return {
+    signal,
+    aborted,
+    cleanup: () => {
+      clearTimeout(timer);
+      aborted.remove();
+    },
+  };
+}
+
+function recordAccess(
+  c: Context<HttpEnvironment>,
+  startedAt: number,
+  operationIds: ReadonlyMap<string, string>,
+): void {
+  const routes = matchedRoutes(c);
+  const responding = routes[c.req.routeIndex];
+  const route =
+    responding?.method === 'ALL' ? routes.find((matched) => matched.method !== 'ALL') : responding;
   process.stdout.write(
     `${JSON.stringify({
       requestId: c.get('requestId'),
       method: c.req.method,
+      operationId: route ? (operationIds.get(`${route.method}:${route.path}`) ?? null) : null,
+      path: route?.path ?? null,
+      actorId: c.get('actorId') ?? null,
+      ip: c.get('ip'),
       status: c.res.status,
       durationMs: Date.now() - startedAt,
     })}\n`,
@@ -72,7 +103,11 @@ function recordAccess(c: Context<HttpEnvironment>, startedAt: number): void {
 export function requestLifecycle(
   config: ApplicationConfig['http'],
   admission: Admission,
+  operations: readonly OperationDefinition[],
 ): MiddlewareHandler<HttpEnvironment> {
+  const operationIds = new Map(
+    operations.map((operation) => [`${operation.method}:${operation.path}`, operation.id]),
+  );
   let active = 0;
   return async (c, next) => {
     const startedAt = Date.now();
@@ -82,17 +117,13 @@ export function requestLifecycle(
     let streaming = false;
     try {
       validateBoundary(c, config);
+      if (c.req.path === '/livez' && (c.req.method === 'GET' || c.req.method === 'HEAD')) {
+        await next();
+        return;
+      }
       if (active >= config.maxRequests) throw new CmsError('temporarily_unavailable');
-      const controller = new AbortController();
-      const signal = AbortSignal.any([controller.signal, c.req.raw.signal]);
-      c.set('signal', signal);
-      const timeoutMs = binaryUpload(c) ? config.uploadTimeoutMs : config.requestTimeoutMs;
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      const aborted = waitForAbort(signal);
-      cleanup = () => {
-        clearTimeout(timer);
-        aborted.remove();
-      };
+      const { signal, aborted, cleanup: cleanupRequest } = requestDeadline(c, config);
+      cleanup = cleanupRequest;
       active += 1;
       const release = () => {
         active -= 1;
@@ -110,16 +141,13 @@ export function requestLifecycle(
       c.res = errorResponse(error, c.get('requestId'));
     } finally {
       if (!streaming) cleanup?.();
-      finalizeResponse(c, config, startedAt);
+      finalizeResponse(c, config);
+      recordAccess(c, startedAt, operationIds);
     }
   };
 }
 
-function finalizeResponse(
-  c: Context<HttpEnvironment>,
-  config: ApplicationConfig['http'],
-  startedAt: number,
-): void {
+function finalizeResponse(c: Context<HttpEnvironment>, config: ApplicationConfig['http']): void {
   c.res.headers.set('cache-control', 'no-store');
   c.res.headers.set('x-request-id', c.get('requestId'));
   const origin = c.req.header('origin');
@@ -128,5 +156,4 @@ function finalizeResponse(
     c.res.headers.set('access-control-expose-headers', 'X-Request-Id,Retry-After');
     c.res.headers.set('vary', 'Origin');
   }
-  recordAccess(c, startedAt);
 }

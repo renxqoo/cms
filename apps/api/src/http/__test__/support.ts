@@ -10,11 +10,12 @@ import { loadConfig } from '../../bootstrap/load-config.ts';
 
 export const administratorPassword = 'A safe test password 2026';
 
-export async function createHttpFixture() {
+export async function createHttpFixture(environment: NodeJS.ProcessEnv = {}) {
   const store = await createTestDatabase();
   const smtp = await createTestSmtp();
   const storage = await mkdtemp(join(tmpdir(), 'cms-http-assets-'));
   const config = loadConfig({
+    ...environment,
     DATABASE_URL: store.connectionString,
     DATABASE_SCHEMA: store.schema,
     CMS_RATE_LIMIT_SECRET: 'test-only-secret-used-by-an-isolated-database-schema',

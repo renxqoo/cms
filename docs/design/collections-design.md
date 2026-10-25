@@ -106,3 +106,13 @@ PATCH 对 group 递归合并；数组及 blocks 的顺序显式替换，同 stab
 ## 11. 富文本受信任节点
 
 字段可注册版本化节点 type 及同步 validator/引用提取器。节点严格为 type/version/payload；不允许覆盖内建节点或重复注册，注册器和函数版本纳入行为摘要。payload 必须为有界 JSON，validator 明确返回 true 才接受；Promise、异常形状、未知版本和未知键失败。引用提取结果校验已声明目标集合、UUID、media 与稳定路径，并进入相同目标授权和历史固定清单流程。后端不执行或生成 HTML；安全字段元数据只暴露节点身份/版本，不公开函数。
+
+## 12. 主分支最小权限与协议接缝
+
+用户授权将完整功能推送并合并主分支。合并保留主分支的专用非 owner 运行账号、审计追加保护、独立迁移凭据、导航白名单、认证主体/路由日志和无数据库依赖的 livez。
+
+运行权限由明确的固定 content/assets 表策略及已编译映射的精确生成表名组成，不按名称前缀或 ALL TABLES 放行。未登记表、序列、列级额外写权限、DDL、所有权和危险角色属性继续拒绝。五张 schema 控制/清单/版本/回填元数据表只授予 SELECT；迁移、回填及激活使用 CMS_MIGRATION_DATABASE_URL，不借运行账号取得管理权限。
+
+运行写 guard 以普通 SELECT 读取控制表并持有事务 ACCESS SHARE；激活先由离线管理连接取得控制表 ACCESS EXCLUSIVE，再检查排空、切换及审计。由表锁保护同一读写时序，不给运行角色 UPDATE 控制列，也不新增 SECURITY DEFINER 能力。以真实 PostgreSQL 非 owner 角色及并发事务验证锁序和禁止控制元数据写入。
+
+HTTP 合并保留 Collections 的流式生命周期/独立上传限额、主分支的规范路由/主体日志及 GET/HEAD livez。DELETE 的 version/revision 要求来自真实操作输入 schema，不能把旧 CRUD 的 version 规则施加到所有新端点。生产权限检查与三个模块的 ready 共用可取消 deadline，入口、后台任务及关闭资源维持单一装配。
