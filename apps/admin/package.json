@@ -1,0 +1,27 @@
+{
+  "name": "@new-cms/admin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development bun --bun next dev",
+    "build": "NODE_ENV=production bun --bun next build",
+    "start": "NODE_ENV=production next start"
+  },
+  "dependencies": {
+    "@new-cms/ui": "workspace:*",
+    "lucide-react": "1.61.0",
+    "next": "16.4.3",
+    "next-intl": "4.14.9",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zustand": "5.0.16"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2"
+  }
+}

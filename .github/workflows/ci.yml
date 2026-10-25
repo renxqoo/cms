@@ -52,6 +52,8 @@ jobs:
         env:
           HUSKY: '0'
         run: bun install --frozen-lockfile
+      - name: Install browser runtime
+        run: bun --bun node_modules/@playwright/test/cli.js install --with-deps chromium
       - name: Lint
         run: bun run lint
       - name: Typecheck

@@ -15,6 +15,10 @@
     "cms/private-tests": "error",
     "cms/architecture-boundaries": "error",
     "import/no-cycle": "error",
+    "import/no-unassigned-import": [
+      "error",
+      { "allow": ["**/*.css", "@testing-library/jest-dom/vitest"] }
+    ],
     "typescript/no-unsafe-assignment": "error",
     "typescript/no-unsafe-argument": "error",
     "typescript/no-unsafe-call": "error",
@@ -156,6 +160,7 @@
     "**/coverage/**",
     "**/migrations/**",
     "**/generated/**",
-    "**/*.generated.ts"
+    "**/*.generated.ts",
+    "**/next-env.d.ts"
   ]
 }
