@@ -22,7 +22,7 @@ async function fixture() {
   const owner = createRuntime(config);
   resources.push(owner);
   await owner.access.reconcile();
-  return { store, config };
+  return { store, config, profile: owner.runtimeProfile };
 }
 
 it('does not declare production ready when the runtime connection owns the database schema', async () => {
@@ -33,8 +33,8 @@ it('does not declare production ready when the runtime connection owns the datab
 });
 
 it('serves readiness, account initialization and login through a restricted runtime role', async () => {
-  const { store, config } = await fixture();
-  await grantRuntimePrivileges(store.database, { roleName: store.roleName });
+  const { store, config, profile } = await fixture();
+  await grantRuntimePrivileges(store.database, { roleName: store.roleName, profile });
   const runtime = createRuntime({
     ...config,
     mode: 'production',

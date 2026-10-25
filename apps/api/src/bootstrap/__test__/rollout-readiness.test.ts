@@ -26,7 +26,10 @@ async function fixture() {
   const owner = createRuntime(config);
   resources.push(owner);
   await owner.access.reconcile();
-  await grantRuntimePrivileges(store.database, { roleName: store.roleName });
+  await grantRuntimePrivileges(store.database, {
+    roleName: store.roleName,
+    profile: owner.runtimeProfile,
+  });
   return { store, config, baseUrl: await startRuntime(store, config) };
 }
 

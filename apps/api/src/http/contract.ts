@@ -9,6 +9,7 @@ export interface HttpEnvironment {
     requestId: string;
     signal: AbortSignal;
     ip: string;
+    streaming?: boolean;
     actorId?: string;
   };
 }
@@ -26,25 +27,49 @@ export function requestContext(c: Context<HttpEnvironment>): RequestContext {
   };
 }
 
-function queryInput(c: Context<HttpEnvironment>): Record<string, unknown> {
+function queryValue(key: string, value: string | undefined): unknown {
+  if (['page', 'pageSize', 'version', 'revision', 'depth'].includes(key)) {
+    const pattern = key === 'depth' ? /^(0|[1-9]\d*)$/ : /^[1-9]\d*$/;
+    if (!value || !pattern.test(value) || !Number.isSafeInteger(Number(value)))
+      throw new CmsError('invalid_input');
+    return Number(value);
+  }
+  if (key === 'trashed') {
+    if (value !== 'true' && value !== 'false') throw new CmsError('invalid_input');
+    return value === 'true';
+  }
+  if (key === 'folderId' && value === 'null') return null;
+  if (['where', 'sort', 'select', 'fallback'].includes(key)) {
+    try {
+      return JSON.parse(value ?? '') as unknown;
+    } catch {
+      throw new CmsError('invalid_input');
+    }
+  }
+  return value;
+}
+
+function queryInput(
+  c: Context<HttpEnvironment>,
+  versionedDelete: boolean,
+): Record<string, unknown> {
   const result = new Map<string, unknown>();
   for (const [key, values] of Object.entries(c.req.queries())) {
-    if (values.length !== 1) throw queryProblem(key, c.req.method);
-    const [value] = values;
-    if (['page', 'pageSize', 'version'].includes(key)) {
-      if (!value || !/^[1-9]\d*$/.test(value) || !Number.isSafeInteger(Number(value)))
-        throw queryProblem(key, c.req.method);
-      result.set(key, Number(value));
-    } else result.set(key, value);
+    if (values.length !== 1) throw queryProblem(key, versionedDelete);
+    try {
+      result.set(key, queryValue(key, values[0]));
+    } catch {
+      throw queryProblem(key, versionedDelete);
+    }
   }
-  if (c.req.method === 'DELETE' && !result.has('version')) throw queryProblem('version', 'DELETE');
+  if (versionedDelete && !result.has('version')) throw queryProblem('version', true);
   return Object.fromEntries(result);
 }
 
-function queryProblem(key: string, method: string): CmsError {
+function queryProblem(key: string, versionedDelete: boolean): CmsError {
   return new CmsError(
     'invalid_input',
-    key === 'version' && method === 'DELETE'
+    key === 'version' && versionedDelete
       ? {
           fieldErrors: [
             {
@@ -58,8 +83,12 @@ function queryProblem(key: string, method: string): CmsError {
   );
 }
 
-export async function routeInput(c: Context<HttpEnvironment>, maxBytes: number): Promise<unknown> {
-  const query = queryInput(c);
+export async function routeInput(
+  c: Context<HttpEnvironment>,
+  maxBytes: number,
+  versionedDelete = false,
+): Promise<unknown> {
+  const query = queryInput(c, versionedDelete);
   const params: Record<string, string> = c.req.param();
   if (Object.keys(params).some((key) => Object.hasOwn(query, key)))
     throw new CmsError('invalid_input');
@@ -80,9 +109,15 @@ export async function routeInput(c: Context<HttpEnvironment>, maxBytes: number):
 
 export function successResponse(operation: OperationDefinition, value: unknown): Response {
   if (value === undefined) return new Response(null, { status: 204 });
-  let status = 200;
-  if (operation.id === 'identity.requestPasswordReset') status = 202;
-  else if (operation.method === 'POST' && operation.access === 'security') status = 201;
+  let status = operation.successStatus ?? 200;
+  if (
+    operation.id === 'content.batch' &&
+    value !== null &&
+    typeof value === 'object' &&
+    'status' in value &&
+    (value.status === 'queued' || value.status === 'running')
+  )
+    status = 202;
   return new Response(JSON.stringify(value), {
     status,
     headers: { 'content-type': 'application/json; charset=utf-8' },

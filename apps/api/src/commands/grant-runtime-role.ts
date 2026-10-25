@@ -1,6 +1,9 @@
 import { createDatabase } from '@new-cms/database/client';
 import { grantRuntimePrivileges } from '@new-cms/database/privileges';
 import { loadMigrationDatabaseConfig } from '../bootstrap/load-config.ts';
+import { compileContent } from '@new-cms/cms/content/generate';
+import { applicationRegistry } from '../config/content-registry.ts';
+import { applicationRuntimeProfile } from '../config/runtime-privileges.ts';
 
 async function main(): Promise<void> {
   const roleName = process.env['CMS_DATABASE_RUNTIME_ROLE'];
@@ -12,7 +15,8 @@ async function main(): Promise<void> {
     statementTimeoutMs: 60000,
   });
   try {
-    await grantRuntimePrivileges(database, { roleName });
+    const profile = applicationRuntimeProfile(compileContent(applicationRegistry()));
+    await grantRuntimePrivileges(database, { roleName, profile });
     process.stdout.write('Runtime database privileges applied and verified.\n');
   } finally {
     await database.close();

@@ -6,14 +6,14 @@ import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 interface Dependencies {
   database: Database;
   policy: CmsPolicy;
-  verifyReady(): Promise<void>;
+  verifyReady(signal?: AbortSignal): Promise<void>;
 }
 
 export function createAdmission(deps: Dependencies, accepting: () => boolean) {
-  async function ready(): Promise<void> {
+  async function ready(signal?: AbortSignal): Promise<void> {
     if (!accepting()) throw new CmsError('temporarily_unavailable');
     try {
-      await deps.verifyReady();
+      await deps.verifyReady(signal);
     } catch {
       throw new CmsError('temporarily_unavailable');
     }

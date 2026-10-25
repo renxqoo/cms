@@ -19,6 +19,8 @@ const operationSchema = z.strictObject({
   scopeKind: z.enum(['global', 'collection']),
   bindingConfigurable: z.boolean(),
   defaultPermission: permissionCode.optional(),
+  idempotency: z.literal('required').optional(),
+  successStatus: z.union([z.literal(200), z.literal(201), z.literal(202)]).optional(),
 });
 
 export function operationRegistry(operations: readonly OperationDefinition[]) {
@@ -36,10 +38,12 @@ export function operationRegistry(operations: readonly OperationDefinition[]) {
       (operation.access !== 'permission' || operation.scopeKind !== 'global')
     )
       fail('invalid_input');
-    const { defaultPermission, ...definition } = operation;
+    const { defaultPermission, idempotency, successStatus, ...definition } = operation;
     registry.set(operation.id, {
       ...definition,
       ...(defaultPermission ? { defaultPermission } : {}),
+      ...(idempotency ? { idempotency } : {}),
+      ...(successStatus ? { successStatus } : {}),
     });
     routes.add(route);
   }
@@ -79,7 +83,7 @@ export function createCatalog(runtime: AccessRuntime) {
           }
         },
       }),
-    verifyReady: () =>
+    verifyReady: (signal?: AbortSignal) =>
       runtime.database.transaction(async (tx) => {
         const stored = new Map(
           (await catalogOperations(tx)).map((operation) => [operation.id, operation]),
@@ -87,6 +91,6 @@ export function createCatalog(runtime: AccessRuntime) {
         for (const operation of runtime.operationMap.values()) {
           if (!compatible(operation, stored.get(operation.id))) fail('temporarily_unavailable');
         }
-      }),
+      }, signal),
   };
 }

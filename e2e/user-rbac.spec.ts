@@ -2,20 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { expect, it } from 'vitest';
 import { z } from 'zod';
 import { createTestRuntimeDatabase } from '../test/support/runtime-database.ts';
-import { createTestSmtp } from '../test/support/smtp.ts';
+import { createTestSmtp, extractToken } from '../test/support/smtp.ts';
 import { nodeExecutable } from '../test/support/node-runtime.ts';
 import { runCommand, startProcess } from '../test/support/process.ts';
-
-function extractToken(raw: string): string {
-  const decoded = raw
-    .replaceAll(/=\r?\n/g, '')
-    .replaceAll(/=([0-9A-F]{2})/g, (_value, hex: string) =>
-      String.fromCharCode(Number.parseInt(hex, 16)),
-    );
-  const result = /#token=([A-Za-z0-9_-]{43})/.exec(decoded)?.[1];
-  if (!result) throw new Error('SMTP message had no token fragment');
-  return result;
-}
 
 function request(port: number) {
   return (method: string, path: string, options: { token?: string; body?: unknown } = {}) =>
@@ -49,6 +38,7 @@ it.each(['bun', 'node'] as const)(
       API_HOST: '127.0.0.1',
       API_PORT: '0',
       NODE_ENV: 'test',
+      CMS_STORAGE_DRIVER: 'local',
       SMTP_HOST: smtp.host,
       SMTP_PORT: String(smtp.port),
       SMTP_SECURE: 'false',

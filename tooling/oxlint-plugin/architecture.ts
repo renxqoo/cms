@@ -36,7 +36,7 @@ export function architectureViolation(filename: string, specifier: string): stri
   const targetOwner = targetModule({ specifier, target, resolved });
   const violation = moduleViolation({ owner, targetOwner, source, specifier });
   if (violation) return violation;
-  const schemaOwner = /@new-cms\/database\/schema\/([^/]+)/.exec(specifier)?.[1];
+  const schemaOwner = schemaImportOwner(specifier);
   if (owner && schemaOwner && schemaOwner !== owner)
     return 'Schema imports must follow table ownership.';
   return undefined;
@@ -56,7 +56,9 @@ function httpViolation(specifier: string, target: string): string | undefined {
   if (
     isDatabase(specifier, target) ||
     /(?:\/|^)composition(?:\.|\/|$)/.test(target) ||
-    specifier.includes('/composition')
+    specifier.includes('/composition') ||
+    /(?:\/|^)generate(?:\.|\/|$)/.test(target) ||
+    specifier.endsWith('/generate')
   )
     return 'HTTP must use injected business APIs, not database or composition.';
   if (
@@ -91,4 +93,10 @@ function moduleViolation(input: {
   )
     return 'Use the declared public entry for cross-module collaboration.';
   return undefined;
+}
+
+function schemaImportOwner(specifier: string): string | undefined {
+  const schema = /@new-cms\/database\/schema\/(.+)/.exec(specifier)?.[1];
+  if (schema === 'generated/content' || schema === 'content-work') return 'content';
+  return schema?.split('/')[0];
 }

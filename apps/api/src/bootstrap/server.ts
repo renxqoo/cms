@@ -13,7 +13,7 @@ export async function startServer(runtime: ApplicationRuntime, config: Applicati
       response.destroy();
     });
   });
-  server.requestTimeout = config.requestTimeoutMs;
+  server.requestTimeout = config.uploadTimeoutMs;
   server.headersTimeout = config.requestTimeoutMs;
   server.maxConnections = config.maxRequests;
   server.on('clientError', (_error, socket) => {

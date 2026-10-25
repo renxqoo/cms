@@ -1,7 +1,7 @@
 import { requireRateLimit, rateLimitKey } from '@new-cms/cms/platform/rate-limits';
 import type { RequestContext, Scope } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
-import { createAuthorization } from './authorization.ts';
+import { createAuthorization, createActorAuthorization } from './authorization.ts';
 import { createAdminApi } from './admins.ts';
 import { createRoleApi } from './roles.ts';
 import { createPermissionApi } from './permissions.ts';
@@ -54,6 +54,7 @@ export function createAccess(options: AccessOptions) {
       ...createAuditApi(runtime),
     },
     authorize: createAuthorization(runtime),
+    authorizeActor: createActorAuthorization(runtime),
     check: createCheck(runtime),
     ...createCatalog(runtime),
     initializeAdmin: createInitializer(runtime),
@@ -63,3 +64,5 @@ export function createAccess(options: AccessOptions) {
 export type AccessApi = ReturnType<typeof createAccess>['api'];
 export type AccessCheck = ReturnType<typeof createAccess>['check'];
 export type { AccessOptions } from './types.ts';
+
+export type { AccessActorAuthorization } from './authorization.ts';

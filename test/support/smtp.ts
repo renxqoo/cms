@@ -160,3 +160,14 @@ async function closeSmtp(options: {
     options.server.close((error) => (error ? reject(error) : resolve()));
   });
 }
+
+export function extractToken(raw: string): string {
+  const decoded = raw
+    .replaceAll(/=\r?\n/g, '')
+    .replaceAll(/=([0-9A-F]{2})/g, (_value, hex: string) =>
+      String.fromCharCode(Number.parseInt(hex, 16)),
+    );
+  const result = /#token=([A-Za-z0-9_-]{43})/.exec(decoded)?.[1];
+  if (!result) throw new Error('SMTP message had no token fragment');
+  return result;
+}

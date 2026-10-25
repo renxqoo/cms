@@ -14,6 +14,7 @@ import * as accessSchema from '../schema/access.ts';
 import * as identitySchema from '../schema/identity.ts';
 import * as auditSchema from '../schema/audit.ts';
 import * as platformSchema from '../schema/platform.ts';
+import * as contentSchema from '../schema/content.ts';
 import { createTestDatabase } from '../../../../test/support/database.ts';
 
 const fixtures: Awaited<ReturnType<typeof createTestDatabase>>[] = [];
@@ -35,6 +36,7 @@ describe('PostgreSQL migrations and owner schema', () => {
       ...Object.values(identitySchema),
       ...Object.values(auditSchema),
       ...Object.values(platformSchema),
+      ...Object.values(contentSchema),
     ];
     for (const table of tables) {
       const config = getTableConfig(table);
@@ -69,10 +71,14 @@ describe('PostgreSQL migrations and owner schema', () => {
     const result = await db.orm.select().from(roles).where(eq(roles.isSuper, true));
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({ code: 'super_admin', status: 'active', isSuper: true });
-    const applied = await db.query<{ count: string }>(
-      'SELECT count(*) AS count FROM cms_migrations',
+    const before = await db.query<{ name: string }>(
+      'SELECT name FROM cms_migrations ORDER BY name',
     );
-    expect(applied.rows[0]?.count).toBe('2');
+    await migrate(db);
+    const after = await db.query<{ name: string }>('SELECT name FROM cms_migrations ORDER BY name');
+    expect(after.rows).toEqual(before.rows);
+    expect(after.rows).toContainEqual({ name: '0001_user_rbac.sql' });
+    expect(after.rows).toContainEqual({ name: '0002_content.sql' });
   });
 
   it('upgrades an applied 0001 without changing its checksum or existing audit records', async () => {
@@ -90,12 +96,21 @@ describe('PostgreSQL migrations and owner schema', () => {
         VALUES($1,'system','test.upgrade','test','existing-audit','{}')`,
         [id],
       );
-      const before = await result.database.query('SELECT name,checksum FROM cms_migrations');
+      const before = await result.database.query<{ name: string; checksum: string }>(
+        'SELECT name,checksum FROM cms_migrations',
+      );
       await migrate(result.database);
-      const after = await result.database.query(
+      const after = await result.database.query<{ name: string; checksum: string }>(
         'SELECT name,checksum FROM cms_migrations ORDER BY name',
       );
-      expect(after.rows).toHaveLength(2);
+      expect(after.rows.map((row) => row.name)).toEqual([
+        '0001_user_rbac.sql',
+        '0002_audit_truncate.sql',
+        '0002_content.sql',
+        '0003_collections.sql',
+        '0004_content_work.sql',
+        '0010_assets.sql',
+      ]);
       expect(after.rows[0]).toEqual(before.rows[0]);
       await expect(result.database.query('TRUNCATE audit_events')).rejects.toMatchObject({
         code: '42501',
