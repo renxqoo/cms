@@ -1,4 +1,4 @@
-import { mkdtemp, rm, symlink, mkdir, chmod } from 'node:fs/promises';
+import { mkdtemp, rm, symlink, mkdir, chmod, rename } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -52,8 +52,10 @@ it('rejects traversal, symlink objects, symlink roots and replaced roots', async
   const linked = createLocalStorage({ root: alias });
   cleanups.push(() => linked.close());
   await expect(linked.verify()).rejects.toThrow('symbolic link');
-  await rm(root, { recursive: true });
-  await mkdir(root);
+  const retired = `${root}-retired`;
+  await rename(root, retired);
+  cleanups.push(() => rm(retired, { recursive: true, force: true }));
+  await mkdir(root, { mode: 0o700 });
   await expect(storage.read({ key: `objects/${id}`, signal })).rejects.toThrow(
     'Storage root changed',
   );
