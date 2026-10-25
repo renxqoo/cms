@@ -18,6 +18,8 @@ app层只装配路由/URL/metadata/服务端授权。features/auth、account、a
 
 保持一套AppShell，通过明确model/插槽呈现工作台或真实账号、递归导航、账户菜单；不得复制两套侧栏/头部。偏好与用户状态按Provider实例创建。详情路径按注册路由的段边界匹配父菜单，不用任意startsWith。
 
+未登录的已注册深层入口保留安全pathname作为登录next，不携带query或fragment。Next 16 Proxy只向/dashboard请求覆盖写入实际pathname请求头，不验证身份；共享requireSession从该头经同一registry验证目标，布局和页面继续各自验证真实会话。不信任客户端同名头，不从referrer或未公开框架头猜路径。集合路径仅接受合法key及new、structure或UUID详情；未知路径仍回/dashboard。
+
 ## 3. BFF与会话边界
 
 Next Route Handler提供同源/api/cms/[...path]适配，只接受显式注册的method/path模板。绝不接受用户目标URL，不是任意代理。SSR直接调用相同服务端HTTP能力访问API，不经自身Route Handler绕行。服务端配置新增CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，明确解析和部署说明；生产外部origin需HTTPS，仅loopback允许本地HTTP验收。配置/请求/响应大小和超时由配置层提供：JSON请求最大1MiB、JSON响应最大2MiB、请求15秒；字节代理上限32MiB、传输/下载90秒，实际媒体仍受服务端metadata更小预算限制。流式高水位64KiB，不为全部文件分配双份缓冲。

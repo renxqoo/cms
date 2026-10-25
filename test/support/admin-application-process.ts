@@ -6,6 +6,10 @@ import { applicationAccounts } from './admin-application-data.ts';
 import { createCmsProcess } from './cms-process.ts';
 import { nodeExecutable } from './node-runtime.ts';
 import { extractToken } from './smtp.ts';
+import { createAdminMailbox } from './admin-mailbox.ts';
+import { cleanupAll } from './cleanup.ts';
+import { adminIcons, adminRoutes } from '../../apps/admin/src/config/admin-routes.ts';
+import { seedPendingManagementAccount } from './admin-management-fixture.ts';
 
 async function seedAccounts(cms: Awaited<ReturnType<typeof createCmsProcess>>) {
   const current = await cms.request('GET', '/v1/me', cms.owner);
@@ -41,6 +45,7 @@ async function seedAccounts(cms: Awaited<ReturnType<typeof createCmsProcess>>) {
     }),
     204,
   );
+  await seedPendingManagementAccount(cms, role.id);
 }
 
 function requireStatus(response: Response, status: number) {
@@ -143,21 +148,24 @@ export async function createAdminApplicationProcess(
   const origin = `http://127.0.0.1:${port}`;
   const cms = await createCmsProcess(mode === 'development' ? 'bun' : 'node', {
     frontendUrl: origin,
-    navigationPaths: ['/dashboard'],
+    navigationPaths: adminRoutes.map((route) => route.path),
+    navigationIcons: Object.keys(adminIcons),
   });
   let next: Awaited<ReturnType<typeof startNext>> | undefined;
+  let mailbox: Awaited<ReturnType<typeof createAdminMailbox>> | undefined;
   async function close() {
     try {
-      await next?.close();
+      await cleanupAll([() => next?.close(), () => mailbox?.close()]);
     } finally {
       await cms.close();
     }
   }
   try {
     await seedAccounts(cms);
+    mailbox = await createAdminMailbox({ messages: cms.smtp.messages, maximumBytes: 1048576 });
     const apiOrigin = `http://127.0.0.1:${cms.port()}`;
     next = await startNext({ mode, port, apiOrigin, signal });
-    return { origin, apiOrigin, close };
+    return { origin, apiOrigin, mailbox: mailbox.connection, close };
   } catch (error) {
     await close();
     throw error;

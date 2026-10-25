@@ -1,5 +1,10 @@
 import type { VisibleNavigation } from '../../contracts/auth';
-import { adminIcons, adminRoutes, registeredAdminIcon } from '../../config/admin-routes';
+import {
+  adminIcons,
+  adminRoutes,
+  matchAdminRoute,
+  registeredAdminIcon,
+} from '../../config/admin-routes';
 import type { ShellGroup } from '../../components/shell/shell-surface';
 import { managementMessages } from '../management-shared/messages';
 
@@ -10,10 +15,10 @@ function routeItem(route: (typeof adminRoutes)[number], locale: Locale) {
 }
 
 function pageItem(page: VisibleNavigation, locale: Locale) {
-  const route = adminRoutes.find((item) => item.path === page.path);
+  const route = page.path ? matchAdminRoute(page.path) : null;
   const t = managementMessages[locale];
   return {
-    href: route?.path ?? `unavailable-${page.id}`,
+    href: route && page.path ? page.path : `unavailable-${page.id}`,
     label: route ? page.name : `${page.name} · ${t.unavailable}`,
     icon: page.icon === null && route ? adminIcons[route.icon] : registeredAdminIcon(page.icon),
     disabled: !route,

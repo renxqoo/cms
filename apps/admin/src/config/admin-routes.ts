@@ -1,6 +1,8 @@
 import {
   CircleHelpIcon,
   FileClockIcon,
+  FilesIcon,
+  ImageIcon,
   HomeIcon,
   KeyRoundIcon,
   NetworkIcon,
@@ -19,7 +21,11 @@ export const adminIcons = {
   navigation: RouteIcon,
   network: NetworkIcon,
   audit: FileClockIcon,
+  collections: FilesIcon,
+  resources: ImageIcon,
 } as const;
+
+export const adminRequestPathHeader = 'x-oneaster-admin-path';
 
 export const adminRoutes = [
   {
@@ -94,6 +100,38 @@ export const adminRoutes = [
     operation: 'audit.list',
     detail: false,
   },
+  {
+    id: 'collections',
+    path: '/dashboard/collections',
+    icon: 'collections',
+    label: { zh: '内容集合', en: 'Collections' },
+    operation: 'collections.list',
+    detail: 'collection',
+  },
+  {
+    id: 'resources',
+    path: '/dashboard/resources',
+    icon: 'resources',
+    label: { zh: '资源管理', en: 'Resources' },
+    operation: 'resources.list',
+    detail: false,
+  },
+  {
+    id: 'jobs',
+    path: '/dashboard/jobs',
+    icon: 'audit',
+    label: { zh: '任务管理', en: 'Jobs' },
+    operation: 'collections.list',
+    detail: false,
+  },
+  {
+    id: 'asset-cleanups',
+    path: '/dashboard/asset-cleanups',
+    icon: 'resources',
+    label: { zh: '资源清理', en: 'Asset cleanups' },
+    operation: 'assets.listCleanup',
+    detail: false,
+  },
 ] as const;
 
 export type AdminRoute = (typeof adminRoutes)[number];
@@ -109,11 +147,23 @@ export function matchAdminRoute(pathname: string): AdminRoute | null {
     if (pathname === route.path) return route;
     if (route.detail && pathname.startsWith(`${route.path}/`)) {
       const id = pathname.slice(route.path.length + 1);
-      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))
-        return route;
+      if (route.detail === 'collection') {
+        const [key, detail, extra] = id.split('/');
+        if (
+          key &&
+          /^[a-z][a-z0-9_-]{0,63}$/.test(key) &&
+          extra === undefined &&
+          (detail === undefined || detail === 'new' || detail === 'structure' || uuidPath(detail))
+        )
+          return route;
+      } else if (uuidPath(id)) return route;
     }
   }
   return null;
+}
+
+function uuidPath(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
 export function safeAdminDestination(value: unknown): string {

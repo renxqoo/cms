@@ -13,6 +13,7 @@ import type { ApiClient, ApiOptions } from './cms-api.ts';
 export interface CmsProcessOptions {
   frontendUrl?: string;
   navigationPaths?: readonly string[];
+  navigationIcons?: readonly string[];
 }
 
 export async function createCmsProcess(mode: 'bun' | 'node', options: CmsProcessOptions = {}) {
@@ -112,6 +113,7 @@ function settings(
     SMTP_SECURE: 'false',
     ...(options.frontendUrl ? { CMS_FRONTEND_URL: options.frontendUrl } : {}),
     ...(options.navigationPaths ? { CMS_NAVIGATION_PATHS: options.navigationPaths.join(',') } : {}),
+    ...(options.navigationIcons ? { CMS_NAVIGATION_ICONS: options.navigationIcons.join(',') } : {}),
   };
   return { binary, folder, extension, env };
 }

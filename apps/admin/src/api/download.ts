@@ -16,11 +16,18 @@ export function downloadFilename(disposition: string | null): string | null {
       return null;
     }
   }
-  const name = value.split(/[\\/]/).at(-1)?.replace(/[\u0000-\u001f\u007f<>:"|?*\u2028\u2029]/g, '_').trim();
+  const name = value
+    .split(/[\\/]/)
+    .at(-1)
+    ?.replace(/[\u0000-\u001f\u007f<>:"|?*\u2028\u2029]/g, '_')
+    .trim();
   return name && !/^\.+$/.test(name) ? [...name].slice(0, 200).join('') : null;
 }
 
-export async function downloadResponse<T>(response: Response, schema: z.ZodType<T>): Promise<ApiResult<T>> {
+export async function downloadResponse<T>(
+  response: Response,
+  schema: z.ZodType<T>,
+): Promise<ApiResult<T>> {
   if (!response.ok) return apiResponse(response, schema, false);
   const requestId = response.headers.get('x-request-id') ?? '';
   let chunks: Uint8Array<ArrayBuffer>[];
@@ -31,7 +38,10 @@ export async function downloadResponse<T>(response: Response, schema: z.ZodType<
     return failure('invalid_response', response.status, { requestId });
   }
   const mime = response.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase();
-  const contentType = mime && /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(mime) ? mime : 'application/octet-stream';
+  const contentType =
+    mime && /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(mime)
+      ? mime
+      : 'application/octet-stream';
   const blob = new Blob(chunks, { type: contentType });
   const parsed = schema.safeParse({
     blob,

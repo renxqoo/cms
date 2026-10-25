@@ -17,6 +17,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   timeout: 30000,
+  outputDir: process.env.CMS_ADMIN_E2E_OUTPUT_DIR ?? 'test-results',
   use: { trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: servers.map((server) => ({
     name: server.name,

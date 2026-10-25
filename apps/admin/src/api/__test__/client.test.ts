@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { requestApi } from '../client';
 import { apiResponse, retryAfter } from '../result';
 import { emptyResponseSchema, loginResponseSchema } from '../../contracts/auth';
+import { downloadResponseSchema } from '../../contracts/download';
 import { handleCmsRequest, handleExpiredSession } from '../../server/bff';
 
 let backend: Awaited<ReturnType<typeof listen>>;
@@ -339,6 +340,59 @@ describe('single browser API client against real BFF HTTP', () => {
       '/v1/collections/articles/documents?fallback=%5B%5D&trashed=true&depth=0',
     );
     expect(received[0]?.method).toBe('GET');
+  });
+
+  it('downloads exact historical binding bytes through the same authenticated BFF', async () => {
+    backendHandler = (_, res) => {
+      res.writeHead(200, {
+        'content-type': 'application/pdf',
+        'content-disposition': 'attachment; filename="history.pdf"',
+        etag: '"fixed-version"',
+        'x-request-id': 'private-download',
+      });
+      res.end(Buffer.from([37, 80, 68, 70, 0, 255]));
+    };
+    const result = await requestApi({
+      operation: 'assets.downloadBinding',
+      params: { collection: 'articles', id: 'source', bindingId: 'binding' },
+      query: { versionId: 'fixed-version', variant: 'original', mode: 'editing' },
+      response: downloadResponseSchema,
+      signal: signal(),
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      requestId: 'private-download',
+      data: {
+        filename: 'history.pdf',
+        contentType: 'application/pdf',
+        bytes: 6,
+        etag: '"fixed-version"',
+      },
+    });
+    if (!result.ok) throw new Error('Expected a private download');
+    expect(Array.from(new Uint8Array(await result.data.blob.arrayBuffer()))).toEqual([
+      37, 80, 68, 70, 0, 255,
+    ]);
+    expect(received.map((request) => request.path)).toEqual([
+      '/v1/collections/articles/documents/source/media-bindings/binding/file?versionId=fixed-version&variant=original&mode=editing',
+    ]);
+  });
+
+  it('preserves a denied private download instead of constructing an empty file', async () => {
+    backendHandler = (_, res) => sendFailure(res, 'forbidden', 403);
+    const result = await requestApi({
+      operation: 'assets.download',
+      params: { collection: 'media', id: 'private' },
+      response: downloadResponseSchema,
+      signal: signal(),
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      status: 403,
+      uncertain: false,
+      error: { code: 'forbidden' },
+    });
+    expect(received).toHaveLength(1);
   });
 
   it('distinguishes cancellation before dispatch from an uncertain write after dispatch', async () => {

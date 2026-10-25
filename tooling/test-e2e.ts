@@ -1,7 +1,8 @@
 import { e2ePlan } from './e2e-plan.ts';
-import { cleanupAll } from '../test/support/cleanup.ts';
+import { browserGroups, isolatedBrowserGroup } from './browser-groups.ts';
 import { availablePort } from '../test/support/tcp-port.ts';
 import { createAdminApplicationProcess } from '../test/support/admin-application-process.ts';
+import { basename, resolve } from 'node:path';
 
 const interruption = new AbortController();
 let activeChild: ReturnType<typeof Bun.spawn> | undefined;
@@ -34,37 +35,42 @@ async function run(args: string[], env: NodeJS.ProcessEnv = process.env): Promis
 async function browserJourneys(args: string[]) {
   await run(['tooling/build-api.ts']);
   await run(['run', '--cwd', 'apps/admin', 'build']);
-  const devPort = await availablePort();
-  let productionPort = await availablePort();
-  while (productionPort === devPort) productionPort = await availablePort();
-  const applications: Awaited<ReturnType<typeof createAdminApplicationProcess>>[] = [];
-  try {
-    applications.push(
-      await createAdminApplicationProcess('development', devPort, interruption.signal),
-    );
-    interruption.signal.throwIfAborted();
-    applications.push(
-      await createAdminApplicationProcess('production', productionPort, interruption.signal),
-    );
-    await run(
-      [
-        '--bun',
-        'node_modules/@playwright/test/cli.js',
-        'test',
-        '--config',
-        'e2e/playwright.config.ts',
-        ...args,
-      ],
-      {
-        ...process.env,
-        CMS_ADMIN_E2E_PORTS: `${devPort},${productionPort}`,
-        CMS_ADMIN_E2E_API_ORIGINS: applications
-          .map((application) => application.apiOrigin)
-          .join(','),
-      },
-    );
-  } finally {
-    await cleanupAll(applications.map((application) => () => application.close()));
+  const available = Array.from(new Bun.Glob('e2e/*.browser.spec.ts').scanSync('.'));
+  for (const group of browserGroups(args, available)) {
+    const devPort = await availablePort();
+    let productionPort = await availablePort();
+    while (productionPort === devPort) productionPort = await availablePort();
+    await isolatedBrowserGroup({
+      signal: interruption.signal,
+      open: (mode) =>
+        createAdminApplicationProcess(
+          mode,
+          mode === 'development' ? devPort : productionPort,
+          interruption.signal,
+        ),
+      run: (applications) =>
+        run(
+          [
+            '--bun',
+            'node_modules/@playwright/test/cli.js',
+            'test',
+            '--config',
+            'e2e/playwright.config.ts',
+            ...group,
+          ],
+          {
+            ...process.env,
+            CMS_ADMIN_E2E_PORTS: `${devPort},${productionPort}`,
+            CMS_ADMIN_E2E_API_ORIGINS: applications
+              .map((application) => application.apiOrigin)
+              .join(','),
+            CMS_ADMIN_E2E_MAILBOXES: JSON.stringify(
+              applications.map((application) => application.mailbox),
+            ),
+            CMS_ADMIN_E2E_OUTPUT_DIR: resolve('test-results', basename(group[0] ?? 'browser')),
+          },
+        ),
+    });
   }
 }
 

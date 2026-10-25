@@ -20,8 +20,14 @@ export async function readResponseBytes(response: Response, maximum: number) {
       }
       total += item.value.byteLength;
       if (total > maximum) throw new Error('Invalid response size');
-      for (let offset = 0; offset < item.value.byteLength; offset += requestPolicy.streamHighWaterMark)
-        chunks.push(Uint8Array.from(item.value.subarray(offset, offset + requestPolicy.streamHighWaterMark)));
+      for (
+        let offset = 0;
+        offset < item.value.byteLength;
+        offset += requestPolicy.streamHighWaterMark
+      )
+        chunks.push(
+          Uint8Array.from(item.value.subarray(offset, offset + requestPolicy.streamHighWaterMark)),
+        );
     }
   } finally {
     if (!complete) await reader.cancel().catch(() => {});

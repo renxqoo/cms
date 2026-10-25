@@ -56,7 +56,10 @@ export function uploadBytes(input: ByteUpload): Promise<Response> {
     }
     function progress(event: ProgressEvent) {
       if (!settled)
-        input.onProgress({ loaded: event.loaded, total: event.lengthComputable ? event.total : null });
+        input.onProgress({
+          loaded: event.loaded,
+          total: event.lengthComputable ? event.total : null,
+        });
     }
     function received(event: ProgressEvent) {
       if (event.loaded > requestPolicy.jsonResponseBytes)
@@ -65,20 +68,33 @@ export function uploadBytes(input: ByteUpload): Promise<Response> {
     function headersReceived() {
       if (xhr.readyState !== XMLHttpRequest.HEADERS_RECEIVED) return;
       const length = xhr.getResponseHeader('content-length');
-      if (length !== null && (!/^\d+$/.test(length) || Number(length) > requestPolicy.jsonResponseBytes))
+      if (
+        length !== null &&
+        (!/^\d+$/.test(length) || Number(length) > requestPolicy.jsonResponseBytes)
+      )
         rejectAndAbort(new Error('Invalid response size'));
     }
     function loaded() {
       try {
         const body: unknown = xhr.response;
-        if (!(body instanceof ArrayBuffer) || body.byteLength > requestPolicy.jsonResponseBytes || xhr.status === 0)
+        if (
+          !(body instanceof ArrayBuffer) ||
+          body.byteLength > requestPolicy.jsonResponseBytes ||
+          xhr.status === 0
+        )
           throw new Error('Invalid response');
-        if (xhr.responseURL && new URL(xhr.responseURL).href !== new URL(input.url, window.location.href).href)
+        if (
+          xhr.responseURL &&
+          new URL(xhr.responseURL).href !== new URL(input.url, window.location.href).href
+        )
           throw new Error('Unexpected response location');
-        settle(undefined, new Response(xhr.status === 204 ? null : body, {
-          status: xhr.status,
-          headers: replyHeaders(xhr.getAllResponseHeaders()),
-        }));
+        settle(
+          undefined,
+          new Response(xhr.status === 204 ? null : body, {
+            status: xhr.status,
+            headers: replyHeaders(xhr.getAllResponseHeaders()),
+          }),
+        );
       } catch {
         settle(new Error('Invalid response'));
       }

@@ -74,3 +74,5 @@ Node服务测试独立admin-server项目覆盖server/contracts/api，UI项目排
 已集成后端3c3134a的`access.readRecovery`，前端封闭manifest现有76个业务操作。恢复读仅限实时有效super_admin，经独立security入口读取端点、绑定和权限的最新CAS版本；不绕过普通写鉴权。UI在普通读实际403时提供恢复入口。当前提交完成契约和后端集成，恢复页面随RBAC批次验收。
 
 CI 40243386424发现Monaco高度测试在textbox首次出现后立即读取，早于引擎onMount的passive effect。测试改为等待目标180px可观察布局，再验证预算更新与监听释放；保留原断言，不添加重试配置。
+
+本批四门完成：1447独立单元用例/160文件，S93.37%、B88.49%、F96.87%、L96.16%，原全局与分组门槛均通过；API网络8例、开发与生产浏览器54例通过。第一次并行全仓运行有两例PostgreSQL lock_timeout，无其他全仓会话时完整复验通过；未修改锁预算、测试策略或后端行为。
