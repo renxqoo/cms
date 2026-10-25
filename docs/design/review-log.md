@@ -132,3 +132,14 @@ Istanbul全局匹配tooling/oxlint-plugin/**/*.ts、packages/*/src/**/*.ts及app
 
 
 最终独立假绿抽查通过：基线4个测试/辅助文件逐字节不变，无断言删除或弱化；新增测试未发现skip/only/todo、条件跳过、静音或coverage ignore。72个可执行手写业务TypeScript文件均见覆盖记录，另5个仅类型/重导出。独立项目外探针复制实际tsconfig和bun check脚本，正确代码exit0、真实TS2322类型错误exit1，临时目录已清理。冻结锁文件安装通过，无依赖变化；Husky prepare实际执行。最终16份Markdown、75个本地链接、代码围栏与尾随空白核对通过。
+
+
+## 本地启动失败诊断修复
+
+2026-10-25，用户执行bun run dev得到模糊启动失败。本机实际复现：.env不存在，DATABASE_URL及CMS_RATE_LIMIT_SECRET均未配置；示例指定的new_cms本地数据库也不存在。该错误属于小级启动诊断修复，范围及测试计划先落专项施工图§12。
+
+先新增两个真实Bun进程回归，缺失配置及非法敏感配置均因stderr不包含变量名而失败。修复后仅输出Zod环境字段名与.env.example提示，不记录字段值、密码、连接串或堆栈；未知错误保留原通用脱敏提示。另验证无环境字段路径的校验错误不会输出内部信息。三个回归全部通过；小级修复未另做独立agent审查。
+
+本机已创建全新的开发数据库new_cms，按.env.example生成权限0600的.env及随机共享密钥，执行db:migrate与operations:reconcile成功；.env由Git忽略，未创建默认管理员或设定密码。实际运行bun run dev（仅验证时API_PORT=0避免占用用户端口），/livez及/readyz均200，SIGINT正常退出0。
+
+最终四门lint/typecheck/build/test全部通过；Vitest25文件199项通过，另有Bun与真实Node网络旅程2项通过，无跳过。当前配置匹配范围的Istanbul：statements90.88%（1805/1986）、branches87.56%（965/1102）、functions95.03%（536/564）、lines92.98%（1616/1738），全局90/85/90/90门槛及保留的tooling专属门槛通过。未修改匹配范围或阈值。仅本地提交，不push或部署。

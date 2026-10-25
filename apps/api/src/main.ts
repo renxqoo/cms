@@ -1,6 +1,7 @@
 import { createRuntime } from './bootstrap/create-runtime.ts';
 import { loadConfig } from './bootstrap/load-config.ts';
 import { startServer } from './bootstrap/server.ts';
+import { startupFailure } from './bootstrap/startup-error.ts';
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -37,9 +38,7 @@ async function main(): Promise<void> {
   }
 }
 
-void main().catch(() => {
-  process.stderr.write(
-    'CMS startup failed; verify configuration, migrations and operation catalog.\n',
-  );
+void main().catch((error: unknown) => {
+  process.stderr.write(startupFailure(error));
   process.exitCode = 1;
 });
