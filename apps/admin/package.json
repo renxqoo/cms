@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development bun --bun next dev",
-    "build": "NODE_ENV=production bun --bun next build",
-    "start": "NODE_ENV=production next start"
+    "dev": "bun run prepare:editor && NODE_ENV=development bun --bun next dev",
+    "build": "bun run prepare:editor && NODE_ENV=production bun --bun next build",
+    "start": "NODE_ENV=production next start",
+    "prepare:editor": "bun ../../tooling/prepare-editor.ts"
   },
   "dependencies": {
     "@new-cms/ui": "workspace:*",
+    "date-fns": "4.4.0",
     "lucide-react": "1.61.0",
     "next": "16.4.3",
     "next-intl": "4.14.9",

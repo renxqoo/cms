@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useAppNavigation } from '../../components/shell/navigation/provider';
 import { PlusIcon, Table2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@new-cms/ui/actions';
@@ -22,7 +23,7 @@ import { useListQueryNavigation } from './use-list-query-navigation';
 export function ListWorkbench() {
   const t = useTranslations('lists');
   const locale = useShell((state) => state.locale);
-  const router = useRouter();
+  const router = useAppNavigation();
   const params = useSearchParams();
   const [search, updateQuery] = useListQueryNavigation(params.toString());
   const query = parseListQuery(new URLSearchParams(search));

@@ -8,3 +8,5 @@ coverage/
 .next/
 playwright-report/
 test-results/
+/apps/admin/public/generated/editor/
+/apps/admin/public/generated/editor-*/

@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@new-cms/ui/actions';
 import { appConfig } from '../../config/app';
 import { useShell } from './shell-provider';
+import { RouteBreadcrumbs } from './route-breadcrumbs';
+import { NavigationProgress } from './navigation-progress';
 
 export function ShellHeader() {
   const t = useTranslations('shell');
@@ -22,6 +24,7 @@ export function ShellHeader() {
 
   return (
     <header className="sticky top-0 z-20 flex h-12 shrink-0 items-center bg-background/85 backdrop-blur-md supports-backdrop-filter:bg-background/70">
+      <NavigationProgress />
       <div className="flex w-full items-center justify-between px-5 md:px-6 lg:px-8 xl:px-10">
         <div className="flex items-center gap-1 lg:gap-2">
           <Button
@@ -34,7 +37,9 @@ export function ShellHeader() {
             <PanelLeftIcon />
           </Button>
           <span className="mx-2 h-4 w-px bg-border" aria-hidden="true" />
-          <span className="hidden text-sm font-medium sm:inline">{appConfig.name}</span>
+          <div className="hidden min-w-0 items-center sm:flex">
+            <RouteBreadcrumbs />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button

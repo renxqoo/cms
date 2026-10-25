@@ -12,7 +12,11 @@ import { parsePreferences } from '../../../config/preferences';
 import { AppShell } from '../app-shell';
 import { ShellProvider } from '../shell-provider';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/ui/lists' }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/ui/lists',
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn<() => void>(), replace: vi.fn<() => void>() }),
+}));
 
 const initialMatchMedia = window.matchMedia;
 

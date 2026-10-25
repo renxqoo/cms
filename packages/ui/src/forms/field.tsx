@@ -16,6 +16,10 @@ interface FieldControl {
 export const FormFeedbackContext = createContext<Readonly<Record<string, string>>>({});
 const FieldContext = createContext<FieldControl | null>(null);
 
+export function useFieldControl() {
+  return useContext(FieldContext);
+}
+
 export interface FieldProps {
   id: string;
   label: ReactNode;

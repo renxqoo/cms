@@ -1,4 +1,5 @@
-import type { ComponentProps, ReactNode } from 'react';
+import { cloneElement } from 'react';
+import type { ComponentProps, ReactElement, ReactNode } from 'react';
 import { cn } from '../cn.ts';
 
 export interface PageHeaderProps {
@@ -39,16 +40,28 @@ export function Gutter({ className, ...props }: ComponentProps<'div'>) {
   return <div {...props} className={cn('px-5 md:px-6 lg:px-8 xl:px-10', className)} />;
 }
 
-export function Card({ className, ...props }: ComponentProps<'div'>) {
+export function Card({
+  className,
+  render,
+  children,
+  ...props
+}: ComponentProps<'div'> & {
+  render?: ReactElement<{ className?: string; children?: ReactNode }>;
+}) {
+  const classes = cn(
+    'flex flex-col gap-4 rounded-xl bg-card py-4 text-card-foreground ring-1 ring-border/50',
+    className,
+  );
+  if (render)
+    return cloneElement(
+      render,
+      { ...props, className: cn(classes, render.props.className) },
+      children,
+    );
   return (
-    <div
-      {...props}
-      data-slot="card"
-      className={cn(
-        'flex flex-col gap-4 rounded-xl bg-card py-4 text-card-foreground ring-1 ring-border/50',
-        className,
-      )}
-    />
+    <div {...props} data-slot="card" className={classes}>
+      {children}
+    </div>
   );
 }
 

@@ -197,7 +197,7 @@ it('real back and forward traversal replace pending query intentions before the 
       window.addEventListener('popstate', () => resolve(), { once: true });
     });
   });
-  expect(window.history.state).toEqual({ entry: 'historical' });
+  expect(window.history.state).toMatchObject({ entry: 'historical' });
   expect(screen.getByRole('searchbox', { name: '搜索内容' })).toHaveValue('historical');
   navigation.query = new URLSearchParams(window.location.search).toString();
   view.rerender(example(<ListWorkbench />));
@@ -214,7 +214,7 @@ it('real back and forward traversal replace pending query intentions before the 
       window.addEventListener('popstate', () => resolve(), { once: true });
     });
   });
-  expect(window.history.state).toEqual({ entry: 'present' });
+  expect(window.history.state).toMatchObject({ entry: 'present' });
   expect(screen.getByRole('searchbox', { name: '搜索内容' })).toHaveValue('present');
   expect(screen.getByRole('combobox', { name: '按状态筛选' })).toHaveValue('all');
   fireEvent.click(screen.getByRole('button', { name: '标题' }));

@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '../primitives/dialog.tsx';
 import { FormFeedbackContext } from '../forms/field.tsx';
+import { useOptionalLoading } from './loading.tsx';
 
 export type AsyncResult =
   | { status: 'success' }
@@ -29,6 +30,8 @@ export interface FormDialogProps {
   description?: ReactNode;
   trigger?: ReactElement;
   submitDisabled?: boolean;
+  loadingSource?: string;
+  submitVariant?: 'default' | 'destructive' | undefined;
   children: ReactNode;
   onSubmit: (input: { signal: AbortSignal; formData: FormData }) => Promise<AsyncResult>;
 }
@@ -44,26 +47,39 @@ export function FormDialog({
   description,
   trigger,
   submitDisabled,
+  loadingSource,
+  submitVariant,
   children,
   onSubmit,
 }: FormDialogProps) {
   const id = useId();
+  const loading = useOptionalLoading();
+  const releaseLoading = useRef<(() => void) | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const summary = useRef<HTMLDivElement>(null);
   const active = useRef<AbortController | null>(null);
-  const [operation, setOperation] = useState<AbortController | null>(null);
+  const [operation, setOperation] = useState<{
+    controller: AbortController;
+    finish: (() => void) | null;
+  } | null>(null);
   const [failure, setFailure] = useState<Extract<AsyncResult, { status: 'error' }> | null>(null);
-  const visibleFailure = operation?.signal.aborted ? null : failure;
-  const pending = operation !== null && !operation.signal.aborted && visibleFailure === null;
+  const visibleFailure = operation?.controller.signal.aborted ? null : failure;
+  const pending =
+    operation !== null && !operation.controller.signal.aborted && visibleFailure === null;
   useEffect(() => {
-    if (!open) operation?.abort();
+    if (!open) {
+      operation?.controller.abort();
+      operation?.finish?.();
+    }
     return () => {
-      operation?.abort();
+      operation?.controller.abort();
+      operation?.finish?.();
     };
   }, [open, operation]);
   useEffect(
     () => () => {
       active.current?.abort();
+      releaseLoading.current?.();
     },
     [],
   );
@@ -71,14 +87,18 @@ export function FormDialog({
     if (visibleFailure) summary.current?.focus();
   }, [visibleFailure]);
   function changeOpen(next: boolean) {
-    if (!next) active.current?.abort();
+    if (!next) {
+      active.current?.abort();
+      releaseLoading.current?.();
+    }
     setFailure(null);
     onOpenChange(next);
   }
   async function submit(formData: FormData) {
     const controller = new AbortController();
+    releaseLoading.current = loadingSource ? (loading?.begin(loadingSource) ?? null) : null;
     active.current = controller;
-    setOperation(controller);
+    setOperation({ controller, finish: releaseLoading.current });
     setFailure(null);
     let result: AsyncResult;
     try {
@@ -88,6 +108,7 @@ export function FormDialog({
     }
     if (controller.signal.aborted || active.current !== controller) return;
     active.current = null;
+    releaseLoading.current?.();
     if (result.status === 'success') {
       setOperation(null);
       changeOpen(false);
@@ -150,7 +171,13 @@ export function FormDialog({
           <Button variant="outline" onClick={() => changeOpen(false)}>
             {cancelLabel}
           </Button>
-          <Button type="submit" form={id} busy={pending} disabled={submitDisabled}>
+          <Button
+            type="submit"
+            form={id}
+            busy={pending}
+            disabled={submitDisabled}
+            variant={submitVariant}
+          >
             {submitLabel}
           </Button>
         </DialogFooter>

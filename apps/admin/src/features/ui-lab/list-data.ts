@@ -62,8 +62,8 @@ export function createExampleDocuments(): ExampleDocument[] {
   }));
 }
 
-export function queryExampleDocuments(
-  rows: readonly ExampleDocument[],
+export function queryExampleDocuments<Row extends ExampleDocument>(
+  rows: readonly Row[],
   query: ListQuery,
   locale: Locale,
 ) {

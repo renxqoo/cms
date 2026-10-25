@@ -7,6 +7,13 @@ import WorkbenchPage from '../ui/page';
 import ListsPage from '../ui/lists/page';
 import WorkbenchLayout from '../ui/layout';
 import WorkbenchError from '../ui/error';
+import ActionsPage from '../ui/actions/page';
+import InputsPage from '../ui/inputs/page';
+import LayoutPage from '../ui/layout/page';
+import FeedbackPage from '../ui/feedback/page';
+import DataPage from '../ui/data/page';
+import OverlaysPage from '../ui/overlays/page';
+import DocumentsPage from '../ui/documents/page';
 import { ShellProvider } from '../../components/shell/shell-provider';
 import { parsePreferences } from '../../config/preferences';
 
@@ -82,4 +89,21 @@ it('the route error boundary shows a localized recovery action', () => {
   ).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
   expect(reset).toHaveBeenCalledOnce();
+});
+
+it.each([
+  [ActionsPage, '复制品牌名称'],
+  [InputsPage, '登录表单组件'],
+  [LayoutPage, '展开更多内容'],
+  [FeedbackPage, '共享加载与并发'],
+  [DataPage, '表格与列表控制'],
+  [OverlaysPage, '打开示例表单'],
+  [DocumentsPage, '文档、关系与媒体'],
+])('each category server entry renders its actual interactive scenario', (Page, expected) => {
+  const markup = renderToStaticMarkup(
+    <ShellProvider initial={parsePreferences({})}>
+      {WorkbenchLayout({ children: Page() })}
+    </ShellProvider>,
+  );
+  expect(markup).toContain(expected);
 });

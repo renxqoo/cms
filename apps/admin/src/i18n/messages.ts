@@ -1,5 +1,20 @@
+import { dataMessages } from '../features/ui-lab/data-messages';
+import { inputsMessages, sortingMessages } from '../features/ui-lab/inputs-messages';
+import { feedbackMessages } from '../features/ui-lab/feedback-messages';
+import { overlaysMessages } from '../features/ui-lab/overlays-messages';
+import { actionsMessages } from '../features/ui-lab/actions-messages';
+import { layoutMessages } from '../features/ui-lab/layout-messages';
+import { catalogMessages } from '../features/ui-lab/catalog-messages';
 export const messages = {
   zh: {
+    catalog: catalogMessages.zh,
+    actions: actionsMessages.zh,
+    inputs: inputsMessages.zh,
+    data: dataMessages.zh,
+    sorting: sortingMessages.zh,
+    layout: layoutMessages.zh,
+    feedback: feedbackMessages.zh,
+    overlays: overlaysMessages.zh,
     shell: {
       subtitle: 'CMS 管理后台',
       workbench: '组件工作台',
@@ -14,6 +29,13 @@ export const messages = {
       expandGroup: '展开{group}',
       skip: '跳到主要内容',
       overviewGroup: '工作台',
+      componentsGroup: '组件分类',
+      breadcrumbs: '页面路径',
+      notifications: '通知',
+      navigationLoading: '正在打开页面',
+      navigationComplete: '页面已打开',
+      navigationCancel: '导航已取消',
+      navigationError: '页面导航失败，请重试。',
       patternsGroup: '组合场景',
       overview: '组件总览',
       lists: '列表与搜索',
@@ -86,6 +108,14 @@ export const messages = {
     },
   },
   en: {
+    catalog: catalogMessages.en,
+    actions: actionsMessages.en,
+    inputs: inputsMessages.en,
+    data: dataMessages.en,
+    sorting: sortingMessages.en,
+    layout: layoutMessages.en,
+    feedback: feedbackMessages.en,
+    overlays: overlaysMessages.en,
     shell: {
       subtitle: 'CMS administration',
       workbench: 'Component workbench',
@@ -100,6 +130,13 @@ export const messages = {
       expandGroup: 'Expand {group}',
       skip: 'Skip to main content',
       overviewGroup: 'Workbench',
+      componentsGroup: 'Components',
+      breadcrumbs: 'Page path',
+      notifications: 'Notifications',
+      navigationLoading: 'Opening page',
+      navigationComplete: 'Page opened',
+      navigationCancel: 'Navigation canceled',
+      navigationError: 'Page navigation failed. Try again.',
       patternsGroup: 'Composed examples',
       overview: 'Component overview',
       lists: 'Lists and search',

@@ -1,6 +1,6 @@
 # OneAster 管理后台 UI 设计
 
-状态：定稿，2026-10-26；已完成独立方案审查与必要修订。功能级别：大，新前端子系统。本文与[施工图](admin-ui-implementation.md)、[组件映射](admin-ui-components.md)构成实施基线。
+状态：已核销，2026-10-26；已完成独立方案审查与必要修订。功能级别：大，新前端子系统。本文与[施工图](admin-ui-implementation.md)、[组件映射](admin-ui-components.md)构成实施基线。
 
 ## 1. 用户裁决与本期范围
 
@@ -12,7 +12,7 @@
 
 ## 2. 存量不变量与影响面
 
-存量：apps/api、packages/cms、packages/database 的运行行为、精确导出及安全约束保持；后端 Bun/Node 旅程和原有覆盖率阈值保留。当前 build 仅构建 API，Vitest 仅匹配 ts，根 tsconfig 尚无 TSX/Next 语义，本期扩展而不替换现有检查。
+存量：apps/api、packages/cms、packages/database 的运行行为、精确导出及安全约束保持；后端 Bun/Node 旅程和原有覆盖率阈值保留。构建同时覆盖 API 与 Next，后端和前端分别执行对应 TypeScript 配置；Vitest 保留数据库项目并增加 React/TSX 项目，原有检查与阈值保留。
 
 影响：新增 apps/admin 前端入口、packages/ui 精确公开入口、依赖及 bun.lock、前端 TypeScript 配置、架构检查、React 单测/覆盖率、开发和生产浏览器冒烟及对应文档。后端 HTTP/DTO、持久化、配置和后台任务没有新增能力。新增 UI 内计时器、观察器、拖拽监听、对象 URL 和未决异步操作必须在关闭、替换或卸载时清理。
 
@@ -32,7 +32,7 @@ Tillgate 参考：packages/ui/src/styles/globals.css，apps/admin/src/app/(main)
 
 同一表格与弹窗仅保留一套通用实现；Next URL 绑定是适配逻辑，不复制整个视觉组件。页面与静态布局默认 Server Components；交互叶子、Context/Provider 和浏览器能力进入 Client Components。不把函数 props 从服务端传入客户端；cell renderer 与列定义需在使用它们的同一运行边界构造。
 
-导航分组偏好以稳定ID保存，面包屑随路由装配和清理，当前项呈现纯文本；真实路由过渡呈现开始/完成/取消的进度。语言和主题偏好首次由服务端读取 cookie 后传给 Provider，客户端切换更新界面与偏好；重载保持，无 hydration 警告、主题闪烁或跨请求泄漏。Zustand 只在确有跨组件协作的 shell/工作台实例中通过工厂和 Provider 创建；不把所有表单装入全局 store。编辑器/图表按需加载，不使每个页面加载 Monaco。
+导航分组偏好以稳定ID保存，面包屑随路由装配和清理，当前项呈现纯文本；真实路由过渡呈现开始/完成/取消的进度。语言和主题偏好首次由服务端读取 cookie 后传给 Provider，客户端切换更新界面与偏好；重载保持，无 hydration 警告、主题闪烁或跨请求泄漏。Zustand 只在确有跨组件协作的 shell/工作台实例中通过工厂和 Provider 创建；不把所有表单装入全局 store。编辑器按需加载，不使每个页面加载 Monaco。
 
 ## 5. 关键组件契约
 
@@ -50,13 +50,13 @@ Dialog/Drawer/Popover/Menu 基于 Base UI，支持 Esc、焦点约束与恢复�
 
 ### 5.3 CMS 组合与本地字节能力
 
-RelationshipPicker用{collection,id}复合身份，跨集合相同id不得串选；不可用/不存在的已选值显示明确状态，不静默删值；maxRows及过滤约束显式输入，异步搜索接收AbortSignal且过期结果不覆盖新查询。其具体props在CMS批次编码前冻结。RelationshipPicker 接收可选集合、结果、当前选择、搜索状态、权限与回调，支持单/多值、内联搜索/抽屉、创建/编辑入口及排序；本期仅对明确注入的数据发出事件。可选择不等于服务器已授权，后续业务仍需服务端检查。
+RelationshipInput用{collection,id}复合身份，跨集合相同id不得串选；不可用/不存在的已选值显示明确状态，不静默删值；maxRows及过滤约束显式输入，异步搜索接收AbortSignal且过期结果不覆盖新查询。其具体props在CMS批次编码前冻结。RelationshipInput 接收可选集合、结果、当前选择、搜索状态、权限与回调，支持单/多值、内联搜索/抽屉、创建/编辑入口及排序；本期仅对明确注入的数据发出事件。可选择不等于服务器已授权，后续业务仍需服务端检查。
 
 DocumentActions 接收 dirty、busy、权限、draftsEnabled、create/update、新建/已有、uploadPending、草稿/发布状态、预览 URL 及对应操作回调；权限/状态决定可用操作：无drafts不显示发布/撤回；已有且未改禁用保存；新建按create权限；上传中禁用写动作；预览需安全URL；批量操作展示逐项结果。DocumentState 呈现锁定主体、接管确认、未保存离开保护、冲突与恢复入口，锁及租约均为外部受控事实，不在 UI 内制造服务端锁。离开保护通过明确的OneAster导航适配器接管Link、程序化导航和back/forward，beforeunload仅在dirty时安装；取消保留输入，确认只重放原目标一次。适配器不承诺拦截未接入其入口的任意第三方router调用。文档草稿语义以本 CMS 设计为准，不照搬 Payload 的“跳过全部校验”。
 
-UploadInput负责媒体文档关系选择，Upload负责文件本身编辑。接入本地文件或粘贴的安全远程URL均可触发明确事件，远程字节抓取归后续服务端，不在浏览器盲抓。Dropzone 支持文件选择、拖放与聚焦区域内粘贴；接受类型、文件数和大小预算从调用方注入；本地预检反馈明确，最终内容安全校验归未来服务端。UploadInput/UploadManager 呈现选择已有、创建、队列、进度、取消、重试、替换/移除及部分失败，接收注入的字节处理函数和 AbortSignal。示例只作本地预览/交互，不调用虚构 HTTP 端点。创建的 object URL 必须在替换、删除和卸载时回收。裁剪/焦点控件输出标准化几何值并支持键盘，保留原文件，实际图片处理归后续业务。
+UploadInput负责媒体文档关系选择，Upload负责文件本身编辑。接入本地文件或粘贴的安全远程URL均可触发明确事件，远程字节抓取归后续服务端，不在浏览器盲抓。Dropzone 支持文件选择、拖放与聚焦区域内粘贴；接受类型、文件数和大小预算从调用方注入；本地预检反馈明确，最终内容安全校验归未来服务端。UploadInput提供已有媒体关系选择与创建/编辑入口；Upload依据受控队列状态呈现进度、取消、重试、替换/移除及逐项错误，发出文件/URL和操作事件。真实字节传输与任务调度由业务调用方持有，本期不建立传输服务。示例只作本地预览/交互，不调用虚构 HTTP 端点。创建的 object URL 必须在替换、删除和卸载时回收。裁剪/焦点控件输出标准化几何值并支持键盘，保留原文件，实际图片处理归后续业务。
 
-DraggableSortable 支持稳定 ID、鼠标/触摸/键盘、可见拖拽把手、取消和无目标落点，结束后发出新顺序。CodeEditor 提供真实代码高亮、编辑/只读与语言配置，按需加载 Monaco 并清理实例。DatePicker/TimezonePicker 明确显示时区和格式，日期值不隐式改变时区。
+SortableList 支持稳定 ID、鼠标/触摸/键盘、可见拖拽把手、取消和无目标落点，结束后发出新顺序。CodeEditor 提供真实代码高亮、编辑/只读与语言配置，按需加载 Monaco 并清理实例。DatePicker/TimezonePicker 明确显示时区和格式，日期值不隐式改变时区。
 
 ## 6. 资源预算与可靠性
 

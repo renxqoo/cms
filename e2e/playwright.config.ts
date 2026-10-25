@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 import { resolve } from 'node:path';
 import { nodeExecutable } from '../test/support/node-runtime.ts';
 
@@ -28,7 +28,11 @@ export default defineConfig({
   use: { trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: servers.map((server) => ({
     name: server.name,
-    use: { ...devices['Desktop Chrome'], baseURL: `http://127.0.0.1:${server.port}` },
+    use: {
+      browserName: 'chromium' as const,
+      viewport: { width: 1280, height: 720 },
+      baseURL: `http://127.0.0.1:${server.port}`,
+    },
   })),
   webServer: servers.map((server) => ({
     command: `${quote(server.binary)} ${quote(next)} ${server.mode} --hostname 127.0.0.1 --port ${server.port}`,

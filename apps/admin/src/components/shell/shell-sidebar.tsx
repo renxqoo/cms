@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
+import { AppLink } from './navigation/app-link';
 import { usePathname } from 'next/navigation';
 import { ChevronDownIcon, ChevronRightIcon, ShieldCheckIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@new-cms/ui/actions';
 import { appConfig } from '../../config/app';
-import { navigationGroups } from '../../config/navigation';
+import { navigationGroups, isComponentRouteId } from '../../config/navigation';
 import { useShell } from './shell-provider';
 
 export function ShellSidebar({
@@ -17,6 +17,10 @@ export function ShellSidebar({
   mobile?: boolean;
 }) {
   const t = useTranslations('shell');
+  const categoryCopy = useTranslations('catalog');
+  function itemLabel(label: string) {
+    return isComponentRouteId(label) ? categoryCopy(`${label}Title`) : t(label);
+  }
   const pathname = usePathname();
   const collapsedGroups = useShell((state) => state.collapsedGroups);
   const toggleGroup = useShell((state) => state.toggleGroup);
@@ -27,7 +31,7 @@ export function ShellSidebar({
   return (
     <aside className={containerClass} aria-label={t('navigation')}>
       <div className="flex h-full min-h-0 flex-col bg-sidebar text-sidebar-foreground">
-        <Link
+        <AppLink
           href="/ui"
           prefetch={false}
           onClick={() => closeMobile(false)}
@@ -43,7 +47,7 @@ export function ShellSidebar({
               <span className="text-[10px] text-muted-foreground">{t('subtitle')}</span>
             </span>
           )}
-        </Link>
+        </AppLink>
         <nav className="min-h-0 flex-1 overflow-y-auto py-2">
           {navigationGroups.map((group, index) => {
             const groupOpen = !collapsedGroups.includes(group.id);
@@ -81,18 +85,20 @@ export function ShellSidebar({
                       const Icon = item.icon;
                       return (
                         <li key={item.href}>
-                          <Link
+                          <AppLink
                             href={item.href}
                             prefetch={false}
                             onClick={() => closeMobile(false)}
-                            title={collapsed ? t(item.label) : undefined}
+                            title={collapsed ? itemLabel(item.label) : undefined}
                             aria-current={active ? 'page' : undefined}
-                            aria-label={collapsed ? t(item.label) : undefined}
+                            aria-label={collapsed ? itemLabel(item.label) : undefined}
                             className={`flex h-8 items-center gap-2 overflow-hidden rounded-md px-2 text-sm outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring ${active ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''}`}
                           >
                             <Icon className="size-4 shrink-0" aria-hidden="true" />
-                            {!collapsed && <span className="truncate">{t(item.label)}</span>}
-                          </Link>
+                            {!collapsed && (
+                              <span className="truncate">{itemLabel(item.label)}</span>
+                            )}
+                          </AppLink>
                         </li>
                       );
                     })}

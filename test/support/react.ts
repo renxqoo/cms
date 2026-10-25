@@ -22,4 +22,24 @@ vi.stubGlobal('matchMedia', (query: string) => ({
 
 if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = function () {};
 
+const pointerCaptures = new WeakMap<Element, Set<number>>();
+
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = function (this: Element, pointerId: number) {
+    const captured = pointerCaptures.get(this) ?? new Set<number>();
+    captured.add(pointerId);
+    pointerCaptures.set(this, captured);
+  };
+}
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = function (this: Element, pointerId: number) {
+    pointerCaptures.get(this)?.delete(pointerId);
+  };
+}
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = function (this: Element, pointerId: number) {
+    return pointerCaptures.get(this)?.has(pointerId) ?? false;
+  };
+}
+
 afterEach(cleanup);

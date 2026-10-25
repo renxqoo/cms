@@ -3,6 +3,7 @@
 import { PanelLeftIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '../primitives/button.tsx';
+import { Link } from './link.tsx';
 
 export function Hamburger({
   expanded,
@@ -21,7 +22,13 @@ export function Hamburger({
       aria-expanded={expanded}
       onClick={onToggle}
     >
-      <PanelLeftIcon />
+      <PanelLeftIcon
+        className={
+          expanded
+            ? 'rotate-180 transition-transform duration-100 motion-reduce:transition-none'
+            : 'transition-transform duration-100 motion-reduce:transition-none'
+        }
+      />
     </Button>
   );
 }
@@ -32,7 +39,15 @@ export interface BreadcrumbItem {
   href?: string;
 }
 
-export function Breadcrumbs({ label, items }: { label: string; items: readonly BreadcrumbItem[] }) {
+export function Breadcrumbs({
+  label,
+  items,
+  renderLink,
+}: {
+  label: string;
+  items: readonly BreadcrumbItem[];
+  renderLink?: ((item: BreadcrumbItem) => ReactNode) | undefined;
+}) {
   return (
     <nav aria-label={label}>
       <ol className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -43,13 +58,14 @@ export function Breadcrumbs({ label, items }: { label: string; items: readonly B
               <span aria-current="page" className="font-medium text-foreground">
                 {item.label}
               </span>
-            ) : (
-              <a
-                href={item.href}
-                className="rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-              >
+            ) : renderLink ? (
+              renderLink(item)
+            ) : item.href ? (
+              <Link href={item.href} className="hover:text-foreground">
                 {item.label}
-              </a>
+              </Link>
+            ) : (
+              <span>{item.label}</span>
             )}
           </li>
         ))}
