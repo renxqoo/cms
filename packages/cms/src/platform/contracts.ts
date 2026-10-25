@@ -63,6 +63,8 @@ export interface OperationDefinition {
   scopeKind: Scope['scopeKind'];
   bindingConfigurable: boolean;
   defaultPermission?: string;
+  idempotency?: 'required';
+  successStatus?: 200 | 201 | 202;
 }
 
 const errorStatuses = {

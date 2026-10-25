@@ -7,7 +7,8 @@
     "dev": "bun run prepare:editor && NODE_ENV=development bun --bun next dev",
     "build": "bun run prepare:editor && NODE_ENV=production bun --bun next build",
     "start": "NODE_ENV=production next start",
-    "prepare:editor": "bun ../../tooling/prepare-editor.ts"
+    "prepare:editor": "bun ../../tooling/prepare-editor.ts",
+    "typegen": "NODE_ENV=production bun --bun next typegen"
   },
   "dependencies": {
     "@new-cms/ui": "workspace:*",

@@ -3,10 +3,14 @@ import { secureHeaders } from 'hono/secure-headers';
 import { CmsError } from '@new-cms/cms/platform/contracts';
 import type { AccessApi, AccessCheck } from '@new-cms/cms/access';
 import type { IdentityApi } from '@new-cms/cms/identity';
-import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
-import type { z } from 'zod';
+import type { OperationDefinition, RequestContext } from '@new-cms/cms/platform/contracts';
+import type { Schema } from './openapi/schema.ts';
+import { z } from 'zod';
 import type { ApplicationConfig } from '../bootstrap/load-config.ts';
-import { requestContext, routeInput, successResponse } from './contract.ts';
+import { requestContext } from './contract.ts';
+import { checkOperation, executeOperation } from './operation-handlers.ts';
+import type { StreamingHandler } from './operation-handlers.ts';
+import type { BusinessHandler } from './handlers.ts';
 import type { HttpEnvironment } from './contract.ts';
 import { errorResponse } from './errors.ts';
 import { businessHandlers } from './handlers.ts';
@@ -20,7 +24,10 @@ export interface HttpDependencies extends Admission {
   check: AccessCheck;
   operations: readonly OperationDefinition[];
   inputSchemas: Readonly<Record<string, z.ZodType>>;
-  ready(): Promise<void>;
+  ready(signal?: AbortSignal): Promise<void>;
+  handlers?: ReadonlyMap<string, BusinessHandler>;
+  streamingHandlers?: ReadonlyMap<string, StreamingHandler>;
+  openApiSchemas?(ctx: RequestContext): Promise<Record<string, Schema>>;
 }
 
 function registerOperations(
@@ -29,39 +36,57 @@ function registerOperations(
   maxBody: number,
 ): void {
   const handlers = businessHandlers(deps.identity, deps.access);
+  for (const [id, handler] of deps.handlers ?? []) {
+    if (handlers.has(id)) throw new Error('Duplicate operation handler');
+    handlers.set(id, handler);
+  }
+  const streaming = deps.streamingHandlers ?? new Map<string, StreamingHandler>();
   const seen = new Set<string>();
   for (const operation of deps.operations) {
     const handler = handlers.get(operation.id);
-    if (!handler || seen.has(operation.id)) throw new Error('Invalid operation registration');
+    if (
+      (!handler && !streaming.has(operation.id)) ||
+      seen.has(operation.id) ||
+      (handler && streaming.has(operation.id))
+    )
+      throw new Error('Invalid operation registration');
     seen.add(operation.id);
+    const schema = deps.inputSchemas[operation.id];
+    if (!schema) throw new Error('Operation input schema is missing');
+    const versionedDelete =
+      operation.method === 'DELETE' &&
+      z
+        .toJSONSchema(schema, { io: 'input', unrepresentable: 'any' })
+        .required?.includes('version') === true;
     app.on(
       operation.method,
       operation.path,
       async (c, next) => {
-        if (operation.access !== 'public' && operation.id !== 'identity.logout') {
-          await deps.check(requestContext(c), operation.id);
-        }
+        await checkOperation(c, deps.check, operation);
         return next();
       },
-      async (c) => {
-        const value = await handler(requestContext(c), await routeInput(c, maxBody));
-        return successResponse(operation, value);
-      },
+      (c) =>
+        executeOperation(
+          c,
+          { operation, maxBody, check: deps.check, versionedDelete },
+          { json: handlers, streaming },
+        ),
     );
   }
-  if (seen.size !== handlers.size)
+  if (seen.size !== handlers.size + streaming.size)
     throw new Error('A business handler has no registered operation');
 }
 
 function registerInfrastructure(app: Hono<HttpEnvironment>, deps: HttpDependencies): void {
   app.get('/livez', (c) => c.json({ status: 'ok' }));
   app.get('/readyz', async (c) => {
-    await deps.ready();
+    await deps.ready(c.get('signal'));
     return c.json({ status: 'ready' });
   });
   app.get('/openapi.json', async (c) => {
     await deps.check(requestContext(c), 'endpoints.list');
-    return c.json(openApiDocument(deps.operations, deps.inputSchemas));
+    const schemas = await deps.openApiSchemas?.(requestContext(c));
+    return c.json(openApiDocument(deps.operations, deps.inputSchemas, schemas));
   });
   app.options('*', (c) => {
     if (!c.req.header('origin')) throw new CmsError('invalid_input');

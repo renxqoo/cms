@@ -10,3 +10,7 @@ playwright-report/
 test-results/
 /apps/admin/public/generated/editor/
 /apps/admin/public/generated/editor-*/
+
+.data/
+
+/apps/admin/next-env.d.ts

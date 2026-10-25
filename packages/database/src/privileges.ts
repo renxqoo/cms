@@ -2,7 +2,14 @@ import type { Database, SqlExecutor } from './client.ts';
 
 export interface RuntimeRoleOptions {
   roleName: string;
+  profile?: RuntimePrivilegeProfile;
 }
+export type RuntimeTablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE';
+export interface RuntimeTableGrant {
+  name: string;
+  privileges: readonly RuntimeTablePrivilege[];
+}
+export type RuntimePrivilegeProfile = readonly RuntimeTableGrant[];
 
 interface RoleContext {
   roleName: string;
@@ -36,6 +43,26 @@ const runtimeTables = [
   'rate_limit_buckets',
   'cms_migrations',
 ];
+const contentTables: Readonly<Record<string, readonly RuntimeTablePrivilege[]>> = {
+  content_folders: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+  content_documents: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+  content_revisions: ['SELECT', 'INSERT', 'DELETE'],
+  content_references: ['SELECT', 'INSERT', 'DELETE'],
+  content_jobs: ['SELECT', 'INSERT', 'UPDATE'],
+  content_job_items: ['SELECT', 'INSERT', 'UPDATE'],
+  content_schema_control: ['SELECT'],
+  content_schema_versions: ['SELECT'],
+  content_schema_manifests: ['SELECT'],
+  content_schema_backfills: ['SELECT'],
+  content_schema_document_backfills: ['SELECT'],
+  asset_objects: ['SELECT', 'INSERT', 'UPDATE'],
+  asset_manifests: ['SELECT', 'INSERT', 'UPDATE'],
+  asset_uploads: ['SELECT', 'INSERT', 'UPDATE'],
+  asset_jobs: ['SELECT', 'INSERT', 'UPDATE'],
+  asset_references: ['SELECT', 'INSERT', 'DELETE'],
+  asset_manifest_objects: ['SELECT', 'INSERT', 'DELETE'],
+  asset_job_objects: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+};
 
 function identifier(value: string): string {
   return `"${value.replaceAll('"', '""')}"`;
@@ -45,6 +72,31 @@ function requiredPrivileges(table: string): string[] {
   if (table === 'audit_events') return ['SELECT', 'INSERT'];
   if (table === 'operation_catalog' || table === 'cms_migrations') return ['SELECT'];
   return ['SELECT', 'INSERT', 'UPDATE', 'DELETE'];
+}
+function runtimeProfile(profile: RuntimePrivilegeProfile): Map<string, readonly string[]> {
+  const tables = new Map<string, readonly string[]>([
+    ...runtimeTables.map((name): [string, readonly string[]] => [name, requiredPrivileges(name)]),
+    ...Object.entries(contentTables),
+  ]);
+  for (const table of profile) {
+    if (
+      !/^[a-z_][a-z0-9_]{0,62}$/.test(table.name) ||
+      tables.has(table.name) ||
+      table.privileges.length === 0 ||
+      new Set(table.privileges).size !== table.privileges.length ||
+      table.privileges.some(
+        (privilege) => !['SELECT', 'INSERT', 'UPDATE', 'DELETE'].includes(privilege),
+      )
+    )
+      throw new Error('Invalid runtime privilege profile');
+    tables.set(
+      table.name,
+      tablePrivileges.filter((privilege) =>
+        table.privileges.some((allowed) => allowed === privilege),
+      ),
+    );
+  }
+  return tables;
 }
 
 async function roleContext(tx: SqlExecutor, roleName?: string): Promise<RoleContext> {
@@ -111,36 +163,46 @@ interface TableAccess {
   column_any: boolean;
 }
 
-function hasExpectedTableAccess(table: TableAccess): boolean {
-  if (!runtimeTables.includes(table.name)) {
+function hasExpectedTableAccess(
+  table: TableAccess,
+  tables: Map<string, readonly string[]>,
+): boolean {
+  const expected = tables.get(table.name);
+  if (!expected) {
     return table.privileges.length === 0 && !table.grantable && !table.column_any;
   }
-  return (
-    !table.grantable &&
-    !table.column_extra &&
-    requiredPrivileges(table.name).join() === table.privileges.join()
-  );
+  return !table.grantable && !table.column_extra && expected.join() === table.privileges.join();
 }
 
-async function assertTables(tx: SqlExecutor, context: RoleContext): Promise<void> {
+async function assertTables(
+  tx: SqlExecutor,
+  context: RoleContext,
+  tables: Map<string, readonly string[]>,
+): Promise<void> {
   const result = await tx.query<TableAccess>(
-    `SELECT c.relname AS name,
+    `WITH expected AS (SELECT * FROM jsonb_to_recordset($4::jsonb) AS x(name text,privileges text[]))
+     SELECT c.relname AS name,
       ARRAY(SELECT p FROM unnest($3::text[]) p WHERE has_table_privilege($1,c.oid,p)) AS privileges,
       EXISTS(SELECT 1 FROM unnest($3::text[]) p WHERE has_table_privilege($1,c.oid,p || ' WITH GRANT OPTION')) AS grantable,
       has_any_column_privilege($1,c.oid,'SELECT,INSERT,UPDATE,REFERENCES') AS column_any,
       has_any_column_privilege($1,c.oid,'SELECT WITH GRANT OPTION,INSERT WITH GRANT OPTION,UPDATE WITH GRANT OPTION,REFERENCES WITH GRANT OPTION')
-        OR has_any_column_privilege($1,c.oid,'REFERENCES')
-        OR (c.relname IN ('audit_events','operation_catalog','cms_migrations') AND has_any_column_privilege($1,c.oid,'UPDATE'))
-        OR (c.relname IN ('operation_catalog','cms_migrations') AND has_any_column_privilege($1,c.oid,'INSERT')) AS column_extra
+        OR EXISTS(SELECT 1 FROM unnest(ARRAY['SELECT','INSERT','UPDATE','REFERENCES']) p
+          WHERE NOT p=ANY(coalesce(e.privileges,ARRAY[]::text[])) AND has_any_column_privilege($1,c.oid,p)) AS column_extra
      FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+     LEFT JOIN expected e ON e.name=c.relname
      WHERE n.nspname=$2 AND c.relkind IN ('r','p','v','m','f')`,
-    [context.roleName, context.schema, tablePrivileges],
+    [
+      context.roleName,
+      context.schema,
+      tablePrivileges,
+      JSON.stringify([...tables].map(([name, privileges]) => ({ name, privileges }))),
+    ],
   );
   const found = new Set(result.rows.map((table) => table.name));
-  if (runtimeTables.some((table) => !found.has(table))) {
+  if ([...tables.keys()].some((table) => !found.has(table))) {
     throw new Error('Runtime database tables differ from the supported schema');
   }
-  if (result.rows.some((table) => !hasExpectedTableAccess(table))) {
+  if (result.rows.some((table) => !hasExpectedTableAccess(table, tables))) {
     throw new Error('Runtime table privileges are unsafe or incomplete');
   }
 }
@@ -163,15 +225,22 @@ async function assertAuditGuard(tx: SqlExecutor, context: RoleContext): Promise<
     throw new Error('Audit append-only protection is unavailable');
 }
 
-async function assertPrivileges(tx: SqlExecutor, context: RoleContext): Promise<void> {
+async function assertPrivileges(
+  tx: SqlExecutor,
+  context: RoleContext,
+  tables: Map<string, readonly string[]>,
+): Promise<void> {
   await assertRole(tx, context);
   await assertSchema(tx, context);
-  await assertTables(tx, context);
+  await assertTables(tx, context, tables);
   await assertAuditGuard(tx, context);
 }
 
-export async function assertRuntimePrivileges(database: SqlExecutor): Promise<void> {
-  await assertPrivileges(database, await roleContext(database));
+export async function assertRuntimePrivileges(
+  database: SqlExecutor,
+  profile: RuntimePrivilegeProfile = [],
+): Promise<void> {
+  await assertPrivileges(database, await roleContext(database), runtimeProfile(profile));
 }
 
 async function grantConnection(tx: SqlExecutor, context: RoleContext): Promise<void> {
@@ -193,6 +262,7 @@ export async function grantRuntimePrivileges(
 ): Promise<void> {
   if (!/^[a-z_][a-z0-9_]{0,62}$/.test(options.roleName))
     throw new Error('Invalid runtime role name');
+  const tables = runtimeProfile(options.profile ?? []);
   await database.transaction(async (tx) => {
     const context = await roleContext(tx, options.roleName);
     await assertRole(tx, context);
@@ -202,11 +272,11 @@ export async function grantRuntimePrivileges(
     await tx.query(`REVOKE ALL PRIVILEGES ON SCHEMA ${schema} FROM ${role}`);
     await tx.query(`REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA ${schema} FROM ${role}`);
     await tx.query(`GRANT USAGE ON SCHEMA ${schema} TO ${role}`);
-    for (const table of runtimeTables) {
+    for (const [table, privileges] of tables) {
       await tx.query(
-        `GRANT ${requiredPrivileges(table).join(',')} ON TABLE ${schema}.${identifier(table)} TO ${role}`,
+        `GRANT ${privileges.join(',')} ON TABLE ${schema}.${identifier(table)} TO ${role}`,
       );
     }
-    await assertPrivileges(tx, context);
+    await assertPrivileges(tx, context, tables);
   });
 }

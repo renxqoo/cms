@@ -6,6 +6,7 @@ import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
 import type { ApplicationConfig } from '../bootstrap/load-config.ts';
 import type { HttpEnvironment } from './contract.ts';
 import { errorResponse } from './errors.ts';
+import { leaseStream } from './stream-lease.ts';
 
 async function runRequest(
   c: Context<HttpEnvironment>,
@@ -20,12 +21,19 @@ export interface Admission {
   admitIp(ip: string): Promise<void>;
 }
 
+function binaryUpload(c: Context<HttpEnvironment>): boolean {
+  return (
+    c.req.method === 'PUT' && /^\/v1\/collections\/[^/]+\/uploads\/[^/]+\/content$/.test(c.req.path)
+  );
+}
+
 function validateBoundary(c: Context<HttpEnvironment>, config: ApplicationConfig['http']): void {
   const url = new URL(c.req.url);
   if (!config.allowedHosts.includes(url.hostname)) throw new CmsError('forbidden');
   if (Buffer.byteLength(c.req.url) > config.urlLimitBytes) throw new CmsError('invalid_input');
+  const bodyLimit = binaryUpload(c) ? config.uploadBodyLimitBytes : config.bodyLimitBytes;
   const length = c.req.header('content-length');
-  if (length !== undefined && (!/^\d+$/.test(length) || Number(length) > config.bodyLimitBytes)) {
+  if (length !== undefined && (!/^\d+$/.test(length) || Number(length) > bodyLimit)) {
     throw new CmsError('payload_too_large');
   }
   const origin = c.req.header('origin');
@@ -48,6 +56,23 @@ function waitForAbort(signal: AbortSignal) {
     promise,
     remove: () => {
       if (stop) signal.removeEventListener('abort', stop);
+    },
+  };
+}
+
+function requestDeadline(c: Context<HttpEnvironment>, config: ApplicationConfig['http']) {
+  const controller = new AbortController();
+  const signal = AbortSignal.any([controller.signal, c.req.raw.signal]);
+  c.set('signal', signal);
+  const timeoutMs = binaryUpload(c) ? config.uploadTimeoutMs : config.requestTimeoutMs;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const aborted = waitForAbort(signal);
+  return {
+    signal,
+    aborted,
+    cleanup: () => {
+      clearTimeout(timer);
+      aborted.remove();
     },
   };
 }
@@ -89,6 +114,7 @@ export function requestLifecycle(
     c.set('requestId', randomUUID());
     c.set('ip', c.env?.incoming?.socket.remoteAddress ?? '127.0.0.1');
     let cleanup: (() => void) | undefined;
+    let streaming = false;
     try {
       validateBoundary(c, config);
       if (c.req.path === '/livez' && (c.req.method === 'GET' || c.req.method === 'HEAD')) {
@@ -96,34 +122,32 @@ export function requestLifecycle(
         return;
       }
       if (active >= config.maxRequests) throw new CmsError('temporarily_unavailable');
-      const controller = new AbortController();
-      const signal = AbortSignal.any([controller.signal, c.req.raw.signal]);
-      c.set('signal', signal);
-      const timer = setTimeout(() => controller.abort(), config.requestTimeoutMs);
-      const aborted = waitForAbort(signal);
-      cleanup = () => {
-        clearTimeout(timer);
-        aborted.remove();
-      };
+      const { signal, aborted, cleanup: cleanupRequest } = requestDeadline(c, config);
+      cleanup = cleanupRequest;
       active += 1;
-      const task = runRequest(c, admission, next).finally(() => {
+      const release = () => {
         active -= 1;
+        cleanup?.();
+        cleanup = undefined;
+      };
+      const task = runRequest(c, admission, next).finally(() => {
+        if (c.get('streaming') && c.res.body && !signal.aborted) {
+          streaming = true;
+          c.res = new Response(leaseStream(c.res.body, { signal, finish: release }), c.res);
+        } else release();
       });
       await Promise.race([task, aborted.promise]);
     } catch (error) {
       c.res = errorResponse(error, c.get('requestId'));
     } finally {
-      cleanup?.();
-      applyResponseHeaders(c, config);
+      if (!streaming) cleanup?.();
+      finalizeResponse(c, config);
       recordAccess(c, startedAt, operationIds);
     }
   };
 }
 
-function applyResponseHeaders(
-  c: Context<HttpEnvironment>,
-  config: ApplicationConfig['http'],
-): void {
+function finalizeResponse(c: Context<HttpEnvironment>, config: ApplicationConfig['http']): void {
   c.res.headers.set('cache-control', 'no-store');
   c.res.headers.set('x-request-id', c.get('requestId'));
   const origin = c.req.header('origin');

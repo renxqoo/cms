@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1156.0",
     "@hono/node-server": "2.1.5",
     "@new-cms/cms": "workspace:*",
     "@new-cms/database": "workspace:*",
@@ -10,6 +11,7 @@
     "hono": "4.13.14",
     "nodemailer": "10.2.1",
     "pg": "8.23.1",
+    "sharp": "0.35.5",
     "zod": "4.6.7"
   },
   "devDependencies": {

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { loadStorageConfig } from './storage-config.ts';
+import type { StorageConfig } from './storage-config.ts';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import { navigationIconsSchema, navigationPathsSchema } from './navigation-config.ts';
 
@@ -23,10 +25,12 @@ const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CMS_NAVIGATION_PATHS: z.string().default('').transform(commaList).pipe(navigationPathsSchema),
   CMS_NAVIGATION_ICONS: z.string().default('').transform(commaList).pipe(navigationIconsSchema),
+  CMS_MAINTENANCE_INTERVAL_MS: z.coerce.number().int().min(25).max(3_600_000).default(60_000),
 });
 
 export interface ApplicationConfig {
   mode: 'development' | 'test' | 'production';
+  storage: StorageConfig;
   database: { connectionString: string; schema: string; maxConnections: number };
   navigation: { paths: readonly string[]; icons: readonly string[] };
   policy: CmsPolicy;
@@ -44,6 +48,8 @@ export interface ApplicationConfig {
     allowedHosts: string[];
     allowedOrigins: string[];
     bodyLimitBytes: number;
+    uploadBodyLimitBytes: number;
+    uploadTimeoutMs: number;
     headerLimitBytes: number;
     urlLimitBytes: number;
     requestTimeoutMs: number;
@@ -173,6 +179,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
   const env = environmentSchema.parse(source);
   validateProduction(env);
   return {
+    storage: loadStorageConfig(source, env.NODE_ENV === 'production'),
     mode: env.NODE_ENV,
     navigation: { paths: env.CMS_NAVIGATION_PATHS, icons: env.CMS_NAVIGATION_ICONS },
     database: {
@@ -180,7 +187,10 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
       schema: env.DATABASE_SCHEMA,
       maxConnections: 10,
     },
-    policy: defaultPolicy(env.CMS_RATE_LIMIT_SECRET),
+    policy: {
+      ...defaultPolicy(env.CMS_RATE_LIMIT_SECRET),
+      cleanupIntervalMs: env.CMS_MAINTENANCE_INTERVAL_MS,
+    },
     password: { N: 32768, r: 8, p: 3, saltBytes: 16, keyBytes: 64, maxmemBytes: 67_108_864 },
     http: {
       host: env.API_HOST,
@@ -188,6 +198,8 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
       allowedHosts: commaList(env.API_ALLOWED_HOSTS),
       allowedOrigins: commaList(env.API_ALLOWED_ORIGINS),
       bodyLimitBytes: 1_048_576,
+      uploadBodyLimitBytes: 20_971_520,
+      uploadTimeoutMs: 60_000,
       headerLimitBytes: 16_384,
       urlLimitBytes: 4096,
       requestTimeoutMs: 15_000,
@@ -195,5 +207,13 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
       maxRequests: 64,
     },
     smtp: smtpOptions(env),
+  };
+}
+
+export function loadContentMigrationConfig(source: NodeJS.ProcessEnv = process.env) {
+  const env = environmentSchema.pick({ CMS_RATE_LIMIT_SECRET: true }).parse(source);
+  return {
+    database: loadMigrationDatabaseConfig(source),
+    policy: defaultPolicy(env.CMS_RATE_LIMIT_SECRET),
   };
 }

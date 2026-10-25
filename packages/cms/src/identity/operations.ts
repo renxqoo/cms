@@ -13,6 +13,7 @@ function operation(
     access,
     scopeKind: 'global',
     bindingConfigurable: false,
+    ...(id === 'requestPasswordReset' ? { successStatus: 202 as const } : {}),
   };
 }
 

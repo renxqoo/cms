@@ -13,6 +13,8 @@
     "**/node_modules/**",
     "**/migrations/**",
     "**/generated/openapi.json",
+    "packages/database/src/schema/generated/**",
+    "apps/api/src/config/*.generated.json",
     "**/next-env.d.ts",
     "**/*.generated.ts"
   ]

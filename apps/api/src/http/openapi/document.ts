@@ -1,12 +1,15 @@
 import { z } from 'zod';
 import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
 import { operationResponses, responseSchemas } from './responses.ts';
+import type { Schema } from './schema.ts';
+import { bodySchema, inputProperties } from './input-schema.ts';
+import type { InputSchema } from './input-schema.ts';
 
 function operationInput(operation: OperationDefinition, schema: z.ZodType) {
   const input = z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' });
-  const properties = input.properties ?? {};
+  const properties = inputProperties(input);
   const parameters: unknown[] = [];
-  if (operation.method === 'POST' && operation.access === 'security') {
+  if (operation.idempotency === 'required') {
     parameters.push({
       name: 'Idempotency-Key',
       in: 'header',
@@ -20,7 +23,15 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
     parameters.push({
       name,
       in: pathParameter ? 'path' : 'query',
-      schema: value,
+      ...(!pathParameter && ['where', 'sort', 'select', 'fallback'].includes(name)
+        ? {
+            content: {
+              'application/json': {
+                schema: name === 'where' ? { $ref: '#/components/schemas/ContentWhere' } : value,
+              },
+            },
+          }
+        : { schema: value }),
       required: pathParameter || input.required?.includes(name) === true,
       ...(operation.method === 'DELETE' && name === 'version'
         ? {
@@ -30,20 +41,23 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
     });
   }
   if (['GET', 'DELETE'].includes(operation.method)) return { parameters };
-  const bodyProperties = Object.fromEntries(
-    Object.entries(properties).filter(([name]) => !operation.path.includes(`:${name}`)),
-  );
+  return { parameters, ...requestBodyFor(operation, input) };
+}
+
+function requestBodyFor(operation: OperationDefinition, input: InputSchema) {
+  if (operation.id === 'assets.writeUpload')
+    return {
+      requestBody: {
+        required: true,
+        content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
+      },
+    };
   return {
-    parameters,
     requestBody: {
       required: operation.id !== 'identity.logout',
       content: {
         'application/json': {
-          schema: {
-            ...input,
-            properties: bodyProperties,
-            required: input.required?.filter((name) => name in bodyProperties) ?? [],
-          },
+          schema: bodySchema(input, operation.path),
         },
       },
     },
@@ -53,6 +67,7 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
 export function openApiDocument(
   operations: readonly OperationDefinition[],
   schemas: Readonly<Record<string, z.ZodType>>,
+  extraSchemas: Readonly<Record<string, Schema>> = {},
 ) {
   const paths: Record<string, Record<string, unknown>> = {};
   for (const operation of operations) {
@@ -65,7 +80,7 @@ export function openApiDocument(
       tags: [operation.module],
       security: operation.access === 'public' ? [] : [{ bearerAuth: [] }],
       ...operationInput(operation, schema),
-      responses: operationResponses(operation.id, operation.method),
+      responses: operationResponses(operation),
       'x-access-kind': operation.access,
       'x-scope-kind': operation.scopeKind,
       'x-binding-configurable': operation.bindingConfigurable,
@@ -76,7 +91,7 @@ export function openApiDocument(
     info: { title: 'CMS administration API', version: '1.0.0' },
     paths,
     components: {
-      schemas: responseSchemas(),
+      schemas: { ...responseSchemas(), ...extraSchemas },
       securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer' } },
     },
   };
