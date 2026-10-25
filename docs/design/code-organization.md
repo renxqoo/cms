@@ -249,3 +249,7 @@ http/content/publications.routes.ts 与协议 schema
 当前静态规则不能证明raw SQL表写所有权，也不声称覆盖全部未来领域DAG、提供方到HTTP的导入方向或环境读取限制；这些仍需代码审查。content/assets及生成入口具有对应owner/DAG、HTTP禁止generate依赖、无生成物构建和合法/违规样本。操作注册、OpenAPI、授权目录和HEAD行为由真实Hono及跨进程测试验证。
 
 各模块保持单一运行实现、精确公开入口和有序迁移。内容生成保存物理计划及集合schema快照，每个演进SQL附带previous/next审查快照；回填和激活通过content/composition的受控维护工厂，HTTP不获得迁移或DDL能力。实际检查结果见[账户/RBAC施工图](user-rbac-implementation.md)和[Collections施工与验收](collections-implementation.md)。
+
+## 9. OneAster 前端与共享UI
+
+前端归属见[专项设计](admin-ui-design.md#3-目录与依赖)：apps/admin/src/app装配路由和服务端边界；components/shell负责导航和偏好；components/cms负责内容管理交互组合；features/ui-lab保存隔离验收场景与合成示例。packages/ui提供实际复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，React公共装置仍在test/support，浏览器旅程位于e2e/*.browser.spec.ts，与现有Vitest进程旅程分开运行、共用test:e2e入口。依赖检查约束ui不导入Next，所有前端不导入后端实现或数据库。

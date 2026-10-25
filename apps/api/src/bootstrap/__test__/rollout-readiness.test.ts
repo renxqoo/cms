@@ -1,3 +1,4 @@
+import { createTestStorage } from '../../../../../test/support/temporary-storage.ts';
 import { randomUUID } from 'node:crypto';
 import { afterEach, expect, it } from 'vitest';
 import { createDatabase } from '@new-cms/database/client';
@@ -14,11 +15,14 @@ afterEach(async () => {
 });
 
 async function fixture() {
+  const storage = await createTestStorage();
+  resources.push(storage);
   const store = await createTestRuntimeDatabase();
   resources.push(store);
   const config = loadConfig({
     DATABASE_URL: store.connectionString,
     DATABASE_SCHEMA: store.schema,
+    CMS_STORAGE_ROOT: storage.root,
     CMS_RATE_LIMIT_SECRET: 'isolated-rollout-readiness-policy-secret',
     NODE_ENV: 'test',
     API_PORT: '0',

@@ -1,6 +1,6 @@
 # CMS 架构决策基线
 
-状态：推荐架构基线，2026-10-26；后台账户/RBAC、内容及资源后端已实现，前端仍按目标设计实施。部署指标是验收目标，不能视为已经验证的能力。资料及核对日期见 [研究证据](research-evidence.md)，审查处置见 [审查记录](review-log.md)。
+状态：推荐架构基线，2026-10-26；后台账户/RBAC、内容及资源后端已实现，前端组件库按[专项设计](admin-ui-design.md)已实现，真实业务界面按联调阶段实施。部署指标是验收目标，不能视为已经验证的能力。资料及核对日期见 [研究证据](research-evidence.md)，审查处置见 [审查记录](review-log.md)。
 
 ## 1. 目标、约束与事实
 
@@ -196,3 +196,7 @@ root AGENTS.md 为规则来源；Claude/Cursor 如需入口只引用它，模块
 首次功能提供一条完整、真实的垂直切片作为后续范例。人审按 HTTP/DTO → 用例 → 授权/事务 → 查询/约束 → 外部副作用 → 行为测试阅读。PR 交代触发、结果、所有权、公开入口变化和真实验证。格式/依赖/类型由工具把关；人裁决业务含义、授权、并发、迁移及恢复。agent 的独立审查提出可证伪反例，复现后修复；修复后只复核变更及未闭合项，避免无限扩建防御设施。
 
 开源交付必须包含真实启动/迁移说明、CONTRIBUTING、SECURITY 报告渠道、许可证选择、CI 和发布/备份恢复说明；不得写不存在的命令、邮箱或托管地址。业务实施按 [计划](implementation-plan.md) 与 [安全基线](security-baseline.md) 完成，静态约束的实际范围见 [lint 说明](lint-guardrails.md)。
+
+## 10. OneAster 前端边界
+
+apps/admin为独立Next.js App Router入口，packages/ui为框架无关的React/Base UI组件库。前端不导入CMS、数据库或API实现；只在后续业务接入阶段消费HTTP契约。UI包精确分组出口、组件状态、工作台与测试归属见[UI设计](admin-ui-design.md)和[组件映射](admin-ui-components.md)。共享组件不依赖Next、next-intl或应用配置，Next导航适配归shell，CMS组合归admin/components/cms。界面以Tillgate实际admin视觉为基准，表格与表单弹窗各保持一套实现。

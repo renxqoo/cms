@@ -1,3 +1,4 @@
+import { createTestStorage } from '../test/support/temporary-storage.ts';
 import { randomUUID } from 'node:crypto';
 import { expect, it } from 'vitest';
 import { z } from 'zod';
@@ -25,28 +26,31 @@ it.each(['bun', 'node'] as const)(
   async (mode) => {
     const store = await createTestRuntimeDatabase();
     const smtp = await createTestSmtp();
-    const binary = mode === 'bun' ? process.execPath : nodeExecutable();
-    const folder = mode === 'bun' ? 'apps/api/src' : 'apps/api/dist';
-    const extension = mode === 'bun' ? 'ts' : 'js';
-    const env = {
-      ...process.env,
-      DATABASE_URL: store.runtimeConnectionString,
-      CMS_MIGRATION_DATABASE_URL: store.connectionString,
-      CMS_DATABASE_RUNTIME_ROLE: store.roleName,
-      DATABASE_SCHEMA: store.schema,
-      CMS_RATE_LIMIT_SECRET: 'network-test-secret-for-an-isolated-postgresql-schema',
-      API_HOST: '127.0.0.1',
-      API_PORT: '0',
-      NODE_ENV: 'test',
-      CMS_STORAGE_DRIVER: 'local',
-      SMTP_HOST: smtp.host,
-      SMTP_PORT: String(smtp.port),
-      SMTP_SECURE: 'false',
-      CMS_NAVIGATION_PATHS: '/network-dashboard',
-      CMS_NAVIGATION_ICONS: 'home',
-    };
+    let storage: Awaited<ReturnType<typeof createTestStorage>> | undefined;
     let server: Awaited<ReturnType<typeof startProcess>> | undefined;
     try {
+      storage = await createTestStorage();
+      const binary = mode === 'bun' ? process.execPath : nodeExecutable();
+      const folder = mode === 'bun' ? 'apps/api/src' : 'apps/api/dist';
+      const extension = mode === 'bun' ? 'ts' : 'js';
+      const env = {
+        ...process.env,
+        DATABASE_URL: store.runtimeConnectionString,
+        CMS_MIGRATION_DATABASE_URL: store.connectionString,
+        CMS_DATABASE_RUNTIME_ROLE: store.roleName,
+        DATABASE_SCHEMA: store.schema,
+        CMS_RATE_LIMIT_SECRET: 'network-test-secret-for-an-isolated-postgresql-schema',
+        API_HOST: '127.0.0.1',
+        API_PORT: '0',
+        NODE_ENV: 'test',
+        CMS_STORAGE_DRIVER: 'local',
+        CMS_STORAGE_ROOT: storage.root,
+        SMTP_HOST: smtp.host,
+        SMTP_PORT: String(smtp.port),
+        SMTP_SECURE: 'false',
+        CMS_NAVIGATION_PATHS: '/network-dashboard',
+        CMS_NAVIGATION_ICONS: 'home',
+      };
       runCommand(binary, `${folder}/commands/migrate.${extension}`, { env });
       runCommand(binary, `${folder}/commands/reconcile-operations.${extension}`, { env });
       runCommand(binary, `${folder}/commands/grant-runtime-role.${extension}`, { env });
@@ -180,6 +184,7 @@ it.each(['bun', 'node'] as const)(
       await server?.close();
       await smtp.close();
       await store.close();
+      await storage?.close();
     }
   },
 );

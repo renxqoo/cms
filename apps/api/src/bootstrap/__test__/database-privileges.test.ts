@@ -1,3 +1,4 @@
+import { createTestStorage } from '../../../../../test/support/temporary-storage.ts';
 import { randomUUID } from 'node:crypto';
 import { afterEach, expect, it } from 'vitest';
 import { grantRuntimePrivileges } from '@new-cms/database/privileges';
@@ -11,11 +12,14 @@ afterEach(async () => {
 });
 
 async function fixture() {
+  const storage = await createTestStorage();
+  resources.push(storage);
   const store = await createTestRuntimeDatabase();
   resources.push(store);
   const config = loadConfig({
     DATABASE_URL: store.connectionString,
     DATABASE_SCHEMA: store.schema,
+    CMS_STORAGE_ROOT: storage.root,
     CMS_RATE_LIMIT_SECRET: 'isolated-bootstrap-privilege-validation-secret',
     NODE_ENV: 'test',
   });
@@ -32,7 +36,7 @@ it('does not declare production ready when the runtime connection owns the datab
   await expect(runtime.ready()).rejects.toMatchObject({ code: 'temporarily_unavailable' });
 });
 
-it('serves readiness, account initialization and login through a restricted runtime role', async () => {
+it('regression: restricted readiness and login remain independent of writable checkout ancestors', async () => {
   const { store, config, profile } = await fixture();
   await grantRuntimePrivileges(store.database, { roleName: store.roleName, profile });
   const runtime = createRuntime({

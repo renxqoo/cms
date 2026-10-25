@@ -17,6 +17,14 @@ import { lintRule } from './rule-harness.ts';
 
 it.each([
   ['apps/api/src/http/roles.ts', 'import type { Database } from "@new-cms/database/client";'],
+  ['apps/admin/src/forbidden.tsx', 'import type { AccessApi } from "@new-cms/cms/access";'],
+  [
+    'apps/admin/src/forbidden.tsx',
+    'import { database } from "../../../packages/database/src/client.ts";',
+  ],
+  ['packages/ui/src/forbidden.tsx', 'import Link from "next/link";'],
+  ['packages/ui/src/forbidden.tsx', 'import type { AccessApi } from "@new-cms/cms/access";'],
+  ['packages/ui/src/forbidden.tsx', 'export { database } from "../../database/src/client.ts";'],
   ['apps/api/src/http/roles.ts', 'export { createAccess } from "@new-cms/cms/access/composition";'],
   ['apps/api/src/http/roles.ts', 'import("@new-cms/cms/platform/idempotency");'],
   ['apps/api/src/http/content.ts', 'import("@new-cms/cms/content/generate");'],
@@ -51,6 +59,9 @@ it.each([
 
 it.each([
   ['apps/api/src/http/roles.ts', 'import type { AccessApi } from "@new-cms/cms/access";'],
+  ['apps/admin/src/valid.tsx', 'import Link from "next/link";'],
+  ['apps/admin/src/valid.tsx', 'import { Button } from "@new-cms/ui/actions";'],
+  ['packages/ui/src/valid.tsx', 'import { Dialog } from "@base-ui/react/dialog";'],
   [
     'packages/cms/src/content/documents/create.ts',
     'import type { AssetsParticipants } from "@new-cms/cms/assets/composition";',

@@ -26,6 +26,8 @@ export function architectureViolation(filename: string, specifier: string): stri
     '\\',
     '/',
   );
+  const frontend = frontendViolation(source, specifier, target);
+  if (frontend) return frontend;
   if (isAdapter(source) && target.includes('/apps/api/src/http/'))
     return 'Adapters cannot depend on HTTP transport modules.';
   if (source.includes('/apps/api/src/http/')) {
@@ -39,6 +41,20 @@ export function architectureViolation(filename: string, specifier: string): stri
   const schemaOwner = schemaImportOwner(specifier);
   if (owner && schemaOwner && schemaOwner !== owner)
     return 'Schema imports must follow table ownership.';
+  return undefined;
+}
+
+function frontendViolation(source: string, specifier: string, target: string): string | undefined {
+  const ui = source.includes('/packages/ui/');
+  const admin = source.includes('/apps/admin/');
+  if (!ui && !admin) return undefined;
+  if (
+    /^@new-cms\/(?:cms|database|api)(?:\/|$)/.test(specifier) ||
+    /\/(?:packages\/(?:cms|database)|apps\/api)\//.test(target)
+  )
+    return 'Frontend must consume HTTP contracts, not backend implementation or database modules.';
+  if (ui && (specifier === 'next' || specifier.startsWith('next/') || target.includes('/next/')))
+    return 'The UI package must remain independent of Next.js.';
   return undefined;
 }
 

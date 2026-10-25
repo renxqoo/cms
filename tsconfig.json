@@ -25,5 +25,13 @@
     "e2e/**/*.ts",
     "vitest.config.ts"
   ],
-  "exclude": ["node_modules", "**/node_modules", "dist", "**/dist", "coverage"]
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "dist",
+    "**/dist",
+    "coverage",
+    "apps/admin",
+    "packages/ui"
+  ]
 }
