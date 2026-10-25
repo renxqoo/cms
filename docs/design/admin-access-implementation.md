@@ -47,3 +47,5 @@ disabled permission既有grant保持勾选和标识，只有用户明确移除�
 ## 7. 先行验收
 
 覆盖完整分页与异常页/等量变更限制、刷新代次/卸载取消/失败撤旧许可、普通用户security写不可用、disabled-role自服务、只写缺读依赖；管理员角色变更撤销和真实重邀；角色共享version串行及两区草稿、disabled grants搜索分页保留；导航祖先/层级/未知路径、单节点失败不称整体成功；Permission/Binding跨页冲突定位；幂等未知结果不重复创建；真实SMTP激活/重置和浏览器双账户授权隔离。独立审查、四门及受影响真实API/Next浏览器旅程通过后核销。
+
+共享URL状态从UIlab提升到components/shell/navigation/query-controller.ts及use-query-navigation.ts，保留同一实例Zustand pending/committed/traversal行为。每次updateQuery(changes,buildHref)注入当前URL构造器，不捕获动态collection旧路径；快速搜索和筛选组合、迟到提交及历史导航保留既有回归。UIlab与管理/内容调用方单轨迁移，删除旧feature实现，不保留路径别名。

@@ -60,3 +60,7 @@ Node服务测试独立admin-server项目覆盖server/contracts/api，UI项目排
 首切片正式四门通过：1489单元用例/153文件，statements93.39%、branches88.05%、functions96.72%、lines96.22%，全局与原有分组90/85门禁通过；真实API网络6例，真实浏览器54例（原组件34、新应用20，开发Bun API/Next与生产Node API/Next）全过。独立审查三项已核销：自动401迟到删除新会话、生产远端HTTP API明文凭据、未知网关写响应误当已确认失败；均有命名先失败后通过回归。浏览器装置SIGTERM实测exit143，七个子孙进程退出且临时目录为空。证据位于/tmp/oneaster-auth-final-{lint,typecheck,build,test}.log，覆盖率快照/tmp/oneaster-auth-slice-coverage-summary.json；后续完整应用范围仍按上方未勾项继续。
 
 下一批账户/RBAC方案已独立审查并按十二项补齐[访问管理实施契约](admin-access-implementation.md)，恢复读取缺口已向后端owner同步，不在前端捏造查询结果。
+
+分支CI首次冷启动出现五个开发模式失败：三个搜索在控制器hydration前接收自动化输入，两个截图在hydration前由工具注入caret样式导致不匹配。修复为SearchBar自身ClientFieldset在服务端disabled、自身hydration后启用，保持children身份与既有DOM值读取；唯一useClientReady提升到UI feedback，删除app副本。新增命名回归先在旧代码确认server search未disabled失败，再验证修复通过且原三条hydration保留。截图先验证真实提交可用并使用caret:initial，不改44px、焦点、眼睛位置或错误断言。独立只读审查无P1/P2，修复后本地两模式54浏览器通过；CI结果另行核实，不能用本地通过代称。
+
+后续全量复验定位两处测试装置接缝：历史前进连续调用未核对中间/ui到达，Chrome发生Page.getNavigationHistory临时未附着；改为每次到达后断言真实页面，再继续下一步。可搜索选择框Escape后立即查全页同名combobox，在关闭动画期间同时命中trigger与popup input；补充popup已移除和焦点恢复断言，保留原文本/错误/创建断言，未改成first或删除检查。选择框定向重复三次、两模式共六例全过，历史两模式两例全过；没有增加自动重试、sleep或扩大超时。

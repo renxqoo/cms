@@ -11,3 +11,5 @@ export type { ToastInput } from './feedback/toast.tsx';
 
 export { Pill } from './feedback/pill.tsx';
 export type { PillProps } from './feedback/pill.tsx';
+
+export { useClientReady } from './feedback/client-ready.tsx';

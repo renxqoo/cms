@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { useClientReady } from './use-client-ready';
+import { useClientReady } from '@new-cms/ui/feedback';
 
 export function ClientInteractionBoundary({
   children,

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { SearchIcon, XIcon } from 'lucide-react';
 import { Button } from '../primitives/button.tsx';
+import { ClientFieldset } from '../feedback/client-ready.tsx';
 import { Input } from './field.tsx';
 
 export interface SearchBarProps {
@@ -81,54 +82,56 @@ export function SearchBar({
         search(next);
       }}
     >
-      <div className="relative min-w-0 flex-1">
-        <SearchIcon
-          aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          ref={input}
-          type="search"
-          aria-label={label}
-          value={value}
-          placeholder={placeholder}
-          disabled={disabled}
-          className="w-full pl-9"
-          onCompositionStart={() => {
-            composing.current = true;
-            cancel();
-          }}
-          onCompositionEnd={(event) => {
-            composing.current = false;
-            schedule(event.currentTarget.value);
-          }}
-          onChange={(event) => {
-            const next = event.currentTarget.value;
-            localValue.current = next;
-            onValueChange(next);
-            schedule(next);
-          }}
-        />
-      </div>
-      <Button type="submit" variant="outline" disabled={disabled} aria-label={searchLabel}>
-        <SearchIcon />
-        <span className="hidden sm:inline">{searchLabel}</span>
-      </Button>
-      {value ? (
-        <Button
-          size="icon"
-          variant="ghost"
-          disabled={disabled}
-          aria-label={clearLabel}
-          onClick={() => {
-            localValue.current = '';
-            onValueChange('');
-            search('');
-          }}
-        >
-          <XIcon />
+      <ClientFieldset className="contents" disabled={disabled}>
+        <div className="relative min-w-0 flex-1">
+          <SearchIcon
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            ref={input}
+            type="search"
+            aria-label={label}
+            value={value}
+            placeholder={placeholder}
+            disabled={disabled}
+            className="w-full pl-9"
+            onCompositionStart={() => {
+              composing.current = true;
+              cancel();
+            }}
+            onCompositionEnd={(event) => {
+              composing.current = false;
+              schedule(event.currentTarget.value);
+            }}
+            onChange={(event) => {
+              const next = event.currentTarget.value;
+              localValue.current = next;
+              onValueChange(next);
+              schedule(next);
+            }}
+          />
+        </div>
+        <Button type="submit" variant="outline" disabled={disabled} aria-label={searchLabel}>
+          <SearchIcon />
+          <span className="hidden sm:inline">{searchLabel}</span>
         </Button>
-      ) : null}
+        {value ? (
+          <Button
+            size="icon"
+            variant="ghost"
+            disabled={disabled}
+            aria-label={clearLabel}
+            onClick={() => {
+              localValue.current = '';
+              onValueChange('');
+              search('');
+            }}
+          >
+            <XIcon />
+          </Button>
+        ) : null}
+      </ClientFieldset>
     </form>
   );
 }

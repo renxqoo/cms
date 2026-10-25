@@ -386,13 +386,17 @@ test('searchable selection supports keyboard focus, labels after close and creat
   await trigger.click();
   await expect(popup.getByRole('alert')).toContainText('本地选项示例暂不可用');
   await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
+  await expect(trigger).toBeFocused();
   await page.getByRole('checkbox', { name: '演示选项加载失败', exact: true }).uncheck();
   await trigger.click();
   await input.fill('Browser created');
   await page.getByRole('button', { name: '创建本地选项“Browser created”', exact: true }).click();
   await expect(input).toHaveValue('');
   await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
   await expect(trigger).toHaveText('Browser created');
+  await expect(trigger).toBeFocused();
 });
 
 test.describe('touch sorting', () => {

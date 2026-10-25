@@ -260,11 +260,17 @@ test('signing out A and signing in B keeps browser history and prefetched pages 
   expect(prefetchedB.cacheControl).toContain('no-store');
   expect(prefetchedB.prefetchCacheControl).toContain('no-store');
   await page.goBack();
+  await expect(
+    page.getByRole('heading', { name: /UI \u7ec4\u4ef6\u5de5\u4f5c\u53f0/ }),
+  ).toBeVisible();
   await page.goBack();
   await expect(
     page.getByText(applicationAccounts.reader.email, { exact: true }).first(),
   ).toBeVisible();
   await page.goForward();
+  await expect(
+    page.getByRole('heading', { name: /UI \u7ec4\u4ef6\u5de5\u4f5c\u53f0/ }),
+  ).toBeVisible();
   await page.goForward();
   await page.goto('/dashboard');
   await expect(
@@ -347,7 +353,11 @@ for (const locale of ['zh', 'en'] as const) {
           exact: true,
         }),
       ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: english ? 'Sign in' : '登录', exact: true }),
+      ).toBeEnabled();
       await page.screenshot({
+        caret: 'initial',
         path: test.info().outputPath(`login-1440-${locale}-${theme}.png`),
         fullPage: true,
         animations: 'disabled',
@@ -387,7 +397,11 @@ for (const locale of ['zh', 'en'] as const) {
         content: document.documentElement.scrollWidth,
       }));
       expect(widths.content).toBeLessThanOrEqual(widths.viewport);
+      await expect(
+        page.getByRole('button', { name: english ? 'Sign in' : '登录', exact: true }),
+      ).toBeEnabled();
       await page.screenshot({
+        caret: 'initial',
         path: test.info().outputPath(`login-390-${locale}-${theme}.png`),
         fullPage: true,
         animations: 'disabled',

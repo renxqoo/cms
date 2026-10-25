@@ -1,9 +1,11 @@
 import { createStore } from 'zustand/vanilla';
 import type { StoreApi } from 'zustand/vanilla';
-import { updateListQuery } from './list-query';
 
-export interface ListQueryNavigation {
-  update: (changes: Parameters<typeof updateListQuery>[1]) => string;
+export interface QueryNavigation {
+  update: <Changes>(
+    changes: Changes,
+    buildHref: (search: URLSearchParams, changes: Changes) => string,
+  ) => string;
   observe: (search: string) => void;
   traverse: (search: string) => void;
   getSnapshot: () => string;
@@ -18,14 +20,14 @@ interface QueryNavigationState {
 
 type QueryStore = StoreApi<QueryNavigationState>;
 
-export function createListQueryNavigation(initialSearch: string): ListQueryNavigation {
+export function createQueryNavigation(initialSearch: string): QueryNavigation {
   const store = createStore<QueryNavigationState>()(() => ({
     committed: initialSearch,
     latest: null,
     requested: new Set(),
   }));
   return {
-    update: (changes) => requestQuery(store, changes),
+    update: (changes, buildHref) => requestQuery(store, { changes, buildHref }),
     observe: (search) => observeQuery(store, search),
     traverse: (search) => resetQuery(store, search),
     getSnapshot: () => querySnapshot(store),
@@ -38,8 +40,11 @@ function querySnapshot(store: QueryStore): string {
   return latest ?? committed;
 }
 
-function requestQuery(store: QueryStore, changes: Parameters<typeof updateListQuery>[1]) {
-  const href = updateListQuery(new URLSearchParams(querySnapshot(store)), changes);
+function requestQuery<Changes>(
+  store: QueryStore,
+  input: { changes: Changes; buildHref: (search: URLSearchParams, changes: Changes) => string },
+) {
+  const href = input.buildHref(new URLSearchParams(querySnapshot(store)), input.changes);
   const latest = href.split('?')[1] ?? '';
   store.setState({ latest, requested: new Set([...store.getState().requested, latest]) });
   return href;

@@ -1,10 +1,9 @@
 'use client';
 
 import { Button } from '@new-cms/ui/actions';
-import { Banner } from '@new-cms/ui/feedback';
+import { Banner, useClientReady } from '@new-cms/ui/feedback';
 import { Card, CardContent, CardDescription, CardHeader } from '@new-cms/ui/layout';
 import { useShell } from '../../components/shell/shell-provider';
-import { useClientReady } from '../../components/use-client-ready';
 import { authMessages } from './auth-messages';
 import { ExpiredSessionMessage, useExpiredSession } from './expired-session';
 import { LoginFeedbackMessage } from './login-feedback';

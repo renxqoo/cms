@@ -78,3 +78,27 @@ it.each(['replacement draft', ''])(
     }
   },
 );
+
+it('regression: server search blocks native input until its own controller is hydrated', async () => {
+  const search = vi.fn<(value: string) => void>();
+  const container = document.createElement('div');
+  document.body.append(container);
+  container.innerHTML = renderToString(<SearchExample search={search} />);
+  const input = screen.getByRole('searchbox', { name: 'Search content' });
+  let root: ReturnType<typeof hydrateRoot> | undefined;
+  try {
+    expect(input).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeDisabled();
+    await act(async () => {
+      root = hydrateRoot(container, <SearchExample search={search} />);
+      await Promise.resolve();
+    });
+    expect(input).toBeEnabled();
+    fireEvent.change(input, { target: { value: 'Ready search' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(search).toHaveBeenCalledExactlyOnceWith('Ready search');
+  } finally {
+    act(() => root?.unmount());
+    container.remove();
+  }
+});
