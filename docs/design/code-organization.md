@@ -187,11 +187,13 @@ content 内部依赖为 collections → fields，documents/versions → collecti
 | 模块 | 内部业务职责 | 持久化与外部能力 |
 | --- | --- | --- |
 | identity | accounts、sessions、action-tokens | accounts/credentials/session/token 查询归 identity；密码算法、邮件传输通过其定义的窄能力注入 |
-| access | authorization、admins、roles、permissions、navigation、endpoints | 所属查询归 access；管理员用例消费 identity 的受限事务参与能力 |
+| access | authorization、admins、roles、permissions、navigation、endpoints、recovery | 所属查询归 access；管理员用例消费 identity 的受限事务参与能力 |
 | content | 集合、字段、查询、文档/版本、上传型集合、文件夹、发布/保留任务 | 生成的集合数据和内容编排归 content；通过注入的 assets 能力处理字节与引用 |
 | assets | uploads、manifests、processing、references、jobs | 上传会话/文件清单/原件派生对象/引用/恢复记录归 assets；对象存储和图片处理能力注入 |
 | audit | 脱敏追加规则、审计查询 | 审计追加能力使用调用者事务；读取能力经注入授权策略保护 |
 | platform | 幂等、原子限流、安全锁各自独立 | 拥有各自 SQL 协作协议；不能导入 identity/access/content/assets/audit |
+
+access/recovery 提供活动超管独立恢复读取，SQL位于access/adapters/postgres/recovery-store.ts，复用共享安全锁及原修复写接口；HTTP只执行注入业务入口，并对该操作采用专用严格query解析。响应字节预算由应用装配注入，正式DTO从access公开入口提供。
 
 外部 SDK 实现位于 apps/api/src/adapters，只依赖相应 CMS composition 公开的能力类型，不在 SDK 适配器中实现角色判断、版本恢复或资产引用策略。配置由 bootstrap 显式传入；模块定义接口，部署选择实现。
 

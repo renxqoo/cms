@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { displayNameSchema } from '@new-cms/cms/identity';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
+import { recoveryInputSchema } from './recovery/input.ts';
 import {
   code,
   deleteSchema,
@@ -164,6 +165,7 @@ export function accessInputSchemas(policy: CmsPolicy) {
     ...bindingWrite,
     ...selfWrite,
     ...lists(policy),
+    'access.readRecovery': recoveryInputSchema(policy),
     'roles.create': z.strictObject({
       code,
       name,

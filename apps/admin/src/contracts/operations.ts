@@ -102,6 +102,20 @@ export const operations = [
   defineOperation('access.updateOwnProfile', ['PATCH', '/v1/me']),
   defineOperation('access.myNavigation', ['GET', '/v1/me/navigation']),
   defineOperation('access.myOperations', ['GET', '/v1/me/operations'], { queryKeys: page }),
+  defineOperation('access.readRecovery', ['GET', '/v1/security/recovery'], {
+    queryKeys: [
+      'resource',
+      ...page,
+      'scopeKind',
+      'collectionKey',
+      'operationId',
+      'module',
+      'id',
+      'permissionId',
+      'code',
+      'status',
+    ],
+  }),
   defineOperation('audit.list', ['GET', '/v1/audit-logs'], {
     queryKeys: [...list, 'actorId', 'operationId', 'targetType', 'targetId', 'from', 'to'],
   }),

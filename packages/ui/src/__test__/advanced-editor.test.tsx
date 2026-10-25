@@ -144,7 +144,7 @@ it('bounds content height, responds to new budgets and releases its content list
   const settings = editorProps();
   const { rerender, unmount } = render(<CodeEditor {...settings} />);
   const input = await screen.findByRole('textbox', { name: 'JSON editor' });
-  expect(input).toHaveStyle({ height: '180px' });
+  await waitFor(() => expect(input).toHaveStyle({ height: '180px' }));
   act(() => {
     engine.height = 600;
     engine.listeners.forEach((listener) => listener());

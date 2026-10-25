@@ -21,10 +21,10 @@ const backend = [
 
 describe('operation manifest HTTP contract', () => {
   it('covers every actual backend operation exactly once with matching access and idempotency', () => {
-    expect(backend).toHaveLength(75);
+    expect(backend).toHaveLength(76);
     expect(
       operations.filter((value) => value.target === 'backend' && value.id !== 'system.openapi'),
-    ).toHaveLength(75);
+    ).toHaveLength(76);
     expect(new Set(operations.map((value) => value.id)).size).toBe(operations.length);
     for (const definition of backend) {
       const operation = operations.find((value) => value.id === definition.id);

@@ -12,6 +12,7 @@ import { createAuditApi } from './audit-query.ts';
 import { createCatalog, operationRegistry } from './catalog.ts';
 import { accessInputSchemas } from './input-schemas.ts';
 import { createInitializer } from './initialize.ts';
+import { createRecoveryApi } from './recovery/api.ts';
 import type { AccessOptions, AccessRuntime } from './types.ts';
 
 function createCheck(runtime: AccessRuntime) {
@@ -52,6 +53,7 @@ export function createAccess(options: AccessOptions) {
       ...createEndpointApi(runtime),
       ...createSelfApi(runtime),
       ...createAuditApi(runtime),
+      ...createRecoveryApi(runtime),
     },
     authorize: createAuthorization(runtime),
     authorizeActor: createActorAuthorization(runtime),

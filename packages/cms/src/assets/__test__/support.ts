@@ -121,6 +121,7 @@ export async function createFixture(
   const access = createAccess({
     database: store.database,
     policy,
+    recoveryMaxResponseBytes: 2_097_152,
     identity: identity.participants,
     operations: [...identityOperations, ...accessOperations, ...assetsOperations],
     collectionKeys: ['media', 'articles'],
