@@ -23,7 +23,7 @@ export function architectureViolation(filename: string, specifier: string): stri
   const targetOwner = /^@new-cms\/cms\/([^/]+)/.exec(specifier)?.[1] ?? moduleName(target);
   const violation = moduleViolation({ owner, targetOwner, source, specifier });
   if (violation) return violation;
-  const schemaOwner = /@new-cms\/database\/schema\/([^/]+)/.exec(specifier)?.[1];
+  const schemaOwner = schemaImportOwner(specifier);
   if (owner && schemaOwner && schemaOwner !== owner)
     return 'Schema imports must follow table ownership.';
   return undefined;
@@ -33,7 +33,9 @@ function httpViolation(specifier: string, target: string): string | undefined {
   if (
     isDatabase(specifier, target) ||
     /(?:\/|^)composition(?:\.|\/|$)/.test(target) ||
-    specifier.includes('/composition')
+    specifier.includes('/composition') ||
+    /(?:\/|^)generate(?:\.|\/|$)/.test(target) ||
+    specifier.endsWith('/generate')
   )
     return 'HTTP must use injected business APIs, not database or composition.';
   if (
@@ -52,6 +54,8 @@ function moduleViolation(input: {
   specifier: string;
 }): string | undefined {
   const { owner, targetOwner, source, specifier } = input;
+  if (domainDependencyDenied(owner, targetOwner))
+    return 'Business modules must follow the declared dependency graph.';
   if (owner === 'identity' && targetOwner === 'access') return 'Identity cannot depend on access.';
   if (owner === 'platform' && targetOwner && targetOwner !== 'platform')
     return 'Platform cannot import business modules.';
@@ -66,4 +70,22 @@ function moduleViolation(input: {
   )
     return 'Use the declared public entry for cross-module collaboration.';
   return undefined;
+}
+
+function schemaImportOwner(specifier: string): string | undefined {
+  const schema = /@new-cms\/database\/schema\/(.+)/.exec(specifier)?.[1];
+  if (schema === 'generated/content' || schema === 'content-work') return 'content';
+  return schema?.split('/')[0];
+}
+
+function domainDependencyDenied(owner: string | undefined, target: string | undefined): boolean {
+  if (!owner || !target || owner === target) return false;
+  const allowed: Readonly<Record<string, readonly string[]>> = {
+    content: ['assets', 'access', 'audit', 'platform'],
+    assets: ['access', 'audit', 'platform'],
+    access: ['identity', 'audit', 'platform'],
+    audit: ['platform'],
+  };
+  const dependencies = allowed[owner];
+  return dependencies !== undefined && !dependencies.includes(target);
 }

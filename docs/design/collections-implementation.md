@@ -1,6 +1,6 @@
 # Collections 施工图
 
-状态：定稿，2026-10-26；依赖 collections-design.md。
+状态：已核销，2026-10-26；依赖 collections-design.md。实际全量结果及审查处置见 [验收记录](collections-verification.md)。
 
 ## 1. 实施顺序
 

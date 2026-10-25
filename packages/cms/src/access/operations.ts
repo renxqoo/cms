@@ -108,4 +108,7 @@ export const accessOperations: readonly OperationDefinition[] = declarations.map
   module: 'access',
   scopeKind: 'global',
   bindingConfigurable: declaration.access === 'permission',
+  ...(declaration.method === 'POST' && declaration.access === 'security'
+    ? { idempotency: 'required' as const, successStatus: 201 as const }
+    : {}),
 }));

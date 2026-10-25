@@ -12,7 +12,12 @@
     "./platform/contracts": "./src/platform/contracts.ts",
     "./platform/security-lock": "./src/platform/security-lock.ts",
     "./platform/idempotency": "./src/platform/idempotency.ts",
-    "./platform/rate-limits": "./src/platform/rate-limits.ts"
+    "./platform/rate-limits": "./src/platform/rate-limits.ts",
+    "./content/generate": "./src/content/generate.ts",
+    "./assets": "./src/assets/index.ts",
+    "./assets/composition": "./src/assets/composition.ts",
+    "./content": "./src/content/index.ts",
+    "./content/composition": "./src/content/composition.ts"
   },
   "dependencies": {
     "@new-cms/database": "workspace:*",

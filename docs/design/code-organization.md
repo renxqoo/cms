@@ -1,8 +1,8 @@
 # 后端目录与代码组织约定
 
-状态：本项目后端的目录设计，2026-10-25。identity/access、database、平台与审计及对应HTTP/命令已实现；内容/资源等未实施目录仍为目标，不创建占位业务文件或空驱动。
+状态：本项目后端的目录设计，2026-10-26。identity/access/content/assets、database、平台与审计及对应HTTP/命令已实现。目录图仍表达职责归属，未使用的文件不创建占位或空驱动。
 
-本次影响面：目录、公开导出、配置编译、查询与事务参与能力、上传型集合、后台工作和测试归属。内容/资源目标遵循完整能力设计；不实施业务接口、数据库迁移或前端。
+覆盖目录、公开导出、配置编译、查询与事务参与能力、上传型集合、后台工作和测试归属。内容/资源遵循完整能力设计；前端在后续阶段实施。
 
 ## 1. 工作区与运行入口
 
@@ -18,11 +18,13 @@ apps/api/
     config/collections/             本部署启用的内容集合
     commands/
       generate-content.ts           生成内容类型、存储映射和 schema
+      backfill-content.ts           有界 schema 回填及显式激活
+      reconcile-assets.ts           重试失败物理清理
       migrate.ts                    一次性迁移入口
       initialize-admin.ts           离线初始化超管入口
       reconcile-operations.ts       发布时核对操作目录
     adapters/
-      storage/                      实际采用的对象存储/开发本地驱动
+      storage/                      实际采用的对象存储/本地驱动
       mail/                         实际采用的邮件提供方
       password/                     Node 兼容密码哈希实现
     http/
@@ -197,12 +199,12 @@ content/jobs 负责定时发布、版本裁剪及相关权限复查；assets/job
 
 ## 6. 精确导出与依赖约定
 
-当前私有包名为@new-cms/api、@new-cms/cms、@new-cms/database。身份/RBAC实际入口以各manifest为准；尚未实现的content/assets出口不预建。下表同时包含对应后续阶段的目标出口。
+当前私有包名为@new-cms/api、@new-cms/cms、@new-cms/database，实际入口以各manifest为准。content/assets、schema-plan、codegen及生成schema均通过精确入口导出。
 
 | 导出类型 | 允许的调用方 | 禁止的用法 |
 | --- | --- | --- |
 | @new-cms/cms/content 等五个模块入口 | HTTP、相关模块及测试使用公开业务类型/操作定义；业务调用通过装配注入的 API | 穿入模块私有目录，或从根桶取得任意能力 |
-| @new-cms/cms/content/composition 等明确列出的五个装配入口 | bootstrap；相关模块仅引用已批准事务能力的类型；测试装配 | HTTP 导入工厂/事务参与能力，业务用例自行创建另一模块实例 |
+| @new-cms/cms/content/composition 等明确列出的五个装配入口 | bootstrap、离线维护command；相关模块仅引用已批准事务能力的类型；测试装配 | HTTP 导入工厂/事务参与能力，业务用例自行创建另一模块实例 |
 | @new-cms/cms/content/generate | 内容生成 command 及生成测试 | HTTP/普通业务请求执行代码生成或 DDL |
 | @new-cms/cms/platform/idempotency、rate-limits、security-lock | CMS 用例、对应装配及测试 | HTTP 绕过用例直接消费 SQL 协作能力 |
 | @new-cms/database/client | bootstrap、数据库所属实现、CMS composition/内部事务代码及测试 | HTTP 直接持有连接或事务 |
@@ -243,6 +245,6 @@ http/content/publications.routes.ts 与协议 schema
 
 现有工具检查工作区显式exports、相对路径逃逸、解析目标/别名、包反向依赖应用及私有__test__引用。本期新增真实CMS/HTTP代码后，已扩展HTTP禁止database/composition/SQL平台能力、identity不得依赖access、platform不得导入业务、database不得依赖CMS、跨模块相对私有导入及schema owner导入约束，并有合法与违规CLI样本。HTTP可消费纯platform/contracts类型及错误契约。
 
-当前静态规则不能证明raw SQL表写所有权，也不声称覆盖全部未来领域DAG、提供方到HTTP的导入方向或环境读取限制；这些仍需代码审查。content/assets及生成入口落地时增加对应owner/DAG、无生成物构建和合法/违规样本，不预建空检查。操作注册、OpenAPI、授权目录和HEAD行为已由真实Hono测试验证。
+当前静态规则不能证明raw SQL表写所有权，也不声称覆盖全部未来领域DAG、提供方到HTTP的导入方向或环境读取限制；这些仍需代码审查。content/assets及生成入口具有对应owner/DAG、HTTP禁止generate依赖、无生成物构建和合法/违规样本。操作注册、OpenAPI、授权目录和HEAD行为由真实Hono及跨进程测试验证。
 
-身份/RBAC已有单一运行实现、精确公开入口及初始迁移，无旧业务调用方或存量数据迁移。内容相关目录仍是目标设计，只在真实功能实施时创建。当前检查范围与实际结果见[专项施工图](user-rbac-implementation.md)及[交付记录](review-log.md#后台账户rbac后端与工程门禁交付)。
+各模块保持单一运行实现、精确公开入口和有序迁移。内容生成保存物理计划及集合schema快照，每个演进SQL附带previous/next审查快照；回填和激活通过content/composition的受控维护工厂，HTTP不获得迁移或DDL能力。实际检查结果见[账户/RBAC施工图](user-rbac-implementation.md)和[Collections施工与验收](collections-implementation.md)。

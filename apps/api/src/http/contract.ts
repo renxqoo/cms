@@ -5,7 +5,7 @@ import { readJson } from './read-json.ts';
 
 export interface HttpEnvironment {
   Bindings: { incoming?: { socket: { remoteAddress?: string } } };
-  Variables: { requestId: string; signal: AbortSignal; ip: string };
+  Variables: { requestId: string; signal: AbortSignal; ip: string; streaming?: boolean };
 }
 
 export function requestContext(c: Context<HttpEnvironment>): RequestContext {
@@ -20,16 +20,33 @@ export function requestContext(c: Context<HttpEnvironment>): RequestContext {
   };
 }
 
+function queryValue(key: string, value: string | undefined): unknown {
+  if (['page', 'pageSize', 'version', 'revision', 'depth'].includes(key)) {
+    const pattern = key === 'depth' ? /^(0|[1-9]\d*)$/ : /^[1-9]\d*$/;
+    if (!value || !pattern.test(value) || !Number.isSafeInteger(Number(value)))
+      throw new CmsError('invalid_input');
+    return Number(value);
+  }
+  if (key === 'trashed') {
+    if (value !== 'true' && value !== 'false') throw new CmsError('invalid_input');
+    return value === 'true';
+  }
+  if (key === 'folderId' && value === 'null') return null;
+  if (['where', 'sort', 'select', 'fallback'].includes(key)) {
+    try {
+      return JSON.parse(value ?? '') as unknown;
+    } catch {
+      throw new CmsError('invalid_input');
+    }
+  }
+  return value;
+}
+
 function queryInput(c: Context<HttpEnvironment>): Record<string, unknown> {
   const result = new Map<string, unknown>();
   for (const [key, values] of Object.entries(c.req.queries())) {
     if (values.length !== 1) throw new CmsError('invalid_input');
-    const [value] = values;
-    if (['page', 'pageSize', 'version'].includes(key)) {
-      if (!value || !/^[1-9]\d*$/.test(value) || !Number.isSafeInteger(Number(value)))
-        throw new CmsError('invalid_input');
-      result.set(key, Number(value));
-    } else result.set(key, value);
+    result.set(key, queryValue(key, values[0]));
   }
   return Object.fromEntries(result);
 }
@@ -56,9 +73,15 @@ export async function routeInput(c: Context<HttpEnvironment>, maxBytes: number):
 
 export function successResponse(operation: OperationDefinition, value: unknown): Response {
   if (value === undefined) return new Response(null, { status: 204 });
-  let status = 200;
-  if (operation.id === 'identity.requestPasswordReset') status = 202;
-  else if (operation.method === 'POST' && operation.access === 'security') status = 201;
+  let status = operation.successStatus ?? 200;
+  if (
+    operation.id === 'content.batch' &&
+    value !== null &&
+    typeof value === 'object' &&
+    'status' in value &&
+    (value.status === 'queued' || value.status === 'running')
+  )
+    status = 202;
   return new Response(JSON.stringify(value), {
     status,
     headers: { 'content-type': 'application/json; charset=utf-8' },

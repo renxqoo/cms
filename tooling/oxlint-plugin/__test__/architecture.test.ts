@@ -6,6 +6,16 @@ it.each([
   ['apps/api/src/http/roles.ts', 'import type { Database } from "@new-cms/database/client";'],
   ['apps/api/src/http/roles.ts', 'export { createAccess } from "@new-cms/cms/access/composition";'],
   ['apps/api/src/http/roles.ts', 'import("@new-cms/cms/platform/idempotency");'],
+  ['apps/api/src/http/content.ts', 'import("@new-cms/cms/content/generate");'],
+  [
+    'packages/cms/src/assets/references.ts',
+    'import type { ContentApi } from "@new-cms/cms/content";',
+  ],
+  ['packages/cms/src/access/roles.ts', 'import type { ContentApi } from "@new-cms/cms/content";'],
+  [
+    'packages/cms/src/content/documents/create.ts',
+    'import { assets } from "@new-cms/database/schema/assets";',
+  ],
   ['packages/cms/src/identity/login.ts', 'import { accessOperations } from "@new-cms/cms/access";'],
   [
     'packages/cms/src/platform/rate-limits.ts',
@@ -28,6 +38,18 @@ it.each([
 
 it.each([
   ['apps/api/src/http/roles.ts', 'import type { AccessApi } from "@new-cms/cms/access";'],
+  [
+    'packages/cms/src/content/documents/create.ts',
+    'import type { AssetsParticipants } from "@new-cms/cms/assets/composition";',
+  ],
+  [
+    'packages/cms/src/content/adapters/postgres/read.ts',
+    'import { tables } from "@new-cms/database/schema/generated/content";',
+  ],
+  [
+    'packages/cms/src/content/jobs/run.ts',
+    'import { jobs } from "@new-cms/database/schema/content-work";',
+  ],
   ['apps/api/src/http/roles.ts', 'import { CmsError } from "@new-cms/cms/platform/contracts";'],
   [
     'apps/api/src/bootstrap/runtime.ts',

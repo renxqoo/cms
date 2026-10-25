@@ -4,10 +4,10 @@ export function startMaintenance(runtime: ApplicationRuntime, intervalMs: number
   let running: Promise<void> | undefined;
   const timer = setInterval(() => {
     if (running) return;
-    running = runtime.identity
+    running = runtime
       .maintenance()
       .catch(() => {
-        process.stderr.write('Identity maintenance failed.\n');
+        process.stderr.write('CMS maintenance failed.\n');
       })
       .finally(() => {
         running = undefined;

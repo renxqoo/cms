@@ -1,38 +1,16 @@
-interface Schema {
-  [key: string]: unknown;
-}
-
-const id = { type: 'string', format: 'uuid' };
-const time = { type: 'string', format: 'date-time' };
+import { contentResponseSchemas } from './content-schemas.ts';
+import { assetResponseSchemas } from './assets-schemas.ts';
+import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
+import { id, time, integer, text, object, reference, array, page } from './schema.ts';
+import type { Schema } from './schema.ts';
 const nullableTime = { anyOf: [time, { type: 'null' }] };
 const nullableText = { type: ['string', 'null'] };
-const text = { type: 'string' };
-const integer = { type: 'integer' };
 const state = { type: 'string', enum: ['active', 'disabled'] };
 const base = { id, version: { type: 'integer', minimum: 1 }, createdAt: time, updatedAt: time };
 const scope = {
   scopeKind: { type: 'string', enum: ['global', 'collection'] },
   collectionKey: nullableText,
 };
-
-function object(properties: Record<string, Schema>): Schema {
-  return {
-    type: 'object',
-    properties,
-    required: Object.keys(properties),
-    additionalProperties: false,
-  };
-}
-
-function reference(name: string): Schema {
-  return { $ref: `#/components/schemas/${name}` };
-}
-function array(items: Schema): Schema {
-  return { type: 'array', items };
-}
-function page(name: string): Schema {
-  return object({ rows: array(reference(name)), total: integer, page: integer, pageSize: integer });
-}
 
 function accountSchemas(): Record<string, Schema> {
   const account = {
@@ -149,6 +127,8 @@ export function responseSchemas(): Record<string, Schema> {
     ...accountSchemas(),
     ...roleSchemas(),
     ...navigationSchemas(),
+    ...contentResponseSchemas(),
+    ...assetResponseSchemas(),
     AllowedOperation: object({ operationId: text, ...scope }),
     Endpoint: object({
       operationId: text,
@@ -212,13 +192,41 @@ const responses: Record<string, string> = {
   'access.myNavigation': 'MyNavigation',
   'access.myOperations': 'AllowedOperationPage',
   'audit.list': 'AuditPage',
+  'collections.list': 'ContentCollectionList',
+  'collections.get': 'ContentCollection',
+  'documents.list': 'ContentDocumentPage',
+  'documents.create': 'ContentDocument',
+  'documents.get': 'ContentDocument',
+  'documents.update': 'ContentDocument',
+  'documents.archive': 'ContentDocument',
+  'documents.copy': 'ContentDocument',
+  'documents.purge': 'ContentPurge',
+  'documents.restoreTrash': 'ContentDocument',
+  'documents.autosave': 'ContentDocument',
+  'documents.publish': 'ContentDocument',
+  'documents.unpublish': 'ContentDocument',
+  'versions.list': 'ContentVersionPage',
+  'versions.get': 'ContentVersionDetail',
+  'versions.restore': 'ContentDocument',
+  'versions.diff': 'ContentVersionDiff',
+  'content.schedulePublication': 'ContentJobAccepted',
+  'content.batch': 'ContentBatchResult',
+  'content.getJob': 'ContentJobResult',
+  'folders.list': 'ContentFolderList',
+  'folders.create': 'ContentFolder',
+  'folders.update': 'ContentFolder',
+  'resources.list': 'ContentDocumentPage',
+  'resources.references': 'ContentReferencePage',
+  'assets.createUpload': 'AssetUpload',
+  'assets.writeUpload': 'AssetUploadWritten',
+  'assets.completeUpload': 'AssetUpload',
+  'assets.readUpload': 'AssetUpload',
+  'assets.reprocess': 'AssetProcessingAccepted',
 };
 
-export function operationResponses(idValue: string, method: string) {
-  const name = responses[idValue];
-  let status = method === 'POST' ? '201' : '200';
-  if (idValue === 'identity.login') status = '200';
-  if (idValue === 'identity.requestPasswordReset') status = '202';
+export function operationResponses(operation: OperationDefinition) {
+  const name = responses[operation.id];
+  const status = String(operation.successStatus ?? 200);
   const result: Record<string, unknown> = name
     ? {
         [status]: {
@@ -227,6 +235,19 @@ export function operationResponses(idValue: string, method: string) {
         },
       }
     : { '204': { description: 'Completed without a response body' } };
+  if (operation.id === 'content.batch') result['202'] = result[status];
+  if (operation.id === 'assets.download' || operation.id === 'assets.downloadBinding') {
+    delete result['204'];
+    result['200'] = {
+      description: 'Private file stream',
+      headers: {
+        'Content-Type': { schema: { type: 'string' } },
+        'Content-Length': { schema: { type: 'integer' } },
+        ETag: { schema: { type: 'string' } },
+      },
+      content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
+    };
+  }
   for (const code of ['400', '401', '403', '404', '409', '413', '415', '429', '500', '503']) {
     result[code] = {
       description: 'Request failed',

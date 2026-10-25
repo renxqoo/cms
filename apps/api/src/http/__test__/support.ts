@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { z } from 'zod';
 import { createTestDatabase } from '../../../../../test/support/database.ts';
 import { createTestSmtp } from '../../../../../test/support/smtp.ts';
@@ -10,6 +13,7 @@ export const administratorPassword = 'A safe test password 2026';
 export async function createHttpFixture() {
   const store = await createTestDatabase();
   const smtp = await createTestSmtp();
+  const storage = await mkdtemp(join(tmpdir(), 'cms-http-assets-'));
   const config = loadConfig({
     DATABASE_URL: store.connectionString,
     DATABASE_SCHEMA: store.schema,
@@ -18,6 +22,7 @@ export async function createHttpFixture() {
     SMTP_PORT: String(smtp.port),
     SMTP_SECURE: 'false',
     NODE_ENV: 'test',
+    CMS_STORAGE_ROOT: storage,
   });
   const runtime = createRuntime(config);
   try {
@@ -43,12 +48,14 @@ export async function createHttpFixture() {
         await runtime.close();
         await smtp.close();
         await store.close();
+        await rm(storage, { recursive: true, force: true });
       },
     };
   } catch (error) {
     await runtime.close();
     await smtp.close();
     await store.close();
+    await rm(storage, { recursive: true, force: true });
     throw error;
   }
 }

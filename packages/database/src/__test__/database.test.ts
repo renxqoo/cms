@@ -10,6 +10,7 @@ import * as accessSchema from '../schema/access.ts';
 import * as identitySchema from '../schema/identity.ts';
 import * as auditSchema from '../schema/audit.ts';
 import * as platformSchema from '../schema/platform.ts';
+import * as contentSchema from '../schema/content.ts';
 import { createTestDatabase } from '../../../../test/support/database.ts';
 
 const fixtures: Awaited<ReturnType<typeof createTestDatabase>>[] = [];
@@ -31,6 +32,7 @@ describe('PostgreSQL migrations and owner schema', () => {
       ...Object.values(identitySchema),
       ...Object.values(auditSchema),
       ...Object.values(platformSchema),
+      ...Object.values(contentSchema),
     ];
     for (const table of tables) {
       const config = getTableConfig(table);
@@ -65,10 +67,14 @@ describe('PostgreSQL migrations and owner schema', () => {
     const result = await db.orm.select().from(roles).where(eq(roles.isSuper, true));
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({ code: 'super_admin', status: 'active', isSuper: true });
-    const applied = await db.query<{ count: string }>(
-      'SELECT count(*) AS count FROM cms_migrations',
+    const before = await db.query<{ name: string }>(
+      'SELECT name FROM cms_migrations ORDER BY name',
     );
-    expect(applied.rows[0]?.count).toBe('1');
+    await migrate(db);
+    const after = await db.query<{ name: string }>('SELECT name FROM cms_migrations ORDER BY name');
+    expect(after.rows).toEqual(before.rows);
+    expect(after.rows).toContainEqual({ name: '0001_user_rbac.sql' });
+    expect(after.rows).toContainEqual({ name: '0002_content.sql' });
   });
 
   it('rejects unnormalized duplicate identity and invalid token shapes', async () => {

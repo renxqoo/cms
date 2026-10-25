@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { loadStorageConfig } from './storage-config.ts';
+import type { StorageConfig } from './storage-config.ts';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 
 const environmentSchema = z.object({
@@ -20,9 +22,11 @@ const environmentSchema = z.object({
   SMTP_FROM: z.email().default('cms@localhost.invalid'),
   CMS_FRONTEND_URL: z.url().default('http://localhost:3000'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  CMS_MAINTENANCE_INTERVAL_MS: z.coerce.number().int().min(25).max(3_600_000).default(60_000),
 });
 
 export interface ApplicationConfig {
+  storage: StorageConfig;
   database: { connectionString: string; schema: string; maxConnections: number };
   policy: CmsPolicy;
   password: {
@@ -39,6 +43,8 @@ export interface ApplicationConfig {
     allowedHosts: string[];
     allowedOrigins: string[];
     bodyLimitBytes: number;
+    uploadBodyLimitBytes: number;
+    uploadTimeoutMs: number;
     headerLimitBytes: number;
     urlLimitBytes: number;
     requestTimeoutMs: number;
@@ -154,12 +160,16 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
   const env = environmentSchema.parse(source);
   validateProduction(env);
   return {
+    storage: loadStorageConfig(source, env.NODE_ENV === 'production'),
     database: {
       connectionString: env.DATABASE_URL,
       schema: env.DATABASE_SCHEMA,
       maxConnections: 10,
     },
-    policy: defaultPolicy(env.CMS_RATE_LIMIT_SECRET),
+    policy: {
+      ...defaultPolicy(env.CMS_RATE_LIMIT_SECRET),
+      cleanupIntervalMs: env.CMS_MAINTENANCE_INTERVAL_MS,
+    },
     password: { N: 32768, r: 8, p: 3, saltBytes: 16, keyBytes: 64, maxmemBytes: 67_108_864 },
     http: {
       host: env.API_HOST,
@@ -167,6 +177,8 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
       allowedHosts: commaList(env.API_ALLOWED_HOSTS),
       allowedOrigins: commaList(env.API_ALLOWED_ORIGINS),
       bodyLimitBytes: 1_048_576,
+      uploadBodyLimitBytes: 20_971_520,
+      uploadTimeoutMs: 60_000,
       headerLimitBytes: 16_384,
       urlLimitBytes: 4096,
       requestTimeoutMs: 15_000,
@@ -175,4 +187,9 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
     },
     smtp: smtpOptions(env),
   };
+}
+
+export function loadContentMigrationConfig(source: NodeJS.ProcessEnv = process.env) {
+  const env = environmentSchema.pick({ CMS_RATE_LIMIT_SECRET: true }).parse(source);
+  return { database: loadDatabaseConfig(source), policy: defaultPolicy(env.CMS_RATE_LIMIT_SECRET) };
 }
