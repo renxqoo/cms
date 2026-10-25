@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { CircleHelpIcon, UsersIcon } from 'lucide-react';
 import {
   getAdminRoute,
+  activeAdminHref,
   matchAdminRoute,
   registeredAdminIcon,
   safeAdminDestination,
@@ -28,6 +29,22 @@ it.each([
   '/dashboard/roles/11111111-1111-4111-8111-111111111111',
 ])('accepts an implemented administrative return destination %s', (href) => {
   expect(safeAdminDestination(href)).toBe(href);
+});
+
+it('highlights the closest registered visible collection parent without prefix collisions', () => {
+  const hrefs = [
+    '/dashboard/collections',
+    '/dashboard/collections/articles',
+    '/dashboard/collections/art',
+  ];
+  expect(activeAdminHref('/dashboard/collections/articles/new', hrefs)).toBe(
+    '/dashboard/collections/articles',
+  );
+  expect(activeAdminHref('/dashboard/collections/articles2/new', hrefs)).toBe(
+    '/dashboard/collections',
+  );
+  expect(activeAdminHref('/dashboard/account', hrefs)).toBe('/dashboard/account');
+  expect(activeAdminHref('/unknown', ['/unknown'])).toBe('/unknown');
 });
 it.each([
   undefined,

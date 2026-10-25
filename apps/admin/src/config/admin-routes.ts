@@ -170,6 +170,19 @@ export function safeAdminDestination(value: unknown): string {
   return typeof value === 'string' && matchAdminRoute(value) ? value : '/dashboard';
 }
 
+export function activeAdminHref(pathname: string, hrefs: readonly string[]): string {
+  const route = matchAdminRoute(pathname);
+  const visible = hrefs
+    .filter(
+      (href) =>
+        route &&
+        matchAdminRoute(href)?.id === route.id &&
+        (pathname === href || pathname.startsWith(`${href}/`)),
+    )
+    .toSorted((left, right) => right.length - left.length);
+  return visible[0] ?? route?.path ?? pathname;
+}
+
 function isAdminIcon(value: string): value is AdminIcon {
   return Object.hasOwn(adminIcons, value);
 }

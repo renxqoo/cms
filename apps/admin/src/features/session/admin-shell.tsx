@@ -7,7 +7,7 @@ import { Banner } from '@new-cms/ui/feedback';
 import { AppShell } from '../../components/shell/app-shell';
 import { useShell } from '../../components/shell/shell-provider';
 import { appConfig } from '../../config/app';
-import { matchAdminRoute } from '../../config/admin-routes';
+import { activeAdminHref, matchAdminRoute } from '../../config/admin-routes';
 import type { Me } from '../../contracts/auth';
 import { AccessProvider, useAccessControl } from '../access-control/provider';
 import { AccessFeedback } from '../access-control/access-feedback';
@@ -56,7 +56,10 @@ function AuthorizedShell({
       <AppShell
         surface={{
           homeHref: '/dashboard',
-          activeHref: route?.path ?? pathname,
+          activeHref: activeAdminHref(
+            pathname,
+            navigation.groups.flatMap((group) => group.items.map((item) => item.href)),
+          ),
           subtitle: t.subtitle,
           groups: navigation.groups,
           footer,

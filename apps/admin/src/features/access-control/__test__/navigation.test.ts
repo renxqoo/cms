@@ -90,3 +90,20 @@ it('does not trust a malformed root page to bypass the group structure', () => {
   expect(navigation.invalid).toBe(true);
   expect(navigation.groups).toHaveLength(1);
 });
+
+it('keeps a registered collection page destination and disables arbitrary nested paths', () => {
+  const navigation = shellNavigation({
+    navigation: [
+      group([
+        node({ id: 'articles', path: '/dashboard/collections/articles' }),
+        node({ id: 'invalid', path: '/dashboard/collections/articles/arbitrary' }),
+      ]),
+    ],
+    locale: 'en',
+    can: () => false,
+  });
+  expect(navigation.groups[1]?.items).toMatchObject([
+    { href: '/dashboard/collections/articles', disabled: false },
+    { href: 'unavailable-invalid', disabled: true },
+  ]);
+});
