@@ -52,6 +52,8 @@ it.each(['bun', 'node'] as const)(
       SMTP_HOST: smtp.host,
       SMTP_PORT: String(smtp.port),
       SMTP_SECURE: 'false',
+      CMS_NAVIGATION_PATHS: '/network-dashboard',
+      CMS_NAVIGATION_ICONS: 'home',
     };
     let server: Awaited<ReturnType<typeof startProcess>> | undefined;
     try {
@@ -75,6 +77,56 @@ it.each(['bun', 'node'] as const)(
         .parse(await list.json());
       const grant = permissions.rows.find((row) => row.code === 'admins:read');
       if (!grant) throw new Error('Missing initial read permission');
+      const groupResult = await request(server.port)('POST', '/v1/navigation', {
+        ...owner,
+        body: { type: 'group', name: 'Network workspace', visibility: 'container' },
+      });
+      expect(groupResult.status).toBe(201);
+      const group = z.object({ id: z.uuid() }).parse(await groupResult.json());
+      const pageResult = await request(server.port)('POST', '/v1/navigation', {
+        ...owner,
+        body: {
+          type: 'page',
+          name: 'Network dashboard',
+          parentId: group.id,
+          path: '/network-dashboard',
+          icon: 'home',
+          visibility: 'permission',
+          permissionId: grant.id,
+        },
+      });
+      expect(pageResult.status).toBe(201);
+      const page = z.object({ id: z.uuid() }).parse(await pageResult.json());
+      const actionResult = await request(server.port)('POST', '/v1/navigation', {
+        ...owner,
+        body: {
+          type: 'action',
+          name: 'Network preview',
+          parentId: page.id,
+          visibility: 'authenticated',
+        },
+      });
+      expect(actionResult.status).toBe(201);
+      const action = z.object({ id: z.uuid() }).parse(await actionResult.json());
+      const bodyOnly = await request(server.port)('DELETE', `/v1/navigation/${action.id}`, {
+        ...owner,
+        body: { version: 1 },
+      });
+      expect(bodyOnly.status).toBe(400);
+      const problem = z
+        .object({
+          error: z.object({
+            fieldErrors: z.array(z.object({ field: z.string(), message: z.string() })),
+          }),
+        })
+        .parse(await bodyOnly.json());
+      expect(
+        problem.error.fieldErrors.find((entry) => entry.field === 'version')?.message,
+      ).toContain('?version=');
+      expect(
+        (await request(server.port)('DELETE', `/v1/navigation/${action.id}?version=1`, owner))
+          .status,
+      ).toBe(204);
       const roleResult = await request(server.port)('POST', '/v1/roles', {
         ...owner,
         body: { code: 'network_reader', name: 'Network reader', permissionIds: [grant.id] },
@@ -100,6 +152,11 @@ it.each(['bun', 'node'] as const)(
         body: { email: 'network-editor@example.test', password: 'Network editor password 2026' },
       });
       const editor = z.object({ token: z.string() }).parse(await editorResult.json());
+      expect(
+        await (await request(server.port)('GET', '/v1/me/navigation', editor)).json(),
+      ).toMatchObject({
+        rows: [{ id: group.id, children: [{ id: page.id, path: '/network-dashboard' }] }],
+      });
       expect((await request(server.port)('GET', '/v1/admins', editor)).status).toBe(200);
       expect(
         (
@@ -118,6 +175,9 @@ it.each(['bun', 'node'] as const)(
         ).status,
       ).toBe(200);
       expect((await request(server.port)('GET', '/v1/admins', editor)).status).toBe(403);
+      expect(await (await request(server.port)('GET', '/v1/me/navigation', editor)).json()).toEqual(
+        { rows: [] },
+      );
       expect((await request(server.port)('POST', '/v1/auth/logout', editor)).status).toBe(204);
       expect((await request(server.port)('GET', '/v1/me', editor)).status).toBe(401);
       await store.database.query('DROP TABLE rate_limit_buckets');

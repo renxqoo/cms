@@ -12,6 +12,7 @@
 - [后端目录与代码组织](docs/design/code-organization.md)：文件归属、公开入口、查询/适配器、测试和人审路径。
 - [功能和接口范围](docs/design/modules-and-contracts.md)：后端实施范围与主要行为约束。
 - [后台账户与 RBAC 方案](docs/design/user-rbac-design.md)：账户及完整授权设计；配套[施工图](docs/design/user-rbac-implementation.md)和[字段、接口及测试矩阵](docs/design/user-rbac-units.md)。
+- [导航与管理契约修复](docs/design/navigation-contract-followup.md)：可信导航目录、DELETE版本提示、归档角色维护和兼容扩展的运行权限。
 - [Collections 与资源管理](docs/design/collections-and-assets.md)：完整能力目标、配置编译、集合级关系模型、上传型集合及版本资源一致性。
 - [安全基线](docs/design/security-baseline.md)：入口、Node、Hono 和业务模块的责任。
 - [近期研究证据](docs/design/research-evidence.md)：2026-07-25 至 2026-10-25 官方资料、源码快照及稳定原理。
@@ -39,6 +40,16 @@ bun run dev
 
 邮件配置使用SMTP_HOST、SMTP_PORT、SMTP_SECURE、SMTP_USER、SMTP_PASSWORD、SMTP_FROM及CMS_FRONTEND_URL；未配置SMTP时投递明确失败，账户创建仍返回实际状态。生产非直连TLS使用强制STARTTLS且验证证书。邀请/重置链接只在前端URL fragment携带令牌；令牌只存摘要，不保存可恢复邮件正文或自动重投，失败后需显式重新发起。
 
+## 导航与管理接口
+
+CMS_NAVIGATION_PATHS和CMS_NAVIGATION_ICONS是逗号分隔的可信前端路径及图标名目录，默认均为空。路径必须是规范的站内绝对路径，不含查询、fragment、反斜杠或控制字符；图标名以英文字母开头，后续仅允许字母、数字、下划线和连字符；两类目录都不接受重复项。前端接入后只填写实际存在的页面及图标，修改后重启API。当前尚未实现前端页面，因此示例配置保持为空。
+
+未注册任何页面时，group可创建，合法page请求返回503 temporarily_unavailable，path字段说明尚无已注册页面；page缺少path仍返回400。目录非空时，未知path或非null未知icon返回400及对应字段提示；icon可使用null。action必须挂在page下。撤除路径后，相关page及其action不再出现在/me/navigation，空group同时隐藏，管理树保留记录以便修正。
+
+DELETE管理接口使用必填查询参数version，例如DELETE /v1/roles/:id?version=3；JSON body不被读取。缺失、非法或重复version返回400 invalid_input，并在fieldErrors.version明确提示使用单一正整数查询参数。PATCH/PUT的version仍放在JSON中。
+
+归档账号保留邮箱与角色引用，不能恢复状态或硬删除。超管可通过PATCH /v1/admins/:id维护其displayName或迁至另一active角色，迁移不会恢复账号。角色的adminCount包含归档账号；仍有引用时删除返回409 resource_in_use并提示停用角色或显式迁移关联账号，完成迁移后才可删除无引用的旧角色。
+
 ## 生产数据库权限
 
 生产使用专用CMS数据库及无其他角色成员身份的LOGIN运行账号。DATABASE_URL只配置运行账号，CMS_MIGRATION_DATABASE_URL是迁移owner连接，仅提供给迁移、目录发布和权限配置命令；两种连接都必须验证TLS。CMS_DATABASE_RUNTIME_ROLE指定已由数据库管理员创建的运行角色，密码通过数据库管理工具交互设置，不放命令行。
@@ -53,6 +64,10 @@ bun run admin:initialize --email owner@example.com
 ```
 
 db:grant-runtime验证并授予必要连接及业务CRUD权限，审计只允许SELECT/INSERT，操作目录与迁移台账只允许SELECT；拒绝额外权限、可执行SECURITY DEFINER或可写业务表上的definer触发器。已有PUBLIC/列授权等无法安全收窄时整体失败，由数据库管理员修正后重跑，不显示假成功。生产API和超管初始化会检查运行账号权限；开发/测试可用owner，迁移与目录发布始终使用迁移连接，开发/测试缺省回退DATABASE_URL。
+
+就绪检查要求本产物必需表全部存在且权限精确匹配；新增表或视图只有对当前运行账号没有任何有效表、列或GRANT权限时才允许存在，包含经PUBLIC取得的权限。db:grant-runtime只向本产物明确列出的表授权，不向未知表自动授权。
+
+有结构扩展的滚动发布使用每版本独立运行账号：先执行兼容扩展迁移，保持旧账号无新增对象权限；用新产物及其CMS_DATABASE_RUNTIME_ROLE为新账号配置权限，再以新账号启动新实例。观察新旧实例的/readyz、请求错误及任务排空情况，滚动窗口内不改变旧账号权限。回滚同时恢复旧产物和旧DATABASE_URL，保留扩展结构；旧实例、请求及任务排空且约定回滚窗口结束后才退役旧账号，破坏性结构删除另走后续迁移。新增危险PUBLIC授权或definer能力不属于兼容扩展。
 
 审计迁移拦截UPDATE、DELETE、TRUNCATE；已应用迁移不改checksum，新保护通过0002追加。生产就绪检查要求该保护启用。迁移owner属于可信管理边界，不能把这些检查视为防恶意数据库管理员。保留数据库原有PUBLIC TEMP权限，连接明确将pg_temp放在业务schema之后，防止临时同名表遮蔽业务表。
 

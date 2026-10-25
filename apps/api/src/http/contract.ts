@@ -29,15 +29,33 @@ export function requestContext(c: Context<HttpEnvironment>): RequestContext {
 function queryInput(c: Context<HttpEnvironment>): Record<string, unknown> {
   const result = new Map<string, unknown>();
   for (const [key, values] of Object.entries(c.req.queries())) {
-    if (values.length !== 1) throw new CmsError('invalid_input');
+    if (values.length !== 1) throw queryProblem(key, c.req.method);
     const [value] = values;
     if (['page', 'pageSize', 'version'].includes(key)) {
       if (!value || !/^[1-9]\d*$/.test(value) || !Number.isSafeInteger(Number(value)))
-        throw new CmsError('invalid_input');
+        throw queryProblem(key, c.req.method);
       result.set(key, Number(value));
     } else result.set(key, value);
   }
+  if (c.req.method === 'DELETE' && !result.has('version')) throw queryProblem('version', 'DELETE');
   return Object.fromEntries(result);
+}
+
+function queryProblem(key: string, method: string): CmsError {
+  return new CmsError(
+    'invalid_input',
+    key === 'version' && method === 'DELETE'
+      ? {
+          fieldErrors: [
+            {
+              field: 'version',
+              message:
+                'Send one positive integer query parameter ?version=N. DELETE request bodies are not read.',
+            },
+          ],
+        }
+      : {},
+  );
 }
 
 export async function routeInput(c: Context<HttpEnvironment>, maxBytes: number): Promise<unknown> {

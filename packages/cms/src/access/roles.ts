@@ -174,7 +174,16 @@ async function deleteRole(runtime: AccessRuntime, ctx: RequestContext, input: un
       requireVersion(current, target.version);
       const counts = (await roleCounts(state.tx, [target.id])).get(target.id);
       if (!counts) fail('internal_error');
-      if (counts.adminCount > 0) fail('resource_in_use');
+      if (counts.adminCount > 0)
+        fail('resource_in_use', {
+          fieldErrors: [
+            {
+              field: 'id',
+              message:
+                'The role is referenced by administrator accounts, including archived accounts. Reassign those accounts to another active role or disable this role.',
+            },
+          ],
+        });
       await deleteResource(state.tx, { table: 'roles', id: target.id });
       await auditChange(
         state,

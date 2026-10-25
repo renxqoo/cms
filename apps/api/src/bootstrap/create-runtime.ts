@@ -36,8 +36,8 @@ function createServices(config: ApplicationConfig) {
     identity: identity.participants,
     operations,
     collectionKeys: [],
-    navigationPaths: [],
-    navigationIcons: [],
+    navigationPaths: config.navigation.paths,
+    navigationIcons: config.navigation.icons,
   });
   return { database, identity, access, operations };
 }

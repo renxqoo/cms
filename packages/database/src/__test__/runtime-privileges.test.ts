@@ -245,7 +245,7 @@ it('rejects persistent schema CREATE inherited from PUBLIC without mutating shar
   ).toBe(true);
 });
 
-it('rejects executable SECURITY DEFINER routines and unsupported additional tables', async () => {
+it('rejects executable SECURITY DEFINER routines while allowing inaccessible expansion tables', async () => {
   const { runtime, database, roleName } = await fixture();
   await database.query(
     "CREATE FUNCTION escape_runtime() RETURNS int LANGUAGE sql SECURITY DEFINER AS 'SELECT 1'",
@@ -258,9 +258,7 @@ it('rejects executable SECURITY DEFINER routines and unsupported additional tabl
   );
   await database.query('DROP FUNCTION escape_runtime()');
   await database.query('CREATE TABLE unexpected_runtime_table(id int)');
-  await expect(assertRuntimePrivileges(runtime)).rejects.toThrow(
-    'Runtime database tables differ from the supported schema',
-  );
+  await expect(assertRuntimePrivileges(runtime)).resolves.toBeUndefined();
 });
 
 it('rejects column grant options even when the table privileges are otherwise minimal', async () => {
@@ -477,4 +475,83 @@ it('grants missing database CONNECT before reporting success so a fresh runtime 
   } finally {
     await fresh.close();
   }
+});
+
+it.each([
+  'CREATE TABLE release_extension(id int,value text)',
+  'CREATE VIEW release_extension AS SELECT 1 AS id',
+  'CREATE MATERIALIZED VIEW release_extension AS SELECT 1 AS id',
+])(
+  'allows an inaccessible expansion relation without granting it to the old role: %s',
+  async (statement) => {
+    const { runtime, database, roleName } = await fixture();
+    await database.query(statement);
+    await expect(assertRuntimePrivileges(runtime)).resolves.toBeUndefined();
+    await grantRuntimePrivileges(database, { roleName });
+    await expect(assertRuntimePrivileges(runtime)).resolves.toBeUndefined();
+    await expect(runtime.query('SELECT * FROM release_extension')).rejects.toMatchObject({
+      code: '42501',
+    });
+  },
+);
+
+it.each([
+  'SELECT',
+  'INSERT',
+  'UPDATE',
+  'DELETE',
+  'TRUNCATE',
+  'REFERENCES',
+  'TRIGGER',
+  'MAINTAIN',
+  'SELECT(id)',
+  'INSERT(id)',
+  'UPDATE(value)',
+  'REFERENCES(id)',
+])(
+  'rejects effective %s permissions on an unknown expansion table and recovers when revoked',
+  async (privilege) => {
+    const { runtime, database, roleName } = await fixture();
+    await database.query('CREATE TABLE release_extension(id int,value text)');
+    await database.query(`GRANT ${privilege} ON release_extension TO ${roleName}`);
+    await expect(assertRuntimePrivileges(runtime)).rejects.toThrow(
+      'Runtime table privileges are unsafe or incomplete',
+    );
+    await database.query(`REVOKE ${privilege} ON release_extension FROM ${roleName}`);
+    await expect(assertRuntimePrivileges(runtime)).resolves.toBeUndefined();
+  },
+);
+
+it.each(['SELECT', 'SELECT(id)'])(
+  'rejects grantable %s access to an unknown expansion relation',
+  async (privilege) => {
+    const { runtime, database, roleName } = await fixture();
+    await database.query('CREATE TABLE release_extension(id int)');
+    await database.query(
+      `GRANT ${privilege} ON release_extension TO ${roleName} WITH GRANT OPTION`,
+    );
+    await expect(assertRuntimePrivileges(runtime)).rejects.toThrow(
+      'Runtime table privileges are unsafe or incomplete',
+    );
+  },
+);
+
+it('rejects effective PUBLIC column access to an unknown expansion table', async () => {
+  const { runtime, database } = await fixture();
+  await database.query('CREATE TABLE release_extension(id int)');
+  await database.query('GRANT SELECT(id) ON release_extension TO PUBLIC');
+  await expect(assertRuntimePrivileges(runtime)).rejects.toThrow(
+    'Runtime table privileges are unsafe or incomplete',
+  );
+  await database.query('REVOKE SELECT(id) ON release_extension FROM PUBLIC');
+  await expect(assertRuntimePrivileges(runtime)).resolves.toBeUndefined();
+});
+
+it('still requires every known table when an expansion keeps the total relation count unchanged', async () => {
+  const { runtime, database } = await fixture();
+  await database.query('DROP TABLE credentials');
+  await database.query('CREATE TABLE release_extension(id int)');
+  await expect(assertRuntimePrivileges(runtime)).rejects.toThrow(
+    'Runtime database tables differ from the supported schema',
+  );
 });

@@ -103,16 +103,31 @@ async function assertSchema(tx: SqlExecutor, context: RoleContext): Promise<void
   if (result.rows[0]?.safe !== true) throw new Error('Runtime schema privileges are unsafe');
 }
 
+interface TableAccess {
+  name: string;
+  privileges: string[];
+  grantable: boolean;
+  column_extra: boolean;
+  column_any: boolean;
+}
+
+function hasExpectedTableAccess(table: TableAccess): boolean {
+  if (!runtimeTables.includes(table.name)) {
+    return table.privileges.length === 0 && !table.grantable && !table.column_any;
+  }
+  return (
+    !table.grantable &&
+    !table.column_extra &&
+    requiredPrivileges(table.name).join() === table.privileges.join()
+  );
+}
+
 async function assertTables(tx: SqlExecutor, context: RoleContext): Promise<void> {
-  const result = await tx.query<{
-    name: string;
-    privileges: string[];
-    grantable: boolean;
-    column_extra: boolean;
-  }>(
+  const result = await tx.query<TableAccess>(
     `SELECT c.relname AS name,
       ARRAY(SELECT p FROM unnest($3::text[]) p WHERE has_table_privilege($1,c.oid,p)) AS privileges,
       EXISTS(SELECT 1 FROM unnest($3::text[]) p WHERE has_table_privilege($1,c.oid,p || ' WITH GRANT OPTION')) AS grantable,
+      has_any_column_privilege($1,c.oid,'SELECT,INSERT,UPDATE,REFERENCES') AS column_any,
       has_any_column_privilege($1,c.oid,'SELECT WITH GRANT OPTION,INSERT WITH GRANT OPTION,UPDATE WITH GRANT OPTION,REFERENCES WITH GRANT OPTION')
         OR has_any_column_privilege($1,c.oid,'REFERENCES')
         OR (c.relname IN ('audit_events','operation_catalog','cms_migrations') AND has_any_column_privilege($1,c.oid,'UPDATE'))
@@ -121,18 +136,12 @@ async function assertTables(tx: SqlExecutor, context: RoleContext): Promise<void
      WHERE n.nspname=$2 AND c.relkind IN ('r','p','v','m','f')`,
     [context.roleName, context.schema, tablePrivileges],
   );
-  if (result.rows.length !== runtimeTables.length)
+  const found = new Set(result.rows.map((table) => table.name));
+  if (runtimeTables.some((table) => !found.has(table))) {
     throw new Error('Runtime database tables differ from the supported schema');
-  for (const row of result.rows) {
-    const required = requiredPrivileges(row.name);
-    if (
-      !runtimeTables.includes(row.name) ||
-      row.grantable ||
-      row.column_extra ||
-      required.join() !== row.privileges.join()
-    ) {
-      throw new Error('Runtime table privileges are unsafe or incomplete');
-    }
+  }
+  if (result.rows.some((table) => !hasExpectedTableAccess(table))) {
+    throw new Error('Runtime table privileges are unsafe or incomplete');
   }
 }
 

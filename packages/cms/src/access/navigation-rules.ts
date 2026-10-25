@@ -44,10 +44,24 @@ export async function validateNavigation(
 ) {
   validateShape(input.node);
   validateFamily(input);
+  if (input.node.type === 'page' && runtime.navigationPaths.length === 0) {
+    fail('temporarily_unavailable', {
+      fieldErrors: [{ field: 'path', message: 'No navigation pages are registered.' }],
+    });
+  }
   if (input.node.path !== null && !runtime.navigationPaths.includes(input.node.path))
-    fail('invalid_input');
+    fail('invalid_input', {
+      fieldErrors: [{ field: 'path', message: 'The navigation page is not registered.' }],
+    });
   if (input.node.icon !== null && !runtime.navigationIcons.includes(input.node.icon))
-    fail('invalid_input');
+    fail('invalid_input', {
+      fieldErrors: [
+        {
+          field: 'icon',
+          message: 'The navigation icon is not registered. Use null or a registered icon.',
+        },
+      ],
+    });
   if (input.node.permissionId !== null) {
     const permission = await findResource(input.tx, {
       table: 'permissions',

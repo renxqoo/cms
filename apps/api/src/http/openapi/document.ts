@@ -22,6 +22,11 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
       in: pathParameter ? 'path' : 'query',
       schema: value,
       required: pathParameter || input.required?.includes(name) === true,
+      ...(operation.method === 'DELETE' && name === 'version'
+        ? {
+            description: 'Required query parameter ?version=N. DELETE request bodies are not read.',
+          }
+        : {}),
     });
   }
   if (['GET', 'DELETE'].includes(operation.method)) return { parameters };

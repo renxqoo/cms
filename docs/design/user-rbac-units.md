@@ -10,7 +10,7 @@ API 使用 /v1、camelCase JSON、UUID 字符串 ID、UTC ISO 8601 时间。输�
 
 scope 输入平铺为 scopeKind、collectionKey：global 时 collectionKey 缺省 null 且禁止非 null；collection 时 key 必填且必须注册。没有省略 scopeKind 推断 global 的规则。读操作返回同样的两个字段；不暴露内部生成的 scope_ref。
 
-PATCH/PUT 的预期 version 放在 JSON；DELETE 的 version 放在必填查询参数。空 PATCH、只提供 version 或未知写字段返回 400。版本必须为正整数；目标不存在 404，目标存在且版本过期 409。无变化的合法更新返回当前投影，不增加版本或成功变更审计。
+PATCH/PUT 的预期 version 放在 JSON；DELETE 的 version 放在必填查询参数?version=N，JSON body不被读取。DELETE缺失、非法或重复version返回400，fieldErrors.version明确提示使用单一正整数查询参数，OpenAPI标明来源且不声明requestBody。空 PATCH、只提供 version 或未知写字段返回 400。版本必须为正整数；目标不存在 404，目标存在且版本过期 409。无变化的合法更新返回当前投影，不增加版本或成功变更审计。
 
 管理员创建、邀请重发及角色/权限/菜单/绑定创建要求 Idempotency-Key，长度 16—128，仅允许可打印 ASCII，缺失/非法 400。同键同请求重放不重复变更或发信；同键异请求 409。规范化请求指纹不记录密码、token 或 Authorization。密码和公开 token 操作不使用此缓存。
 
@@ -101,7 +101,7 @@ Admin 投影：id、email、displayName、roleId、roleCode、status、activatio
 
 创建及分配只允许active角色；被分配super角色的账户仍须完成激活才计入有效超管。相同邮箱并发创建只成功一次；冲突不遗留凭据、令牌、投递或成功审计。新账户没有默认密码；邀请未激活账户登录返回统一invalid_credentials。创建/重发同事务检查冷却，发送失败也不释放冷却，避免故障时连点打爆SMTP。
 
-普通账户管理写均为security，因此本期不增加admins:update等可委派写权限。PATCH role/status 对自己一律拒绝；名称仍可通过 /me 修改。归档不可恢复，无DELETE /admins。管理员邮箱在本期创建后不可修改。
+普通账户管理写均为security，因此本期不增加admins:update等可委派写权限。PATCH role/status 对自己一律拒绝；名称仍可通过 /me 修改。归档状态不可恢复，无DELETE /admins；超管仍可维护归档账号的displayName或迁移其roleId至另一active角色，status保持archived。恢复请求返回400并在status字段说明不可恢复。管理员邮箱在本期创建后不可修改。
 
 ## 4. I2：登录、会话和自身维护
 
@@ -155,6 +155,8 @@ Role投影：id、code、name、description、status、isSuper、version、creat
 
 重复permissionId返回invalid_input；引用不存在/disabled权限拒绝，区别于授权为空。替换授权与更新元数据共用roles.version，并发一个成功、另一个version_conflict；审计added/removed由事务内实际旧集合与新集合求差，不在事务前取旧值。普通角色可以停用；恢复后原授权关系保留。权限停用时关系保留但不能授权使用，不能悄悄删除关联造成信息丢失。
 
+角色删除引用计数包含归档账号，仍有引用时409 resource_in_use的id字段提示停用角色或显式迁移关联账号。归档账号可用现有管理员PATCH迁移至另一active角色；旧角色无引用后可删除，不忽略外键或自动解绑。
+
 ## 7. A2：权限身份
 
 Permission投影：id、code、name、description、scopeKind、collectionKey、status、version、createdAt、updatedAt。
@@ -179,9 +181,9 @@ Navigation管理投影为id、parentId、type、name、path、icon、sortOrder�
 | PATCH /navigation/:id | navigation.update / security global | {version,parentId?,type?,name?,path?,icon?,sortOrder?,status?,visibility?,permissionId?}；200单节点 |
 | DELETE /navigation/:id?version= | navigation.delete / security global | 204；有子节点409，不隐式递归删 |
 
-PATCH按最终合并形状校验：改type同时补齐/清除字段，不支持保留不合法旧字段；修改parent必须在锁内检查类型、防环及目标存在。page路径来自已装配前端允许列表；icon来自相同注册的图标名允许列表，未知名invalid_input，不返回可执行代码。空允许列表时可创建group，不能创建不存在page。
+PATCH按最终合并形状校验：改type同时补齐/清除字段，不支持保留不合法旧字段；修改parent必须在锁内检查类型、防环及目标存在。page路径来自CMS_NAVIGATION_PATHS，icon来自CMS_NAVIGATION_ICONS；应用层解析逗号目录并拒绝重复及非法路径/图标名，runtime按配置注入。两项默认空，前端后续接入时只注册真实页面。空路径目录时可创建group；形状合法的page返回503 temporarily_unavailable并在path字段提示无已注册页面，缺少path仍400。目录非空但path未知或非null未知icon返回400 invalid_input及字段说明，icon可为null，不返回可执行代码。
 
-菜单使用permission可见时引用active权限；permission停用后隐藏该节点，isSuper也遵循节点状态及引用有效性。authenticated页面无需角色权限，但进入实际内容API仍按绑定授权。group自身不授业务权，可见子节点为空则隐藏。菜单action用于展示，按钮真实可用性依operation投影，不把改菜单当作安全策略变更。
+菜单使用permission可见时引用active权限；permission停用后隐藏该节点，isSuper也遵循节点状态及引用有效性。authenticated页面无需角色权限，但进入实际内容API仍按绑定授权。已撤除注册路径的page及其action从myNavigation隐藏，管理树保留原记录。group自身不授业务权，可见子节点为空则隐藏。菜单action用于展示，按钮真实可用性依operation投影，不把改菜单当作安全策略变更。
 
 ## 9. A4：真实接口目录与绑定
 

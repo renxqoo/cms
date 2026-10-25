@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
+import { navigationIconsSchema, navigationPathsSchema } from './navigation-config.ts';
 
 const environmentSchema = z.object({
   DATABASE_URL: z.url().refine((value) => /^postgres(?:ql)?:/.test(value)),
@@ -20,11 +21,14 @@ const environmentSchema = z.object({
   SMTP_FROM: z.email().default('cms@localhost.invalid'),
   CMS_FRONTEND_URL: z.url().default('http://localhost:3000'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  CMS_NAVIGATION_PATHS: z.string().default('').transform(commaList).pipe(navigationPathsSchema),
+  CMS_NAVIGATION_ICONS: z.string().default('').transform(commaList).pipe(navigationIconsSchema),
 });
 
 export interface ApplicationConfig {
   mode: 'development' | 'test' | 'production';
   database: { connectionString: string; schema: string; maxConnections: number };
+  navigation: { paths: readonly string[]; icons: readonly string[] };
   policy: CmsPolicy;
   password: {
     N: number;
@@ -170,6 +174,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
   validateProduction(env);
   return {
     mode: env.NODE_ENV,
+    navigation: { paths: env.CMS_NAVIGATION_PATHS, icons: env.CMS_NAVIGATION_ICONS },
     database: {
       connectionString: env.DATABASE_URL,
       schema: env.DATABASE_SCHEMA,

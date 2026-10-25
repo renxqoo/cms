@@ -98,3 +98,28 @@ it('requires a separate explicit migration connection in production and keeps de
   ).toThrow('Verified PostgreSQL TLS');
   expect(loadConfig(base).mode).toBe('development');
 });
+
+it('keeps navigation unregistered by default and parses an explicitly configured frontend directory', () => {
+  expect(loadConfig(base)).toMatchObject({ navigation: { paths: [], icons: [] } });
+  expect(
+    loadConfig({
+      ...base,
+      CMS_NAVIGATION_PATHS: ' /dashboard, /reports ',
+      CMS_NAVIGATION_ICONS: 'home,Chart',
+    }),
+  ).toMatchObject({ navigation: { paths: ['/dashboard', '/reports'], icons: ['home', 'Chart'] } });
+});
+
+it.each([
+  { CMS_NAVIGATION_PATHS: 'https://external.example.test/dashboard' },
+  { CMS_NAVIGATION_PATHS: '//external.example.test/dashboard' },
+  { CMS_NAVIGATION_PATHS: '/dashboard?token=private' },
+  { CMS_NAVIGATION_PATHS: '/dashboard#private' },
+  { CMS_NAVIGATION_PATHS: '/settings/../dashboard' },
+  { CMS_NAVIGATION_PATHS: '/settings\\dashboard' },
+  { CMS_NAVIGATION_PATHS: '/dashboard,/dashboard' },
+  { CMS_NAVIGATION_ICONS: 'home,home' },
+  { CMS_NAVIGATION_ICONS: '<script>' },
+])('rejects noncanonical or duplicate navigation configuration %j', (configuration) => {
+  expect(() => loadConfig({ ...base, ...configuration })).toThrow('CMS_NAVIGATION');
+});

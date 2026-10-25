@@ -85,7 +85,12 @@ export async function updateAccountRow(
   if (!current) fail('not_found');
   if (current.version !== input.version) fail('version_conflict');
   const next = { ...current, ...input };
-  if (current.status === 'archived' && next.status !== 'archived') fail('invalid_input');
+  if (current.status === 'archived' && next.status !== 'archived')
+    fail('invalid_input', {
+      fieldErrors: [
+        { field: 'status', message: 'Archived administrator accounts cannot be restored.' },
+      ],
+    });
   if (unchanged(current, next)) return current;
   const updated = await tx.query(
     `UPDATE admins SET display_name=$2,role_id=$3,status=$4,
