@@ -9,23 +9,34 @@
   "type": "module",
   "scripts": {
     "lint": "bun tooling/check-lint-policy.ts && oxlint --disable-nested-config --type-aware --deny-warnings . && oxfmt --check --ignore-path .oxfmtignore .",
-    "typecheck": "tsc --noEmit",
-    "build": "bun build ./tooling/oxlint-plugin/index.ts --target=node --format=esm --packages=external --outdir=dist/oxlint-plugin",
-    "test": "bun --bun ./node_modules/vitest/vitest.mjs run --coverage",
+    "typecheck": "bun check",
+    "build": "bun build tooling/oxlint-plugin/index.ts --target=node --format=esm --packages=external --outdir=dist/oxlint-plugin && bun tooling/build-api.ts",
+    "test": "bun --bun ./node_modules/vitest/vitest.mjs run --coverage && bun run test:e2e e2e/user-rbac.spec.ts",
     "test:watch": "bun --bun ./node_modules/vitest/vitest.mjs",
-    "format": "oxfmt --write --ignore-path .oxfmtignore ."
+    "format": "oxfmt --write --ignore-path .oxfmtignore .",
+    "dev": "bun --watch apps/api/src/main.ts",
+    "start": "node apps/api/dist/main.js",
+    "db:migrate": "bun apps/api/src/commands/migrate.ts",
+    "admin:initialize": "bun apps/api/src/commands/initialize-admin.ts",
+    "operations:reconcile": "bun apps/api/src/commands/reconcile-operations.ts",
+    "test:e2e": "bun tooling/build-api.ts && bun --bun node_modules/vitest/vitest.mjs run --config e2e/vitest.config.ts",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@new-cms/cms": "workspace:*",
+    "@new-cms/database": "workspace:*",
     "@oxlint/plugins": "1.89.0",
     "@types/node": "26.6.5",
     "@vitest/coverage-istanbul": "5.0.5",
+    "husky": "9.1.7",
     "oxc-parser": "0.155.0",
     "oxc-resolver": "11.24.2",
     "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
     "oxlint-tsgolint": "7.0.2005",
     "typescript": "7.0.2",
-    "vitest": "5.0.5"
+    "vitest": "5.0.5",
+    "zod": "4.6.7"
   },
   "engines": {
     "bun": "1.4.4",

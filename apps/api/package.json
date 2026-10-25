@@ -1,0 +1,18 @@
+{
+  "name": "@new-cms/api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@hono/node-server": "2.1.5",
+    "@new-cms/cms": "workspace:*",
+    "@new-cms/database": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "hono": "4.13.14",
+    "nodemailer": "10.2.1",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "8.0.2"
+  }
+}

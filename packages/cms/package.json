@@ -1,0 +1,25 @@
+{
+  "name": "@new-cms/cms",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./identity": "./src/identity/index.ts",
+    "./access": "./src/access/index.ts",
+    "./audit": "./src/audit/index.ts",
+    "./identity/composition": "./src/identity/composition.ts",
+    "./access/composition": "./src/access/composition.ts",
+    "./audit/composition": "./src/audit/composition.ts",
+    "./platform/contracts": "./src/platform/contracts.ts",
+    "./platform/security-lock": "./src/platform/security-lock.ts",
+    "./platform/idempotency": "./src/platform/idempotency.ts",
+    "./platform/rate-limits": "./src/platform/rate-limits.ts"
+  },
+  "dependencies": {
+    "@new-cms/database": "workspace:*",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
+}

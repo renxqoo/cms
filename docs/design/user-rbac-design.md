@@ -1,6 +1,6 @@
 # CMS 后台账户与 RBAC 设计基线
 
-状态：草稿，2026-10-25；本轮交付为方案，业务代码、DDL 和接口尚未实施。本文与[施工图](user-rbac-implementation.md)、[单元契约及测试矩阵](user-rbac-units.md)组成大级方案三件套。独立审查及处置记录放在施工图，不以方案审查代替运行验证。
+状态：本期后台账户/RBAC后端已核销，2026-10-25；执行结果见[交付记录](review-log.md#后台账户rbac后端与工程门禁交付)。本文与[施工图](user-rbac-implementation.md)、[单元契约及测试矩阵](user-rbac-units.md)组成大级方案三件套。独立审查及处置记录放在施工图，不以方案审查代替运行验证。
 
 ## 1. 分级、裁决及范围
 
@@ -22,14 +22,14 @@
 
 ## 2. 当前事实与影响面
 
-apps、packages 当前为空，package.json 只有规范工具依赖；没有 Hono、数据库或 Next.js 业务。当前 build 构建 Oxlint 插件，test 只匹配 tooling；尚无 test:e2e 入口。当前目录无 .git，git status --short 返回 not a git repository，无可核实远端。
+当前三个工作区已实现身份/RBAC后端及数据库、HTTP、适配器和测试；内容引擎与Next.js尚未实施。build生成Node API/命令/迁移及规范插件，test覆盖本期业务与工具并执行Bun/Node网络旅程；Git及origin已建立，本轮仅本地提交。
 
 | 面 | 本方案定义的目标变化 |
 | --- | --- |
 | 公共导出 | identity/access 业务入口与 composition 分离；HTTP 不能拿到事务参与能力 |
 | HTTP/DTO | 单元文档定义 /v1 的请求、响应、操作身份、状态及错误 |
 | 持久化 | 10 张核心表、email_deliveries、audit_events；依赖 platform 幂等/限流表 |
-| 配置 | 身份 TTL、密码计算、限流、邮件期限和数据库预算集中装配；本轮不新增环境变量 |
+| 配置 | 身份 TTL、密码计算、限流、邮件期限和数据库预算集中装配；环境变量及默认值见.env.example、load-config.ts及README |
 | 异步工作 | 无自动身份邮件重投；有过期清理及未知投递状态收敛，均属 identity |
 | 前端入口 | 本轮不实现 UI；为后续 UI 提供 me/navigation/operations 和显式状态 |
 | 测试 | 单测、真实 PostgreSQL、HTTP、Bun/Node 网络旅程及越权矩阵 |
@@ -110,7 +110,7 @@ GET /me/navigation 返回未停用、符合显式可见策略的页面/操作，
 
 邮箱 trim 后转小写，仅支持本期邮箱登录，最大 255 字符；密码不 trim、不静默截断。新密码长度为 15—128 个 Unicode 码点且 UTF-8 不超过 512 字节，不要求固定字符种类。无 MFA 阶段采用15码点下限，依据[OWASP 身份认证建议](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#implement-proper-password-strength-controls)。
 
-本方案选择 Node 异步 crypto.scrypt，N=32768、r=8、p=3、每次随机盐16字节、派生值64字节、maxmem=64MiB，参数由应用配置注入。该组合来自[OWASP scrypt 参数列表](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt)，Node 的参数及内存边界见[官方 API](https://nodejs.org/docs/latest-v24.x/api/crypto.html#cryptoscryptpassword-salt-keylen-options-callback)。编码为 `scrypt$32768$8$3$<base64url盐>$<base64url派生值>`，验证时只接受已批准的有界参数与正确长度，再以等长 timingSafeEqual 比较；不使用同步哈希阻塞事件循环。未知邮箱、无凭据或损坏哈希使用同成本哑哈希路径；错误密码、未激活、停用/归档账户统一 401 invalid_credentials。实际 Bun/Node 兼容与计算期限在P0/P1验证，未运行前不声称达标。
+本方案选择 Node 异步 crypto.scrypt，N=32768、r=8、p=3、每次随机盐16字节、派生值64字节、maxmem=64MiB，参数由应用配置注入。该组合来自[OWASP scrypt 参数列表](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt)，Node 的参数及内存边界见[官方 API](https://nodejs.org/docs/latest-v24.x/api/crypto.html#cryptoscryptpassword-salt-keylen-options-callback)。编码为 `scrypt$32768$8$3$<base64url盐>$<base64url派生值>`，验证时只接受已批准的有界参数与正确长度，再以等长 timingSafeEqual 比较；不使用同步哈希阻塞事件循环。未知邮箱、无凭据或损坏哈希使用同成本哑哈希路径；错误密码、未激活、停用/归档账户统一 401 invalid_credentials。本轮Bun/Node真实进程旅程使用该生产密码适配器；计算并发、取消及容量回收另有集成回归，结果见交付记录。
 
 会话与 action token 使用密码学安全的 32 随机字节，base64url 编码；只保存 SHA-256 摘要及生命周期信息，摘要不进入 DTO、日志或幂等结果。邀请和重置通过 purpose 隔离，消费时检查期限、用途、状态及账户资格，事务内单次消费。邮件链接使用已配置前端地址和 URL fragment 携带令牌，前端兑换时放请求体；日志不记录 fragment、正文或 Authorization，不把令牌放 API URL。
 
@@ -160,11 +160,11 @@ GET /me/navigation 返回未停用、符合显式可见策略的页面/操作，
 | 维护扫描 | 60 秒一次、每批最多 100、单实例最多 1 个可取消调度器，每批以独立事务级 try-advisory 锁协调多实例，取锁失败跳过本轮 |
 | 投递状态收敛 | pending/sending 超过 30 秒标记 unknown；不发送邮件 |
 | 幂等 / 会话与令牌清理 | 幂等 24 小时；失效会话/令牌保留 7 天后分批清理，审计不随之级联删除 |
-| 退出 | ready=false → 停止领取 → 摘流 → 排空最多 10 秒 → 取消剩余 → 数据库池最后关闭 |
+| 退出 | ready=false → 停止领取 → 摘流 → 排空最多 10 秒 → 取消剩余 → 数据库池最后关闭；主进程总期限覆盖整条关闭链，超限明确失败退出 |
 
 登录限流不设可由匿名者长期锁死整账户的全局邮箱锁。邮箱+IP 使用带服务端密钥的摘要作为计数键，不记录原始邮箱；全局匿名资源压力由 IP 准入及密码计算信号量限制。参数名称为内部配置契约，环境变量映射在实现时显式定义，不把本文字段当作已经存在的环境变量。
 
-过期以数据库当前时间判断，边界 expiresAt <= now 即无效。每次请求不启动永久定时器；取消信号传播到排队、SQL、邮件及响应，队列/信号量在 finally 释放。底层密码任务若不能硬取消，仍计入并发直到真实完成，不能返回超时后提前释放容量造成实际无限并发。
+过期以数据库clock_timestamp()当前时间判断，不能使用固定在事务开始时的now()；边界expiresAt <= 当前时刻即无效。每次请求不启动永久定时器；取消信号传播到排队、SQL、邮件及响应，队列/信号量在 finally 释放。底层密码任务若不能硬取消，仍计入并发直到真实完成，不能返回超时后提前释放容量造成实际无限并发。
 
 ## 10. 方案验收与实现边界
 

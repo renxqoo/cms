@@ -1,0 +1,20 @@
+{
+  "name": "@new-cms/database",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./migrate": "./src/migrate.ts",
+    "./schema/identity": "./src/schema/identity.ts",
+    "./schema/access": "./src/schema/access.ts",
+    "./schema/audit": "./src/schema/audit.ts",
+    "./schema/platform": "./src/schema/platform.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
+}

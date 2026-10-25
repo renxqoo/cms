@@ -13,6 +13,7 @@
     "cms/no-code-comments": "error",
     "cms/workspace-boundaries": "error",
     "cms/private-tests": "error",
+    "cms/architecture-boundaries": "error",
     "import/no-cycle": "error",
     "typescript/no-unsafe-assignment": "error",
     "typescript/no-unsafe-argument": "error",

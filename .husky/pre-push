@@ -1,0 +1,4 @@
+set -eu
+
+bun run build
+bun run test

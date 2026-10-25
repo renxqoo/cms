@@ -1,8 +1,8 @@
 # 功能与接口清单
 
-状态：架构基线的功能范围，路径是本项目拟定义的新契约，不是已实现接口。DTO 的逐字段 schema、稳定错误码及 OpenAPI 在各实施批次开始前定义并测试，不猜测源系统契约。
+状态：全局功能与接口范围。身份/RBAC的34个操作已按专项契约实现；内容、资源与其他未实施能力仍为目标。实际OpenAPI由注册操作及业务输入schema生成，不把全局清单全部视为已实现。
 
-后台账户与 RBAC 的专项草稿已补充[设计基线](user-rbac-design.md)、[施工图](user-rbac-implementation.md)及[逐字段/接口/测试契约](user-rbac-units.md)。本模块拟统一 UUID 字符串 ID，/me 的生效操作通过有界 /me/operations 投影；身份邮件严格只存摘要且不自动重投，失败由用户显式重新发起。该细化不表示已有业务实现。
+后台账户与 RBAC 的专项契约见[设计基线](user-rbac-design.md)、[施工图](user-rbac-implementation.md)及[逐字段/接口/测试契约](user-rbac-units.md)。本模块拟统一 UUID 字符串 ID，/me 的生效操作通过有界 /me/operations 投影；身份邮件严格只存摘要且不自动重投，失败由用户显式重新发起。本期实际实现与验证见专项施工图。
 
 ## 1. 统一协议
 

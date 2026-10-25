@@ -3,6 +3,7 @@ import { definePlugin, defineRule } from '@oxlint/plugins';
 import type { Context, ESTree, Node } from '@oxlint/plugins';
 import { findProjectRoot, importViolation, readWorkspaces } from './workspaces.ts';
 import { canonicalPath, resolveImport } from './resolution.ts';
+import { architectureViolation } from './architecture.ts';
 
 export const noCodeComments = defineRule({
   meta: {
@@ -97,11 +98,22 @@ export const workspaceBoundaries = defineRule({
   },
 });
 
+export const architectureBoundaries = defineRule({
+  meta: { type: 'problem', schema: [] },
+  create(context) {
+    return importVisitors(context, (specifier, node) => {
+      const message = architectureViolation(context.filename, specifier);
+      if (message) context.report({ node, message });
+    });
+  },
+});
+
 export default definePlugin({
   meta: { name: 'cms' },
   rules: {
     'no-code-comments': noCodeComments,
     'workspace-boundaries': workspaceBoundaries,
     'private-tests': privateTests,
+    'architecture-boundaries': architectureBoundaries,
   },
 });
