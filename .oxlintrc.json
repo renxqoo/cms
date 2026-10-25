@@ -1,0 +1,160 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+
+  "plugins": ["typescript", "unicorn", "react", "react-hooks", "promise", "import", "vitest"],
+  "jsPlugins": ["./tooling/oxlint-plugin/index.ts"],
+
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+
+  "rules": {
+    "cms/no-code-comments": "error",
+    "cms/workspace-boundaries": "error",
+    "cms/private-tests": "error",
+    "import/no-cycle": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-argument": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/switch-exhaustiveness-check": "error",
+    "eslint/no-eval": "error",
+    "eslint/no-implied-eval": "error",
+    "eslint/no-debugger": "error",
+    "vitest/no-disabled-tests": "error",
+    "vitest/no-focused-tests": "error",
+    "vitest/no-test-prefixes": "error",
+    "vitest/no-import-node-test": "error",
+    "vitest/warn-todo": "error",
+    "vitest/valid-expect": ["error", { "maxArgs": 2 }],
+
+    "eslint/max-lines": ["error", { "max": 400, "skipComments": true, "skipBlankLines": true }],
+    "eslint/max-lines-per-function": ["error", { "max": 50 }],
+    "eslint/max-params": ["error", { "max": 3 }],
+    "eslint/complexity": ["error", { "max": 15 }],
+    "eslint/max-depth": ["error", { "max": 4 }],
+    "eslint/max-statements": ["error", { "max": 40 }],
+    "eslint/max-nested-callbacks": ["error", { "max": 3 }],
+    "eslint/max-classes-per-file": ["error", 1],
+    "eslint/no-nested-ternary": "error",
+    "eslint/eqeqeq": ["error", "smart"],
+    "eslint/prefer-template": "error",
+    "eslint/prefer-const": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-confusing-non-null-assertion": "error",
+    "typescript/ban-ts-comment": "error",
+    "typescript/no-dynamic-delete": "error",
+    "typescript/prefer-nullish-coalescing": "error",
+    "typescript/prefer-optional-chain": "error",
+    "typescript/consistent-type-imports": "error",
+    "typescript/consistent-type-definitions": ["error", "interface"],
+    "typescript/no-require-imports": "error",
+    "typescript/prefer-includes": "error",
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+
+    "eslint/no-promise-executor-return": "error",
+    "eslint/no-template-curly-in-string": "error",
+    "typescript/require-await": "error",
+    "promise/no-return-in-finally": "error",
+    "promise/no-multiple-resolved": "error",
+    "unicorn/error-message": "error",
+    "unicorn/catch-error-name": "error",
+
+    "react/react-in-jsx-scope": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
+
+    "unicorn/no-abusive-eslint-disable": "error",
+    "eslint/no-implicit-globals": "error",
+
+    "eslint/no-console": ["error", { "allow": ["warn", "error"] }],
+    "unicorn/filename-case": ["error", { "case": "kebabCase" }],
+
+    "unicorn/no-lonely-if": "error",
+    "eslint/object-shorthand": "error",
+    "eslint/arrow-body-style": "error",
+    "eslint/prefer-destructuring": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-array-some": "error",
+    "unicorn/prefer-at": "error",
+    "unicorn/explicit-length-check": "error",
+    "unicorn/no-useless-undefined": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-unnecessary-type-assertion": "error"
+  },
+
+  "overrides": [
+    {
+      "files": ["tooling/oxlint-plugin/__test__/rule-harness.ts"],
+      "rules": { "typescript/no-unsafe-type-assertion": "off" }
+    },
+    {
+      "files": ["apps/api/src/**", "packages/cms/src/**", "packages/database/src/**"],
+      "env": { "browser": false },
+      "rules": {
+        "eslint/no-restricted-globals": [
+          "error",
+          { "name": "Bun", "message": "Production runs on Node.js." }
+        ],
+        "eslint/no-restricted-imports": [
+          "error",
+          { "patterns": ["bun", "bun:*", "vitest", "node:test"] }
+        ]
+      }
+    },
+    {
+      "files": ["**/__test__/**", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/testing/**"],
+      "rules": {
+        "eslint/no-restricted-imports": ["error", { "patterns": ["bun:test", "node:test"] }],
+        "eslint/no-restricted-properties": [
+          "error",
+          { "property": "skipIf", "message": "Tests must execute, not skip conditionally." },
+          { "property": "runIf", "message": "Tests must execute, not skip conditionally." }
+        ],
+        "eslint/max-lines": "off",
+        "eslint/max-lines-per-function": "off",
+        "eslint/max-statements": "off",
+        "eslint/complexity": "off",
+        "eslint/no-console": "off"
+      }
+    },
+    {
+      "files": ["**/*.tsx"],
+      "rules": {
+        "eslint/max-lines-per-function": ["error", { "max": 150 }],
+        "eslint/no-nested-ternary": "off"
+      }
+    },
+    {
+      "files": ["**/scripts/**"],
+      "rules": {
+        "eslint/no-console": "off",
+        "eslint/max-lines": "off"
+      }
+    }
+  ],
+
+  "env": { "node": true, "browser": true },
+
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/.next/**",
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/migrations/**",
+    "**/generated/**",
+    "**/*.generated.ts"
+  ]
+}

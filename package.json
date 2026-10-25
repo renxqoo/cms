@@ -1,0 +1,35 @@
+{
+  "name": "new-cms",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "lint": "bun tooling/check-lint-policy.ts && oxlint --disable-nested-config --type-aware --deny-warnings . && oxfmt --check --ignore-path .oxfmtignore .",
+    "typecheck": "tsc --noEmit",
+    "build": "bun build ./tooling/oxlint-plugin/index.ts --target=node --format=esm --packages=external --outdir=dist/oxlint-plugin",
+    "test": "bun --bun ./node_modules/vitest/vitest.mjs run --coverage",
+    "test:watch": "bun --bun ./node_modules/vitest/vitest.mjs",
+    "format": "oxfmt --write --ignore-path .oxfmtignore ."
+  },
+  "devDependencies": {
+    "@oxlint/plugins": "1.89.0",
+    "@types/node": "26.6.5",
+    "@vitest/coverage-istanbul": "5.0.5",
+    "oxc-parser": "0.155.0",
+    "oxc-resolver": "11.24.2",
+    "oxfmt": "0.74.0",
+    "oxlint": "1.89.0",
+    "oxlint-tsgolint": "7.0.2005",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  },
+  "engines": {
+    "bun": "1.4.4",
+    "node": ">=24.22.1"
+  },
+  "packageManager": "bun@1.4.4"
+}
