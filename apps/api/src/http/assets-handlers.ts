@@ -11,6 +11,9 @@ export function assetHandlers(assets: ContentUploadsApi): Map<string, BusinessHa
     ['assets.readUpload', assets.readUpload],
     ['assets.cancelUpload', assets.cancelUpload],
     ['assets.reprocess', assets.reprocess],
+    ['assets.listCleanup', (ctx, input) => assets.listCleanup(ctx, input)],
+    ['assets.getCleanup', (ctx, input) => assets.getCleanup(ctx, input)],
+    ['assets.retryCleanup', assets.retryCleanup],
   ]);
 }
 

@@ -4,11 +4,13 @@ import type { Database, SqlExecutor } from '@new-cms/database/client';
 import type { AssetsApi } from '@new-cms/cms/assets';
 import type {
   ManifestSummary,
+  AssetLimits,
+  AssetDiscoverySources,
   AssetsParticipants,
   ContentAuthorizer,
 } from '@new-cms/cms/assets/composition';
 import type { ContentLimits, ContentRegistry, DocumentData } from './definition.ts';
-import type { ContentMapping, DocumentView } from './model.ts';
+import type { ContentMapping, DocumentView, RelationScope } from './model.ts';
 import type { ContentStore } from './adapters/postgres/store-contract.ts';
 import type { CollectionDefinition, Where } from './definition.ts';
 import type { contentInputSchemas } from './input-schemas.ts';
@@ -44,8 +46,17 @@ export interface ContentOptions {
     maxBytes: number;
     variantQuality: number;
     variantFormat: 'jpeg' | 'png' | 'webp';
+    imageLimits: Pick<
+      AssetLimits,
+      'maxOutputBytes' | 'maxPixels' | 'maxFrames' | 'maxWidth' | 'maxHeight' | 'maxVariants'
+    >;
   };
-  readAssetJob(ctx: RequestContext, input: { collection: string; jobId: string }): Promise<unknown>;
+  assetDiscoverySources(input: { actorId: string; collectionKey: string }): AssetDiscoverySources;
+  readAssetJob(
+    ctx: RequestContext,
+    input: { collection: string; jobId: string },
+    tx?: SqlExecutor,
+  ): Promise<unknown>;
   afterCommitHandlers: Readonly<
     Record<
       string,
@@ -63,6 +74,7 @@ export interface ContentOptions {
 export interface ContentRuntime extends ContentOptions {
   store: ContentStore;
   schemas: ReturnType<typeof contentInputSchemas>;
+  resolveRelationScopes(state: ContentState): Promise<{ relationScopes: RelationScope[] }>;
 }
 
 export interface ContentState {

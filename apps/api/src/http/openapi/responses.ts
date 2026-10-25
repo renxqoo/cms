@@ -1,5 +1,8 @@
 import { contentResponseSchemas } from './content-schemas.ts';
 import { assetResponseSchemas } from './assets-schemas.ts';
+import { managementResponseSchemas } from './management-schemas.ts';
+import { editorResponseSchemas } from './editor-schemas.ts';
+import { discoveryResponseSchemas } from './discovery-schemas.ts';
 import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
 import { id, time, integer, text, object, reference, array, page } from './schema.ts';
 import type { Schema } from './schema.ts';
@@ -129,6 +132,9 @@ export function responseSchemas(): Record<string, Schema> {
     ...navigationSchemas(),
     ...contentResponseSchemas(),
     ...assetResponseSchemas(),
+    ...managementResponseSchemas(),
+    ...editorResponseSchemas(),
+    ...discoveryResponseSchemas(),
     AllowedOperation: object({ operationId: text, ...scope }),
     Endpoint: object({
       operationId: text,
@@ -194,6 +200,7 @@ const responses: Record<string, string> = {
   'audit.list': 'AuditPage',
   'collections.list': 'ContentCollectionList',
   'collections.get': 'ContentCollection',
+  'collections.editor': 'CollectionEditor',
   'documents.list': 'ContentDocumentPage',
   'documents.create': 'ContentDocument',
   'documents.get': 'ContentDocument',
@@ -212,6 +219,8 @@ const responses: Record<string, string> = {
   'content.schedulePublication': 'ContentJobAccepted',
   'content.batch': 'ContentBatchResult',
   'content.getJob': 'ContentJobResult',
+  'content.listJobs': 'DiscoveredJobPage',
+  'assets.listUploads': 'UploadSummaryPage',
   'folders.list': 'ContentFolderList',
   'folders.create': 'ContentFolder',
   'folders.update': 'ContentFolder',
@@ -222,6 +231,9 @@ const responses: Record<string, string> = {
   'assets.completeUpload': 'AssetUpload',
   'assets.readUpload': 'AssetUpload',
   'assets.reprocess': 'AssetProcessingAccepted',
+  'assets.listCleanup': 'AssetCleanupPage',
+  'assets.getCleanup': 'AssetCleanup',
+  'assets.retryCleanup': 'AssetCleanupRetry',
 };
 
 export function operationResponses(operation: OperationDefinition) {

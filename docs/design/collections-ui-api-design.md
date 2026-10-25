@@ -1,6 +1,6 @@
 # Collections UI 接口补面设计
 
-状态：定稿，2026-10-26。级别：中；六个既有子系统端点跨层扩展，含权限/分页/异步账本一致性。复用现有业务和事务协议，补齐编辑契约、持久化工作发现及受控清理恢复，不重做内容/文件引擎。
+状态：已核销，2026-10-26。级别：中；六个既有子系统端点跨层扩展，含权限/分页/异步账本一致性。复用现有业务和事务协议，补齐编辑契约、持久化工作发现及受控清理恢复，不重做内容/文件引擎。核销数字见[验证记录](collections-ui-api-verification.md)。
 
 ## 1. 范围与裁决
 
@@ -14,7 +14,7 @@
 
 layout 是从现有 registry 派生的树。节点包含 id/type/name?/label/path?、required/localized、write=allowed|denied|conditional，以及适用的 constraints（min/max/minLength/maxLength/precision/options/hasMany/relationTo/defaultValue）；children、blocks={id,key,label,children}[]、tabs={id,name?,label,children}[] 保留 group/array/blocks/命名和非命名 tabs/row/collapsible。数组 UUID 和 blockType 使用现有业务规则，不创造第二套字段配置。join 永远不可写。富文本只暴露受信任节点 type/version，不暴露函数。
 
-只导出当前可读字段和可读祖先；隐藏字段的名称、标签、默认值、选项和后代均不泄露，空展示容器删除。容器 defaultValue 必须按已经授权的可见字段树递归投影，不原样复制含隐藏后代的 group/array/blocks 默认对象，也不拿默认对象伪装真实文档重算策略。read/write/query 分别处理，可读但禁止查询的字段仍可出现在编辑布局。读取策略以 documents.get 的真实读取上下文执行，write 提示以所选 intent 对应的真实操作上下文计算；不能统一使用 collections.editor。新 collections.editor 的集合 Where 必须与目标文档读取谓词相交；create 无目标时遇到非空 Where 明确拒绝。不能伪造 nextData 求写权。无写策略且操作授权允许时 write=allowed；有写策略时 conditional；不可写模式、权限/状态拒绝时 denied。actions 是 {operationId,state}[]，state 同三值，涵盖当前文档编辑/发布/历史/回收站和计划操作；有依赖候选值的策略不得输出确定 allowed。真实提交仍执行所有规则。read intent 需要文档读取权限；create 需要创建权限；其他 intent 验证源文档读取和各自操作权限。文档谓词、归属和当前状态不得绕过。
+只导出当前可读字段和可读祖先；隐藏字段的名称、标签、默认值、选项和后代均不泄露，空展示容器删除。容器 defaultValue 必须按已经授权的可见字段树递归投影，不原样复制含隐藏后代的 group/array/blocks 默认对象，也不拿默认对象伪装真实文档重算策略。read/write/query 分别处理，可读但禁止查询的字段仍可出现在编辑布局。读取策略以 documents.get 的真实读取上下文执行，write 提示以所选 intent 对应的真实操作上下文计算；不能统一使用 collections.editor。新 collections.editor 的集合 Where 必须与目标文档读取谓词相交；create 无目标时遇到非空 Where 明确拒绝。不能伪造 nextData 求写权。无写策略且操作授权允许时 write=allowed；有写策略时 conditional；不可写模式、权限/状态拒绝时 denied。actions 是 {operationId,state}[]，state 同三值，涵盖当前文档编辑/发布/历史/回收站和计划操作；有依赖候选值的策略不得输出确定 allowed。真实提交仍执行所有规则。read intent 需要文档读取权限；create 需要创建权限；其他 intent 验证源文档读取和各自操作权限。文档谓词、归属和当前状态不得绕过。read 与既有 documents.get 保持相同边界：归档文档 ID 返回404，不增加隐式trash读取；回收站视图继续使用trashed列表及恢复接口。
 
 schemas.read 使用读取形态；draft/commit 使用可提交引用形态，不接受展开的文档，join 排除。静态不可写和隐藏字段不出现在写 schema。动态策略字段标记 conditional，JSON Schema 不替代自定义校验、唯一/引用和提交授权。draft/commit 表示完整候选 data 的结构，commit 对直接生效/发布完整性表达 required；不能把 commit.required 当作 PATCH 必填，wire envelope 和部分补丁继续遵循既有输入 DTO。
 
@@ -28,7 +28,7 @@ ContentJobSummary：kind=content、id、collection、action、status、executeAt
 
 新增 assets.listUploads，GET /v1/collections/:collection/uploads，collection scope permission 可绑定。query：page/pageSize、status?（现有会话状态）、purpose?=create|replace、documentId?。返回标准分页，排序 createdAt DESC,id DESC。UploadSummary 是 UploadSessionView 去除 manifest 后的摘要，并增加 filename/declaredMimeType/declaredBytes/createdAt；详情也增加这四个同名字段。列表不逐行读取 manifest，预览按既有详情取。documentId/revision 保持原会话目标语义，授权另依据真实 bound_document_id/bound_revision_id，不把绑定身份伪装成原请求目标。没有接收进度和分块续传能力时不返回虚构进度。
 
-列表首先验证新操作以及既有详情操作。已证实原 process job 仅看 job.document_id，合法 replace 会被错当 create；本轮必须用 owned upload 统一 list/get 上下文并补红绿回归。现有内容 job 可见性查询漏 relationScopes，列表与详情也必须共用修正后的权限计划。内容任务继续要求当前原来源动作、实际条目动作、来源和结果资源读权；非 owner 的内容任务仍可按现有详情规则访问。资产任务严格当前 actor，并复核原动作：process 与上传详情统一按 owned upload 的用途、目标和绑定修订授权：未绑定的新建需 completeUpload/create；替换或已绑定会话需当前文档读取/下载及相应固定修订资格，历史绑定额外要求 versions.get。reprocess 要 reprocess/download/get 及当前文件有效绑定和未归档。上传会话严格 actor，复用 readUpload 与 authorizeSession；超管不隐式得到他人的会话/资产任务。
+列表首先验证新操作以及既有详情操作。content.getJob 的资产fallback同样必须执行其Where；在原安全事务内以同一资格计划选中后，通过显式tx参与端口读取资产详情，不另开事务丢失外层约束。已证实原 process job 仅看 job.document_id，合法 replace 会被错当 create；本轮必须用 owned upload 统一 list/get 上下文并补红绿回归。现有内容 job 可见性查询漏 relationScopes，列表与详情也必须共用修正后的权限计划。受影响的共享 ensureVisible/visibleDocuments 对关系谓词也缺相同上下文；通过 ContentRuntime 的内部 resolver 注入复用现有 relationScopes，避免反向模块环，只在谓词确实含关系路径时求相关资格。内容任务继续要求当前原来源动作、实际条目动作、来源和结果资源读权；非 owner 的内容任务仍可按现有详情规则访问。资产任务严格当前 actor，并复核原动作：process 与上传详情统一按 owned upload 的用途、目标和绑定修订授权：未绑定的新建需 completeUpload/create；替换或已绑定会话需当前文档读取/下载及相应固定修订资格，历史绑定额外要求 versions.get。reprocess 要 reprocess/download/get 及当前文件有效绑定和未归档。上传会话严格 actor，复用 readUpload 与 authorizeSession；超管不隐式得到他人的会话/资产任务。
 
 新 listJobs/listUploads 的集合 Where 也必须参与资格：jobs 与来源文档谓词相交，uploads 与目标/绑定文档谓词相交，无文档 create 会话遇到非空 Where 不匹配。授权资格、投影状态和状态过滤必须先于 count/page；rows/total 使用同一 SQL 快照，不先分页再过滤。内容适配器复用查询编译器生成可见文档 relation；assets 通过 composition 的明确参数化候选 relation 能力保有表所有权，content 不硬编码 asset 表，assets 不反向依赖 content。两个列表均由 content 编排，assets 通过 composition 提供 actor/collection 限制的 jobs/uploads/fileBindings 三个固定白名单 relation；HTTP 的 assets.listUploads 注入 content.api.listUploads，assets 不反向读取 content。按有限 operation/action/locale 建授权分支，无历史逐条扫描或每 job 查询循环；页面内装饰亦批量且有界。未知/拒绝来源分支不匹配，顶层 list/detail 操作拒绝仍失败。超过编译/SQL/响应预算显式报错，不返回假空页。
 

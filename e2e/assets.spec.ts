@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { expect, it } from 'vitest';
 import { z } from 'zod';
 import { createCmsProcess } from '../test/support/cms-process.ts';
@@ -22,6 +23,23 @@ async function upload(
   });
   expect(created.status).toBe(201);
   const session = z.object({ id: z.uuid() }).parse(await created.json());
+  const pending = await kit.request(
+    'GET',
+    '/v1/collections/media/uploads?status=pending',
+    kit.owner,
+  );
+  expect(pending.status).toBe(200);
+  expect(await pending.json()).toMatchObject({
+    rows: [
+      {
+        id: session.id,
+        filename: '测试 image.png',
+        declaredMimeType: 'image/png',
+        declaredBytes: input.bytes.length,
+      },
+    ],
+  });
+
   const written = await fetch(
     `http://127.0.0.1:${kit.port()}/v1/collections/media/uploads/${session.id}/content`,
     {
@@ -62,6 +80,8 @@ const mediaOperations = [
   'assets.writeUpload',
   'assets.completeUpload',
   'assets.readUpload',
+  'assets.listUploads',
+  'content.listJobs',
   'assets.cancelUpload',
   'assets.download',
   'assets.reprocess',
@@ -184,6 +204,55 @@ it.each(['bun', 'node'] as const)(
         height: 1,
       });
       await kit.restart();
+      const rediscovered = await kit.request(
+        'GET',
+        '/v1/collections/media/jobs?action=reprocess',
+        kit.owner,
+      );
+      expect(rediscovered.status).toBe(200);
+      expect(await rediscovered.json()).toMatchObject({
+        total: 1,
+        rows: [{ id: reprocess.jobId, kind: 'asset', status: 'succeeded' }],
+      });
+      const cleanupId = randomUUID();
+      await kit.store.database.query(
+        "INSERT INTO asset_objects(id,object_key,state,retain_until,next_cleanup_at,cleanup_blocked,cleanup_attempts,cleanup_failure_code) VALUES($1,$2,'deleting',clock_timestamp()-interval '1 day',clock_timestamp()-interval '1 minute',true,3,'temporarily_unavailable')",
+        [cleanupId, `objects/${cleanupId}`],
+      );
+      const blocked = await kit.request('GET', '/v1/asset-cleanups', kit.owner);
+      expect(blocked.status).toBe(200);
+      expect(await blocked.json()).toMatchObject({
+        total: 1,
+        rows: [{ id: cleanupId, blocked: true }],
+      });
+      const retry = await kit.request('POST', `/v1/asset-cleanups/${cleanupId}/retries`, {
+        ...kit.owner,
+        body: {},
+      });
+      expect(retry.status).toBe(202);
+      expect(await retry.json()).toEqual({
+        id: cleanupId,
+        accepted: true,
+        location: `/v1/asset-cleanups/${cleanupId}`,
+      });
+      const deadline = Date.now() + 10_000;
+      let cleaned = false;
+      while (Date.now() < deadline) {
+        const state = z
+          .object({ state: z.string() })
+          .parse(
+            await (await kit.request('GET', `/v1/asset-cleanups/${cleanupId}`, kit.owner)).json(),
+          );
+        if (state.state === 'deleted') {
+          cleaned = true;
+          break;
+        }
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 25);
+        });
+      }
+      expect(cleaned).toBe(true);
+
       expect(
         Buffer.from(await (await kit.request('GET', historical, kit.owner)).arrayBuffer()),
       ).toEqual(first);

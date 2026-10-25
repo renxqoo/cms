@@ -115,7 +115,7 @@ function httpServices(services: Services, config: ApplicationConfig) {
       ...identityInputSchemas,
       ...accessInputSchemas(config.policy),
       ...contentInputSchemas({ ...contentLimits(), ...contentWorkPolicy() }),
-      ...assetsInputSchemas,
+      ...assetsInputSchemas(config.policy),
     },
   };
 }

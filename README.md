@@ -2,7 +2,7 @@
 
 面向结构化内容、文件资料和 RBAC 管理的自研 CMS。后端采用 Hono、PostgreSQL 和 Drizzle；开发与脚本使用 Bun 1.4.4，生产使用 Node.js，测试使用 Vitest。
 
-后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册69个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
+后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册75个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
 
 应用配置启用 articles、pages、media 和 settings 集合。前端 UI 属于后续阶段；尚未注册前端页面，不开放任意菜单 URL 或运行时建表。
 
@@ -15,6 +15,7 @@
 - [导航与管理契约修复](docs/design/navigation-contract-followup.md)：可信导航目录、DELETE版本提示、归档角色维护和兼容扩展的运行权限。
 - [Collections 与资源管理](docs/design/collections-and-assets.md)：完整能力目标、配置编译、集合级关系模型、上传型集合及版本资源一致性。
 - [Collections 后端方案](docs/design/collections-design.md)、[施工与验收](docs/design/collections-implementation.md)、[单元契约](docs/design/collections-units.md)及[资产实现](docs/design/assets-implementation.md)：当前外部契约、迁移回填与验证。
+- [Collections UI 接口](docs/design/collections-ui-api-design.md)及[验证记录](docs/design/collections-ui-api-verification.md)：安全编辑布局、任务/上传发现、超管清理恢复与升级约束。
 - [安全基线](docs/design/security-baseline.md)：入口、Node、Hono 和业务模块的责任。
 - [近期研究证据](docs/design/research-evidence.md)：2026-07-25 至 2026-10-25 官方资料、源码快照及稳定原理。
 - [本地 Payload 架构分析](docs/design/payload-architecture-analysis.md)：真实调用链、配置/权限/事务/文件边界及采纳取舍。
@@ -47,12 +48,14 @@ bun run dev
 修改 apps/api/src/config/collections 后运行 bun run content:generate；物理或 schema 注册变化必须指定新的 --migration 迁移文件名。SQL 与同名 .plan.json 快照一同审查提交，已有迁移不能覆盖；API 不执行 DDL。需要显式转换时，保留 previousSchemas 与版本化 migrations，按[演进协议](docs/design/collections-design.md#10-后续-schema-演进与发布完整性)先应用准备迁移，再有界回填：
 
 ```sh
-bun run content:generate --migration 0011_collection_change.sql
+bun run content:generate --migration 0012_collection_change.sql
 bun run db:migrate
 bun run content:backfill --collection articles --from 1 --to 2 --page-size 20 --max-pages 100
 ```
 
 回填逐页输出 processed、cursor、complete；页预算用尽返回退出码2，可带 --cursor 继续，也可从头按持久化标记重跑。旧 writer 停写后必须再次回填尾部，再执行 bun run content:backfill --activate；未排空时拒绝激活，新配置准备态不通过就绪检查。迁移命令仅装配数据库，不要求 SMTP/对象存储。新 schema 开始写入后的回滚需要明确逆向转换或前向修复。失败对象清理由 bun run assets:reconcile 显式重试有界批次，失败账本不会伪报删除成功。
+
+0011_ui_api.sql 增加清理代次和发现索引。旧 API 维护循环及旧 CLI 清理执行者必须先停止并排空，再启动新版清理和 HTTP 重试；新旧清理协议不能混跑。回滚同样先停止并排空新版清理，再恢复旧产物，保留扩展结构。完整步骤见[接口升级约束](docs/design/collections-ui-api-design.md#5-预算迁移和发布)。三个新集合操作需显式配置权限绑定；三个物理清理操作仅活动超管可用。
 
 人工迁移报告不会自动放行。完成 SQL 审查后可在生成命令增加 --reviewed-sql 文件路径；输入文件放在自动扫描 migrations 目录以外，生成器把正文与快照固化到同名 .plan.json，并附加到目标 SQL。集合 API key 重命名还须显式处理权限范围、绑定及在途任务；该选项不执行迁移、不证明人工 SQL 正确，也不跳过 schema 就绪和激活校验。
 

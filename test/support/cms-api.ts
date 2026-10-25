@@ -74,7 +74,7 @@ export async function waitForJob(
     if (['failed', 'cancelled', 'succeeded', 'partial'].includes(result.status))
       throw new Error(`Unexpected task state: ${result.status}`);
     await new Promise<void>((resolve) => {
-      setTimeout(resolve, 25);
+      setTimeout(resolve, 250);
     });
   }
   throw new Error('Persistent task did not settle');

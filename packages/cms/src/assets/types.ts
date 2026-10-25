@@ -174,6 +174,10 @@ export interface ManifestSummary {
 
 export interface UploadSessionView {
   id: string;
+  filename: string;
+  declaredMimeType: string;
+  declaredBytes: number;
+  createdAt: string;
   collection: string;
   purpose: 'create' | 'replace';
   documentId: string | null;
@@ -214,6 +218,7 @@ export interface UploadRow {
   bound_revision_id: string | null;
   original_object_id: string | null;
   job_id: string | null;
+  created_at: Date;
   is_active: boolean;
   lease_active: boolean;
 }

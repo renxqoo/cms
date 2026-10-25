@@ -31,6 +31,7 @@ export const assetObjects = pgTable('asset_objects', {
   cleanupFailureCode: text('cleanup_failure_code'),
   cleanupBlocked: boolean('cleanup_blocked').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  cleanupGeneration: bigint('cleanup_generation', { mode: 'bigint' }).notNull().default(0n),
 });
 
 export const assetManifests = pgTable('asset_manifests', {

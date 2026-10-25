@@ -5,6 +5,10 @@ import { readManifest } from '../manifests/read-manifest.ts';
 export async function sessionView(tx: SqlExecutor, row: UploadRow): Promise<UploadSessionView> {
   return {
     id: row.id,
+    filename: row.filename,
+    declaredMimeType: row.declared_type,
+    declaredBytes: row.declared_bytes,
+    createdAt: row.created_at.toISOString(),
     collection: row.collection_key,
     purpose: row.purpose,
     documentId: row.document_id,

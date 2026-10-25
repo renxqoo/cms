@@ -10,6 +10,8 @@ interface Declaration {
 
 const scoped: Declaration[] = [
   { id: 'collections.get', method: 'GET', path: '' },
+  { id: 'collections.editor', method: 'GET', path: '/editor' },
+  { id: 'content.listJobs', method: 'GET', path: '/jobs' },
   { id: 'documents.list', method: 'GET', path: '/documents' },
   {
     id: 'documents.create',

@@ -144,6 +144,10 @@ packages/cms/src/content/
   queries/
     parse-query.ts
     __test__/query-behavior.test.ts
+  editor/                           安全布局、候选schema与当前动作提示
+    api.ts
+    contracts.ts
+    __test__/context.test.ts
   documents/
     create-document.ts
     read-document.ts
@@ -163,7 +167,7 @@ packages/cms/src/content/
     __test__/restoration.test.ts
   uploads/                          上传型集合与字节能力的编排
   folders/                          文档目录及移动规则
-  jobs/                             定时发布与版本保留任务
+  jobs/                             定时发布、版本保留及内容/资产工作发现
   adapters/postgres/
     compile-schema.ts               字段语义到物理存储计划
     compile-query.ts                查询与权限到 SQL
@@ -196,6 +200,8 @@ PostgreSQL 查询位于 CMS 模块内是本项目固定数据库的明确取舍�
 持久化任务处理器放在所属模块，例如 assets/jobs 的过期上传与删除恢复、identity 的过期令牌清理及投递观察状态收敛。身份邮件按用户裁决不持久化可恢复令牌、不自动重投；有界内存执行器由应用装配和关闭，投递状态规则归 identity。worker.ts 只装配和运行已注册处理器，领取/停止遵守安全基线，不把任务状态机写在进程入口。新增持久化结构由所属模块维护表定义、迁移和恢复测试，详见[专项方案](user-rbac-design.md)。
 
 content/jobs 负责定时发布、版本裁剪及相关权限复查；assets/jobs 负责字节处理和物理清理。媒体自定义字段、文件夹归属和文档替换都进入 content，不另外写一套固定字段 files CRUD。content 固定历史所需清单后调用 assets 的事务参与能力；assets 不读取 content 私有表来猜测可删除性。
+
+content/editor 从现有字段注册和真实读写上下文生成安全编辑描述符，不另建配置引擎。content/jobs 编排内容及资产任务、上传会话的资格与分页，assets/discovery 经 composition 提供限定actor/collection的参数化关系，content不硬编码资产表。assets/management 负责超管清理账本查询和幂等重试；HTTP只调用注入业务入口。精确契约见[Collections UI接口](collections-ui-api-design.md)。
 
 ## 6. 精确导出与依赖约定
 

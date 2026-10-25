@@ -1,6 +1,6 @@
 # Collections UI 接口补面施工图
 
-状态：定稿，2026-10-26。依赖 collections-ui-api-design.md；实施前先独立审查契约。
+状态：已核销，2026-10-26。依赖 collections-ui-api-design.md；契约已先经独立审查，按三个隔离工作树实施并汇总验证，记录见[验证记录](collections-ui-api-verification.md)。
 
 1. 主线拥有文档、HTTP/输入/操作注册与 OpenAPI、公共导出/装配、共享测试装置、0011_ui_api.sql 和跨进程旅程。保留原工作树/主会话在途变更。
 2. E 独立 worktree：content/editor/contracts.ts、editor/api.ts、editor/layout.ts 和就近测试；如有内聚必要可按职责细分。消费已有字段结构和 schema生成，不新建表单引擎。
