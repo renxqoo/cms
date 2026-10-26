@@ -1,6 +1,6 @@
 # OneAster 生产后台实施与验收
 
-状态：生产业务界面及本地全仓验收已完成，2026-10-26；关联[设计](admin-application-design.md)与[界面接口矩阵](admin-application-contracts.md)。用户已授权完整实现、多个子agent、提交推送及合并main；GitHub合并和CI状态以对应PR为准。
+状态：生产业务界面及本地全仓验收已完成，2026-10-26；关联[设计](admin-application-design.md)与[界面接口矩阵](admin-application-contracts.md)。用户已授权完整实现、多个子agent、提交推送及合并main，并确认以本地四门作为交付依据，不等待或处理GitHub检查失败。
 
 ## 1. 当前基线与顺序
 
@@ -32,7 +32,7 @@ browser调度器先构建API和Next，即使独立运行浏览器spec也不能�
 
 ## 4. 审查与提交
 
-每批先相关检查，里程碑完整四门，再由未实现者只读对抗审查；错误逐项先复现后修和命名回归。只提交点名文件；共享产物先协调，不隐藏/回滚他人修改。经验证的组件合并与每个完成批次推送，最终PR合并main并核对CI，不部署。记录实际用例数、四项覆盖率、实际浏览器与接口覆盖、仍未执行的部署类检查；不以某个局部范围门禁外推全仓。
+每批先相关检查，里程碑完整四门，再由未实现者只读对抗审查；错误逐项先复现后修和命名回归。只提交点名文件；共享产物先协调，不隐藏/回滚他人修改。经验证的组件合并与每个完成批次推送，最终合并main；本轮按用户确认的本地四门作为交付依据，GitHub检查保留实际记录，不等待或继续处理，不部署。记录实际用例数、四项覆盖率、实际浏览器与接口覆盖、仍未执行的部署类检查；不以某个局部范围门禁外推全仓。
 
 ## 5. 核销清单
 
@@ -45,7 +45,7 @@ browser调度器先构建API和Next，即使独立运行浏览器spec也不能�
 - [x] 双语/浅深/1440与390/键盘焦点/取消与资源释放通过。
 - [x] 独立审查和全仓覆盖率通过，真实报告限制。
 
-main合并和CI的实际状态由对应PR记录。部署未执行，须另行授权。
+main已通过PR #4合并。GitHub检查保留实际记录，本轮按用户确认以本地四门为准。部署未执行，须另行授权。
 
 ## 6. 方案审查处置
 
@@ -114,3 +114,11 @@ Linux Bun 1.4.4邮箱诊断确认TCP连接成功不等于HTTP服务已接收该�
 集成origin/main时保留唯一access.readRecovery注册，并保留main上的恢复过滤契约和编辑器回归。最终本地四门均通过：244文件、2217独立单元用例；真实API跨进程8例；开发Bun API/Next与生产Node API/Next浏览器106例，含新增34例内容、资源、任务和展示旅程。展示检查覆盖中英文、浅深主题、1440/390宽度及可见键盘焦点，共64张业务截图；资源截图等待实际文件选择入口就绪。各spec使用独立realm，未重置或放宽真实限流。
 
 全仓Istanbul实际覆盖率为statements93.91%（16039/17079）、branches89.05%（11974/13445）、functions96.22%（4838/5028）、lines96.59%（14202/14703）。vitest.config.ts的全局、前端、UI与oxlint分组90/85/90/90门槛均通过，配置未调整；专项模块数据不代替全仓结论。lint为零错误与零警告，类型检查和Next/API生产构建通过。证据位于/private/tmp/cms-completion-integrated-{lint,typecheck,build,test}.log与/private/tmp/cms-completion-integrated-coverage-summary.json。测试仅使用独立临时PostgreSQL、SMTP和安全临时文件目录；未执行真实云账号、容量压测、故障切换或部署。
+
+## main合并收口
+
+PR #4已合并为b089dc3。合并期间main也接收了db217e7，两个分支在不同位置登记同一个access.readRecovery，Git自动合并后出现重复。既有公开HTTP契约回归实测修前77个业务入口而后端契约为76个，1例失败、19例通过；删除重复登记后20例全过，保留原恢复读、过滤参数和唯一入口。用户已提交的allowedDevOrigins及指引文件删除保持原样。修前后证据为/private/tmp/cms-main-registration-{before,after}.log。
+
+GitHub push检查的244文件/2217单元与8例API通过，development内容浏览器旅程因页面切换后再读取Response正文失败。用户随后明确要求本地通过即可，不再处理或等待GitHub错误，直接合并main；本轮依此交付，不把该GitHub结果记录为通过。
+
+保留上述并行提交后的主分支修复版，本地四门再次全部通过：244文件/2217单元、8例API、106例开发/生产浏览器；实际全仓覆盖率S93.91%、B89.06%、F96.22%、L96.59%，全局及全部配置分组门槛通过。日志为/private/tmp/cms-main-final-{lint,typecheck,build,test}.log，覆盖率快照为/private/tmp/cms-main-final-coverage-summary.json。
