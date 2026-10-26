@@ -32,6 +32,8 @@ export const contentMessages = {
     cancel: '取消',
     close: '关闭',
     versions: '历史版本',
+    backToVersions: '返回版本列表',
+    moreActions: '更多操作',
     compare: '比较版本',
     restoreVersion: '恢复此版本',
     restoreWarning: '恢复将替换所有语言的完整历史快照。请先保存当前修改。',
@@ -140,6 +142,8 @@ export const contentMessages = {
     cancel: 'Cancel',
     close: 'Close',
     versions: 'Version history',
+    backToVersions: 'Back to versions',
+    moreActions: 'More actions',
     compare: 'Compare versions',
     restoreVersion: 'Restore this version',
     restoreWarning:

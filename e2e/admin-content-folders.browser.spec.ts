@@ -34,16 +34,6 @@ async function createInUi(page: Page, slug: string) {
   return documentSchema.parse(await stored.json());
 }
 
-async function confirmAction(page: Page, input: { label: string; method: string; path: string }) {
-  await page.getByRole('button', { name: input.label, exact: true }).click();
-  const response = waitForApi(page, input.method, input.path);
-  await page
-    .getByRole('dialog', { name: '确认操作', exact: true })
-    .getByRole('button', { name: '确认操作', exact: true })
-    .click();
-  expect((await response).status()).toBe(200);
-}
-
 test('regression: reopening a document waits for its editor before folder CAS, trash restoration and no-fallback locale editing at 390px', async ({
   page,
   browserErrors,
@@ -102,7 +92,14 @@ test('regression: reopening a document waits for its editor before folder CAS, t
   expect((await moving).status()).toBe(200);
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
-  await confirmAction(page, { label: '移至回收站', method: 'DELETE', path });
+  await page.getByRole('button', { name: '更多操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '移至回收站', exact: true }).click();
+  const archiving = waitForApi(page, 'DELETE', path);
+  await page
+    .getByRole('dialog', { name: '确认操作', exact: true })
+    .getByRole('button', { name: '确认操作', exact: true })
+    .click();
+  expect((await archiving).status()).toBe(200);
   await expect(page).toHaveURL(/trashed=true/);
   const restored = waitForApi(page, 'POST', `${path}/trash-restorations`);
   await page.getByRole('button', { name: '恢复文档', exact: true }).click();

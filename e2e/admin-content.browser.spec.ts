@@ -82,6 +82,48 @@ async function verifyEditorLayout(page: Page, width: number) {
   });
 }
 
+async function verifyHistoryLayout(page: Page, width: number) {
+  await page.setViewportSize({ width, height: 900 });
+  const header = page
+    .locator('header')
+    .filter({ has: page.getByRole('heading', { level: 1, name: 'Articles', exact: true }) });
+  await expect(header.getByRole('button', { name: '保存', exact: true })).toBeVisible();
+  const bounds = await header.boundingBox();
+  expect(bounds?.height).toBeLessThan(200);
+  await expect(header).not.toContainText('修订');
+  await page.screenshot({
+    path: test.info().outputPath(`detail-header-${width}.png`),
+    fullPage: true,
+    animations: 'disabled',
+  });
+  const trigger = header.getByRole('button', { name: '历史版本', exact: true });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: '历史版本', exact: true });
+  await expect(dialog.getByRole('button', { name: '查看版本', exact: true }).first()).toBeVisible();
+  const sizes = await dialog.evaluate((element) => ({
+    width: element.clientWidth,
+    content: element.scrollWidth,
+    viewport: window.innerWidth,
+    document: document.documentElement.scrollWidth,
+    top: element.getBoundingClientRect().top,
+    bottom: element.getBoundingClientRect().bottom,
+    height: window.innerHeight,
+  }));
+  expect(sizes.content).toBeLessThanOrEqual(sizes.width);
+  expect(sizes.document).toBeLessThanOrEqual(sizes.viewport);
+  expect(sizes.top).toBeGreaterThanOrEqual(15);
+  expect(sizes.bottom).toBeLessThanOrEqual(sizes.height - 15);
+  await page.screenshot({
+    path: test.info().outputPath(`history-dialog-${width}.png`),
+    animations: 'disabled',
+  });
+  await page.keyboard.press('Shift+Tab');
+  expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+}
+
 test('regression: content creation captures its response before navigation and preserves Lexical editing at desktop and narrow widths', async ({
   page,
 }) => {
@@ -123,6 +165,7 @@ test('real collection editing preserves published snapshots, compares history, a
   expect((await loginManagement(page, applicationAccounts.owner)).status()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/);
   const created = await createInUi(page, 'browser-content-story');
+  for (const width of [1440, 768, 390]) await verifyHistoryLayout(page, width);
   const path = `/v1/collections/articles/documents/${created.id}`;
   await confirmAction(page, { label: '发布', method: 'POST', path: `${path}/publications` });
   await expect(page.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
@@ -141,6 +184,13 @@ test('real collection editing preserves published snapshots, compares history, a
   expect(documentSchema.parse(await publishedResponse.json()).data['title']).toBe(
     'Published story',
   );
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: '历史版本', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '历史版本', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '查看版本', exact: true }).first().click();
+  await expect(page.getByRole('dialog', { name: '版本', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+  await page.getByRole('button', { name: '返回版本列表', exact: true }).click();
   await page.getByLabel('比较起始版本', { exact: true }).selectOption(created.versionId);
   await page.getByLabel('比较目标版本', { exact: true }).selectOption(saved.versionId);
   const comparison = waitForApi(page, 'GET', `${path}/version-diff`);

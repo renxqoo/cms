@@ -29,6 +29,27 @@ import type { Document } from '../../../contracts/documents';
 beforeEach(resetPageApi);
 afterEach(() => vi.resetAllMocks());
 
+it('opens history from the detail header without loading versions in the editing workspace', async () => {
+  renderManagement(<DocumentEditorPage collectionKey="articles" documentId={recordId} />);
+  const title = await screen.findByRole('textbox', { name: /^Title\*?$/ });
+  const heading = screen.getByRole('heading', { level: 1 });
+  const header = heading.closest('header');
+  if (!header) throw new Error('Document details must have a page header.');
+  const history = within(header).getByRole('button', { name: 'Version history' });
+  expect(within(header).getByRole('button', { name: 'Save' })).toBeInTheDocument();
+  expect(pageApi.request.mock.calls.some(([input]) => input.operation === 'versions.list')).toBe(
+    false,
+  );
+  expect(screen.queryByText(/^Revision 1 ·/)).not.toBeInTheDocument();
+  await userEvent.click(history);
+  await screen.findByText(/^Revision 1 ·/);
+  expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(history).toHaveFocus();
+  expect(title).toHaveValue('Story');
+});
+
 it('opens only real catalog collections and keeps denied reads out of the client', async () => {
   pageApi.pathname = '/dashboard/collections';
   const view = renderManagement(<CollectionCatalogPage />);
@@ -376,7 +397,11 @@ it.each([
     });
     renderManagement(<DocumentEditorPage collectionKey="articles" documentId={recordId} />);
     await screen.findByRole('textbox', { name: /^Title\*?$/ });
-    await userEvent.click(screen.getByRole('button', { name: label }));
+    if (label === 'Publish') await userEvent.click(screen.getByRole('button', { name: label }));
+    else {
+      await userEvent.click(screen.getByRole('button', { name: 'More actions' }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: label }));
+    }
     const dialog = await screen.findByRole('dialog', { name: prompt });
     await waitFor(() => expect(within(dialog).getByRole('button', { name: prompt })).toBeEnabled());
     expect(pageApi.request.mock.calls.some(([input]) => input.operation === operation)).toBe(false);
@@ -691,8 +716,9 @@ it('autosaves an enabled draft only after its quiet window and stops when the co
 
 it('cancels publication scheduling by keyboard, restores trigger focus and sends no publication request', async () => {
   renderManagement(<DocumentEditorPage collectionKey="articles" documentId={recordId} />);
-  const trigger = await screen.findByRole('button', { name: 'Schedule publication' });
+  const trigger = await screen.findByRole('button', { name: 'More actions' });
   await userEvent.click(trigger);
+  await userEvent.click(await screen.findByRole('menuitem', { name: 'Schedule publication' }));
   const dialog = await screen.findByRole('dialog', { name: 'Schedule publication' });
   expect(within(dialog).getByRole('button', { name: 'Schedule publication' })).toBeDisabled();
   await userEvent.keyboard('{Escape}');

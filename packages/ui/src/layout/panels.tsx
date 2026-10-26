@@ -3,15 +3,18 @@ import type { ComponentProps, ReactElement, ReactNode } from 'react';
 import { cn } from '../cn.ts';
 
 export interface PageHeaderProps {
+  className?: string;
   title: ReactNode;
   description?: ReactNode;
   icon?: ReactNode;
   actions?: ReactNode;
 }
 
-export function PageHeader({ title, description, icon, actions }: PageHeaderProps) {
+export function PageHeader({ title, description, icon, actions, className }: PageHeaderProps) {
   return (
-    <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <header
+      className={cn('flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between', className)}
+    >
       <div className="min-w-0 space-y-1">
         <div className="flex min-w-0 items-center gap-2">
           {icon ? (

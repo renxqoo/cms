@@ -40,7 +40,8 @@ test('translated documents copy each unique locale slug into a new real document
   await page.getByRole('button', { name: '保存', exact: true }).click();
   expect((await saving).status()).toBe(200);
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '复制文档', exact: true }).click();
+  await page.getByRole('button', { name: '更多操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '复制文档', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '复制文档', exact: true });
   await dialog.getByRole('textbox', { name: /^slug/ }).fill('copy-chinese-slug');
   await dialog.getByLabel('副本语言', { exact: true }).selectOption('en');

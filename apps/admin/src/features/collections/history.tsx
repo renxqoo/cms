@@ -1,11 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { ArrowLeftIcon, HistoryIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import { Field, NativeSelect } from '@new-cms/ui/forms';
-import { Card, CardContent, CardHeader, CardTitle } from '@new-cms/ui/layout';
 import { Pagination } from '@new-cms/ui/data';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@new-cms/ui/overlays';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@new-cms/ui/overlays';
 import {
   versionPageSchema,
   versionDetailSchema,
@@ -14,7 +22,6 @@ import {
 import type { Document, ContentVersion } from '../../contracts/documents';
 import { useAccessControl } from '../access-control/provider';
 import { useApiQuery } from '../management-shared/query';
-import { ManagementDialog } from '../management-shared/management-dialog';
 import { ManagementFeedback } from '../management-shared/feedback';
 import type { ContentMessages } from './messages';
 import { contentEditorPolicy } from './policy';
@@ -31,12 +38,41 @@ interface HistoryProps {
 }
 
 export function DocumentHistory(props: HistoryProps) {
-  const { document, locale, t, busy, dirty, onRestore } = props;
+  const [open, setOpen] = useState(false);
+  const access = useAccessControl();
+  if (
+    !access.can('versions.list', {
+      scopeKind: 'collection',
+      collectionKey: props.document.collection,
+    })
+  )
+    return null;
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="outline" />}>
+        <HistoryIcon aria-hidden="true" />
+        {props.t.versions}
+      </DialogTrigger>
+      {open ? (
+        <DialogContent
+          closeLabel={props.t.close}
+          className="max-h-[calc(100dvh-2rem)] sm:max-w-4xl"
+        >
+          <HistoryPanel key={props.document.revision} {...props} onClose={() => setOpen(false)} />
+        </DialogContent>
+      ) : null}
+    </Dialog>
+  );
+}
+
+type HistoryView = { kind: 'list' } | { kind: 'preview' | 'restore'; version: ContentVersion };
+
+function HistoryPanel(props: HistoryProps & { onClose: () => void }) {
+  const { document, locale, t, busy, dirty } = props;
   const access = useAccessControl();
   const scope = { scopeKind: 'collection', collectionKey: document.collection } as const;
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [restoring, setRestoring] = useState<string | null>(null);
+  const [view, setView] = useState<HistoryView>({ kind: 'list' });
   const versions = useApiQuery({
     operation: 'versions.list',
     params: { collection: document.collection, id: document.id },
@@ -45,26 +81,38 @@ export function DocumentHistory(props: HistoryProps) {
     enabled: access.can('versions.list', scope),
   });
   if (!access.can('versions.list', scope)) return null;
+  if (view.kind !== 'list')
+    return <HistoryDetail {...props} view={view} onBack={() => setView({ kind: 'list' })} />;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.versions}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <>
+      <DialogHeader>
+        <DialogTitle>{t.versions}</DialogTitle>
+      </DialogHeader>
+      <div className="min-w-0 space-y-4">
         <ManagementFeedback error={versions.error} onRetry={versions.reload} />
+        {versions.phase === 'loading' ? <p role="status">{t.loading}</p> : null}
+        {dirty ? (
+          <p role="status" className="text-sm text-muted-foreground">
+            {t.saveFirst}
+          </p>
+        ) : null}
         {versions.data?.rows.length === 0 ? <p>{t.noVersions}</p> : null}
         <div className="space-y-2">
           {versions.data?.rows.map((version) => (
             <div
               key={version.id}
-              className="flex flex-wrap items-center gap-3 border-b border-border py-3"
+              className="flex min-w-0 flex-wrap items-center gap-3 border-b border-border py-3"
             >
-              <span className="min-w-0 flex-1 break-words">
+              <span className="min-w-0 flex-1 basis-full break-words sm:basis-auto">
                 {t.revision} {version.revision} · {version.kind} ·{' '}
                 <time dateTime={version.createdAt}>{version.createdAt}</time>
               </span>
               {access.can('versions.get', scope) ? (
-                <Button size="sm" variant="outline" onClick={() => setSelected(version.id)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setView({ kind: 'preview', version })}
+                >
                   {t.preview}
                 </Button>
               ) : null}
@@ -73,7 +121,7 @@ export function DocumentHistory(props: HistoryProps) {
                   size="sm"
                   variant="outline"
                   disabled={busy || dirty}
-                  onClick={() => setRestoring(version.id)}
+                  onClick={() => setView({ kind: 'restore', version })}
                 >
                   {t.restoreVersion}
                 </Button>
@@ -101,34 +149,66 @@ export function DocumentHistory(props: HistoryProps) {
             t={t}
           />
         ) : null}
-      </CardContent>
-      {selected ? (
-        <VersionPreview
-          document={document}
-          locale={locale}
-          versionId={selected}
-          t={t}
-          onClose={() => setSelected(null)}
-        />
-      ) : null}
-      {restoring ? (
-        <ManagementDialog
-          open
-          onClose={() => setRestoring(null)}
-          title={t.restoreVersion}
-          description={t.restoreWarning}
-          pending={busy}
-          disabled={dirty || busy}
-          submitLabel={t.confirm}
-          onSubmit={() => {
-            onRestore(restoring);
-            setRestoring(null);
-          }}
-        >
-          <p className="break-all">{restoring}</p>
-        </ManagementDialog>
-      ) : null}
-    </Card>
+      </div>
+    </>
+  );
+}
+
+function HistoryDetail({
+  view,
+  onBack,
+  ...props
+}: HistoryProps & {
+  view: Exclude<HistoryView, { kind: 'list' }>;
+  onBack: () => void;
+  onClose: () => void;
+}) {
+  const { document, locale, t, busy, dirty, onRestore, onClose } = props;
+  const access = useAccessControl();
+  const scope = { scopeKind: 'collection', collectionKey: document.collection } as const;
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{view.kind === 'preview' ? t.version : t.restoreVersion}</DialogTitle>
+        {view.kind === 'restore' ? <DialogDescription>{t.restoreWarning}</DialogDescription> : null}
+      </DialogHeader>
+      <Button autoFocus variant="ghost" className="w-fit" onClick={onBack}>
+        <ArrowLeftIcon aria-hidden="true" />
+        {t.backToVersions}
+      </Button>
+      {view.kind === 'preview' ? (
+        access.can('versions.get', scope) ? (
+          <VersionPreview document={document} locale={locale} versionId={view.version.id} t={t} />
+        ) : (
+          <p role="alert">{t.denied}</p>
+        )
+      ) : (
+        <>
+          <p>
+            {t.revision} {view.version.revision}
+          </p>
+          {dirty ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              {t.saveFirst}
+            </p>
+          ) : null}
+          <DialogFooter>
+            <Button variant="outline" onClick={onBack}>
+              {t.cancel}
+            </Button>
+            <Button
+              disabled={dirty || busy || !access.can('versions.restore', scope)}
+              onClick={() => {
+                onRestore(view.version.id);
+                onClose();
+              }}
+            >
+              {t.confirm}
+            </Button>
+          </DialogFooter>
+        </>
+      )}
+    </>
   );
 }
 
@@ -155,7 +235,7 @@ function VersionComparison({
   });
   return (
     <>
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="grid min-w-0 items-end gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
         <VersionSelect
           id="history-from"
           label={t.from}
@@ -172,7 +252,7 @@ function VersionComparison({
         />
         <Button
           variant="outline"
-          disabled={!from || !to}
+          disabled={!from || !to || from === to}
           onClick={() => setComparison({ from, to })}
         >
           {t.compare}
@@ -202,9 +282,9 @@ function VersionSelect({
   versions: readonly ContentVersion[];
 }) {
   return (
-    <Field id={id} label={label} className="w-full min-w-0 sm:w-auto">
+    <Field id={id} label={label} className="min-w-0">
       <NativeSelect
-        className="max-w-full"
+        className="w-full max-w-full"
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
       >
@@ -227,13 +307,11 @@ function VersionPreview({
   locale,
   versionId,
   t,
-  onClose,
 }: {
   document: Document;
   locale: string;
   versionId: string;
   t: ContentMessages;
-  onClose: () => void;
 }) {
   const detail = useApiQuery({
     operation: 'versions.get',
@@ -242,39 +320,29 @@ function VersionPreview({
     response: versionDetailSchema,
   });
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <DialogContent closeLabel={t.close} className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{t.version}</DialogTitle>
-        </DialogHeader>
-        <ManagementFeedback error={detail.error} onRetry={detail.reload} />
-        {detail.data ? (
-          <div className="max-h-[70vh] space-y-4 overflow-auto">
-            <pre className="overflow-auto whitespace-pre-wrap break-all text-xs">
-              {JSON.stringify(detail.data.data, null, 2)}
-            </pre>
-            {detail.data.file ? (
-              <PrivateFile
-                target={{
-                  collection: detail.data.collection,
-                  id: detail.data.id,
-                  versionId: detail.data.versionId,
-                  mode: 'editing',
-                }}
-                manifest={detail.data.file}
-              />
-            ) : null}
-            <FixedMedia document={detail.data} />
-          </div>
-        ) : (
-          <p role="status">{t.loading}</p>
-        )}
-      </DialogContent>
-    </Dialog>
+    <div className="min-w-0 space-y-4">
+      <ManagementFeedback error={detail.error} onRetry={detail.reload} />
+      {detail.data ? (
+        <div className="min-w-0 space-y-4">
+          <pre className="overflow-auto whitespace-pre-wrap break-all text-xs">
+            {JSON.stringify(detail.data.data, null, 2)}
+          </pre>
+          {detail.data.file ? (
+            <PrivateFile
+              target={{
+                collection: detail.data.collection,
+                id: detail.data.id,
+                versionId: detail.data.versionId,
+                mode: 'editing',
+              }}
+              manifest={detail.data.file}
+            />
+          ) : null}
+          <FixedMedia document={detail.data} />
+        </div>
+      ) : detail.phase === 'loading' ? (
+        <p role="status">{t.loading}</p>
+      ) : null}
+    </div>
   );
 }

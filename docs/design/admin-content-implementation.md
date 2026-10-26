@@ -46,7 +46,11 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 
 批量update最多显式10项；顺序读取每个id的update editor（无fallback/depth），核对该项revision/versionId、catalog schemaVersion/behaviorHash/mappingFingerprint，以及完整layout与update action投影一致。缺失权限、读取失败、交错修订或异构投影均禁提交并提示逐条编辑。共用20字段renderer从空补丁开始，只提交用户明确修改字段，不将首条值复制给其他条。archive/copy/restoreTrash最多100项且保留各自id/revision。批量读取不超过10次metadata请求，不按100项同时展开。
 
-版本列表/详情/差异使用真实versionId，恢复是完整多语言历史快照，确认说明影响；不把所选locale预览误称只恢复一种语言。计划发布提交当前revision、指定versionId和UTC executeAt，通过可发现publication job读取定位字段、真实状态和取消结果，刷新可重新发现，不只依赖内存jobId。
+详情顶部集中提供返回、保存、发布和历史版本入口；撤回、复制、计划发布及移至回收站收进更多操作菜单，继续按当前权限与写入状态控制。语言和文件夹以带标签的选择区排列，自动保存及保存状态独立成组，窄屏自动换行且控件不超出视口。
+
+历史版本由顶部按钮打开宽弹窗，打开后才读取列表，关闭时取消未完成的读取；每次重新打开和当前修订变化后读取实际历史。列表、详情、比较和恢复确认共用同一弹窗，详情及确认可返回列表，Escape关闭并恢复入口焦点。列表/详情/差异使用真实versionId，恢复是完整多语言历史快照，确认说明影响；当前有未保存修改时允许查看和比较，并提示先保存，禁止恢复。确认恢复后关闭弹窗，复用编辑器写入通道及反馈，成功后重新读取安全metadata和document，不把所选locale预览误称只恢复一种语言。此调整随前端产物一次切换，不保留常驻历史面板；以弹窗开关、焦点、请求取消和既有写入旅程验证，回滚使用上一版前端产物，无接口或数据兼容窗口。
+
+计划发布提交当前revision、指定versionId和UTC executeAt，通过可发现publication job读取定位字段、真实状态和取消结果，刷新可重新发现，不只依赖内存jobId。
 
 文件夹为真实树及version CAS，新建/改名/移动/删除受API约束；移动文档使用document PATCH folderId与revision，不能修改客户端行后声称成功。结构视图只读当前安全布局/schema及版本标识，不生成配置保存接口。
 

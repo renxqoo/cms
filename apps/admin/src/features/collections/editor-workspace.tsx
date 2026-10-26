@@ -1,15 +1,12 @@
 'use client';
 
 import { FilePenLineIcon } from 'lucide-react';
-import { Button } from '@new-cms/ui/actions';
 import { Card, CardContent, PageHeader } from '@new-cms/ui/layout';
 import { UnsavedChangesGuard } from '../../components/cms/unsaved-changes';
 import { FieldRenderer } from '../fields/field-renderer';
 import { DocumentMedia } from '../assets/document-media';
 import { useContentEditor } from './use-content-editor';
 import type { ContentEditorModel, ContentEditorProps } from './use-content-editor';
-import { collectionHref } from './query';
-import { DocumentHistory } from './history';
 import { EditorFeedback } from './editor-feedback';
 import { EditorActions, EditorToolbar } from './editor-controls';
 
@@ -27,17 +24,11 @@ export function ContentEditor(props: ContentEditorProps) {
   return (
     <UnsavedChangesGuard dirty={dirty || busy} navigation={navigation.adapter} labels={labels}>
       <PageHeader
+        className="sm:flex-col xl:flex-row"
         title={snapshot?.collection.label ?? props.collectionKey}
-        description={snapshot?.document ? `${t.edit} · ${snapshot.document.id}` : t.create}
+        description={snapshot?.document ? t.edit : t.create}
         icon={<FilePenLineIcon />}
-        actions={
-          <Button
-            variant="outline"
-            onClick={() => navigation.push(collectionHref(props.collectionKey))}
-          >
-            {t.back}
-          </Button>
-        }
+        actions={<EditorActions model={model} />}
       />
       <EditorFeedback model={model} />
       {snapshot ? (
@@ -54,20 +45,6 @@ export function ContentEditor(props: ContentEditorProps) {
             onDocumentChanged={() => model.controller.reload(true)}
             {...(props.initialUploadId ? { initialUploadId: props.initialUploadId } : {})}
           />
-          <EditorActions model={model} />
-          {snapshot.document && snapshot.collection.history ? (
-            <DocumentHistory
-              key={snapshot.document.revision}
-              document={snapshot.document}
-              locale={snapshot.editor.locale}
-              t={t}
-              busy={busy}
-              dirty={dirty}
-              onRestore={(versionId) => {
-                void model.controller.submit('restore', versionId);
-              }}
-            />
-          ) : null}
         </>
       ) : null}
     </UnsavedChangesGuard>

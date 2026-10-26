@@ -45,6 +45,7 @@ it('reads historical versions without locale fallback and compares the two expli
       onRestore={restore}
     />,
   );
+  await userEvent.click(screen.getByRole('button', { name: 'Version history' }));
   await screen.findByText(/^Revision 1 ·/);
   await userEvent.click(historyRow(1).getByRole('button', { name: 'View version' }));
   const dialog = await screen.findByRole('dialog', { name: 'Version' });
@@ -55,8 +56,9 @@ it('reads historical versions without locale fallback and compares the two expli
     params: { collection: 'articles', id: recordId, versionId: oldVersion },
     query: { locale: 'zh-CN', fallback: [], depth: 0, mode: 'editing' },
   });
-  await userEvent.keyboard('{Escape}');
-  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Back to versions' }));
+  expect(screen.getByRole('dialog', { name: 'Version history' })).toBeInTheDocument();
   fireEvent.change(screen.getByRole('combobox', { name: 'Compare from' }), {
     target: { value: oldVersion },
   });
@@ -83,6 +85,7 @@ it('requires explicit confirmation of a complete multilingual history restore an
       onRestore={restore}
     />,
   );
+  await userEvent.click(screen.getByRole('button', { name: 'Version history' }));
   await screen.findByText(/^Revision 1 ·/);
   expect(historyRow(1).getByRole('button', { name: 'Restore this version' })).toBeDisabled();
   view.unmount();
@@ -96,9 +99,11 @@ it('requires explicit confirmation of a complete multilingual history restore an
       onRestore={restore}
     />,
   );
+  await userEvent.click(screen.getByRole('button', { name: 'Version history' }));
   await screen.findByText(/^Revision 1 ·/);
   await userEvent.click(historyRow(1).getByRole('button', { name: 'Restore this version' }));
   const dialog = await screen.findByRole('dialog', { name: 'Restore this version' });
+  expect(screen.getAllByRole('dialog')).toHaveLength(1);
   expect(
     within(dialog).getByText(
       'Restoring replaces the complete historical snapshot in every language. Save current edits first.',
@@ -107,6 +112,93 @@ it('requires explicit confirmation of a complete multilingual history restore an
   expect(restore).not.toHaveBeenCalled();
   await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm action' }));
   expect(restore).toHaveBeenCalledWith(oldVersion);
+});
+
+it('cancels pending history reads on close and reads fresh versions when reopened', async () => {
+  pageApi.request.mockImplementation((input) =>
+    input.operation === 'versions.list' ? new Promise(() => {}) : defaultPageRequest(input),
+  );
+  renderManagement(
+    <DocumentHistory
+      document={record()}
+      locale="en"
+      t={t}
+      busy={false}
+      dirty={false}
+      onRestore={vi.fn<(id: string) => void>()}
+    />,
+  );
+  expect(pageApi.request).not.toHaveBeenCalled();
+  const trigger = screen.getByRole('button', { name: 'Version history' });
+  await userEvent.click(trigger);
+  const dialog = screen.getByRole('dialog', { name: 'Version history' });
+  expect(within(dialog).getByRole('status')).toHaveTextContent('Loading content…');
+  const request = pageApi.request.mock.calls[0]?.[0];
+  expect(request?.signal.aborted).toBe(false);
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+  await waitFor(() => expect(request?.signal.aborted).toBe(true));
+  expect(trigger).toHaveFocus();
+  pageApi.request.mockImplementation(defaultPageRequest);
+  await userEvent.click(trigger);
+  await screen.findByText(/^Revision 1 ·/);
+  expect(
+    pageApi.request.mock.calls.filter(([input]) => input.operation === 'versions.list'),
+  ).toHaveLength(2);
+});
+
+it('returns from restore confirmation without writing and blocks comparing one version with itself', async () => {
+  const restore = vi.fn<(id: string) => void>();
+  renderManagement(
+    <DocumentHistory
+      document={record()}
+      locale="en"
+      t={t}
+      busy={false}
+      dirty={false}
+      onRestore={restore}
+    />,
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Version history' }));
+  await screen.findByText(/^Revision 1 ·/);
+  await userEvent.click(historyRow(1).getByRole('button', { name: 'Restore this version' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(screen.getByRole('dialog', { name: 'Version history' })).toBeInTheDocument();
+  expect(restore).not.toHaveBeenCalled();
+  for (const label of ['Compare from', 'Compare to']) {
+    fireEvent.change(screen.getByRole('combobox', { name: label }), {
+      target: { value: oldVersion },
+    });
+  }
+  expect(screen.getByRole('button', { name: 'Compare versions' })).toBeDisabled();
+  expect(pageApi.request.mock.calls.some(([input]) => input.operation === 'versions.diff')).toBe(
+    false,
+  );
+});
+
+it('regression: a failed version preview shows its error without claiming it is still loading', async () => {
+  pageApi.request.mockImplementation((input) =>
+    input.operation === 'versions.get'
+      ? Promise.resolve(failure('not_found', 404))
+      : defaultPageRequest(input),
+  );
+  renderManagement(
+    <DocumentHistory
+      document={record()}
+      locale="en"
+      t={t}
+      busy={false}
+      dirty={false}
+      onRestore={vi.fn<(id: string) => void>()}
+    />,
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Version history' }));
+  await screen.findByText(/^Revision 1 ·/);
+  await userEvent.click(historyRow(1).getByRole('button', { name: 'View version' }));
+  const dialog = screen.getByRole('dialog', { name: 'Version' });
+  await within(dialog).findByRole('alert');
+  expect(within(dialog).queryByText('Loading content…')).not.toBeInTheDocument();
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Back to versions' }));
+  expect(screen.getByRole('dialog', { name: 'Version history' })).toBeInTheDocument();
 });
 
 it('keeps unavailable history and denied permissions out of previews and restore controls', async () => {
@@ -136,6 +228,7 @@ it('keeps unavailable history and denied permissions out of previews and restore
       onRestore={vi.fn<(id: string) => void>()}
     />,
   );
+  await userEvent.click(screen.getByRole('button', { name: 'Version history' }));
   await screen.findByRole('alert');
   expect(screen.queryByRole('button', { name: 'Restore this version' })).not.toBeInTheDocument();
 });
