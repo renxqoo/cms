@@ -1,6 +1,6 @@
 # 实施与验证计划
 
-状态：全局实施计划；后台账户/RBAC已实施，其余业务能力按本计划继续。身份专项验证与本地提交见user-rbac-implementation.md及review-log.md。
+状态：全局实施计划；后台账户/RBAC、内容和资源后端及真实管理界面均已实施，实际验收见各专项记录与admin-application-implementation.md。部署验收单独执行。
 
 ## 1. 定稿与来源纪律
 

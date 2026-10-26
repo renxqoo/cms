@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { UnsavedChangesGuard } from '../unsaved-changes';
 import { createNavigationController } from '../../shell/navigation/controller';
@@ -12,6 +12,48 @@ const labels = {
   cancel: 'Stay',
   close: 'Close',
 };
+
+function SavedTransition(props: {
+  saved: boolean;
+  removeChild: boolean;
+  controller: ReturnType<typeof createNavigationController>;
+  execute: () => void;
+}) {
+  const { saved, controller, execute } = props;
+  useEffect(() => {
+    if (saved) controller.request({ href: '/saved-copy', kind: 'replace' }, execute);
+  }, [saved, controller, execute]);
+  return (
+    <UnsavedChangesGuard dirty={false} navigation={controller.adapter} labels={labels}>
+      {!saved || !props.removeChild ? (
+        <UnsavedChangesGuard dirty={!saved} navigation={controller.adapter} labels={labels}>
+          Saved dialog
+        </UnsavedChangesGuard>
+      ) : null}
+    </UnsavedChangesGuard>
+  );
+}
+
+it.each([true, false])(
+  'regression: a confirmed nested save navigates in the same commit when child removal is %s',
+  (removeChild) => {
+    const controller = createNavigationController('/document');
+    const execute = vi.fn<() => void>();
+    const view = render(
+      <SavedTransition
+        saved={false}
+        removeChild={removeChild}
+        controller={controller}
+        execute={execute}
+      />,
+    );
+    view.rerender(
+      <SavedTransition saved removeChild={removeChild} controller={controller} execute={execute} />,
+    );
+    expect(execute).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  },
+);
 
 it('aggregates a nested modal draft into one real navigation guard and one confirmation', () => {
   const controller = createNavigationController('/document');

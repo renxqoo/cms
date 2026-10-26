@@ -10,6 +10,7 @@ import { createAdminMailbox } from './admin-mailbox.ts';
 import { cleanupAll } from './cleanup.ts';
 import { adminIcons, adminRoutes } from '../../apps/admin/src/config/admin-routes.ts';
 import { seedPendingManagementAccount } from './admin-management-fixture.ts';
+import { seedAdminContent } from './admin-content-fixture.ts';
 
 async function seedAccounts(cms: Awaited<ReturnType<typeof createCmsProcess>>) {
   const current = await cms.request('GET', '/v1/me', cms.owner);
@@ -142,8 +143,9 @@ async function startNext(options: NextProcessOptions) {
 export async function createAdminApplicationProcess(
   mode: 'development' | 'production',
   port: number,
-  signal?: AbortSignal,
+  options: { signal?: AbortSignal | undefined; content?: boolean } = {},
 ) {
+  const { signal } = options;
   signal?.throwIfAborted();
   const origin = `http://127.0.0.1:${port}`;
   const cms = await createCmsProcess(mode === 'development' ? 'bun' : 'node', {
@@ -162,6 +164,7 @@ export async function createAdminApplicationProcess(
   }
   try {
     await seedAccounts(cms);
+    if (options.content) await seedAdminContent(cms);
     mailbox = await createAdminMailbox({ messages: cms.smtp.messages, maximumBytes: 1048576 });
     const apiOrigin = `http://127.0.0.1:${cms.port()}`;
     next = await startNext({ mode, port, apiOrigin, signal });

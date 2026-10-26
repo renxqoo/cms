@@ -1,6 +1,6 @@
 # OneAster 生产管理后台设计
 
-状态：认证首切片定稿，2026-10-26；大级功能。与[实施计划](admin-application-implementation.md)、[接口与界面矩阵](admin-application-contracts.md)共同约束本阶段。
+状态：生产后台设计基线，2026-10-26。与[实施和验收](admin-application-implementation.md)、[接口与界面矩阵](admin-application-contracts.md)共同约束当前实现。
 
 ## 1. 用户裁决与完整范围
 
@@ -52,7 +52,7 @@ shell读取/me/navigation并按可信前端路由/图标注册表呈现；账号
 
 ## 5. Collections与资源
 
-配置驱动编辑器从安全HTTP metadata构建，不从API源码导入集合定义。布局/标量/关系/JSON/代码/point/group/array/blocks/richText/join均使用实际类型编辑控件，未知能力明确不可编辑而非假成功。当前metadata的布局树、写能力、本地化和上传预算缺口已交后端owner核对；相应契约定稿后才实施此批编辑器，不用重复前端固定集合配置绕过。
+配置驱动编辑器从安全HTTP metadata构建，不从API源码导入集合定义。布局/标量/关系/JSON/代码/point/group/array/blocks/richText/join均使用实际类型编辑控件，未知能力明确不可编辑。布局树、写能力、本地化和上传预算均消费当前安全编辑契约，不维护重复的前端固定集合配置。
 
 内容语言与UI语言分离。编辑读取fallback=[]，避免把回退文案当真实翻译保存；多语言共享array/block结构保持稳定ID。字段派生值直接计算，写入shape与只读join严格区分，后端仍验证。富文本只提供已支持的v1节点能力，不执行任意HTML，不虚构marks/heading-level语义。集合建模为已有TypeScript配置/生成迁移，结构视图只读，不造配置保存端点。
 
@@ -62,7 +62,7 @@ shell读取/me/navigation并按可信前端路由/图标注册表呈现；账号
 
 图片裁剪组件归一化值显式转换API像素整数crop；focalPoint保持0..1。reprocess后台自动创建新修订，成功重新读取，不能再PATCH uploadId。私有预览从认证BFF取得Blob，替换/删除/卸载回收URL；历史固定媒体使用来源document的bindingId下载，不误取媒体最新版本。资源恢复复用文档版本/回收站，物理清理运维恢复是否扩展HTTP由后端补面契约明确，不能把离线命令包装成假界面动作。
 
-任务/计划和上传会话需要服务端可发现列表以支持刷新/换设备恢复，不能仅依赖localStorage记录ID；此缺口与metadata同批协调。处理轮询尊重实际后台维护周期及Retry-After，状态与取消/恢复以服务端为准。
+任务/计划和上传会话通过服务端可发现列表支持刷新/换设备恢复，不依赖localStorage记录ID。处理轮询尊重实际后台维护周期及Retry-After，状态与取消/恢复以服务端为准。
 
 ## 6. 可靠性与预算
 

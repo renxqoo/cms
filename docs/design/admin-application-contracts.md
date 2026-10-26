@@ -1,6 +1,6 @@
 # OneAster 界面与接口联调矩阵
 
-状态：认证首切片定稿，2026-10-26；事实来自当前后端operations/input schemas/DTO、OpenAPI及真实测试。完整注册76个operationId；按实际范围记录，不抄Tillgate API。
+状态：当前界面与HTTP契约基线，2026-10-26；事实来自当前后端operations/input schemas/DTO、OpenAPI及真实测试。完整注册76个operationId；按实际范围记录，不抄Tillgate API。
 
 ## 1. 已冻结账户与RBAC页面
 
@@ -32,10 +32,10 @@ DTO安全投影来自apps/api/src/http/openapi/responses.ts及packages/cms/src/a
 | 草稿/发布/复制/归档 | .../autosaves、publications、publication、copies；DELETE文档?revision=N |
 | 版本/对比/恢复 | .../versions、versions/:versionId、version-diff、restorations |
 | 回收站/永久清除 | documents?trashed=true、trash-restorations、purges |
-| 计划/批量/任务 | publication-schedules、batches、jobs/:jobId；可发现列表契约待owner定稿 |
+| 计划/批量/任务 | publication-schedules、batches、jobs、jobs/:jobId |
 | 文件夹 | /v1/folders，按collection与version管理 |
 | 资源库/引用 | /v1/resources、.../documents/:id/references |
-| 上传/字节/处理 | .../uploads、uploads/:id/content、completions、uploads/:id；actor列表待定稿 |
+| 上传/字节/处理 | .../uploads（当前主体发现列表与创建）、uploads/:id/content、completions、uploads/:id |
 | 原件/历史/固定引用 | documents/:id/file；media-bindings/:bindingId/file；versionId/variant/mode |
 | 图片重处理 | .../documents/:id/file-processings→jobId/uploadId，后台自动提交新修订 |
 

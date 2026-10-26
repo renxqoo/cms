@@ -2,9 +2,9 @@
 
 面向结构化内容、文件资料和 RBAC 管理的自研 CMS。后端采用 Hono、PostgreSQL 和 Drizzle；开发与脚本使用 Bun 1.4.4，生产使用 Node.js，测试使用 Vitest。
 
-后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册76个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
+后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。项目包含API、CMS、数据库、管理端和共享UI五个私有工作区，注册76个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
 
-应用配置启用 articles、pages、media 和 settings 集合。管理后台提供UI组件库、隔离组件工作台，以及真实登录、会话验证、账户概览和退出流程；账户/RBAC与内容资源界面按[应用联调方案](docs/design/admin-application-design.md)继续实施。不开放任意菜单 URL 或运行时建表。
+应用配置启用 articles、pages、media 和 settings 集合。管理后台提供真实认证、账户/RBAC、配置驱动内容编辑、版本与回收站、资源上传及私有预览、图片处理、任务与清理管理；UI组件库和隔离组件工作台供独立验收。界面范围见[应用联调方案](docs/design/admin-application-design.md)，不开放任意菜单 URL 或运行时建表。
 
 ## 设计入口
 
@@ -37,6 +37,8 @@ bun run dev:admin
 根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；开发默认API为127.0.0.1:3001、后台为localhost:3000。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
 
 账户页面提供资料和密码管理；管理员、角色、权限、导航、端点绑定、审计以及访问恢复位于/dashboard对应入口。操作以当前主体的完整授权快照判断，实际HTTP再次鉴权。邀请与重置通过实际邮件链接完成；普通目录被误配拒绝后，有效超级管理员可使用访问恢复读取最新绑定并按原CAS协议修复。验收范围和当前进度见[应用实施与验收](docs/design/admin-application-implementation.md)。
+
+内容入口为/dashboard/collections，提供安全metadata驱动的字段、单例、草稿与自动保存、发布、完整多语言复制和历史恢复、回收站、批量与文件夹。/dashboard/resources提供上传、替换、PNG/PDF私有下载与图片重处理；/dashboard/jobs发现实际任务和上传会话，刷新后可继续核实；/dashboard/asset-cleanups仅活动超管可读取并请求阻塞清理重试，202只表示受理。具体行为见[内容实施契约](docs/design/admin-content-implementation.md)、[资源验收](docs/design/admin-assets-verification.md)与[任务验收](docs/design/admin-jobs-verification.md)。
 
 ## 本地运行
 
