@@ -25,6 +25,8 @@
 
 富文本列表取消后的活动状态也等待明确的段落按钮就绪，而非仅以列表按钮未按下推断段落状态已同步；原数据、列表移除及段落活动断言全部保留。修前证据为 `/tmp/cms-production-toolbar-transition-before.log`，修后该文件 4 项通过。没有改变编辑器实现或降低断言要求。
 
+推送前完整复验暴露出浏览器装置的限流隔离边界：内容 spec 中侧栏、编辑器控件和发布历史三条独立旅程共享 API 进程与 IP 限流桶，历史恢复后的读取触发真实 429，retry-after 为 44 秒，窗口早于该旅程登录。失败旅程自身记录 48 个浏览器 BFF 请求（含取消），editor 读取 6 次，没有连续请求循环；捕获器的重复 trace 记录不重复计入真实流量。每个 spec 独立、spec 内共享的现有边界使结果依赖是否跨过 60 秒窗口。修前证据为 `/tmp/cms-production-rate-isolation-before.log`，其中包含实际 429、恢复成功回执及未刷新的界面断言；失败 trace 已由独立审查核对，后续回归按原装置回收 test-results。将三条独立旅程分别放入各自 spec，复用现有按 spec 分配开发/生产 API 与数据库的装置；保留所有业务断言、生产限流阈值与窗口，不清空桶、不加等待或重试。同步迁移 test 入口、内容装置识别及验收文档；三条旅程开发/生产模式共 6 项定向通过，独立复审确认迁移主体逐字节保留、无断言弱化；完整门禁记录见第 4 节。
+
 ## 3. 工程门禁
 
 `bun run lint`、`bun run typecheck`、`bun run build`、`bun run test` 全部通过后才提交。完整测试报告独立用例数、API/浏览器旅程数及全仓 statements/branches/functions/lines，并分别核对 vitest 配置中的全局和分组门槛。独立审查者只审方案/diff/测试口径，不参与实现。
@@ -33,11 +35,11 @@
 
 本批完整四门通过。259 个文件、2332 项单元及集成测试全部通过；真实 API 跨进程旅程 8 项，开发与生产浏览器旅程 114 项全部通过。完整测试在退出即删除的独立临时 PostgreSQL 数据库中执行，未修改业务数据库。lint 零错误零警告，后端、共享 UI、Next 类型检查及 API/Next 生产构建通过。
 
-全仓 Istanbul 实际覆盖率为 statements 93.90%（16378/17441）、branches 89.21%（12356/13849）、functions 96.18%（4922/5117）、lines 96.57%（14506/15021）。vitest.config.ts 的全局、admin、UI 和 oxlint 分组原有门槛全部通过，阈值未调整。
+全仓 Istanbul 实际覆盖率为 statements 93.90%（16378/17441）、branches 89.21%（12355/13849）、functions 96.18%（4922/5117）、lines 96.57%（14506/15021）。vitest.config.ts 的全局、admin、UI 和 oxlint 分组原有门槛全部通过，阈值未调整。
 
 修前失败证据：`/tmp/cms-production-behavior-before.log` 的 6 个公开组件用例全部失败；`/tmp/cms-production-default-locale-before.log` 的默认语言回归失败。修后相关页面、读取和状态矩阵均通过。完整测试首次运行的新配置用例错误地使用装置不支持的语言键，已改为装置既有 `zh` 并保留原默认语言及顺序断言，单独 4 项与随后完整四门通过。
 
-本批日志为 `/tmp/cms-production-{lint,typecheck,build,test}.log`，覆盖率摘要为 `/tmp/cms-production-coverage-summary.json`。新增真实内容旅程为 `e2e/admin-content-workflow.browser.spec.ts`，开发/生产两模式均验证发布快照、私有草稿状态、清选择、浏览器返回和 390px 结构页无溢出；已查看生产窄屏截图。
+本批初次完整日志为 `/tmp/cms-production-{lint,typecheck,build,test}.log`；旅程隔离修正后的完整日志为 `/tmp/cms-production-isolation-{lint,typecheck,build,test}.log`，覆盖率摘要为 `/tmp/cms-production-coverage-summary.json`。新增真实内容旅程为 `e2e/admin-content-workflow.browser.spec.ts`，开发/生产两模式均验证发布快照、私有草稿状态、清选择、浏览器返回和 390px 结构页无溢出；已查看生产窄屏截图。
 
 独立实现审查发现的嵌套字段语言规则误述已修复；修前 `/tmp/cms-production-nested-locale-before.log` 记录该公开页面回归失败，修后同文件 13 项通过。响应捕获及异步界面状态的测试修正也已通过独立复审，没有增加重试、跳过或弱化断言。主分支已有的集合侧栏导航保留，整合后重新完成上述全部门禁。
 

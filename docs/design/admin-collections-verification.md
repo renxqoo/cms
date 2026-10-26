@@ -40,6 +40,8 @@ Collections 联合单元与公开组件测试八文件、一百一十一用例�
 
 | 入口 | 已验证终态 |
 | --- | --- |
+| `e2e/admin-content-editor.browser.spec.ts` | 真实富文本编辑、草稿持久化、桌面/窄屏编辑器布局 |
+| `e2e/admin-content-sidebar.browser.spec.ts` | 动态集合菜单、桌面与移动导航、离站保护及当前集合高亮 |
 | `e2e/admin-content.browser.spec.ts` | 创建及草稿保存、发布快照隔离、真实版本比较和所有语言的完整历史恢复 |
 | `e2e/admin-content-folders.browser.spec.ts` | CAS 冲突保留草稿、文件夹实际移动、归档及回收站恢复、无 fallback 语言编辑和 390px 无页面溢出 |
 | `e2e/admin-content-copy.browser.spec.ts` | 英中两语言独立唯一 slug 修改、真实新文档 ID、原件不变及成功后直接进入副本 |
