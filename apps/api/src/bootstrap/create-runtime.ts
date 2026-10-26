@@ -4,10 +4,10 @@ import { applicationRuntimeProfile } from '../config/runtime-privileges.ts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { createIdentity } from '@new-cms/cms/identity/composition';
 import { createAccess } from '@new-cms/cms/access/composition';
-import { identityOperations, identityInputSchemas } from '@new-cms/cms/identity';
-import { accessOperations, accessInputSchemas } from '@new-cms/cms/access';
-import { contentOperations, contentInputSchemas } from '@new-cms/cms/content';
-import { assetsOperations, assetsInputSchemas } from '@new-cms/cms/assets';
+import { identityInputSchemas } from '@new-cms/cms/identity';
+import { accessInputSchemas } from '@new-cms/cms/access';
+import { contentInputSchemas } from '@new-cms/cms/content';
+import { assetsInputSchemas } from '@new-cms/cms/assets';
 import { createScryptPasswords } from '../adapters/password/scrypt.ts';
 import { createSmtpMailer, createUnavailableMailer } from '../adapters/mail/smtp.ts';
 import { createApp } from '../http/create-app.ts';
@@ -18,6 +18,7 @@ import { createAdmission } from './admission.ts';
 import { contentConfiguration, createContentServices } from './create-content.ts';
 import { contentLimits, contentWorkPolicy } from '../config/content-policy.ts';
 import { contentOpenApiSchemas } from './openapi-schemas.ts';
+import { applicationOperations } from '../config/operations.ts';
 
 function mailer(config: ApplicationConfig) {
   const options = config.smtp;
@@ -39,12 +40,7 @@ function createCoreServices(config: ApplicationConfig, collectionKeys: readonly 
     passwords: createScryptPasswords({ policy: config.policy, settings: config.password }),
     mailer: mailer(config),
   });
-  const operations = [
-    ...identityOperations,
-    ...accessOperations,
-    ...contentOperations,
-    ...assetsOperations,
-  ];
+  const operations = applicationOperations;
   const access = createAccess({
     database,
     policy: config.policy,

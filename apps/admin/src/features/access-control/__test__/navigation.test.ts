@@ -18,7 +18,7 @@ function group(children: VisibleNavigation[]): VisibleNavigation {
   return node({ id: 'group', type: 'group', name: 'Team management', path: null, children });
 }
 
-it('keeps self-service available while empty-menu application entries require real operations', () => {
+it('regression: available application entries do not report an empty menu', () => {
   const navigation = shellNavigation({
     navigation: [],
     locale: 'en',
@@ -30,12 +30,13 @@ it('keeps self-service available while empty-menu application entries require re
     '/dashboard/account',
     '/dashboard/admins',
   ]);
-  expect(navigation.empty).toBe(true);
+  expect(navigation.empty).toBe(false);
   const denied = shellNavigation({ navigation: [], locale: 'zh', can: () => false });
   expect(denied.groups.flatMap((item) => item.items.map((link) => link.href))).toEqual([
     '/dashboard',
     '/dashboard/account',
   ]);
+  expect(denied.empty).toBe(true);
 });
 
 it('preserves real group/page labels without turning action nodes into links or permissions', () => {

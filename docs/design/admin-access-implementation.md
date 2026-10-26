@@ -6,7 +6,7 @@
 
 认证补面包括/forgot-password、/accept-invitation、/reset-password；自服务/dashboard/account包括名称修改和改密。/dashboard/admins覆盖列表、筛选、邀请创建、详情编辑、重发邀请；/dashboard/roles覆盖CRUD及完整授权替换；/dashboard/permissions覆盖列表和CRUD；/dashboard/navigation管理树；/dashboard/endpoints显示真实操作目录和绑定；/dashboard/audit-logs只读展示API安全投影。所有入口验证服务端会话，页面只装配feature。
 
-每个动作以完整operation三元组判断，不能从读许可推导security写许可；/me/operations已经反映security只向active super提供。管理员创建还依赖roles.list；角色授权依赖roles.get与permissions.list；permission collection范围依赖collections.list；导航与binding编辑依赖permissions.list及对应目录。读取依赖拒绝时显示具体故障、保留草稿、禁用依赖该数据的提交，不渲染无法完成的空选择器。账户自服务不要求管理权限，disabled-role仍能查看自身和改密。
+每个动作以完整operation三元组判断，不能从读许可推导security写许可；/me/operations已经反映security只向active super提供。管理员创建还依赖roles.list；角色授权依赖roles.get与permissions.list；创建集合权限的范围来自已读取的collections.list及完整操作目录中的collections.get集合范围，恢复页复用security操作目录，未绑定集合也可选择。可读集合使用实际标签，尚不可读的已注册集合仅显示key，不补造字段或文档权限；两种来源均不可用时禁用集合提交。导航与binding编辑依赖permissions.list及对应目录。读取依赖拒绝时显示具体故障、保留草稿、禁用依赖该数据的提交，不渲染无法完成的空选择器。账户自服务不要求管理权限，disabled-role仍能查看自身和改密。
 
 ## 2. 授权快照
 
@@ -16,7 +16,7 @@ pageSize=100，最多100页/10000条，最多两轮总尝试（首次加一次�
 
 ## 3. 路由与导航
 
-前端真实route/icon注册表拥有路径、父级、双语标签、图标及读依赖，供shell、面包屑、导航编辑器和安全next校验共用。部署CMS_NAVIGATION_PATHS/CMS_NAVIGATION_ICONS与实际注册表一致，跨配置测试核对；不把/ui示例注入业务导航。未配置菜单时显示空态与按真实operation可用的管理入口，明确这些是应用入口而非API返回的菜单。
+前端真实route/icon注册表拥有路径、父级、双语标签、图标及读依赖，供shell、面包屑、导航编辑器和安全next校验共用。部署CMS_NAVIGATION_PATHS/CMS_NAVIGATION_ICONS与实际注册表一致，跨配置测试核对；不把/ui示例注入业务导航。未配置菜单时按真实operation提供可用的管理入口，没有可用业务入口才显示空态；明确这些是应用入口而非API返回的菜单。
 
 API树中group/page/action分别呈现，action没有path和operationId，不生成链接也不推导权限。未知图标使用安全缺省图标，失效路径禁用并说明，详情按明确父级匹配高亮。禁用祖先隐藏全部后代；group→page→action层级、带子节点删除及type更新遵循HTTP校验。没有原子重排接口，按单节点sortOrder编辑保存，不承诺多节点拖动原子成功。
 
@@ -37,6 +37,8 @@ disabled permission既有grant保持勾选和标识，只有用户明确移除�
 409后保留草稿：Admin/Role以单项GET重读，Permission和Binding通过不带当前筛选的完整分页定位；不能用当前页未找到宣称删除。读取被撤权时停止提交并保留草稿，绝不自动替换version重试。引用冲突只展示API已知信息，不猜受影响人数、角色数或完整反向引用。Role删除还受archived管理员引用限制。
 
 ## 6. 写入意图与恢复
+
+db:migrate在应用入口统一执行结构迁移和操作目录核对。空操作目录的首次初始化同时按应用配置创建集合管理权限与对应绑定，记录system审计，不给普通角色自动授权；集合及操作范围从当前定义生成，上传操作只用于上传型集合。默认配置与操作目录在同一安全事务内写入，失败整笔回滚；已有目录只核对操作，不补回删除的绑定、不启用已停用权限、不覆盖名称和角色授权。首次初始化不需要邮件、文件存储或HTTP进程。已有环境需要变更权限时通过管理API明确配置。
 
 每个声明要求幂等的创建/邀请按actor+operation+scope+key保存内存意图；相同payload失败重试保持UUID，编辑payload或明确放弃后另建意图，身份变化立即废弃。进行中和结果未知时禁用编辑及关闭，提供核实结果与显式重试同一操作；不自动换key。刷新前提示未确认状态，刷新后先从列表/审计核实，不能承诺恢复已丢失内存key或无限期服务端回放。邀请回放deliveryId相同但状态可更新，不要求响应逐字相同。
 

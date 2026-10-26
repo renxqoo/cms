@@ -107,6 +107,18 @@ export interface AccessRuntime extends AccessOptions {
   schemas: ReturnType<typeof accessInputSchemas>;
 }
 
+export interface InitialCollectionPermission {
+  collectionKey: string;
+  code: string;
+  name: string;
+  operationIds: readonly string[];
+}
+
+export type CatalogRuntime = Pick<
+  AccessRuntime,
+  'database' | 'policy' | 'operationMap' | 'collectionKeys'
+>;
+
 export interface AuthorizedWork {
   tx: SqlExecutor;
   actor: Principal;

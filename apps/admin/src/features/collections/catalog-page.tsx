@@ -32,6 +32,9 @@ export function CollectionCatalogPage() {
         <Banner tone="warning">{t.denied}</Banner>
       ) : null}
       {result.phase === 'loading' ? <p role="status">{t.loading}</p> : null}
+      {result.phase === 'ready' && result.data?.rows.length === 0 ? (
+        <EmptyCatalog onRefresh={result.reload} />
+      ) : null}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {result.data?.rows.map((collection) => (
           <Card key={collection.key}>
@@ -53,5 +56,38 @@ export function CollectionCatalogPage() {
         ))}
       </div>
     </ClientInteractionBoundary>
+  );
+}
+
+function EmptyCatalog({ onRefresh }: { onRefresh: () => void }) {
+  const locale = useShell((state) => state.locale);
+  const t = contentMessages[locale];
+  const access = useAccessControl();
+  const navigation = useAppNavigation();
+  return (
+    <Banner className="space-y-3">
+      <p className="font-medium">{t.emptyTitle}</p>
+      <p>{t.emptyDescription}</p>
+      <div className="flex flex-wrap gap-2">
+        {access.can('endpoints.list') && access.can('endpoints.createBinding') ? (
+          <Button
+            variant="outline"
+            onClick={() =>
+              navigation.push('/dashboard/endpoints?module=content&accessKind=permission')
+            }
+          >
+            {t.configureEndpoints}
+          </Button>
+        ) : null}
+        {access.can('permissions.list') && access.can('permissions.create') ? (
+          <Button variant="outline" onClick={() => navigation.push('/dashboard/permissions')}>
+            {t.managePermissions}
+          </Button>
+        ) : null}
+        <Button variant="outline" onClick={onRefresh}>
+          {t.refreshCollections}
+        </Button>
+      </div>
+    </Banner>
   );
 }
