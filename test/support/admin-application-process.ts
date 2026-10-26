@@ -165,7 +165,13 @@ export async function createAdminApplicationProcess(
     mailbox = await createAdminMailbox({ messages: cms.smtp.messages, maximumBytes: 1048576 });
     const apiOrigin = `http://127.0.0.1:${cms.port()}`;
     next = await startNext({ mode, port, apiOrigin, signal });
-    return { origin, apiOrigin, mailbox: mailbox.connection, close };
+    return {
+      origin,
+      apiOrigin,
+      mailbox: mailbox.connection,
+      fixtureDatabase: { connectionString: cms.store.connectionString, schema: cms.store.schema },
+      close,
+    };
   } catch (error) {
     await close();
     throw error;

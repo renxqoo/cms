@@ -67,6 +67,9 @@ async function browserJourneys(args: string[]) {
             CMS_ADMIN_E2E_MAILBOXES: JSON.stringify(
               applications.map((application) => application.mailbox),
             ),
+            CMS_ADMIN_E2E_DATABASES: JSON.stringify(
+              applications.map((application) => application.fixtureDatabase),
+            ),
             CMS_ADMIN_E2E_OUTPUT_DIR: resolve('test-results', basename(group[0] ?? 'browser')),
           },
         ),

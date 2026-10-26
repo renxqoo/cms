@@ -1,6 +1,6 @@
 # 内容、字段与资源界面实施契约
 
-状态：消费者方案定稿，2026-10-26；独立审查四项已落实，后端补面以最终核销契约集成后开始真实联调。关联[应用设计](admin-application-design.md)、[界面矩阵](admin-application-contracts.md)及后端collections-ui-api三件套。本批不改变存储、业务权限或发布协议，不执行DDL和部署。
+状态：消费者方案定稿，2026-10-26；后端76操作已集成，界面实现与真实跨进程联调验收进行中。关联[应用设计](admin-application-design.md)、[界面矩阵](admin-application-contracts.md)及后端collections-ui-api三件套。本批不改变存储、业务权限或发布协议，不执行DDL和部署。
 
 ## 1. 入口与归属
 
@@ -24,6 +24,8 @@ array/blocks新增稳定UUID，编辑/排序保留已有id，blocks保留blockTy
 
 richText保留后端v1 AST，提供段落、固定标题、列表、链接、关系和媒体节点；不暴露无法持久化的marks、标题级别或有序列表语义。拟采用已核对稳定版Lexical0.52.0及同版React/list/link/rich-text/selection/utils包，只在字段出现时按Next客户端边界懒加载，保持Tillgate主题和基础组件。它是本批完整富文本能力所需编辑内核，不替换UI体系。单一AST转换器显式验证并输出受支持节点；不能无损表示的合法树须保留原节点，并提供受控结构编辑，不能静默丢节点、引用或转换成纯文本。自定义受信任节点按type/version分发，未知适配保留数据并安全展示。URL只允许后端相同协议，渲染不执行HTML；粘贴和导入不绕过净化。注册监听/命令和编辑实例卸载时释放。
 
+富文本无损检查按JSON语义比较，对象成员顺序无关，数组顺序、节点数量及全部值必须保留；PostgreSQL JSONB重排对象键不应改变可视编辑能力。相邻文本合并、空节点丢失和不支持的扩展仍整字段进入结构编辑。
+
 ## 3. 文档编辑状态与并发
 
 编辑器按collection/id/locale实例化，区分服务端已确认快照、当前草稿、待确认写入及冲突。切换locale、离开页面及历史导航沿用真实未保存更改保护；取消离开保留字段和光标。创建成功使用返回id进入详情；单例以真实list结果决定打开或创建，409后核实，不猜固定id。
@@ -44,13 +46,21 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 
 文件夹为真实树及version CAS，新建/改名/移动/删除受API约束；移动文档使用document PATCH folderId与revision，不能修改客户端行后声称成功。结构视图只读当前安全布局/schema及版本标识，不生成配置保存接口。
 
+文件夹PATCH/DELETE结果未知时不走幂等重放：记录实际提交的CAS意图，主动、可取消地完整重读folders.list。PATCH仅同id、version=提交version+1且name/parentId精确相符才确认；DELETE仅完整成功列表中id缺席才确认。读失败、撤权、原version未变或其他版本内容保持草稿及blocked；显式采用仅使用本次新鲜成功观察，重新检查读取和写许可，不自动升级version。创建保留原UUID与payload显式重放，不能用同名猜成功。结果未知可经二次明确确认关闭，刷新目录并保留未确认提示，不伪称远端取消或操作成功。
+
 ## 4. 字节客户端与上传
+
+持有lease不授予操作权限。现有controller在任何创建、重放POST、上传字节、complete、consume或DELETE前核对最新操作许可与读取依赖；readOnly禁止新写，已有job可按剩余读许可核实终态。未知receipt、当前lease占用和旧metadata均不能作为重发授权，保持原key/revision/意图；失效只暂停，不丢队列或谎称远端取消。
 
 扩展唯一requestApi，按operation.responseKind处理JSON/204或私有流，不增加第二套身份传输。流成功投影为{blob,filename,contentType,etag,bytes}，错误继续使用同一ApiResult。响应按实际字节上限32MiB、90秒、64KiB读取并取消超限流，文件名净化且无存储key。可选onUploadProgress只对bytes操作生效：浏览器用原生XHR报告真实已发送字节，不以定时器模拟；无进度消费者仍沿用既有fetch路径。abort/timeout/网络/非JSON错误统一处理，移除所有XHR监听和定时器，不透传Bearer。
 
 上传预算来自当前editor.upload，purpose=create或replace；replace必须有documentId/revision。流程真实执行createUpload→PUT原始application/octet-stream→completeUpload→readUpload轮询ready→文档create/PATCH uploadId消耗，不把处理ready当已附加成功。队列并发预算在feature配置层且有上界；实际接收进度只表示浏览器发送，处理阶段显示服务器状态。所有所需读写许可和读取依赖可用后才启动，不留下只能创建却不能读取结果的流程。
 
 已失败会话不能重传PUT；明确重试创建新会话。取消调用真实cancel，consumed/resource_in_use显示实际原因。离开或卸载终止前端请求和轮询，不虚称远端任务已取消；可通过真实listUploads恢复发现。没有分块续传/跨刷新字节进度则不展示这些能力。replace冲突保留结果说明，不能自动把旧revision上传绑定给新revision。
+
+同一集合的旧metadata仅用于保留现有队列上下文，重读loading/failed或许可暂不可用时禁止选择新文件和重试写入；metadata恢复ready且动作允许后才重新启用。既有队列与服务端会话不因短暂重读失败被当作已取消或丢弃。
+
+队列与文档工作控制器都接收必填实时许可查询，无缺省放行。创建、字节发送、完成、文档消耗、图片处理和取消逐次检查操作及流程依赖；readonly和metadata失效门控已有等待项，不只禁用选择按钮。队列保留文件、会话和幂等标识，恢复依赖后才启动等待项；已接受会话和持久任务仍按当前读许可核实。缺少处理回执时，核实与取消不得绕过撤权重放POST，重新获准后仍沿用原lease、revision和key。
 
 ## 5. 私有预览、图片与恢复
 
@@ -61,6 +71,8 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 资源恢复复用回收站和完整版本恢复，历史固定字节与引用保留规则由真实接口验证。asset-cleanups只展示安全账本投影及blocked重试，POST {}带同意图幂等键返回202仅表示受理；界面不声称已经物理删除或绕过保留期/引用/租约。当前有效super的security许可不能由普通permission扩大。
 
 ## 6. 任务、轮询与验证
+
+429、失败和等待预算耗尽产生的暂停需要显式继续；隐藏再显示页面不得覆盖该原因或自动恢复读取。只有因hidden暂停的请求可在重新可见时按原截止时间恢复，Retry-After在显式继续时仍生效。
 
 jobs/uploads列表按新后端契约的固定顺序和严格filters，在权限过滤后的rows/total上分页，不前端分页后伪造总数。轮询预算在feature配置层：可见页最多两个轮询器，列表最短10秒、选中详情最短5秒；上传队列最多两个活动会话且各最短10秒，不同时启动逐行列表轮询。整段自动等待最多5分钟，超时暂停并提供显式继续核实，远端任务不宣称取消。hidden、terminal、429和离页停止计时器和请求；恢复可见仍受原截止时间约束。失败显示真实Retry-After，不在后台自动重试429；考虑BFF出口IP120/min和逐operation60/min预算，不为每行启动定时器。切换collection、页或身份清理旧请求，拒绝迟到结果。详情按kind使用安全DTO，不输出原始provider错误或其他actor的私有会话。
 

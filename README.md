@@ -2,9 +2,9 @@
 
 面向结构化内容、文件资料和 RBAC 管理的自研 CMS。后端采用 Hono、PostgreSQL 和 Drizzle；开发与脚本使用 Bun 1.4.4，生产使用 Node.js，测试使用 Vitest。
 
-后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用三个私有工作区，注册76个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
+后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。使用五个私有工作区，注册76个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
 
-应用配置启用 articles、pages、media 和 settings 集合。管理后台提供UI组件库、隔离组件工作台，以及真实登录、会话验证、账户概览和退出流程；账户/RBAC与内容资源界面按[应用联调方案](docs/design/admin-application-design.md)继续实施。不开放任意菜单 URL 或运行时建表。
+应用配置启用 articles、pages、media 和 settings 集合。管理后台提供UI组件库、隔离组件工作台、认证与账户管理、完整RBAC，以及集合编辑、发布版本、文件夹、资源上传、图片处理、任务和恢复界面。实际联调验收按[应用实施记录](docs/design/admin-application-implementation.md)逐项记录。不开放任意菜单 URL 或运行时建表。
 
 ## 设计入口
 
@@ -23,7 +23,7 @@
 - [审查记录](docs/design/review-log.md)、[Tillgate 参考审计](docs/design/reference-audit.md)。
 - [实施和验证计划](docs/design/implementation-plan.md)、[静态规则的实际边界](docs/design/lint-guardrails.md)。
 
-## OneAster UI 工作台
+## OneAster 管理后台与组件工作台
 
 前端位于apps/admin，通用组件位于packages/ui，使用Next.js App Router、React、Tailwind CSS、Base UI和实例化Zustand。品牌文字为OneAster，中英文及浅色/深色主题与Tillgate参考视觉一致。范围与验收见[UI设计](docs/design/admin-ui-design.md)、[组件映射](docs/design/admin-ui-components.md)、[施工图](docs/design/admin-ui-implementation.md)及[CMS组合契约](docs/design/admin-ui-cms-contracts.md)。
 
@@ -36,7 +36,7 @@ bun run dev:admin
 
 根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；开发默认API为127.0.0.1:3001、后台为localhost:3000。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
 
-账户页面提供资料和密码管理；管理员、角色、权限、导航、端点绑定、审计以及访问恢复位于/dashboard对应入口。操作以当前主体的完整授权快照判断，实际HTTP再次鉴权。邀请与重置通过实际邮件链接完成；普通目录被误配拒绝后，有效超级管理员可使用访问恢复读取最新绑定并按原CAS协议修复。验收范围和当前进度见[应用实施与验收](docs/design/admin-application-implementation.md)。
+账户页面提供资料和密码管理；管理员、角色、权限、导航、端点绑定、审计以及访问恢复位于/dashboard对应入口。操作以当前主体的完整授权快照判断，实际HTTP再次鉴权。邀请与重置通过实际邮件链接完成；普通目录被误配拒绝后，有效超级管理员可使用访问恢复读取最新绑定并按原CAS协议修复。内容集合入口提供安全元数据驱动的20类字段、草稿自动保存、发布、版本对比和完整历史恢复；资源、任务和清理入口提供实际上传、图片处理、私有预览与可恢复操作。验收范围和当前进度见[应用实施与验收](docs/design/admin-application-implementation.md)。
 
 ## 本地运行
 
@@ -77,7 +77,7 @@ bun run content:backfill --collection articles --from 1 --to 2 --page-size 20 --
 
 ## 导航与管理接口
 
-CMS_NAVIGATION_PATHS和CMS_NAVIGATION_ICONS是逗号分隔的可信前端路径及图标名目录，默认均为空。路径必须是规范的站内绝对路径，不含查询、fragment、反斜杠或控制字符；图标名以英文字母开头，后续仅允许字母、数字、下划线和连字符；两类目录都不接受重复项。前端接入后只填写实际存在的页面及图标，修改后重启API。UI工作台属于公开合成示例，未作为业务菜单注册，因此示例配置保持为空。
+CMS_NAVIGATION_PATHS和CMS_NAVIGATION_ICONS是逗号分隔的可信前端路径及图标名目录，API缺省为空；.env.example列出当前13个业务入口和10个注册图标。路径必须是规范的站内绝对路径，不含查询、fragment、反斜杠或控制字符；图标名以英文字母开头，后续仅允许字母、数字、下划线和连字符；两类目录都不接受重复项。前端接入后只填写实际存在的页面及图标，修改后重启API。UI工作台属于公开合成示例，不注册为业务菜单；业务路径与图标需和apps/admin/src/config/admin-routes.ts保持一致。
 
 未注册任何页面时，group可创建，合法page请求返回503 temporarily_unavailable，path字段说明尚无已注册页面；page缺少path仍返回400。目录非空时，未知path或非null未知icon返回400及对应字段提示；icon可使用null。action必须挂在page下。撤除路径后，相关page及其action不再出现在/me/navigation，空group同时隐藏，管理树保留记录以便修正。
 
@@ -122,7 +122,7 @@ bun run test
 
 lint包含工作区、HTTP/业务依赖和schema owner导入约束及类型感知Oxlint；typecheck使用bun check检查后端、UI包和Next应用；build构建Node API、命令、SQL迁移、规范插件及Next生产产物；test运行Vitest/Istanbul、React交互测试、真实PostgreSQL集成、Bun/Node网络旅程及开发/生产浏览器冒烟。覆盖率包含全部本期手写业务代码及原插件范围，门槛为statements/functions/lines90%、branches85%，不排除入口或SQL适配器。
 
-测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，连接需具备CREATEDB/CREATEROLE。其他环境设置CMS_TEST_DATABASE_URL；所有数据库装置尊重该连接并显式隔离迁移连接，不使用部署凭据。CI使用PostgreSQL17，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。网络测试使用真实Bun与Node（可用CMS_NODE_BINARY指定），缺失运行时直接失败。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test执行账户、内容和媒体三组共6条旅程，并运行开发/生产浏览器旅程。浏览器入口为bun run test:e2e e2e/admin-ui.browser.spec.ts，可追加--project production或--grep。首次运行执行bun --bun node_modules/@playwright/test/cli.js install chromium；CI安装浏览器及系统依赖。
+测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，连接需具备CREATEDB/CREATEROLE。其他环境设置CMS_TEST_DATABASE_URL；所有数据库装置尊重该连接并显式隔离迁移连接，不使用部署凭据。CI使用PostgreSQL17，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。网络测试使用真实Bun与Node（可用CMS_NODE_BINARY指定），缺失运行时直接失败。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test执行账户、内容和媒体三组共8条旅程，并运行开发/生产浏览器旅程。浏览器入口为bun run test:e2e e2e/admin-ui.browser.spec.ts，可追加--project production或--grep。首次运行执行bun --bun node_modules/@playwright/test/cli.js install chromium；CI安装浏览器及系统依赖。
 
 Husky由bun install时的prepare安装：pre-commit跑lint/typecheck，pre-push跑build/test，失败立即阻断。GitHub Actions对push/PR执行相同四门，固定Bun1.4.4、Node26.9.0和官方Action SHA，不部署。CI仅在安装时禁用本地hook，随后显式执行全部检查。
 

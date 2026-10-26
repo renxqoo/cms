@@ -30,8 +30,9 @@ it('keeps self-service available while empty-menu application entries require re
     '/dashboard/account',
     '/dashboard/admins',
   ]);
-  expect(navigation.empty).toBe(true);
+  expect(navigation.empty).toBe(false);
   const denied = shellNavigation({ navigation: [], locale: 'zh', can: () => false });
+  expect(denied.empty).toBe(true);
   expect(denied.groups.flatMap((item) => item.items.map((link) => link.href))).toEqual([
     '/dashboard',
     '/dashboard/account',

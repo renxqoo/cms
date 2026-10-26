@@ -44,6 +44,8 @@ disabled permission既有grant保持勾选和标识，只有用户明确移除�
 
 恢复读不能由普通permission扩大，不能恢复普通写权限；恢复页面仍通过原Permission和Binding写operation提交。冲突后使用security读源重新定位最新记录，保留草稿并要求显式采用。目录依赖必须完整可用，危险停用增加确认，移除对endpoints.list和permissions.list的临时客户端自锁限制。不缓存凭据、旧catalog或旧version作为刷新后的恢复能力。
 
+账户菜单向当前有效super且具备access.readRecovery的主体提供固定恢复入口，不依赖服务端配置导航或已不可用的普通读取许可。进入后仍须真实探测普通目录403才展示安全恢复工作区。侧栏有可用fallback业务入口时不显示“没有可用的菜单”；没有业务入口时保留空菜单反馈，自服务入口继续可用。
+
 ## 7. 先行验收
 
 覆盖完整分页与异常页/等量变更限制、刷新代次/卸载取消/失败撤旧许可、普通用户security写不可用、disabled-role自服务、只写缺读依赖；管理员角色变更撤销和真实重邀；角色共享version串行及两区草稿、disabled grants搜索分页保留；导航祖先/层级/未知路径、单节点失败不称整体成功；Permission/Binding跨页冲突定位；幂等未知结果不重复创建；真实SMTP激活/重置和浏览器双账户授权隔离。独立审查、四门及受影响真实API/Next浏览器旅程通过后核销。

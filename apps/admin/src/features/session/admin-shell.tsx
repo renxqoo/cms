@@ -63,7 +63,13 @@ function AuthorizedShell({
           subtitle: t.subtitle,
           groups: navigation.groups,
           footer,
-          account: <AccountMenu principal={principal} signOut={signOut} />,
+          account: (
+            <AccountMenu
+              principal={principal}
+              signOut={signOut}
+              canRecover={principal.role.isSuper && access.can('access.readRecovery')}
+            />
+          ),
           breadcrumbs,
         }}
       >

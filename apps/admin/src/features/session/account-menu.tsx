@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOutIcon, UserRoundIcon } from 'lucide-react';
+import { LogOutIcon, ShieldCheckIcon, UserRoundIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import {
   Menu,
@@ -21,9 +21,11 @@ import { sessionMessages } from './session-messages';
 export function AccountMenu({
   principal,
   signOut,
+  canRecover,
 }: {
   principal: Me;
   signOut: () => Promise<void>;
+  canRecover: boolean;
 }) {
   const locale = useShell((state) => state.locale);
   const t = sessionMessages[locale];
@@ -54,6 +56,12 @@ export function AccountMenu({
           <UserRoundIcon />
           {managementMessages[locale].account}
         </MenuItem>
+        {canRecover ? (
+          <MenuItem render={<AppLink href={getAdminRoute('recovery').path} prefetch={false} />}>
+            <ShieldCheckIcon />
+            {getAdminRoute('recovery').label[locale]}
+          </MenuItem>
+        ) : null}
         <MenuItem onClick={() => void signOut()}>
           <LogOutIcon />
           {t.signOut}

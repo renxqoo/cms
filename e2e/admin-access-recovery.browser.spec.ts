@@ -41,6 +41,24 @@ test('independent security reads recover both denied ordinary catalogs with real
   await expect(page).toHaveURL(/\/dashboard$/);
   expect((await readyOperations).status()).toBe(200);
   expect((await readyNavigation).status()).toBe(200);
+  await page.goto('/dashboard/navigation');
+  for (const node of [
+    { name: 'Recovery workspace', type: 'group' },
+    { name: 'Configured roles', type: 'page' },
+  ]) {
+    await page.getByRole('button', { name: '创建节点', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: '创建节点', exact: true });
+    await dialog.getByLabel(/^名称/).fill(node.name);
+    await dialog.getByLabel('类型', { exact: true }).selectOption(node.type);
+    if (node.type === 'page') {
+      await dialog.getByLabel(/^父级节点/).selectOption({ label: 'Recovery workspace' });
+      await dialog.getByLabel(/^页面路径/).selectOption('/dashboard/roles');
+    }
+    const created = waitForApi(page, 'POST', '/v1/navigation');
+    await dialog.getByRole('button', { name: '保存', exact: true }).click();
+    expect((await created).status()).toBe(201);
+    await expect(dialog).toHaveCount(0);
+  }
   const catalog = await bffRequest(page, {
     method: 'GET',
     path: '/v1/endpoints?module=access&pageSize=100',
@@ -69,7 +87,12 @@ test('independent security reads recover both denied ordinary catalogs with real
     ).toBe(204);
   }
   const verifyDeniedProbes = observeRecoveryProbes(page, browserErrors);
-  await page.goto('/dashboard/access-recovery');
+  await page.goto('/dashboard');
+  await expect(page.getByRole('link', { name: 'Configured roles', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: '访问恢复', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '账户菜单', exact: true }).click();
+  await page.getByRole('menuitem', { name: '访问恢复', exact: true }).click();
+  await expect(page).toHaveURL(/\/dashboard\/access-recovery$/);
   await page.getByRole('button', { name: '创建权限', exact: true }).click();
   const permission = page.getByRole('dialog', { name: '创建权限', exact: true });
   await permission.getByLabel(/^权限编码/).fill('browser:recovery');

@@ -1,6 +1,6 @@
 # OneAster 界面与接口联调矩阵
 
-状态：认证首切片定稿，2026-10-26；事实来自当前后端operations/input schemas/DTO、OpenAPI及真实测试。完整注册76个operationId；按实际范围记录，不抄Tillgate API。
+状态：完整应用契约定稿，2026-10-26；事实来自当前后端operations/input schemas/DTO、OpenAPI及真实测试。完整注册76个operationId；按实际范围记录，不抄Tillgate API。
 
 ## 1. 已冻结账户与RBAC页面
 
@@ -32,11 +32,13 @@ DTO安全投影来自apps/api/src/http/openapi/responses.ts及packages/cms/src/a
 | 草稿/发布/复制/归档 | .../autosaves、publications、publication、copies；DELETE文档?revision=N |
 | 版本/对比/恢复 | .../versions、versions/:versionId、version-diff、restorations |
 | 回收站/永久清除 | documents?trashed=true、trash-restorations、purges |
-| 计划/批量/任务 | publication-schedules、batches、jobs/:jobId；可发现列表契约待owner定稿 |
+| 计划/批量/任务 | publication-schedules、batches、jobs/:jobId；GET collections/:collection/jobs按kind/status/documentId分页发现 |
 | 文件夹 | /v1/folders，按collection与version管理 |
 | 资源库/引用 | /v1/resources、.../documents/:id/references |
-| 上传/字节/处理 | .../uploads、uploads/:id/content、completions、uploads/:id；actor列表待定稿 |
+| 上传/字节/处理 | .../uploads、uploads/:id/content、completions、uploads/:id；GET uploads按当前actor、purpose/status/documentId分页发现 |
 | 原件/历史/固定引用 | documents/:id/file；media-bindings/:bindingId/file；versionId/variant/mode |
+| 资源清理 | GET /v1/asset-cleanups；POST /v1/asset-cleanups/:id/retries，当前有效super安全操作，202只表示受理 |
+| 访问恢复 | GET /v1/security/recovery?resource=endpoints/bindings/permissions，普通目录真实403后使用 |
 | 图片重处理 | .../documents/:id/file-processings→jobId/uploadId，后台自动提交新修订 |
 
 默认真实集合articles/pages/media/settings，当前本地化en/zh-CN；复杂字段框架需独立真实测试集合覆盖，不往生产集合塞mock。Array/Blocks保持稳定UUID和blockType，关系写{collection,id}，编辑读取fallback=[]。后端没有文档编辑锁，不能提供伪锁操作。资源默认本地存储，可配置S3；无长期裸对象URL能力。

@@ -28,7 +28,7 @@ it('keeps the test SMTP feed behind a random capability and permits only a bound
   await expect(fetch(`${origin}/messages`, { headers })).rejects.toThrow(/fetch|connect|socket/i);
 });
 
-it('regression: closes the mailbox server before a paused client consumes the remote EOF', async () => {
+it('regression: closes an authenticated HTTP mailbox connection before a paused client consumes the remote EOF', async () => {
   const mailbox = await createAdminMailbox({ messages: [], maximumBytes: 100 });
   const address = new URL(mailbox.connection.origin);
   const socket = connect(Number(address.port), address.hostname);
@@ -41,7 +41,23 @@ it('regression: closes the mailbox server before a paused client consumes the re
       socket.once('connect', resolve);
       socket.once('error', reject);
     });
-    socket.pause();
+    const responded = new Promise<string>((resolve, reject) => {
+      let headers = '';
+      function received(chunk: Buffer) {
+        headers += chunk.toString();
+        if (headers.includes('\r\n\r\n')) {
+          socket.pause();
+          socket.off('data', received);
+          resolve(headers);
+        }
+      }
+      socket.on('data', received);
+      socket.once('error', reject);
+    });
+    socket.write(
+      `GET /messages HTTP/1.1\r\nHost: ${address.host}\r\nAuthorization: Bearer ${mailbox.connection.capability}\r\nConnection: keep-alive\r\n\r\n`,
+    );
+    expect(await responded).toMatch(/^HTTP\/1\.1 200 /);
     closing = mailbox.close();
     await closing;
     socket.resume();

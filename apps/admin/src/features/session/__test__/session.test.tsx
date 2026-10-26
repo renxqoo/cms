@@ -14,6 +14,8 @@ import { sessionMessages } from '../session-messages';
 const mocks = vi.hoisted(() => ({
   request: vi.fn<(input: { signal: AbortSignal }) => Promise<ApiResult<undefined>>>(),
   replace: vi.fn<() => void>(),
+  recovery: false,
+  configured: false,
 }));
 vi.mock('../../../api/client', () => ({
   requestApi: (input: { operation: string; signal: AbortSignal }) => {
@@ -22,10 +24,44 @@ vi.mock('../../../api/client', () => ({
         ok: true,
         status: 200,
         requestId: '',
-        data: { rows: [], total: 0, page: 1, pageSize: 100 },
+        data: {
+          rows: mocks.recovery
+            ? [{ operationId: 'access.readRecovery', scopeKind: 'global', collectionKey: null }]
+            : [],
+          total: mocks.recovery ? 1 : 0,
+          page: 1,
+          pageSize: 100,
+        },
       });
     if (input.operation === 'access.myNavigation')
-      return Promise.resolve({ ok: true, status: 200, requestId: '', data: { rows: [] } });
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        requestId: '',
+        data: {
+          rows: mocks.configured
+            ? [
+                {
+                  id: 'group',
+                  type: 'group',
+                  name: 'Team',
+                  path: null,
+                  icon: null,
+                  children: [
+                    {
+                      id: 'roles',
+                      type: 'page',
+                      name: 'Roles',
+                      path: '/dashboard/roles',
+                      icon: null,
+                      children: [],
+                    },
+                  ],
+                },
+              ]
+            : [],
+        },
+      });
     return mocks.request(input);
   },
 }));
@@ -73,7 +109,38 @@ async function signOut() {
   await user.click(await screen.findByRole('menuitem', { name: 'Sign out' }));
 }
 
-afterEach(() => vi.resetAllMocks());
+afterEach(() => {
+  vi.resetAllMocks();
+  mocks.recovery = false;
+  mocks.configured = false;
+});
+
+it('regression: a configured menu still leaves security recovery reachable from the account menu', async () => {
+  mocks.recovery = true;
+  mocks.configured = true;
+  view();
+  await screen.findByRole('link', { name: 'Roles' });
+  expect(screen.queryByRole('link', { name: 'Access recovery' })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+  expect(await screen.findByRole('menuitem', { name: 'Access recovery' })).toHaveAttribute(
+    'href',
+    '/dashboard/access-recovery',
+  );
+});
+
+it.each([false, true])(
+  'requires both a super role and security permission for the account recovery entry (%s)',
+  async (hasPermission) => {
+    mocks.recovery = hasPermission;
+    view(
+      'en',
+      hasPermission ? { ...principal, role: { ...principal.role, isSuper: false } } : principal,
+    );
+    await waitFor(() => expect(screen.queryByText('Checking access…')).not.toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }));
+    expect(screen.queryByRole('menuitem', { name: 'Access recovery' })).not.toBeInTheDocument();
+  },
+);
 
 it.each(['zh', 'en'] as const)(
   'shows only the verified principal in the shared %s production shell',

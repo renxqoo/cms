@@ -1,6 +1,6 @@
 # CMS 架构决策基线
 
-状态：推荐架构基线，2026-10-26；后台账户/RBAC、内容及资源后端已实现，前端组件库按[专项设计](admin-ui-design.md)已实现，真实业务界面按联调阶段实施。部署指标是验收目标，不能视为已经验证的能力。资料及核对日期见 [研究证据](research-evidence.md)，审查处置见 [审查记录](review-log.md)。
+状态：推荐架构基线，2026-10-26；后台账户/RBAC、内容及资源后端已实现，前端组件库按[专项设计](admin-ui-design.md)已实现，真实业务界面覆盖账户/RBAC、集合和资源流程，验证范围以专项实施记录为准。部署指标是验收目标，不能视为已经验证的能力。资料及核对日期见 [研究证据](research-evidence.md)，审查处置见 [审查记录](review-log.md)。
 
 ## 1. 目标、约束与事实
 
@@ -199,4 +199,4 @@ root AGENTS.md 为规则来源；Claude/Cursor 如需入口只引用它，模块
 
 ## 10. OneAster 前端边界
 
-apps/admin为独立Next.js App Router入口，packages/ui为框架无关的React/Base UI组件库。前端不导入CMS、数据库或API实现，通过[应用联调契约](admin-application-contracts.md)消费HTTP；server拥有同源封闭BFF、服务端请求与HttpOnly会话，contracts保存安全DTO及操作定义，features拥有流程和界面。UI包精确分组出口、组件状态、工作台与测试归属见[UI设计](admin-ui-design.md)和[组件映射](admin-ui-components.md)。共享组件不依赖Next、next-intl或应用配置，Next导航适配归shell，CMS组合归admin/components/cms。界面以Tillgate实际admin视觉为基准，表格与表单弹窗各保持一套实现。
+apps/admin为独立Next.js App Router入口，packages/ui为框架无关的React/Base UI组件库。前端不导入CMS、数据库或API实现，通过[应用联调契约](admin-application-contracts.md)消费HTTP；server拥有同源封闭BFF、服务端请求与HttpOnly会话，contracts保存安全DTO及操作定义，features拥有流程和界面。collections的单文档通道串行化保存、发布、恢复和异步资产租约；assets复用该租约保持原revision至终态重读，不建立第二份文档状态。jobs的可见性轮询与队列预算在功能配置层统一。UI包精确分组出口、组件状态、工作台与测试归属见[UI设计](admin-ui-design.md)和[组件映射](admin-ui-components.md)。共享组件不依赖Next、next-intl或应用配置，Next导航适配归shell，CMS组合归admin/components/cms。界面以Tillgate实际admin视觉为基准，表格与表单弹窗各保持一套实现。

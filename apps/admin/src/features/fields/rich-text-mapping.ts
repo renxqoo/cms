@@ -20,7 +20,7 @@ import {
 } from 'lexical';
 import type { ElementNode, LexicalNode } from 'lexical';
 import { $createCmsReference, CmsReferenceNode } from './rich-text-reference';
-import { isFieldData } from './data';
+import { isFieldData, sameJson } from './data';
 import type { FieldData } from './types';
 import type { RichTextValue } from './rich-text-value';
 
@@ -120,7 +120,7 @@ export function prepareRichText(value: RichTextValue): string | null {
       { discrete: true },
     );
     const output = editor.getEditorState().read($exportRichText);
-    if (value.children.length > 0 && JSON.stringify(output) !== JSON.stringify(value)) return null;
+    if (value.children.length > 0 && !sameJson(output, value)) return null;
     return JSON.stringify(editor.getEditorState().toJSON());
   } catch {
     return null;

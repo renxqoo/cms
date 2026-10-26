@@ -1,9 +1,9 @@
 import type { EditorNode } from '../../contracts/editor';
-import { isFieldData } from './data';
+import { isFieldData, sameJson } from './data';
 import type { FieldData, JsonValue } from './types';
 
 function changed(before: JsonValue | undefined, after: JsonValue | undefined) {
-  return JSON.stringify(before) !== JSON.stringify(after);
+  return !sameJson(before, after);
 }
 
 export function writablePatch(
