@@ -90,3 +90,11 @@ CI 40243386424发现Monaco高度测试在textbox首次出现后立即读取，�
 恢复旅程真实解除两个普通目录的绑定，再以独立安全读创建权限和绑定，核实两目录200且刷新后仍可读。两条已知403探测各至少一次、至多两次；授权刷新可能取消另一在途探测并在恢复ready后重新读取，全部实际403逐条登记，其他浏览器错误保持零。原认证撤销旅程在两个授权读取已完成后执行显式服务端吊销，验证SSR深层保护，避免混入初始化在途401。停用权限旅程新增保存禁用断言和明确影响确认，保留全部授权及引用冲突断言。
 
 证据为/tmp/oneaster-admin-fixes-{lint,types,build}.log、/tmp/oneaster-admin-isolated-database-test.log及对应独立审查红绿日志。Collections、资源界面及其新浏览器旅程仍按后续清单继续；不以本批通过声称其已经验收。
+
+## 嵌套编辑保护与测试邮箱收口
+
+真实内容编辑器与内部文件夹、图片弹窗共用navigation adapter。嵌套guard通过React实例内的scope聚合dirty，最外层只订阅一次导航并处理原生离站和确认，内层卸载仅移除自身登记。不同adapter独立，祖先adapter跨另一scope重现时仍复用原登记。ManagementDialog的可选受控dirty覆盖裁剪、焦点和变体按钮等无原生change的修改，pending及未确认locked继续保护。五个真实controller回归、真实Base UI模态框取消导航后草稿及焦点恢复、受控dirty和旧guard共18例通过；非作者审查及真实文件夹开发/生产两旅程通过。
+
+GitHub 7730901的CI只在邮箱测试等待客户端close时超时。独立Node26.9诊断证明，暂停客户端读取时服务端close已完成，客户端必须resume才消费EOF；Bun1.4.4表现不同。两runtime各1000个真实并发连接压力未复现服务端泄漏，因此只修测试的pause/服务端关闭/resume/客户端关闭顺序并finally清理，不改邮箱服务、不增加超时、重试或skip。
+
+本批四门通过：2000独立单元用例/218文件，S93.99%、B88.99%、F96.74%、L96.69%，原全局与分组门槛通过；API跨进程8例、开发/生产浏览器72例通过。完整测试使用退出即删除的独立临时数据库。证据为/tmp/oneaster-shared-guard-mailbox-{lint,types}.log、/tmp/oneaster-guard-mailbox-{build,test}.log及/tmp/oneaster-content-folder-guard-second.log。GitHub结果以随后推送的检查为准。

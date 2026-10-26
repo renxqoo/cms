@@ -28,20 +28,30 @@ it('keeps the test SMTP feed behind a random capability and permits only a bound
   await expect(fetch(`${origin}/messages`, { headers })).rejects.toThrow(/fetch|connect|socket/i);
 });
 
-it('closes active mailbox sockets instead of leaving a keepalive process behind', async () => {
+it('regression: closes the mailbox server before a paused client consumes the remote EOF', async () => {
   const mailbox = await createAdminMailbox({ messages: [], maximumBytes: 100 });
   const address = new URL(mailbox.connection.origin);
   const socket = connect(Number(address.port), address.hostname);
-  await new Promise<void>((resolve, reject) => {
-    socket.once('connect', resolve);
-    socket.once('error', reject);
-  });
   const closed = new Promise<void>((resolve) => {
     socket.once('close', resolve);
   });
-  await mailbox.close();
-  await closed;
-  expect(socket.destroyed).toBe(true);
+  let closing: Promise<void> | null = null;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      socket.once('connect', resolve);
+      socket.once('error', reject);
+    });
+    socket.pause();
+    closing = mailbox.close();
+    await closing;
+    socket.resume();
+    await closed;
+    expect(socket.destroyed).toBe(true);
+  } finally {
+    socket.resume();
+    socket.destroy();
+    await (closing ?? mailbox.close());
+  }
 });
 
 it('reads the actual complete SMTP frontend URL across quoted-printable wrapping', () => {

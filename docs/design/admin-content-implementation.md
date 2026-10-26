@@ -12,6 +12,8 @@ contracts/content.ts与assets.ts定义浏览器安全DTO，不从后端实现导
 
 只消费collections.editor的实际layout、schemas、actions、locales及upload预算。read、create、update、autosave、copy intent与实际动作分开，编辑和提交不使用fallback翻译；编辑GET明确locale、fallback=[]、depth=0。layout已过滤隐藏字段，前端不从本地集合配置补回字段、默认值或选项；read intent需要id，create不得有id，回收站条目不偷偷调用普通编辑读取。write=denied只读；conditional标明提交时复核，不把提示当授权或用伪造nextData计算权利。
 
+create/update/autosave/copy的editor请求严格不传fallback或depth；其响应允许返回后端解析出的fallback链，不能因该字段非空拒绝合法locale。受控表单数据仍只来自明确fallback=[]、depth=0的document GET，不从metadata响应链补翻译或复制其他语言文本。read intent才允许显式fallback参数，并按请求核对其响应。
+
 元数据与数据以collection/id/locale/mode、editor.document的revision/versionId配对，并核对catalog/editor的schemaVersion/behaviorHash/mappingFingerprint。读取交错不匹配最多重取一次，仍不匹配显示资源变化并禁写，不拼接旧字段与新revision。发布、恢复、reprocess终态及权限变化后重新取得安全metadata和document。任何富文本树不能无损导入时，整字段保留原AST并切受控结构编辑，不部分导入再拼回；JSON/code/结构编辑的无效文本草稿使save/autosave/publish同时不可用，不能自动保存上一次parsed值并显示已保存。
 
 renderer穷举当前元数据的20类节点：text、textarea、number、boolean、date、email、select、code、json、point、group、array、blocks、tabs、row、collapsible、richText、relationship、upload、join。标量、结构和扩展组件分层；同一受控value/事件用于新建、详情及批量编辑。布局节点不生成存储字段；命名tabs/group增加数据路径，非命名tabs/row/collapsible沿用父路径。join始终只读。只提交已修改且可写的字段，不把读取展开关系、join、隐藏或静态denied字段回传。
@@ -25,6 +27,8 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 ## 3. 文档编辑状态与并发
 
 编辑器按collection/id/locale实例化，区分服务端已确认快照、当前草稿、待确认写入及冲突。切换locale、离开页面及历史导航沿用真实未保存更改保护；取消离开保留字段和光标。创建成功使用返回id进入详情；单例以真实list结果决定打开或创建，409后核实，不猜固定id。
+
+同一navigation adapter下的页面与嵌套弹窗聚合dirty：最外层只保留一个导航订阅、一个原生离站监听和一份确认；内层登记自身dirty并在卸载时移除，不关闭保护或建立第二套导航器。聚合scope按React树实例创建，不跨请求共享，跨adapter互相隔离。ManagementDialog接受可选受控dirty，传入时使用调用方完整派生草稿状态，未传保留原表单变化追踪；pending和未确认locked始终受保护。图片拖拽、裁剪和变体按钮等无原生change事件的编辑由该受控dirty覆盖。
 
 所有写动作共用单个通道：手动保存、自动保存、发布/撤回、归档/恢复、历史恢复、复制、移动和图片替换不能并发复用revision。自动保存仅drafts且具备真实许可，用户启用后在一次编辑静默窗口排一个定时器，未保存变化才提交；正在写时只保留最新待保存草稿，不重叠发请求，卸载/关闭自动保存清理。返回revision来自服务端，不自行递增。请求发出后的继续编辑通过草稿代次保留，不用旧响应覆盖新输入。
 

@@ -29,6 +29,7 @@ export interface ManagementDialogProps {
   locked?: boolean;
   destructive?: boolean;
   actions?: ReactNode;
+  dirty?: boolean;
 }
 
 export function ManagementDialog({
@@ -45,21 +46,22 @@ export function ManagementDialog({
   locked = false,
   destructive = false,
   actions,
+  dirty,
 }: ManagementDialogProps) {
   const id = useId();
-  const [dirty, setDirty] = useState(false);
+  const changes = useDialogChanges(dirty);
   const { adapter } = useAppNavigation();
   const locale = useShell((state) => state.locale);
   const close = locale === 'zh' ? '关闭' : 'Close';
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || disabled) return;
-    setDirty(true);
+    changes.markChanged();
     onSubmit(new FormData(event.currentTarget));
   }
   return (
     <UnsavedChangesGuard
-      dirty={dirty || pending || locked}
+      dirty={changes.dirty || pending || locked}
       navigation={adapter}
       labels={leaveLabels(locale, close)}
     >
@@ -80,7 +82,7 @@ export function ManagementDialog({
           </DialogHeader>
           {feedback}
           <form
-            onChange={() => setDirty(true)}
+            onChange={changes.markChanged}
             id={id}
             onSubmit={submit}
             className="space-y-4"
@@ -109,6 +111,16 @@ export function ManagementDialog({
       </Dialog>
     </UnsavedChangesGuard>
   );
+}
+
+function useDialogChanges(controlled: boolean | undefined) {
+  const [changed, setChanged] = useState(false);
+  return {
+    dirty: controlled ?? changed,
+    markChanged(this: void) {
+      if (controlled === undefined) setChanged(true);
+    },
+  };
 }
 
 function leaveLabels(locale: 'zh' | 'en', close: string) {
