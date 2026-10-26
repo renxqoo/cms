@@ -1,9 +1,10 @@
 'use client';
 
 import { z } from 'zod';
-import { createContext, use } from 'react';
+import { createContext, use, useCallback, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
-import { $applyNodeReplacement, $isRootNode, DecoratorNode } from 'lexical';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $applyNodeReplacement, $getNodeByKey, $isRootNode, DecoratorNode } from 'lexical';
 import type { LexicalNode, NodeKey, SerializedLexicalNode, SerializedPartial } from 'lexical';
 import { useFields } from './field-context';
 import type { FieldLocation, ReferenceValue } from './types';
@@ -23,14 +24,30 @@ const serializedReference = z.object({
 function ReferencePreview({
   reference,
   kind,
-  indices,
+  nodeKey,
 }: {
   reference: ReferenceValue;
   kind: ReferenceKind;
-  indices: number[];
+  nodeKey: NodeKey;
 }) {
   const field = useFields();
   const location = use(RichLocation);
+  const [editor] = useLexicalComposerContext();
+  const subscribe = useCallback(
+    (notify: () => void) => editor.registerUpdateListener(notify),
+    [editor],
+  );
+  const snapshot = useCallback(
+    () =>
+      editor.getEditorState().read(() => {
+        const node = $getNodeByKey(nodeKey);
+        return node?.isAttached() ? referenceIndices(node).join('.') : null;
+      }),
+    [editor, nodeKey],
+  );
+  const position = useSyncExternalStore(subscribe, snapshot, () => null);
+  if (position === null) return null;
+  const indices = position.split('.').map(Number);
   const suffix = indices.flatMap((index) => ['children', index]);
   return (
     <span
@@ -113,7 +130,7 @@ export class CmsReferenceNode extends DecoratorNode<ReactNode> {
       <ReferencePreview
         reference={this.referenceValue}
         kind={this.referenceKind}
-        indices={referenceIndices(this)}
+        nodeKey={this.getKey()}
       />
     );
   }

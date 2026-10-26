@@ -36,6 +36,8 @@ bun run dev:admin
 
 根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；开发默认API为127.0.0.1:3001、后台为localhost:3000。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
 
+账户页面提供资料和密码管理；管理员、角色、权限、导航、端点绑定、审计以及访问恢复位于/dashboard对应入口。操作以当前主体的完整授权快照判断，实际HTTP再次鉴权。邀请与重置通过实际邮件链接完成；普通目录被误配拒绝后，有效超级管理员可使用访问恢复读取最新绑定并按原CAS协议修复。验收范围和当前进度见[应用实施与验收](docs/design/admin-application-implementation.md)。
+
 ## 本地运行
 
 准备PostgreSQL数据库，复制.env.example为.env，填写DATABASE_URL及至少32字符的随机CMS_RATE_LIMIT_SECRET。生产数据库URL必须使用sslmode=verify-full，前端及允许来源必须为HTTPS；不要复用测试凭据。生产API使用真实Node.js，开发和命令使用Bun1.4.4。

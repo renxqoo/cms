@@ -29,6 +29,9 @@ export async function loadAccess(signal: AbortSignal): Promise<ApiResult<AccessD
         signal: budget.signal,
       }),
     ]);
+    for (const result of [operations, navigation])
+      if (!result.ok && result.status === 401 && result.error.code === 'unauthenticated')
+        return result;
     if (budget.timedOut()) return failure('read_timeout', 0);
     if (budget.signal.aborted) return failure('request_cancelled', 0);
     if (!operations.ok) return operations;

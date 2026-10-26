@@ -76,7 +76,12 @@ test('endpoint binding changes control the actual operation and audit details ex
   await page.getByLabel('目标 ID', { exact: true }).fill(permission.id);
   const filtered = page.waitForResponse((candidate) => {
     const url = new URL(candidate.url());
-    return candidate.request().method() === 'GET' && url.pathname === '/api/cms/v1/audit-logs' && url.searchParams.get('targetId') === permission.id && url.searchParams.get('operationId') === 'permissions.create';
+    return (
+      candidate.request().method() === 'GET' &&
+      url.pathname === '/api/cms/v1/audit-logs' &&
+      url.searchParams.get('targetId') === permission.id &&
+      url.searchParams.get('operationId') === 'permissions.create'
+    );
   });
   await page.getByRole('button', { name: '应用筛选', exact: true }).click();
   const response = await filtered;

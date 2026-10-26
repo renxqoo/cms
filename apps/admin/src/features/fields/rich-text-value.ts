@@ -32,6 +32,14 @@ function validReference(value: FieldData) {
   return typeof value['collection'] === 'string' && z.uuid().safeParse(value['id']).success;
 }
 
+function validCustomNode(value: FieldData, version: string) {
+  return (
+    value['version'] === version &&
+    Object.hasOwn(value, 'payload') &&
+    Object.keys(value).every((key) => ['type', 'version', 'payload'].includes(key))
+  );
+}
+
 function validNode(
   value: JsonValue,
   registrations: readonly { type: string; version: string }[],
@@ -47,7 +55,8 @@ function validNode(
       keys.every((key) => ['type', 'collection', 'id'].includes(key)) &&
       validReference(value)
     );
-  if (registrations.some((registration) => registration.type === type)) return true;
+  const registered = registrations.find((registration) => registration.type === type);
+  if (registered) return validCustomNode(value, registered.version);
   if (!['paragraph', 'heading', 'list', 'listItem', 'link'].includes(type)) return false;
   if (
     !keys.every((key) =>

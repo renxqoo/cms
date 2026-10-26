@@ -169,3 +169,17 @@ describe('rich text AST safety and lossless conversion', () => {
     });
   });
 });
+
+it.each([
+  { type: 'callout', version: '1', payload: { text: 'Old' } },
+  { type: 'callout', version: '2' },
+  { type: 'callout', version: '2', payload: { text: 'Hello' }, extra: true },
+])('rejects an invalid registered extension envelope: %j', (node) => {
+  expect(
+    parseRichText({ version: 1, children: [node] }, [{ type: 'callout', version: '2' }]),
+  ).toBeNull();
+});
+it('preserves a valid registered extension envelope without guessing its payload schema', () => {
+  const value = { version: 1, children: [{ type: 'callout', version: '2', payload: null }] };
+  expect(parseRichText(value, [{ type: 'callout', version: '2' }])).toEqual(value);
+});

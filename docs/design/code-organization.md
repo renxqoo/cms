@@ -2,7 +2,7 @@
 
 状态：本项目后端的目录设计，2026-10-26。identity/access/content/assets、database、平台与审计及对应HTTP/命令已实现。目录图仍表达职责归属，未使用的文件不创建占位或空驱动。
 
-覆盖目录、公开导出、配置编译、查询与事务参与能力、上传型集合、后台工作和测试归属。内容/资源遵循完整能力设计；前端在后续阶段实施。
+覆盖目录、公开导出、配置编译、查询与事务参与能力、上传型集合、后台工作和测试归属。内容/资源遵循完整能力设计；前端归属第9节及其专项设计。
 
 ## 1. 工作区与运行入口
 
@@ -260,4 +260,4 @@ http/content/publications.routes.ts 与协议 schema
 
 ## 9. OneAster 前端与共享UI
 
-前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力；features/auth与session拥有认证和真实布局装配，features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口并连接隔离真实API/Next。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。
+前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；proxy只传递实际受保护pathname，不承担身份验证。server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力，原始字节、上传进度及私有Blob继续走同一边界。features/auth与session拥有认证和真实布局装配，account/admins/roles/permissions/navigation/endpoints/audit拥有对应管理流程，access-control拥有主体实例的完整授权快照，management-shared提供有界读取及表格弹窗；fields提供安全metadata驱动的20类编辑节点。features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口，逐spec连接独立真实API/Next世界。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。

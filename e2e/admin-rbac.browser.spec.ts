@@ -111,6 +111,13 @@ test('role metadata and grants share CAS, disabled grants require explicit remov
   await page.getByRole('menuitem', { name: '编辑权限', exact: true }).click();
   const edit = page.getByRole('dialog', { name: '编辑权限', exact: true });
   await edit.getByLabel('状态', { exact: true }).selectOption('disabled');
+  await expect(edit.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
+  await edit
+    .getByRole('checkbox', {
+      name: '我已知晓停用此权限会拒绝依赖它的请求，包括管理读取。',
+      exact: true,
+    })
+    .check();
   saving = waitForApi(page, 'PATCH', `/v1/permissions/${first.id}`);
   await edit.getByRole('button', { name: '保存', exact: true }).click();
   expect((await saving).status()).toBe(200);

@@ -5,4 +5,5 @@ export const requestPolicy = {
   streamHighWaterMark: 64 * 1024,
   requestTimeoutMs: 15_000,
   streamTimeoutMs: 90_000,
+  downloadFilenameCharacters: 200,
 } as const;

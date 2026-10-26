@@ -104,3 +104,42 @@ it('enforces one overall deadline over both menu and operation reads', async () 
   expect(await pending).toMatchObject({ ok: false, error: { code: 'read_timeout' } });
   expect(vi.getTimerCount()).toBe(0);
 });
+
+it.each(['access.myOperations', 'access.myNavigation'])(
+  'does not mask confirmed expiry in %s behind a parallel service failure',
+  async (expiredOperation) => {
+    mock.request.mockImplementation(({ operation }) =>
+      Promise.resolve(
+        operation === expiredOperation
+          ? failure('unauthenticated', 401)
+          : failure('backend_unavailable', 503),
+      ),
+    );
+    expect(await loadAccess(new AbortController().signal)).toMatchObject({
+      ok: false,
+      status: 401,
+      error: { code: 'unauthenticated' },
+    });
+  },
+);
+
+it('keeps confirmed navigation expiry when the parallel operation read reaches its deadline', async () => {
+  vi.useFakeTimers();
+  mock.request.mockImplementation(({ operation, signal }) =>
+    operation === 'access.myNavigation'
+      ? Promise.resolve(failure('unauthenticated', 401))
+      : new Promise((resolve) => {
+          signal.addEventListener('abort', () => resolve(failure('request_cancelled', 0)), {
+            once: true,
+          });
+        }),
+  );
+  const pending = loadAccess(new AbortController().signal);
+  await vi.advanceTimersByTimeAsync(30000);
+  expect(await pending).toMatchObject({
+    ok: false,
+    status: 401,
+    error: { code: 'unauthenticated' },
+  });
+  expect(vi.getTimerCount()).toBe(0);
+});

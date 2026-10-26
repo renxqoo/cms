@@ -2,9 +2,12 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { failure } from '../../api/result';
 import { requireSession } from '../require-session';
 import { principal } from './support';
+import type { ApiResult } from '../../api/result';
+import type { Me } from '../../contracts/auth';
+import { meSchema } from '../../contracts/auth';
 
 const state = vi.hoisted(() => ({
-  result: vi.fn(),
+  result: vi.fn<() => Promise<ApiResult<Me>>>(),
   headers: new Headers(),
 }));
 vi.mock('../session', () => ({ getCurrentSession: () => state.result() }));
@@ -21,8 +24,13 @@ beforeEach(() => {
 });
 
 it('returns the verified identity without redirecting', async () => {
-  state.result.mockResolvedValue({ ok: true, status: 200, requestId: '', data: principal });
-  expect(await requireSession()).toBe(principal);
+  state.result.mockResolvedValue({
+    ok: true,
+    status: 200,
+    requestId: '',
+    data: meSchema.parse(principal),
+  });
+  expect(await requireSession()).toEqual(principal);
 });
 
 it('preserves a registered protected deep link when a missing session opens login', async () => {

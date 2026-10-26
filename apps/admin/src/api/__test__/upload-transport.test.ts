@@ -2,27 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { requestApi } from '../client';
 import { uploadBytes } from '../upload-transport';
-
-class TrackedTarget extends EventTarget {
-  listeners = new Map<string, Set<EventListenerOrEventListenerObject>>();
-  override addEventListener(...args: Parameters<EventTarget['addEventListener']>) {
-    const [type, listener] = args;
-    if (listener) {
-      const existing = this.listeners.get(type) ?? new Set();
-      existing.add(listener);
-      this.listeners.set(type, existing);
-    }
-    super.addEventListener(...args);
-  }
-  override removeEventListener(...args: Parameters<EventTarget['removeEventListener']>) {
-    const [type, listener] = args;
-    if (listener) this.listeners.get(type)?.delete(listener);
-    super.removeEventListener(...args);
-  }
-  get listenerCount() {
-    return [...this.listeners.values()].reduce((total, listeners) => total + listeners.size, 0);
-  }
-}
+import type { UploadProgress } from '../upload-transport';
+import { TrackedTarget } from './xhr-support';
 
 class TestXhr extends TrackedTarget {
   static HEADERS_RECEIVED = 2;
@@ -39,7 +20,9 @@ class TestXhr extends TrackedTarget {
   body: unknown;
   url = '';
   method = '';
-  abort = vi.fn(() => this.dispatchEvent(new Event('abort')));
+  abort = vi.fn<() => void>(() => {
+    this.dispatchEvent(new Event('abort'));
+  });
   constructor() {
     super();
     TestXhr.instances.push(this);
@@ -70,11 +53,14 @@ function activeXhr() {
   return xhr;
 }
 
-function progress(type: string, loaded: number, total: number, lengthComputable = true) {
-  return Object.assign(new Event(type), { loaded, total, lengthComputable });
+function progress(loaded: number, total: number, lengthComputable = true) {
+  return Object.assign(new Event('progress'), { loaded, total, lengthComputable });
 }
 
-function start(signal = new AbortController().signal, onProgress = vi.fn()) {
+function start(
+  signal = new AbortController().signal,
+  onProgress = vi.fn<(value: UploadProgress) => void>(),
+) {
   return requestApi({
     operation: 'assets.writeUpload',
     params: { collection: 'media', uploadId: 'upload' },
@@ -98,7 +84,7 @@ afterEach(() => {
 
 describe('native byte upload lifecycle', () => {
   it('reports only real byte progress and releases every listener after validated JSON', async () => {
-    const onProgress = vi.fn();
+    const onProgress = vi.fn<(value: UploadProgress) => void>();
     const pending = start(undefined, onProgress);
     const xhr = activeXhr();
     expect(xhr.method).toBe('PUT');
@@ -107,8 +93,8 @@ describe('native byte upload lifecycle', () => {
     expect(xhr.headers.has('authorization')).toBe(false);
     expect(xhr.body).toBeInstanceOf(Blob);
     expect(onProgress).not.toHaveBeenCalled();
-    xhr.upload.dispatchEvent(progress('progress', 2, 3));
-    xhr.upload.dispatchEvent(progress('progress', 3, 0, false));
+    xhr.upload.dispatchEvent(progress(2, 3));
+    xhr.upload.dispatchEvent(progress(3, 0, false));
     expect(onProgress.mock.calls).toEqual([
       [{ loaded: 2, total: 3 }],
       [{ loaded: 3, total: null }],
@@ -116,7 +102,7 @@ describe('native byte upload lifecycle', () => {
     xhr.dispatchEvent(new Event('load'));
     expect(await pending).toMatchObject({ ok: true, data: { accepted: true } });
     expect(xhr.listenerCount + xhr.upload.listenerCount).toBe(0);
-    xhr.upload.dispatchEvent(progress('progress', 10, 10));
+    xhr.upload.dispatchEvent(progress(10, 10));
     expect(onProgress).toHaveBeenCalledTimes(2);
   });
 
@@ -147,7 +133,7 @@ describe('native byte upload lifecycle', () => {
       headers: new Headers(),
       body: new ArrayBuffer(0),
       signal: new AbortController().signal,
-      onProgress: vi.fn(),
+      onProgress: vi.fn<(value: UploadProgress) => void>(),
     });
     const xhr = activeXhr();
     xhr.status = 204;
@@ -222,14 +208,14 @@ describe('native byte upload lifecycle', () => {
         xhr.readyState = 2;
         xhr.responseHeaders.set('content-length', '2097153');
         xhr.dispatchEvent(new Event('readystatechange'));
-      } else if (kind === 'progress') xhr.dispatchEvent(progress('progress', 2097153, 2097153));
+      } else if (kind === 'progress') xhr.dispatchEvent(progress(2097153, 2097153));
       else {
         xhr.response = new ArrayBuffer(2097153);
         xhr.dispatchEvent(new Event('load'));
       }
       expect(await pending).toMatchObject({ ok: false, uncertain: true });
       expect(xhr.listenerCount + xhr.upload.listenerCount).toBe(0);
-      if (kind !== 'actual') expect(xhr.abort).toHaveBeenCalledOnce();
+      expect(xhr.abort).toHaveBeenCalledTimes(kind === 'actual' ? 0 : 1);
     },
   );
 
@@ -260,7 +246,7 @@ describe('native byte upload lifecycle', () => {
         body: {},
         response: z.unknown(),
         signal: new AbortController().signal,
-        onUploadProgress: vi.fn(),
+        onUploadProgress: vi.fn<(value: UploadProgress) => void>(),
       }),
     ).toMatchObject({ ok: false, status: 400, uncertain: false });
     expect(TestXhr.instances).toHaveLength(0);

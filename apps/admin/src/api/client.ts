@@ -37,6 +37,11 @@ function requestBody(operation: OperationDefinition, body: unknown): BodyInit | 
 }
 
 function preparedRequest<T>(operation: OperationDefinition, input: ApiRequest<T>): RequestInit {
+  if (
+    input.onUploadProgress !== undefined &&
+    (operation.bodyKind !== 'bytes' || typeof XMLHttpRequest === 'undefined')
+  )
+    throw new Error('Invalid progress request');
   const headers = new Headers();
   if (!acceptsIdempotencyKey(operation, input.idempotencyKey))
     throw new Error('Invalid idempotency');
@@ -52,6 +57,25 @@ function preparedRequest<T>(operation: OperationDefinition, input: ApiRequest<T>
     credentials: 'same-origin',
     redirect: 'error',
   };
+}
+
+function dispatchRequest(
+  context: { operation: OperationDefinition; path: string; init: RequestInit },
+  signal: AbortSignal,
+  onProgress: ApiRequest<unknown>['onUploadProgress'],
+) {
+  const { operation, path, init } = context;
+  const url = operation.target === 'frontend' ? path : `/api/cms${path}`;
+  return onProgress !== undefined && (init.body instanceof Blob || init.body instanceof ArrayBuffer)
+    ? uploadBytes({
+        url,
+        method: operation.method,
+        headers: new Headers(init.headers),
+        body: init.body,
+        signal,
+        onProgress,
+      })
+    : fetch(url, { ...init, signal });
 }
 
 function exceedsBudget(body: BodyInit | null | undefined, operation: OperationDefinition): boolean {
@@ -86,11 +110,6 @@ export async function requestApi<T>(input: ApiRequest<T>): Promise<ApiResult<T>>
     if (input.signal.aborted) return failure('request_cancelled', 0);
     const init = preparedRequest(operation, input);
     if (exceedsBudget(init.body, operation)) return failure('payload_too_large', 413);
-    if (
-      input.onUploadProgress !== undefined &&
-      (operation.bodyKind !== 'bytes' || typeof XMLHttpRequest === 'undefined')
-    )
-      return failure('invalid_input', 400);
     timer = setTimeout(
       () => {
         timedOut = true;
@@ -101,19 +120,11 @@ export async function requestApi<T>(input: ApiRequest<T>): Promise<ApiResult<T>>
         : requestPolicy.requestTimeoutMs,
     );
     sent = true;
-    const url = operation.target === 'frontend' ? path : `/api/cms${path}`;
-    const response =
-      input.onUploadProgress !== undefined &&
-      (init.body instanceof Blob || init.body instanceof ArrayBuffer)
-        ? await uploadBytes({
-            url,
-            method: operation.method,
-            headers: new Headers(init.headers),
-            body: init.body,
-            signal: controller.signal,
-            onProgress: input.onUploadProgress,
-          })
-        : await fetch(url, { ...init, signal: controller.signal });
+    const response = await dispatchRequest(
+      { operation, path, init },
+      controller.signal,
+      input.onUploadProgress,
+    );
     return operation.responseKind === 'stream'
       ? await downloadResponse(response, input.response)
       : await apiResponse(response, input.response, write);

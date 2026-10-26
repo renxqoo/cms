@@ -64,7 +64,7 @@ describe('private byte response decoding', () => {
   });
 
   it('cancels a declared oversized response before reading its body', async () => {
-    const cancel = vi.fn();
+    const cancel = vi.fn<() => void>();
     const response = new Response(new ReadableStream({ cancel }), {
       headers: { 'content-length': '33554433' },
     });
@@ -76,7 +76,7 @@ describe('private byte response decoding', () => {
   });
 
   it('enforces actual byte size when Content-Length is absent and cancels the source', async () => {
-    const cancel = vi.fn();
+    const cancel = vi.fn<() => void>();
     const response = new Response(
       new ReadableStream({
         start(controller) {

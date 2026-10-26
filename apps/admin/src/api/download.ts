@@ -16,12 +16,18 @@ export function downloadFilename(disposition: string | null): string | null {
       return null;
     }
   }
-  const name = value
-    .split(/[\\/]/)
-    .at(-1)
-    ?.replace(/[\u0000-\u001f\u007f<>:"|?*\u2028\u2029]/g, '_')
+  const name = Array.from(value.split(/[\\/]/).at(-1) ?? '')
+    .map((character) => {
+      const point = character.codePointAt(0) ?? 0;
+      return point < 32 || point === 127 || '<>:"|?*\u2028\u2029'.includes(character)
+        ? '_'
+        : character;
+    })
+    .join('')
     .trim();
-  return name && !/^\.+$/.test(name) ? [...name].slice(0, 200).join('') : null;
+  return name && !/^\.+$/.test(name)
+    ? Array.from(name).slice(0, requestPolicy.downloadFilenameCharacters).join('')
+    : null;
 }
 
 export async function downloadResponse<T>(

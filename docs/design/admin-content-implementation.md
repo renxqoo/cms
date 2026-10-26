@@ -34,6 +34,8 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 
 列表使用当前collection安全fields构建可选列、queryable筛选与排序，严格匹配q/where/sort/page/pageSize/mode/trashed/folderId等白名单；搜索与快速筛选复用共享pending URL状态。回收站只读列表与恢复/永久清除，purge受保留期和引用约束，确认中说明不可逆，失败不从列表假删。批量只提交显式选择的id/revision及受支持action，显示同步或持久化job真实逐项结果，不把202当全部完成。
 
+批量update最多显式10项；顺序读取每个id的update editor（无fallback/depth），核对该项revision/versionId、catalog schemaVersion/behaviorHash/mappingFingerprint，以及完整layout与update action投影一致。缺失权限、读取失败、交错修订或异构投影均禁提交并提示逐条编辑。共用20字段renderer从空补丁开始，只提交用户明确修改字段，不将首条值复制给其他条。archive/copy/restoreTrash最多100项且保留各自id/revision。批量读取不超过10次metadata请求，不按100项同时展开。
+
 版本列表/详情/差异使用真实versionId，恢复是完整多语言历史快照，确认说明影响；不把所选locale预览误称只恢复一种语言。计划发布提交当前revision、指定versionId和UTC executeAt，通过可发现publication job读取定位字段、真实状态和取消结果，刷新可重新发现，不只依赖内存jobId。
 
 文件夹为真实树及version CAS，新建/改名/移动/删除受API约束；移动文档使用document PATCH folderId与revision，不能修改客户端行后声称成功。结构视图只读当前安全布局/schema及版本标识，不生成配置保存接口。

@@ -13,5 +13,5 @@ export async function requireSession() {
   if (result.status !== 401) query.set('reason', 'unavailable');
   else if (result.error.code !== 'session_missing') query.set('reason', 'expired');
   if (destination !== '/dashboard') query.set('next', destination);
-  return redirect(`/login${query.size ? `?${query}` : ''}`);
+  return redirect(`/login${query.size > 0 ? `?${query}` : ''}`);
 }
