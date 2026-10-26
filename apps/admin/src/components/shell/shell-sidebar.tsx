@@ -28,7 +28,11 @@ export function ShellSidebar({
     navigationGroups.map((group) => ({
       ...group,
       label: t(group.label),
-      items: group.items.map((item) => ({ ...item, label: itemLabel(item.label) })),
+      items: group.items.map((item) => ({
+        ...item,
+        disabled: false,
+        label: itemLabel(item.label),
+      })),
     }));
   const pathname = usePathname();
   const collapsedGroups = useShell((state) => state.collapsedGroups);
@@ -92,22 +96,35 @@ export function ShellSidebar({
                 {(collapsed || groupOpen) && (
                   <ul className="space-y-1 px-1">
                     {group.items.map((item) => {
-                      const active = pathname === item.href;
+                      const active = (surface?.activeHref ?? pathname) === item.href;
                       const Icon = item.icon;
                       return (
                         <li key={item.href}>
-                          <AppLink
-                            href={item.href}
-                            prefetch={false}
-                            onClick={() => closeMobile(false)}
-                            title={collapsed ? item.label : undefined}
-                            aria-current={active ? 'page' : undefined}
-                            aria-label={collapsed ? item.label : undefined}
-                            className={`flex h-8 items-center gap-2 overflow-hidden rounded-md px-2 text-sm outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring ${active ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''}`}
-                          >
-                            <Icon className="size-4 shrink-0" aria-hidden="true" />
-                            {!collapsed && <span className="truncate">{item.label}</span>}
-                          </AppLink>
+                          {item.disabled ? (
+                            <span
+                              role="link"
+                              aria-disabled="true"
+                              aria-label={item.label}
+                              title={item.label}
+                              className="flex h-8 items-center gap-2 overflow-hidden rounded-md px-2 text-sm text-muted-foreground opacity-60"
+                            >
+                              <Icon className="size-4 shrink-0" aria-hidden="true" />
+                              {!collapsed && <span className="truncate">{item.label}</span>}
+                            </span>
+                          ) : (
+                            <AppLink
+                              href={item.href}
+                              prefetch={false}
+                              onClick={() => closeMobile(false)}
+                              title={collapsed ? item.label : undefined}
+                              aria-current={active ? 'page' : undefined}
+                              aria-label={collapsed ? item.label : undefined}
+                              className={`flex h-8 items-center gap-2 overflow-hidden rounded-md px-2 text-sm outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring ${active ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''}`}
+                            >
+                              <Icon className="size-4 shrink-0" aria-hidden="true" />
+                              {!collapsed && <span className="truncate">{item.label}</span>}
+                            </AppLink>
+                          )}
                         </li>
                       );
                     })}

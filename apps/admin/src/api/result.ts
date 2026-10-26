@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { readResponseJson } from './read-body';
 
 export const errorSchema = z.object({
   error: z.object({
@@ -86,7 +87,7 @@ export async function apiResponse<T>(
   const requestId = response.headers.get('x-request-id') ?? '';
   let value: unknown;
   try {
-    value = response.status === 204 ? undefined : await response.json();
+    value = response.status === 204 ? undefined : await readResponseJson(response);
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') throw error;
     if (

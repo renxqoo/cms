@@ -1,32 +1,65 @@
-import { afterEach, expect, it, vi } from 'vitest';
-
-const mocks = vi.hoisted(() => ({
-  session: vi.fn<() => Promise<unknown>>(),
-  redirect: vi.fn<(href: string) => never>(),
-}));
-vi.mock('server-only', () => ({}));
-vi.mock('../session', () => ({ getCurrentSession: mocks.session }));
-vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
+import { beforeEach, expect, it, vi } from 'vitest';
+import { failure } from '../../api/result';
 import { requireSession } from '../require-session';
+import { principal } from './support';
+import type { ApiResult } from '../../api/result';
+import type { Me } from '../../contracts/auth';
+import { meSchema } from '../../contracts/auth';
 
-afterEach(() => vi.resetAllMocks());
+const state = vi.hoisted(() => ({
+  result: vi.fn<() => Promise<ApiResult<Me>>>(),
+  headers: new Headers(),
+}));
+vi.mock('../session', () => ({ getCurrentSession: () => state.result() }));
+vi.mock('next/headers', () => ({ headers: () => Promise.resolve(state.headers) }));
+vi.mock('next/navigation', () => ({
+  redirect: (value: string) => {
+    throw new Error(`redirect:${value}`);
+  },
+}));
 
-it('returns only the server verified principal', async () => {
-  const identity = { id: 'verified-principal' };
-  mocks.session.mockResolvedValue({ ok: true, data: identity });
-  expect(await requireSession()).toBe(identity);
-  expect(mocks.redirect).not.toHaveBeenCalled();
+beforeEach(() => {
+  state.headers = new Headers();
+  state.result.mockResolvedValue(failure('session_missing', 401));
+});
+
+it('returns the verified identity without redirecting', async () => {
+  state.result.mockResolvedValue({
+    ok: true,
+    status: 200,
+    requestId: '',
+    data: meSchema.parse(principal),
+  });
+  expect(await requireSession()).toEqual(principal);
+});
+
+it('preserves a registered protected deep link when a missing session opens login', async () => {
+  state.headers.set('x-oneaster-admin-path', '/dashboard/account');
+  await expect(requireSession()).rejects.toThrow('redirect:/login?next=%2Fdashboard%2Faccount');
+});
+
+it('preserves a detail target with an expired session or unavailable service', async () => {
+  state.headers.set(
+    'x-oneaster-admin-path',
+    '/dashboard/roles/11111111-1111-4111-8111-111111111111',
+  );
+  state.result.mockResolvedValue(failure('unauthenticated', 401));
+  await expect(requireSession()).rejects.toThrow(
+    'redirect:/login?reason=expired&next=%2Fdashboard%2Froles%2F11111111-1111-4111-8111-111111111111',
+  );
+  state.result.mockResolvedValue(failure('backend_unavailable', 503));
+  await expect(requireSession()).rejects.toThrow(
+    'redirect:/login?reason=unavailable&next=%2Fdashboard%2Froles%2F11111111-1111-4111-8111-111111111111',
+  );
 });
 
 it.each([
-  [401, 'session_missing', '/login'],
-  [401, 'unauthenticated', '/login?reason=expired'],
-  [503, 'backend_unavailable', '/login?reason=unavailable'],
-])('redirects %s/%s before rendering protected children', async (status, code, href) => {
-  mocks.session.mockResolvedValue({ ok: false, status, error: { code } });
-  mocks.redirect.mockImplementation((url) => {
-    throw new Error(url);
-  });
-  await expect(requireSession()).rejects.toThrow(href);
-  expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith(href);
+  undefined,
+  '//external.test',
+  '/dashboard?secret=value',
+  '/dashboard#token',
+  '/dashboard/unknown',
+])('uses the default destination for an invalid request context %j', async (value) => {
+  if (value !== undefined) state.headers.set('x-oneaster-admin-path', value);
+  await expect(requireSession()).rejects.toThrow('redirect:/login');
 });

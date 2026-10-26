@@ -4,8 +4,12 @@ import type { OperationDefinition, OperationId } from '../contracts/operations';
 import { apiResponse, failure } from './result';
 import type { ApiResult } from './result';
 import { requestPolicy } from './config';
+import { downloadResponse } from './download';
+import { uploadBytes } from './upload-transport';
+import type { UploadProgress } from './upload-transport';
 
 export type { ApiResult } from './result';
+export type { UploadProgress } from './upload-transport';
 
 interface ApiRequest<T> {
   operation: OperationId;
@@ -15,6 +19,7 @@ interface ApiRequest<T> {
   response: z.ZodType<T>;
   signal: AbortSignal;
   idempotencyKey?: string;
+  onUploadProgress?: (progress: UploadProgress) => void;
 }
 
 function requestBody(operation: OperationDefinition, body: unknown): BodyInit | null {
@@ -32,6 +37,11 @@ function requestBody(operation: OperationDefinition, body: unknown): BodyInit | 
 }
 
 function preparedRequest<T>(operation: OperationDefinition, input: ApiRequest<T>): RequestInit {
+  if (
+    input.onUploadProgress !== undefined &&
+    (operation.bodyKind !== 'bytes' || typeof XMLHttpRequest === 'undefined')
+  )
+    throw new Error('Invalid progress request');
   const headers = new Headers();
   if (!acceptsIdempotencyKey(operation, input.idempotencyKey))
     throw new Error('Invalid idempotency');
@@ -47,6 +57,25 @@ function preparedRequest<T>(operation: OperationDefinition, input: ApiRequest<T>
     credentials: 'same-origin',
     redirect: 'error',
   };
+}
+
+function dispatchRequest(
+  context: { operation: OperationDefinition; path: string; init: RequestInit },
+  signal: AbortSignal,
+  onProgress: ApiRequest<unknown>['onUploadProgress'],
+) {
+  const { operation, path, init } = context;
+  const url = operation.target === 'frontend' ? path : `/api/cms${path}`;
+  return onProgress !== undefined && (init.body instanceof Blob || init.body instanceof ArrayBuffer)
+    ? uploadBytes({
+        url,
+        method: operation.method,
+        headers: new Headers(init.headers),
+        body: init.body,
+        signal,
+        onProgress,
+      })
+    : fetch(url, { ...init, signal });
 }
 
 function exceedsBudget(body: BodyInit | null | undefined, operation: OperationDefinition): boolean {
@@ -91,11 +120,14 @@ export async function requestApi<T>(input: ApiRequest<T>): Promise<ApiResult<T>>
         : requestPolicy.requestTimeoutMs,
     );
     sent = true;
-    const response = await fetch(operation.target === 'frontend' ? path : `/api/cms${path}`, {
-      ...init,
-      signal: controller.signal,
-    });
-    return await apiResponse(response, input.response, write);
+    const response = await dispatchRequest(
+      { operation, path, init },
+      controller.signal,
+      input.onUploadProgress,
+    );
+    return operation.responseKind === 'stream'
+      ? await downloadResponse(response, input.response)
+      : await apiResponse(response, input.response, write);
   } catch {
     return failure(failureCode(input.signal.aborted, timedOut, sent), sent ? 0 : 400, {
       uncertain: sent && write,

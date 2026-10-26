@@ -8,13 +8,27 @@ import type { ApiResult } from '../../../api/client';
 import { failure } from '../../../api/result';
 import { AdminShell } from '../admin-shell';
 import { Dashboard } from '../dashboard';
+import { useSessionActions } from '../session-actions';
 import { sessionMessages } from '../session-messages';
 
 const mocks = vi.hoisted(() => ({
   request: vi.fn<(input: { signal: AbortSignal }) => Promise<ApiResult<undefined>>>(),
   replace: vi.fn<() => void>(),
 }));
-vi.mock('../../../api/client', () => ({ requestApi: mocks.request }));
+vi.mock('../../../api/client', () => ({
+  requestApi: (input: { operation: string; signal: AbortSignal }) => {
+    if (input.operation === 'access.myOperations')
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        requestId: '',
+        data: { rows: [], total: 0, page: 1, pageSize: 100 },
+      });
+    if (input.operation === 'access.myNavigation')
+      return Promise.resolve({ ok: true, status: 200, requestId: '', data: { rows: [] } });
+    return mocks.request(input);
+  },
+}));
 vi.mock('../session-navigation', () => ({ replaceAfterSignOut: mocks.replace }));
 vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
@@ -63,7 +77,7 @@ afterEach(() => vi.resetAllMocks());
 
 it.each(['zh', 'en'] as const)(
   'shows only the verified principal in the shared %s production shell',
-  (locale) => {
+  async (locale) => {
     view(locale);
     const t = sessionMessages[locale];
     expect(screen.getByRole('heading', { level: 1, name: t.dashboard })).toBeInTheDocument();
@@ -72,6 +86,11 @@ it.each(['zh', 'en'] as const)(
     expect(screen.getByText('Super admin')).toBeInTheDocument();
     expect(screen.queryByText('Component workbench')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: t.dashboard })).toHaveAttribute('href', '/dashboard');
+    await waitFor(() =>
+      expect(
+        screen.queryByText(locale === 'en' ? 'Checking access…' : '正在核对访问权限…'),
+      ).not.toBeInTheDocument(),
+    );
   },
 );
 
@@ -155,4 +174,29 @@ it('aborts an in-flight logout on unmount and ignores its late result', async ()
     await Promise.resolve();
   });
   expect(mocks.replace).not.toHaveBeenCalled();
+});
+
+function SignOutChild() {
+  const actions = useSessionActions();
+  return <button onClick={() => void actions.signOut()}>Verify changed password</button>;
+}
+
+it('uses the same whole-page logout action from account content and the header menu', async () => {
+  mocks.request.mockResolvedValue(failure('request_failed', 0, { uncertain: true }));
+  render(
+    <ShellProvider initial={parsePreferences({ locale: 'en' })}>
+      <AdminShell principal={principal}>
+        <SignOutChild />
+      </AdminShell>
+    </ShellProvider>,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Verify changed password' }));
+  expect(await screen.findByText(sessionMessages.en.uncertain)).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Verify changed password' })).not.toBeInTheDocument();
+  expect(screen.queryByText('owner@example.test')).not.toBeInTheDocument();
+  expect(mocks.request).toHaveBeenCalledOnce();
+});
+
+it('rejects session actions outside the shared administrative boundary', () => {
+  expect(() => render(<SignOutChild />)).toThrow('SessionActionsProvider is required');
 });

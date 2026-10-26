@@ -162,12 +162,22 @@ async function closeSmtp(options: {
 }
 
 export function extractToken(raw: string): string {
-  const decoded = raw
+  const decoded = decodeMail(raw);
+  const result = /#token=([A-Za-z0-9_-]{43})/.exec(decoded)?.[1];
+  if (!result) throw new Error('SMTP message had no token fragment');
+  return result;
+}
+
+function decodeMail(raw: string): string {
+  return raw
     .replaceAll(/=\r?\n/g, '')
     .replaceAll(/=([0-9A-F]{2})/g, (_value, hex: string) =>
       String.fromCharCode(Number.parseInt(hex, 16)),
     );
-  const result = /#token=([A-Za-z0-9_-]{43})/.exec(decoded)?.[1];
-  if (!result) throw new Error('SMTP message had no token fragment');
-  return result;
+}
+
+export function extractFrontendUrl(raw: string): string {
+  const candidate = /https?:\/\/[^\s<>"']+#token=[A-Za-z0-9_-]{43}/.exec(decodeMail(raw))?.[0];
+  if (!candidate) throw new Error('SMTP message had no complete frontend URL.');
+  return new URL(candidate).href;
 }

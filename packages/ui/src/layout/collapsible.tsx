@@ -10,9 +10,17 @@ export interface CollapsibleProps {
   title: ReactNode;
   children: ReactNode;
   disabled?: boolean;
+  keepMounted?: boolean;
 }
 
-export function Collapsible({ open, onOpenChange, title, children, disabled }: CollapsibleProps) {
+export function Collapsible({
+  open,
+  onOpenChange,
+  title,
+  children,
+  disabled,
+  keepMounted,
+}: CollapsibleProps) {
   return (
     <BaseCollapsible.Root
       open={open}
@@ -27,7 +35,10 @@ export function Collapsible({ open, onOpenChange, title, children, disabled }: C
           className="size-4 transition-transform duration-100 in-data-open:rotate-180 motion-reduce:transition-none"
         />
       </BaseCollapsible.Trigger>
-      <BaseCollapsible.Panel className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-150 data-starting-style:h-0 data-ending-style:h-0 motion-reduce:transition-none">
+      <BaseCollapsible.Panel
+        keepMounted={keepMounted}
+        className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-150 data-starting-style:h-0 data-ending-style:h-0 motion-reduce:transition-none"
+      >
         <div className="border-t border-border/60 p-3 text-sm">{children}</div>
       </BaseCollapsible.Panel>
     </BaseCollapsible.Root>

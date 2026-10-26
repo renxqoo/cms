@@ -1,7 +1,7 @@
-const loginDestinations = new Set(['/dashboard']);
+import { safeAdminDestination } from '../../config/admin-routes';
 
 export function safeLoginNext(value: unknown): string {
-  return typeof value === 'string' && loginDestinations.has(value) ? value : '/dashboard';
+  return safeAdminDestination(value);
 }
 
 export function replaceAfterLogin(value: unknown): void {

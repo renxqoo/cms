@@ -67,7 +67,10 @@ it('renders an independent bilingual auth layout and preserves drafts across pre
     target: { value: 'a draft password' },
   });
   expect(screen.getByText('OneAster')).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: /forgot/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: '忘记密码？' })).toHaveAttribute(
+    'href',
+    '/forgot-password',
+  );
   fireEvent.click(screen.getByRole('button', { name: '切换主题' }));
   expect(document.documentElement).toHaveClass('dark');
   fireEvent.click(screen.getByRole('button', { name: '切换语言' }));

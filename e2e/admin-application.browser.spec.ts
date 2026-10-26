@@ -169,8 +169,16 @@ test('a revoked cookie on a protected deep link is verified before a fresh login
   context,
 }) => {
   await page.goto('/login');
+  const operationsReady = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === '/api/cms/v1/me/operations',
+  );
+  const navigationReady = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === '/api/cms/v1/me/navigation',
+  );
   expect((await login(page, applicationAccounts.owner)).status()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/);
+  expect((await operationsReady).status()).toBe(200);
+  expect((await navigationReady).status()).toBe(200);
   const session = (await context.cookies()).find((cookie) => cookie.name === 'oneaster-session');
   if (!session) throw new Error('The real backend must establish the session being revoked.');
   const revoked = await fetch(`${apiOrigin()}/v1/auth/logout`, {
@@ -184,9 +192,10 @@ test('a revoked cookie on a protected deep link is verified before a fresh login
       response.request().method() === 'POST' &&
       new URL(response.url()).pathname === '/api/auth/expired-session',
   );
-  await page.goto('/dashboard');
+  await page.goto('/dashboard/account');
   await expect(page).toHaveURL(/\/login\?/);
   expect(new URL(page.url()).searchParams.get('reason')).toBe('expired');
+  expect(new URL(page.url()).searchParams.get('next')).toBe('/dashboard/account');
   expect((await verified).status()).toBe(204);
   await expect(page.getByText('会话已过期，请重新登录。', { exact: true })).toBeVisible();
   expect(
@@ -194,7 +203,7 @@ test('a revoked cookie on a protected deep link is verified before a fresh login
   ).toBe(session.value);
   await expect(page.getByText(applicationAccounts.owner.email, { exact: true })).toHaveCount(0);
   expect((await login(page, applicationAccounts.owner)).status()).toBe(200);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/dashboard\/account$/);
   const renewed = (await context.cookies()).find((cookie) => cookie.name === 'oneaster-session');
   expect(renewed).toMatchObject({ httpOnly: true });
   expect(renewed?.value).not.toBe(session.value);

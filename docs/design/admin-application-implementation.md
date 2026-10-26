@@ -20,7 +20,7 @@ BFF：允许method/path、拒绝代理逃逸/路径编码/非法query与超限bo
 
 管理：全operation授权分页、读与security写隔离、disabled-role自服务、管理员保护/归档终态/邀请真实投递状态、super-role只读、disabled grants显式处置、引用删除409、版本冲突保留草稿、幂等同意图重试、危险解绑影响与恢复、导航目录一致性/层级/详情高亮、审计完整详情。
 
-内容：21类字段及结构、schema/default/readonly/localization、Array/Blocks稳定ID/排序、RichText受支持AST与危险链接、关系跨集合身份、join只读、fallback=[]、单例、草稿/自动保存/手存串行、发布/撤回/版本差异/完整历史恢复/回收站/引用保留/文件夹/批量与计划真实状态。无编辑锁时不伪造锁。
+内容：20类字段及结构、schema/default/readonly/localization、Array/Blocks稳定ID/排序、RichText受支持AST与危险链接、关系跨集合身份、join只读、fallback=[]、单例、草稿/自动保存/手存串行、发布/撤回/版本差异/完整历史恢复/回收站/引用保留/文件夹/批量与计划真实状态。无编辑锁时不伪造锁。
 
 资源：实际PNG/PDF字节经浏览器→Next→API→存储、上传处理与ready/consume分离、取消/失败新会话重试/重新发现、真实byte进度、文件替换CAS、像素crop/focal/变体、后台reprocess新修订、私有GET/HEAD授权与历史binding字节、撤权后立即拒绝、Blob URL与轮询清理、回收站/版本恢复后字节仍正确。
 
@@ -38,7 +38,7 @@ browser调度器先构建API和Next，即使独立运行浏览器spec也不能�
 
 - [x] 合并现有前后端并解决存储fixture的readiness/网络启动失败，完整四门通过。
 - [x] 新阶段方案审查、真实登录切片、代码审查和四门通过。
-- [ ] 账户与完整RBAC操作、权限矩阵和真实浏览器闭环通过。
+- [x] 账户与完整RBAC操作、权限矩阵和真实浏览器闭环通过。
 - [ ] 所有集合字段/文档/版本/回收站/任务/文件夹界面完成。
 - [ ] 上传/图片/私有历史下载/恢复的真实字节旅程通过。
 - [ ] metadata与可发现列表接缝已完成，不留假动作或占位接口。
@@ -68,3 +68,33 @@ Node服务测试独立admin-server项目覆盖server/contracts/api，UI项目排
 发现规则核对确认：自定义UI exclude替换了Vitest默认排除项，宽泛apps/admin路径扫描到node_modules工作区软链，重复执行了组件测试；前述1489/1493为当时实际执行计数，不能作为独立用例数。扫描现已限于各自src，并保留configDefaults.exclude。新增命名回归调用真实Vitest发现入口，旧配置因依赖副本失败，修复后同时验证所有自有源测试恰好发现一次，无删减有效测试或降低覆盖率门槛。后续报告使用去重后的实数。
 
 已集成Collections UI接口增量1477c28，真实后端75个操作与前端封闭manifest逐项对齐。合并无源码冲突，保留既有安全临时存储fixture和Next配置。去重后四门：1426单元用例/156文件，S93.30%、B88.43%、F96.83%、L96.12%，全局及原分组门槛通过；API网络6例、浏览器54例均过。CI的剩余键盘排序失败证据为SSR inert期间自动化focus未生效；测试以真实点击聚焦、确认未起拖，再用Space开始键盘拖动，保留移动/取消/禁用断言，两模式各三次六例通过，没有改生产排序逻辑或重试配置。
+
+## Security恢复读集成
+
+已集成后端3c3134a的`access.readRecovery`，前端封闭manifest现有76个业务操作。恢复读仅限实时有效super_admin，经独立security入口读取端点、绑定和权限的最新CAS版本；不绕过普通写鉴权。UI在普通读实际403时提供恢复入口。当前提交完成契约和后端集成，恢复页面随RBAC批次验收。
+
+CI 40243386424发现Monaco高度测试在textbox首次出现后立即读取，早于引擎onMount的passive effect。测试改为等待目标180px可观察布局，再验证预算更新与监听释放；保留原断言，不添加重试配置。
+
+本批四门完成：1447独立单元用例/160文件，S93.37%、B88.49%、F96.87%、L96.16%，原全局与分组门槛均通过；API网络8例、开发与生产浏览器54例通过。第一次并行全仓运行有两例PostgreSQL lock_timeout，无其他全仓会话时完整复验通过；未修改锁预算、测试策略或后端行为。
+
+## 账户、访问管理与字段集成验收
+
+账户激活、找回、重置、资料CAS和改密已连接真实HTTP及SMTP。管理员创建、显式重邀、角色/状态副作用、自身保护、角色两区共享version、权限、导航、端点绑定、审计和独立安全恢复均完成真实浏览器闭环。改密通过统一会话动作同步卸载受保护子树后导航，不触发未保存资料的离站确认；管理员创建的未知重试要求角色读取依赖仍可用。
+
+字段渲染覆盖20类metadata节点。独立审查实证并核销三项：array/blocks按UUID和blockType比较旧行，只提交实际改变的子字段；富文本媒体按当前editorState/nodeKey订阅位置，祖先移动后使用最新sourcePath并释放监听；自定义富文本节点严格校验已知type/version/payload封套，保留合法扩展payload，不猜其内部schema。授权加载保留任一已确认的unauthenticated401，不被并行503或读取截止时间覆盖。以上均有近置先红后绿回归，另17个独立诊断用例复验通过。
+
+唯一客户端支持真实XHR原始字节进度与取消、JSON响应预算，以及保留二进制字节的私有Blob下载；继续使用同一封闭BFF、Cookie、Origin和幂等边界。Next Proxy仅覆盖实际受保护pathname请求头，登录next使用同一注册表，真实失效深层账户入口重新登录后返回原页面。
+
+四门复验通过：1993独立单元用例/215文件，S93.98%、B89.00%、F96.73%、L96.68%，原全局及分组90/85门槛通过；API跨进程8例、开发和生产浏览器72例通过。共享postgres测试数据库出现一次原HTTP装置lock_timeout，使用独立临时CMS_TEST_DATABASE_URL后完整复验通过，临时数据库随命令退出删除，未改生产锁、超时、限流或覆盖率。
+
+恢复旅程真实解除两个普通目录的绑定，再以独立安全读创建权限和绑定，核实两目录200且刷新后仍可读。两条已知403探测各至少一次、至多两次；授权刷新可能取消另一在途探测并在恢复ready后重新读取，全部实际403逐条登记，其他浏览器错误保持零。原认证撤销旅程在两个授权读取已完成后执行显式服务端吊销，验证SSR深层保护，避免混入初始化在途401。停用权限旅程新增保存禁用断言和明确影响确认，保留全部授权及引用冲突断言。
+
+证据为/tmp/oneaster-admin-fixes-{lint,types,build}.log、/tmp/oneaster-admin-isolated-database-test.log及对应独立审查红绿日志。Collections、资源界面及其新浏览器旅程仍按后续清单继续；不以本批通过声称其已经验收。
+
+## 嵌套编辑保护与测试邮箱收口
+
+真实内容编辑器与内部文件夹、图片弹窗共用navigation adapter。嵌套guard通过React实例内的scope聚合dirty，最外层只订阅一次导航并处理原生离站和确认，内层卸载仅移除自身登记。不同adapter独立，祖先adapter跨另一scope重现时仍复用原登记。ManagementDialog的可选受控dirty覆盖裁剪、焦点和变体按钮等无原生change的修改，pending及未确认locked继续保护。五个真实controller回归、真实Base UI模态框取消导航后草稿及焦点恢复、受控dirty和旧guard共18例通过；非作者审查及真实文件夹开发/生产两旅程通过。
+
+GitHub 7730901的CI只在邮箱测试等待客户端close时超时。独立Node26.9诊断证明，暂停客户端读取时服务端close已完成，客户端必须resume才消费EOF；Bun1.4.4表现不同。两runtime各1000个真实并发连接压力未复现服务端泄漏，因此只修测试的pause/服务端关闭/resume/客户端关闭顺序并finally清理，不改邮箱服务、不增加超时、重试或skip。
+
+本批四门通过：2000独立单元用例/218文件，S93.99%、B88.99%、F96.74%、L96.69%，原全局与分组门槛通过；API跨进程8例、开发/生产浏览器72例通过。完整测试使用退出即删除的独立临时数据库。证据为/tmp/oneaster-shared-guard-mailbox-{lint,types}.log、/tmp/oneaster-guard-mailbox-{build,test}.log及/tmp/oneaster-content-folder-guard-second.log。GitHub结果以随后推送的检查为准。

@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOutIcon } from 'lucide-react';
+import { LogOutIcon, UserRoundIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import {
   Menu,
@@ -11,6 +11,9 @@ import {
   MenuSeparator,
   MenuItem,
 } from '@new-cms/ui/overlays';
+import { AppLink } from '../../components/shell/navigation/app-link';
+import { getAdminRoute } from '../../config/admin-routes';
+import { managementMessages } from '../management-shared/messages';
 import { useShell } from '../../components/shell/shell-provider';
 import type { Me } from '../../contracts/auth';
 import { sessionMessages } from './session-messages';
@@ -47,6 +50,10 @@ export function AccountMenu({
           </MenuLabel>
         </MenuGroup>
         <MenuSeparator />
+        <MenuItem render={<AppLink href={getAdminRoute('account').path} prefetch={false} />}>
+          <UserRoundIcon />
+          {managementMessages[locale].account}
+        </MenuItem>
         <MenuItem onClick={() => void signOut()}>
           <LogOutIcon />
           {t.signOut}

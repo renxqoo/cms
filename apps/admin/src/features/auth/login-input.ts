@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const emailSchema = z.string().trim().toLowerCase().max(255).email();
+export const authEmailSchema = z.string().trim().toLowerCase().max(255).email();
 
 export interface LoginValues {
   email: string;
@@ -15,7 +15,7 @@ export interface LoginInputErrors {
 export function validateLogin(
   values: LoginValues,
 ): { ok: true; values: LoginValues } | { ok: false; errors: LoginInputErrors } {
-  const email = emailSchema.safeParse(values.email);
+  const email = authEmailSchema.safeParse(values.email);
   const errors: LoginInputErrors = {};
   if (!email.success) errors.email = values.email.trim() ? 'emailInvalid' : 'emailRequired';
   if (values.password.length === 0) errors.password = 'passwordRequired';

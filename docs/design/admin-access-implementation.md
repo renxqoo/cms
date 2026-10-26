@@ -1,6 +1,6 @@
 # 账户与访问管理界面实施契约
 
-状态：定稿，2026-10-26。归属[应用设计](admin-application-design.md)和[接口矩阵](admin-application-contracts.md)。实现基于现有HTTP与已核对的账户/RBAC行为；安全恢复读取补面由后端owner先冻结，不以缓存或猜测替代。
+状态：定稿，2026-10-26。归属[应用设计](admin-application-design.md)和[接口矩阵](admin-application-contracts.md)。实现基于现有HTTP与已核对的账户/RBAC行为；安全恢复读取使用已冻结并实现的access.readRecovery，不以缓存或猜测替代。
 
 ## 1. 页面与依赖
 
@@ -40,9 +40,9 @@ disabled permission既有grant保持勾选和标识，只有用户明确移除�
 
 每个声明要求幂等的创建/邀请按actor+operation+scope+key保存内存意图；相同payload失败重试保持UUID，编辑payload或明确放弃后另建意图，身份变化立即废弃。进行中和结果未知时禁用编辑及关闭，提供核实结果与显式重试同一操作；不自动换key。刷新前提示未确认状态，刷新后先从列表/审计核实，不能承诺恢复已丢失内存key或无限期服务端回放。邀请回放deliveryId相同但状态可更新，不要求响应逐字相同。
 
-端点绑定操作只针对真实catalog和合法范围，不允许新增任意method/path。危险解绑或停用permission会影响相关读取端点，即使super也受其约束。现API尚无保证刷新后可用的独立恢复读；在后端恢复契约接入前，不提供会破坏自身恢复读取入口的界面写入，不显示始终可恢复的承诺。后端owner已收到补面请求；最终交付必须核销此缺口。
+端点绑定操作只针对真实catalog和合法范围，不允许新增任意method/path。危险解绑或停用permission会影响相关读取端点，即使super也受其约束，提交前明确确认影响。独立security入口GET /v1/security/recovery实时验证有效super身份，按resource=endpoints/bindings/permissions分页取得安全投影和最新CAS版本。普通读取实际403后提供/dashboard/access-recovery入口，非403故障保留原反馈。孤儿binding按真实operation/scope/id/version展示，不捏造端点路径。
 
-临时受保护恢复读取为global的endpoints.list与permissions.list：不允许删除其有效binding，也不允许把该binding指向disabled permission或停用其所引用permission。没有完整取得端点binding目录和permission状态时，禁用binding更新/删除及permission停用；依赖目录的新建同样不得凭未知选项提交。改名称等无授权影响操作按自身依赖执行。该限制只属于后端恢复补面接入前的阶段，不扩大或变更服务端授权语义。
+恢复读不能由普通permission扩大，不能恢复普通写权限；恢复页面仍通过原Permission和Binding写operation提交。冲突后使用security读源重新定位最新记录，保留草稿并要求显式采用。目录依赖必须完整可用，危险停用增加确认，移除对endpoints.list和permissions.list的临时客户端自锁限制。不缓存凭据、旧catalog或旧version作为刷新后的恢复能力。
 
 ## 7. 先行验收
 

@@ -25,3 +25,10 @@ it('rejects mixed runners rather than silently ignoring part of the requested jo
     'separate commands',
   );
 });
+
+it('does not mistake a specification-shaped filter value for a file in another runner', () => {
+  const api = ['e2e/user-rbac.spec.ts', '--testNamePattern', 'dialog.browser.spec.ts'];
+  expect(e2ePlan(api)).toEqual([{ kind: 'api', args: api }]);
+  const browser = ['e2e/admin-ui.browser.spec.ts', '--grep', 'user-rbac.spec.ts'];
+  expect(e2ePlan(browser)).toEqual([{ kind: 'browser', args: browser }]);
+});
