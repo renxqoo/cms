@@ -29,14 +29,42 @@ function observe(input: UploadTask, session: UploadSession) {
     error: null,
     uncertainStep: null,
   });
-  if (terminal) finishUpload(input);
+  if (session.status === 'ready' && runtime.options.onProcessed) void saveProcessedUpload(input);
+  else if (terminal) finishUpload(input);
   else if (session.status !== 'processing' || Date.now() >= task.deadline || !runtime.visible) {
     updateUpload(runtime, id, { status: 'paused' });
     finishUpload(input);
   } else
     task.timer = setTimeout(() => {
       void readUpload(input);
-    }, assetUiPolicy.pollIntervalMs);
+    }, pollInterval(task));
+}
+
+function pollInterval(task: UploadTask['task']) {
+  const remaining = task.deadline - Date.now();
+  return Math.min(
+    remaining,
+    remaining > assetUiPolicy.maximumWaitMs - assetUiPolicy.fastPollWindowMs
+      ? assetUiPolicy.pollIntervalMs
+      : assetUiPolicy.sustainedPollIntervalMs,
+  );
+}
+
+export async function saveProcessedUpload(input: UploadTask) {
+  const { runtime, id, task } = input;
+  const current = queuedItem(runtime, id);
+  const save = runtime.options.onProcessed;
+  if (!current?.session || !save || !validTask(input)) return;
+  updateUpload(runtime, id, { status: 'saving', uncertainStep: 'save', error: null });
+  const result = await save(current.session, task.controller.signal);
+  if (!reportUpload(input, result, 'save')) return;
+  updateUpload(runtime, id, {
+    status: 'consumed',
+    session: { ...current.session, status: 'consumed' },
+    uncertainStep: null,
+    error: null,
+  });
+  finishUpload(input);
 }
 
 export async function readUpload(input: UploadTask) {

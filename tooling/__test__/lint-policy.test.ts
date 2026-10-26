@@ -33,3 +33,15 @@ it('ignores directive text in strings and generated dependencies', () => {
   writeFileSync(join(root, 'README.md'), '/* eslint-disable */');
   expect(checkLintDirectives(root)).toEqual([]);
 });
+
+it('regression: browser build directives do not prevent checking the application source', () => {
+  const root = fixture();
+  const application = join(root, 'apps/admin');
+  mkdirSync(join(application, '.next-e2e/dev/server'), { recursive: true });
+  mkdirSync(join(application, 'src'));
+  writeFileSync(join(application, '.next-e2e/dev/server/runtime.js'), '/* eslint-disable */');
+  writeFileSync(join(application, 'src/input.ts'), '/* eslint-disable */');
+  expect(checkLintDirectives(root)).toEqual([
+    'apps/admin/src/input.ts: inline lint directives are prohibited',
+  ]);
+});

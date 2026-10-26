@@ -108,6 +108,7 @@ it('keeps search, typed filters, locale, mode and folder queries within the publ
   fireEvent.change(screen.getByRole('combobox', { name: 'Folder' }), {
     target: { value: 'root' },
   });
+  await userEvent.click(screen.getByRole('button', { name: 'Filters' }));
   fireEvent.change(screen.getByRole('combobox', { name: 'Filter field' }), {
     target: { value: 'score' },
   });
@@ -592,6 +593,8 @@ it('paginates the server total, sorts safe fields and opens bulk actions only fo
       ),
     ).toBe(true),
   );
+  await userEvent.click(screen.getByRole('button', { name: 'Visible fields' }));
+  await userEvent.click(screen.getByRole('checkbox', { name: 'Title' }));
   await userEvent.click(screen.getByRole('button', { name: 'Title' }));
   await waitFor(() =>
     expect(

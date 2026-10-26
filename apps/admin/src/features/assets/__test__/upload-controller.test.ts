@@ -2,6 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import type { ApiResult } from '../../../api/result';
 import { failure } from '../../../api/result';
 import { createUploadController } from '../upload-controller';
+import type { UploadQueueOptions } from '../upload-controller';
 import { session, success, deferred, uploadId, manifest } from './support';
 
 interface Request {
@@ -20,7 +21,10 @@ afterEach(() => {
   vi.resetAllMocks();
   vi.useRealTimers();
 });
-function queue(purpose: 'create' | 'replace' = 'create') {
+function queue(
+  purpose: 'create' | 'replace' = 'create',
+  onProcessed?: UploadQueueOptions['onProcessed'],
+) {
   return createUploadController({
     collection: 'media',
     purpose,
@@ -28,11 +32,53 @@ function queue(purpose: 'create' | 'replace' = 'create') {
       ? { documentId: '22222222-2222-4222-8222-222222222222', revision: 7 }
       : {}),
     onResult: vi.fn<(...values: unknown[]) => void>(),
+    onProcessed,
   });
 }
 const file = () => new File(['contents'], 'source.png', { type: 'image/png' });
 
-it('sends actual byte progress, waits for server processing and keeps ready separate from consumed', async () => {
+it('automatically saves a processed file and retries an uncertain save without sending its bytes again', async () => {
+  mocks.request.mockResolvedValue(success(session({ status: 'ready', manifest })));
+  const pending = deferred<ApiResult<unknown>>();
+  const save = vi
+    .fn<NonNullable<UploadQueueOptions['onProcessed']>>()
+    .mockReturnValueOnce(pending.promise)
+    .mockResolvedValueOnce(success({ id: '22222222-2222-4222-8222-222222222222' }));
+  const controller = queue('create', save);
+  controller.enqueue([file()]);
+  await vi.waitFor(() => expect(controller.store.getState().items[0]?.status).toBe('saving'));
+  expect(save).toHaveBeenCalledOnce();
+  pending.resolve(failure('request_failed', 0, { uncertain: true }));
+  await vi.waitFor(() => expect(controller.store.getState().items[0]?.status).toBe('paused'));
+  expect(controller.store.getState().items[0]?.uncertainStep).toBe('save');
+  controller.verify(controller.store.getState().items[0]?.id ?? '');
+  await vi.waitFor(() => expect(controller.store.getState().items[0]?.status).toBe('consumed'));
+  expect(save).toHaveBeenCalledTimes(2);
+  expect(mocks.request).toHaveBeenCalledOnce();
+  expect(save.mock.calls[0]?.[0].id).toBe(uploadId);
+  expect(save.mock.calls[1]?.[0].id).toBe(uploadId);
+  controller.dispose();
+});
+
+it('automatically saves a recovered ready upload only once and cancels local save work on disposal', async () => {
+  const pending = deferred<ApiResult<unknown>>();
+  const save = vi.fn<NonNullable<UploadQueueOptions['onProcessed']>>(() => pending.promise);
+  const controller = queue('create', save);
+  const upload = session({ status: 'ready', manifest });
+  controller.recover(upload);
+  controller.recover(upload);
+  expect(save).toHaveBeenCalledOnce();
+  expect(controller.store.getState().items[0]?.status).toBe('saving');
+  const signal = save.mock.calls[0]?.[1];
+  controller.dispose();
+  expect(signal?.aborted).toBe(true);
+  pending.resolve(success({ id: '22222222-2222-4222-8222-222222222222' }));
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(controller.store.getState().items[0]?.status).toBe('saving');
+});
+
+it('regression: reflects completed processing within one second instead of leaving an uploaded file waiting', async () => {
   vi.useFakeTimers();
   mocks.request.mockImplementation((input) => {
     if (input.operation === 'assets.createUpload') return Promise.resolve(success(session()));
@@ -52,7 +98,7 @@ it('sends actual byte progress, waits for server processing and keeps ready sepa
   expect(
     mocks.request.mock.calls.find(([input]) => input.operation === 'assets.writeUpload')?.[0].body,
   ).toBeInstanceOf(File);
-  await vi.advanceTimersByTimeAsync(9999);
+  await vi.advanceTimersByTimeAsync(999);
   expect(
     mocks.request.mock.calls.filter(([input]) => input.operation === 'assets.readUpload'),
   ).toHaveLength(0);
@@ -74,6 +120,24 @@ it('limits active file workflows to two and starts the queued file after a termi
   await vi.waitFor(() => expect(mocks.request).toHaveBeenCalledTimes(3));
   await vi.waitFor(() =>
     expect(controller.store.getState().items.every((item) => item.status === 'failed')).toBe(true),
+  );
+  controller.dispose();
+});
+
+it('regression: two slow uploads stay within the shared sixty reads per minute budget', async () => {
+  vi.useFakeTimers();
+  mocks.request.mockImplementation((input) => {
+    const id = input.params?.['uploadId'];
+    if (!id) throw new Error('Upload id required');
+    return Promise.resolve(success(session({ id, status: 'processing' })));
+  });
+  const controller = queue();
+  controller.recover(session({ status: 'processing' }));
+  controller.recover(session({ id: '33333333-3333-4333-8333-333333333333', status: 'processing' }));
+  await vi.advanceTimersByTimeAsync(60_000);
+  expect(mocks.request.mock.calls.length).toBeLessThanOrEqual(60);
+  expect(controller.store.getState().items.every((item) => item.status === 'processing')).toBe(
+    true,
   );
   controller.dispose();
 });

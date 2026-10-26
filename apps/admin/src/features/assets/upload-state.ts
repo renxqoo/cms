@@ -11,6 +11,7 @@ export interface QueuedUpload {
     | 'queued'
     | 'uploading'
     | 'processing'
+    | 'saving'
     | 'ready'
     | 'consumed'
     | 'failed'
@@ -20,7 +21,7 @@ export interface QueuedUpload {
   progress: number;
   session: UploadSession | null;
   error: ApiFailure | null;
-  uncertainStep: 'create' | 'bytes' | 'complete' | null;
+  uncertainStep: 'create' | 'bytes' | 'complete' | 'save' | null;
   createKey: string;
   completeKey: string;
 }
@@ -30,6 +31,9 @@ export interface UploadQueueOptions {
   documentId?: string;
   revision?: number;
   onResult: (result: ApiResult<unknown>) => void;
+  onProcessed?:
+    | ((session: UploadSession, signal: AbortSignal) => Promise<ApiResult<unknown>>)
+    | undefined;
 }
 export interface RunningUpload {
   controller: AbortController;
@@ -103,9 +107,12 @@ export function reportUpload<T>(
   input.runtime.options.onResult(result);
   if (result.status === 429) blockQueue(input, result.retryAfterSeconds);
   updateUpload(input.runtime, input.id, {
-    status: step === null || result.uncertain || result.status === 429 ? 'paused' : 'failed',
+    status:
+      step === null || step === 'save' || result.uncertain || result.status === 429
+        ? 'paused'
+        : 'failed',
     error: result,
-    uncertainStep: result.uncertain || result.status === 429 ? step : null,
+    uncertainStep: step === 'save' || result.uncertain || result.status === 429 ? step : null,
   });
   finishUpload(input);
   return false;

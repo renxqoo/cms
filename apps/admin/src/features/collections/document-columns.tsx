@@ -1,6 +1,7 @@
 import { Button } from '@new-cms/ui/actions';
 import { Checkbox } from '@new-cms/ui/forms';
 import type { DataTableColumn } from '@new-cms/ui/data';
+import { DateCell, StatusCell } from '@new-cms/ui/data';
 import type { Collection } from '../../contracts/content';
 import type { Document } from '../../contracts/documents';
 import type { ContentMessages } from './messages';
@@ -9,6 +10,7 @@ import { displayField, documentTitle } from './query';
 interface ColumnOptions {
   collection: Collection;
   t: ContentMessages;
+  locale: 'zh' | 'en';
   selected: readonly Document[];
   select: (document: Document, checked: boolean) => void;
   visible: readonly string[];
@@ -17,6 +19,20 @@ interface ColumnOptions {
   trash: (document: Document, action: 'restore' | 'purge') => void;
   canRestore: boolean;
   canPurge: boolean;
+}
+
+export function defaultVisibleFields(collection: Collection) {
+  const title = collection.fields.find((field) =>
+    ['text', 'textarea', 'email'].includes(field.type),
+  );
+  return collection.fields
+    .filter(
+      (field) =>
+        field.path !== title?.path &&
+        ['text', 'textarea', 'email', 'number', 'boolean', 'date', 'select'].includes(field.type),
+    )
+    .slice(0, 3)
+    .map((field) => field.path);
 }
 
 function rowStatus(document: Document, t: ContentMessages) {
@@ -50,8 +66,11 @@ function fieldColumns(options: ColumnOptions): DataTableColumn<Document>[] {
       header: field.label,
       sortable: field.queryable,
       cell: (document) => (
-        <span className="block max-w-64 truncate" title={displayField(document, field.path)}>
-          {displayField(document, field.path)}
+        <span
+          className="block max-w-64 truncate"
+          title={displayField(document, field.path, field.type)}
+        >
+          {displayField(document, field.path, field.type)}
         </span>
       ),
     }));
@@ -65,6 +84,7 @@ export function documentColumns(options: ColumnOptions): DataTableColumn<Documen
       header: t.select,
       cell: (document) => (
         <Checkbox
+          hideLabel
           label={`${t.select} ${documentTitle(document, collection)}`}
           checked={options.selected.some((item) => item.id === document.id)}
           onCheckedChange={(checked) => options.select(document, checked)}
@@ -89,10 +109,38 @@ export function documentColumns(options: ColumnOptions): DataTableColumn<Documen
       key: 'updatedAt',
       header: t.updatedAt,
       sortable: true,
-      cell: (document) => <time dateTime={document.updatedAt}>{document.updatedAt}</time>,
+      cell: (document) => (
+        <DateCell
+          value={document.updatedAt}
+          format={(date) =>
+            new Intl.DateTimeFormat(options.locale === 'zh' ? 'zh-CN' : 'en', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            }).format(date)
+          }
+          emptyLabel="—"
+          errorLabel={t.unknownTime}
+        />
+      ),
     },
-    { key: 'status', header: t.status, cell: (document) => rowStatus(document, t) },
-    { key: 'actions', header: t.confirm, cell: (document) => trashButtons(options, document) },
+    {
+      key: 'status',
+      header: t.status,
+      cell: (document) => (
+        <StatusCell tone={document.publishedVersionId ? 'success' : 'neutral'}>
+          {rowStatus(document, t)}
+        </StatusCell>
+      ),
+    },
+    ...(options.trashed
+      ? [
+          {
+            key: 'actions',
+            header: t.confirm,
+            cell: (document: Document) => trashButtons(options, document),
+          },
+        ]
+      : []),
   ];
 }
 

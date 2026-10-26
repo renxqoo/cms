@@ -23,13 +23,15 @@ async function createInUi(page: Page, slug: string) {
   await page.getByRole('textbox', { name: /^slug/ }).fill(slug);
   const saving = waitForApi(page, 'POST', '/v1/collections/articles/documents');
   await page.getByRole('button', { name: '保存', exact: true }).click();
-  const response = await saving;
-  expect(response.status()).toBe(201);
-  const created = documentSchema.parse(await response.json());
-  await expect(page).toHaveURL(
-    new URL(`/dashboard/collections/articles/${created.id}?locale=en`, page.url()).href,
-  );
-  return created;
+  expect((await saving).status()).toBe(201);
+  await expect(page).toHaveURL(/\/dashboard\/collections\/articles\/[0-9a-f-]+\?locale=en$/);
+  const id = z.uuid().parse(new URL(page.url()).pathname.split('/').at(-1));
+  const stored = await bffRequest(page, {
+    method: 'GET',
+    path: `/v1/collections/articles/documents/${id}?locale=en`,
+  });
+  expect(stored.status()).toBe(200);
+  return documentSchema.parse(await stored.json());
 }
 
 async function confirmAction(page: Page, input: { label: string; method: string; path: string }) {
@@ -42,7 +44,7 @@ async function confirmAction(page: Page, input: { label: string; method: string;
   expect((await response).status()).toBe(200);
 }
 
-test('folder CAS, trash restoration and no-fallback locale editing keep the 390px editor within its viewport', async ({
+test('regression: reopening a document waits for its editor before folder CAS, trash restoration and no-fallback locale editing at 390px', async ({
   page,
   browserErrors,
 }) => {
@@ -75,13 +77,25 @@ test('folder CAS, trash restoration and no-fallback locale editing keep the 390p
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: '返回列表', exact: true }).click();
+  await page.getByRole('button', { name: '管理文件夹', exact: true }).click();
   await page.getByRole('button', { name: '新建文件夹', exact: true }).click();
   const folderDialog = page.getByRole('dialog', { name: '新建文件夹', exact: true });
   await folderDialog.getByLabel('名称', { exact: true }).fill('Browser editorial folder');
   const folderResponse = waitForApi(page, 'POST', '/v1/folders');
   await folderDialog.getByRole('button', { name: '保存', exact: true }).click();
-  const folder = z.object({ id: z.uuid() }).parse(await (await folderResponse).json());
+  expect((await folderResponse).status()).toBe(201);
+  await page.getByRole('dialog', { name: '新建文件夹', exact: true }).waitFor({ state: 'hidden' });
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: '管理文件夹', exact: true })).toHaveCount(0);
+  const folderOption = page
+    .getByRole('combobox', { name: '文件夹', exact: true })
+    .getByRole('option', { name: 'Browser editorial folder', exact: true });
+  await expect(folderOption).toHaveCount(1);
+  const folder = { id: z.uuid().parse(await folderOption.getAttribute('value')) };
   await page.getByRole('button', { name: 'Preserved conflict draft', exact: true }).click();
+  await expect(page).toHaveURL(
+    new URL(`/dashboard/collections/articles/${created.id}?locale=en`, page.url()).href,
+  );
   await page.getByLabel('文件夹', { exact: true }).selectOption(folder.id);
   const moving = waitForApi(page, 'PATCH', path);
   await page.getByRole('button', { name: '保存', exact: true }).click();

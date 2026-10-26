@@ -63,7 +63,20 @@ export function ResourcesPage() {
       }}
     >
       <ClientInteractionBoundary className="space-y-6">
-        <PageHeader title={t.title} description={t.description} icon={<ImageIcon />} />
+        <PageHeader
+          title={t.title}
+          description={t.description}
+          icon={<ImageIcon />}
+          actions={
+            <ResourceUploads
+              search={search}
+              busy={uploading}
+              onBusyChange={setUploading}
+              change={change}
+              onCreated={resources.reload}
+            />
+          }
+        />
         <ManagementFeedback error={resources.error} onRetry={resources.reload} />
         {access.phase === 'ready' && !access.can('resources.list') ? (
           <Banner tone="warning">{t.denied}</Banner>
@@ -84,7 +97,6 @@ export function ResourcesPage() {
             onRetry={resources.reload}
           />
         )}
-        <ResourceUploads search={search} onBusyChange={setUploading} change={change} />
         {preview ? (
           <ResourcePreview
             key={`${preview.collection}:${preview.id}:${preview.versionId}`}

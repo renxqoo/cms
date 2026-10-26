@@ -9,6 +9,8 @@ import { useShell } from '../../components/shell/shell-provider';
 import { requestApi } from '../../api/client';
 import { uploadSessionSchema } from '../../contracts/assets';
 import type { CollectionEditor } from '../../contracts/editor';
+import type { UploadSession } from '../../contracts/assets';
+import type { ApiResult } from '../../api/result';
 import { useAccessControl } from '../access-control/provider';
 import { ManagementFeedback } from '../management-shared/feedback';
 import { createUploadController } from './upload-controller';
@@ -17,6 +19,8 @@ import { assetMessages } from './asset-messages';
 import { assetUiPolicy } from './policy';
 
 interface UploadQueueProps {
+  consumedMessage?: string;
+  onProcessed?: (session: UploadSession, signal: AbortSignal) => Promise<ApiResult<unknown>>;
   collection: string;
   limits: NonNullable<CollectionEditor['upload']>;
   purpose: 'create' | 'replace';
@@ -25,13 +29,13 @@ interface UploadQueueProps {
   initialUploadId?: string;
   disabled?: boolean;
   single?: boolean;
-  onReady: (session: NonNullable<QueuedUpload['session']>) => void;
+  onReady?: (session: NonNullable<QueuedUpload['session']>) => void;
   onBusyChange?: ((busy: boolean) => void) | undefined;
 }
 
 function uploadBusy(items: readonly QueuedUpload[]) {
   return items.some((item) =>
-    ['queued', 'uploading', 'processing', 'ready', 'paused'].includes(item.status),
+    ['queued', 'uploading', 'processing', 'saving', 'ready', 'paused'].includes(item.status),
   );
 }
 
@@ -46,13 +50,16 @@ export function UploadQueue(props: UploadQueueProps) {
       ...(props.documentId ? { documentId: props.documentId } : {}),
       ...(props.revision ? { revision: props.revision } : {}),
       onResult: reportResult,
+      onProcessed: props.onProcessed,
     } satisfies UploadQueueOptions),
   );
   const items = useStore(controller.store, (state) => state.items);
   const busy =
     props.purpose === 'replace'
       ? uploadBusy(items)
-      : items.some((item) => ['queued', 'uploading', 'processing', 'paused'].includes(item.status));
+      : items.some((item) =>
+          ['queued', 'uploading', 'processing', 'saving', 'paused'].includes(item.status),
+        );
   const scope = { scopeKind: 'collection' as const, collectionKey: props.collection };
   const allowed = [
     'assets.createUpload',
@@ -111,7 +118,7 @@ export function UploadQueue(props: UploadQueueProps) {
           <li key={item.id} className="space-y-2 rounded-xl border p-4">
             <p className="break-all font-medium">{item.name}</p>
             <p role="status" className="text-sm text-muted-foreground">
-              {uploadLabel(item, t)}
+              {uploadLabel(item, t, props)}
             </p>
             {item.status === 'uploading' ? (
               <progress
@@ -123,7 +130,9 @@ export function UploadQueue(props: UploadQueueProps) {
             ) : null}
             <ManagementFeedback error={item.error} />
             <div className="flex flex-wrap gap-2">
-              {item.session && !['cancelled', 'expired', 'consumed'].includes(item.status) ? (
+              {item.session &&
+              !['cancelled', 'expired', 'consumed', 'saving'].includes(item.status) &&
+              item.uncertainStep !== 'save' ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -147,7 +156,7 @@ export function UploadQueue(props: UploadQueueProps) {
               ) : null}
               {item.status === 'paused' ? (
                 <Button variant="outline" size="sm" onClick={() => controller.verify(item.id)}>
-                  {t.resume}
+                  {item.uncertainStep === 'save' ? t.retrySaving : t.resume}
                 </Button>
               ) : null}
               {item.file && ['failed', 'cancelled', 'expired'].includes(item.status) ? (
@@ -160,16 +169,7 @@ export function UploadQueue(props: UploadQueueProps) {
                   {t.retry}
                 </Button>
               ) : null}
-              {item.status === 'ready' && item.session ? (
-                <Button
-                  disabled={props.disabled}
-                  onClick={() => {
-                    if (item.session) props.onReady(item.session);
-                  }}
-                >
-                  {t.attach}
-                </Button>
-              ) : null}
+              {readyButton(item, props, t.attach)}
             </div>
           </li>
         ))}
@@ -178,7 +178,22 @@ export function UploadQueue(props: UploadQueueProps) {
   );
 }
 
-function uploadLabel(item: QueuedUpload, t: (typeof assetMessages)['en' | 'zh']) {
+function readyButton(item: QueuedUpload, props: UploadQueueProps, label: string) {
+  const { session } = item;
+  const { onReady } = props;
+  if (item.status !== 'ready' || !session || !onReady) return null;
+  return (
+    <Button disabled={props.disabled} onClick={() => onReady(session)}>
+      {label}
+    </Button>
+  );
+}
+
+function uploadLabel(
+  item: QueuedUpload,
+  t: (typeof assetMessages)['en' | 'zh'],
+  labels: Pick<UploadQueueProps, 'consumedMessage'>,
+) {
   switch (item.status) {
     case 'queued':
       return t.pending;
@@ -188,8 +203,10 @@ function uploadLabel(item: QueuedUpload, t: (typeof assetMessages)['en' | 'zh'])
       return t.processing;
     case 'ready':
       return t.ready;
+    case 'saving':
+      return t.savingToLibrary;
     case 'consumed':
-      return t.consumed;
+      return labels.consumedMessage ?? t.consumed;
     case 'failed':
       return item.session?.failureCode ? `${t.error}: ${item.session.failureCode}` : t.error;
     case 'cancelled':
@@ -197,7 +214,7 @@ function uploadLabel(item: QueuedUpload, t: (typeof assetMessages)['en' | 'zh'])
     case 'expired':
       return t.expired;
     case 'paused':
-      return t.paused;
+      return item.uncertainStep === 'save' ? t.saveFailed : t.paused;
   }
   return t.error;
 }

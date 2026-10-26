@@ -13,7 +13,7 @@ import {
   reportUpload,
 } from './upload-state';
 import type { QueuedUpload, UploadQueueOptions, UploadRuntime, UploadTask } from './upload-state';
-import { readUpload, completeUpload, transferUpload } from './upload-transfer';
+import { readUpload, completeUpload, transferUpload, saveProcessedUpload } from './upload-transfer';
 
 export type { QueuedUpload, UploadQueueOptions } from './upload-state';
 
@@ -66,6 +66,7 @@ function verify(runtime: UploadRuntime, id: string) {
   const input = taskFor(runtime, id);
   if (!current.session && current.uncertainStep === 'create') void transferUpload(input);
   else if (current.uncertainStep === 'complete') void completeUpload(input);
+  else if (current.uncertainStep === 'save') void saveProcessedUpload(input);
   else if (current.session) void readUpload(input);
   else finishUpload(input);
 }
@@ -119,6 +120,8 @@ function recover(runtime: UploadRuntime, session: UploadSession) {
     ],
   }));
   if (status === 'paused') verify(runtime, session.id);
+  else if (status === 'ready' && runtime.options.onProcessed)
+    void saveProcessedUpload(taskFor(runtime, session.id));
 }
 function visibility(runtime: UploadRuntime, next: boolean) {
   runtime.visible = next;

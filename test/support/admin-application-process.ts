@@ -78,6 +78,7 @@ function nextChild(options: NextProcessOptions) {
       env: {
         ...process.env,
         NEXT_TELEMETRY_DISABLED: '1',
+        CMS_ADMIN_E2E: '1',
         NODE_ENV: mode,
         CMS_API_BASE_URL: apiOrigin,
         CMS_ADMIN_ORIGIN: `http://127.0.0.1:${port}`,

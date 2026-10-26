@@ -31,13 +31,14 @@ async function verifyPresentation(page: Page, width: number, screenshot: string)
 
 export function contentPresentationCases(locale: 'zh' | 'en') {
   for (const theme of ['light', 'dark'] as const) {
-    test(`content management ${locale}/${theme} remains readable and keyboard accessible at 1440px and 390px`, async ({
+    test(`regression: content management ${locale}/${theme} preserves cookie preferences and remains readable and keyboard accessible at 1440px and 390px`, async ({
       page,
       context,
       baseURL,
     }) => {
       expect((await loginManagement(page, applicationAccounts.owner)).status()).toBe(200);
       await expect(page).toHaveURL(/\/dashboard$/);
+      await page.goto('about:blank');
       await context.addCookies([
         { name: 'oneaster-locale', value: locale, url: new URL('/', baseURL).href },
         { name: 'oneaster-theme', value: theme, url: new URL('/', baseURL).href },
@@ -61,7 +62,7 @@ export function contentPresentationCases(locale: 'zh' | 'en') {
         if (entry.path === '/dashboard/resources')
           await expect(
             page.getByRole('button', {
-              name: locale === 'zh' ? '选择文件' : 'Choose files',
+              name: locale === 'zh' ? '上传文件' : 'Upload files',
               exact: true,
             }),
           ).toBeVisible();

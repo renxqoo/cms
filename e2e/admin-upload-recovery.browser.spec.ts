@@ -15,6 +15,7 @@ test('retries rejected bytes through a new session and cancels that actual remot
   expect((await loginManagement(page, applicationAccounts.owner)).status()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto('/dashboard/resources');
+  await page.getByRole('button', { name: '上传文件', exact: true }).click();
   const firstCreated = waitForApi(page, 'POST', '/v1/collections/media/uploads');
   const rejected = page.waitForResponse(
     (response) =>
