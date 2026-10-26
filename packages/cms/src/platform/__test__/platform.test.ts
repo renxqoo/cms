@@ -3,6 +3,7 @@ import { afterEach, expect, it } from 'vitest';
 import { createTestDatabase } from '../../../../../test/support/database.ts';
 import { createTestPolicy } from '../../../../../test/support/policy.ts';
 import { CmsError, fail } from '../contracts.ts';
+import type { ActorReference } from '../contracts.ts';
 import { securityTransaction } from '../security-lock.ts';
 import { cleanupIdempotency, withIdempotency } from '../idempotency.ts';
 import {
@@ -31,7 +32,7 @@ it('cleans expired platform records in bounded batches while preserving live win
       withIdempotency(
         tx,
         {
-          actorId,
+          actor: { id: actorId, delegationId: null },
           operationId: 'roles.create',
           key,
           input: {},
@@ -167,7 +168,7 @@ it('replays one effect for equivalent key ordering and rejects a changed request
   const db = await fixture();
   const actorId = await actor(db);
   const input = {
-    actorId,
+    actor: { id: actorId, delegationId: null },
     operationId: 'roles.create',
     key: 'idempotency-key-0001',
     input: { name: 'Editor', code: 'editor' },
@@ -197,7 +198,7 @@ it('replays one effect for equivalent key ordering and rejects a changed request
 it('rolls back both effect and idempotency record when a child fails and allows a retry', async () => {
   const db = await fixture();
   const input = {
-    actorId: await actor(db),
+    actor: { id: await actor(db), delegationId: null },
     operationId: 'roles.create',
     key: 'idempotency-key-0002',
     input: {},
@@ -223,7 +224,7 @@ it('rolls back both effect and idempotency record when a child fails and allows 
 it('scopes collection keys independently and replaces an expired record', async () => {
   const db = await fixture();
   const base = {
-    actorId: await actor(db),
+    actor: { id: await actor(db), delegationId: null },
     operationId: 'documents.create',
     key: 'idempotency-key-0003',
     input: [],
@@ -286,4 +287,74 @@ it('uses opaque domain-separated keys and throws a retryable rejection', async (
     code: 'rate_limited',
     retryAfterSeconds: 60,
   });
+});
+
+it('does not replay another credential result when the same account reuses an idempotency key', async () => {
+  const db = await fixture();
+  const id = await actor(db);
+  const firstGrant = randomUUID();
+  const secondGrant = randomUUID();
+  const base = {
+    actor: { id, delegationId: firstGrant },
+    operationId: 'documents.create',
+    key: 'credential-bound-idempotency-0001',
+    input: { title: 'Scoped document' },
+    ttlMs: policy.idempotencyTtlMs,
+  };
+  async function create(actorReference: ActorReference) {
+    return db.transaction((tx) =>
+      withIdempotency(tx, { ...base, actor: actorReference }, async () => {
+        const created = randomUUID();
+        await tx.query('INSERT INTO roles(id,code,name) VALUES($1,$2,$3)', [
+          created,
+          `effect_${created.replaceAll('-', '')}`,
+          'Effect',
+        ]);
+        return { id: created };
+      }),
+    );
+  }
+  const first = await create(base.actor);
+  expect(await create({ id, delegationId: firstGrant })).toEqual(first);
+  const second = await create({ id, delegationId: secondGrant });
+  const browser = await create({ id, delegationId: null });
+  expect(new Set([first.id, second.id, browser.id]).size).toBe(3);
+  expect((await db.query("SELECT id FROM roles WHERE name='Effect'")).rowCount).toBe(3);
+});
+
+it('regression: a browser key equal to a delegated key digest cannot capture the delegated replay namespace', async () => {
+  const db = await fixture();
+  const id = await actor(db);
+  const delegationId = randomUUID();
+  const delegatedKey = 'shared-source-idempotency-key-0001';
+  const { createHash } = await import('node:crypto');
+  const browserKey = createHash('sha256')
+    .update(JSON.stringify([delegationId, delegatedKey]))
+    .digest('hex');
+  const base = {
+    operationId: 'documents.create',
+    input: { title: 'One request' },
+    ttlMs: policy.idempotencyTtlMs,
+  };
+  await db.transaction((tx) =>
+    withIdempotency(tx, { ...base, actor: { id, delegationId: null }, key: browserKey }, () =>
+      Promise.resolve({ created: 'browser-only' }),
+    ),
+  );
+  const delegated = await db.transaction((tx) =>
+    withIdempotency(tx, { ...base, actor: { id, delegationId }, key: delegatedKey }, () =>
+      Promise.resolve({ created: 'delegated-effect' }),
+    ),
+  );
+  expect(delegated).toEqual({ created: 'delegated-effect' });
+  expect((await db.query('SELECT id FROM idempotency_records')).rowCount).toBe(2);
+  await expect(
+    db.transaction((tx) =>
+      withIdempotency(
+        tx,
+        { ...base, actor: { id, delegationId: null }, key: `\u0001${browserKey}` },
+        () => Promise.resolve({ created: 'forged' }),
+      ),
+    ),
+  ).rejects.toMatchObject({ code: 'invalid_input' });
 });

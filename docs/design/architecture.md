@@ -21,7 +21,7 @@ Collections 与资源管理按 [完整能力设计](collections-and-assets.md) �
 | 契约单一来源 | 业务操作身份归业务；HTTP 注册引用身份并补协议契约 | 实际路由、OpenAPI、目录投影一致性测试 |
 | 事务维护不变量 | 授权复查、业务写、审计和幂等状态同事务 | 真实 PostgreSQL 回滚与并发交错测试 |
 | 故障边界显式 | SQL 与对象存储/邮件之间使用状态和恢复动作 | 注入失败、崩溃恢复、取消与重试旅程 |
-| 简单且可演进 | 模块化单体、三个私有工作区，不先引入微服务/CQRS/容器框架 | 每项抽象必须有实际调用方和独立变化原因 |
+| 简单且可演进 | 模块化单体、按真实消费方划分私有工作区，不先引入微服务/CQRS/容器框架 | 每项抽象必须有实际调用方和独立变化原因 |
 | 质量属性可测 | 连接、队列、字节、等待和重试都有上限 | 负载测试、容量恢复与故障演练 |
 
 信息隐藏的依据是 Parnas 的模块划分原则；单体选择也参考 Fowler 的边界演进讨论。它们是长期原则，不伪装成最近三个月的新发现。近期 AI 实践决定协作与验证方式，不能替代软件架构原理。
@@ -52,7 +52,7 @@ apps/api/src/
     identity/ access/ content/ assets/ audit/
     middleware/ openapi/
 packages/cms/src/
-  identity/                 账户、凭据、邀请、会话
+  identity/                 账户、凭据、邀请、会话及 OAuth 协议
   access/                   角色、权限、菜单、接口绑定、管理员管理编排
   content/
     collections/            集合定义、归一化和只读注册表
@@ -79,6 +79,9 @@ packages/database/
     generated/              集合、修订、子表及关系的生成定义
   migrations/               唯一的有序迁移链
   drizzle.config.ts         数据库工具配置
+apps/cli/src/              agent-cli-sdk 命令与个人 OAuth 登录
+apps/mcp/src/              无状态远程 MCP、Key/OAuth 桥接与工具
+packages/api-client/src/   生成操作契约及有界 HTTP/字节客户端
 test/support/              公共测试装置
 e2e/                       Bun 开发和真实 Node 产物旅程
 tooling/                   代码规范及架构验证
@@ -91,7 +94,7 @@ docs/design/               决策、契约、安全与证据
 
 content 负责将原始集合/字段配置校验、归一化为本应用实例的只读注册表；构建/启动时验证重复及保留字段、稳定身份、关系目标、版本、locale 和查询能力。校验、类型生成、HTTP 数据 schema、安全字段元数据和 PostgreSQL 映射消费同一定义。集合配置的 SQL 映射由 content 编译为物理计划，database 接受计划生成 schema，不反向导入 CMS；应用命令装配生成过程。运行时核对生成物及迁移兼容指纹，业务操作不修改共享定义或执行 DDL。详见 [完整能力设计](collections-and-assets.md) 及 [本地源码分析](payload-architecture-analysis.md)。
 
-三个工作区初期均 private，不承诺可嵌入 SDK。CMS 为 identity、access、content、assets、audit 提供小业务入口和明确列出的 composition 装配入口，以及仅供生成命令使用的 content/generate 和已使用的平台子路径；不提供根级全量桶文件或映射任意源码的 wildcard exports。HTTP 只使用注入的业务 API 和公开类型/操作定义，不导入 composition、生成能力、数据库或 SQL 平台能力。跨模块原子操作所需事务参与能力由 bootstrap 注入，不能自行提交外层事务。数据库按 client、migrate、schema-plan、codegen 和逐项列出的 schema/owner 提供精确入口。
+工作区均为 private，不承诺可嵌入 SDK。CMS 为 identity、access、content、assets、audit 提供小业务入口和明确列出的 composition 装配入口，以及仅供生成命令使用的 content/generate 和已使用的平台子路径；不提供根级全量桶文件或映射任意源码的 wildcard exports。HTTP 只使用注入的业务 API 和公开类型/操作定义，不导入 composition、生成能力、数据库或 SQL 平台能力。跨模块原子操作所需事务参与能力由 bootstrap 注入，不能自行提交外层事务。数据库按 client、migrate、schema-plan、codegen 和逐项列出的 schema/owner 提供精确入口。
 
 Hono Context、Request、Response 只属于传输层。业务入口接受显式主体、输入和取消信号；不读取环境变量、不依赖 Hono，也不接受客户端伪造的 superAdmin 标志。连接、定时器、监听和可变状态由装配函数实例化及关闭，模块 import 不产生外部副作用。生产代码只用 Node/Web 能力；Bun 仅用于开发与工具。
 
@@ -103,7 +106,7 @@ Hono Context、Request、Response 只属于传输层。业务入口接受显式�
 
 | 数据 | 唯一业务写入所有者 | 允许的跨模块能力 |
 | --- | --- | --- |
-| admins、credentials、sessions、action_tokens、email_deliveries | identity | access 调用身份管理能力；提供最小账户/主体投影，不暴露凭据 |
+| admins、credentials、sessions、action_tokens、email_deliveries、oauth_clients、credential_grants、credential_tokens、oauth_requests | identity | access 调用身份管理能力；提供最小账户/主体投影，不暴露凭据 |
 | roles、permissions、role_permissions、navigation_nodes、operation_catalog、endpoint_bindings | access | 为内容、文件及 HTTP 提供授权判断与允许操作投影 |
 | 共享资源/修订目录、生成的集合/修订/子表/关系、内容文件夹及发布任务 | content | 内容及上传型集合共用入口；其他模块不直接写入 |
 | 上传会话、不可变文件清单、原件/派生对象、asset_references 及恢复任务 | assets | content 在同事务消费 ready 清单及登记/释放引用；引用摘要由 content 授权投影 |
@@ -126,7 +129,7 @@ endpoint_binding 的唯一键是 operationId + 显式 scope。动态集合范围
 
 ## 6. 身份和事务协议
 
-第一阶段采用随机 opaque Bearer 会话，数据库只存摘要、过期和吊销状态。每个请求从 writer 读取账户、角色和有效权限，不把可变权限长期嵌入 JWT，不从滞后副本做授权。邀请及重置令牌按用途、期限和单次消费约束；初始化超管使用离线命令，没有固定密码或公开初始化端点。
+浏览器采用随机 opaque Bearer 会话；CLI 采用 OAuth 2.1 授权码 + S256 PKCE；远程 MCP 支持个人 API Key 与 OAuth。数据库只存秘密摘要、过期和吊销状态，凭据管理与即时交集规则见[专项设计](cli-mcp-design.md)。每个请求从 writer 读取账户、角色和有效权限，不把可变权限长期嵌入 JWT，不从滞后副本做授权。邀请及重置令牌按用途、期限和单次消费约束；初始化超管使用离线命令，没有固定密码或公开初始化端点。
 
 后台账户及完整 RBAC 的字段、接口、并发与测试细化见[专项设计](user-rbac-design.md)、[施工图](user-rbac-implementation.md)及[单元契约](user-rbac-units.md)。用户已确认只管理后台账户，前台用户由其他业务系统负责；邀请/重置令牌严格只存摘要，失败后显式重新发起。
 

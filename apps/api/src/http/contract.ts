@@ -11,6 +11,7 @@ export interface HttpEnvironment {
     ip: string;
     streaming?: boolean;
     actorId?: string;
+    credentialId?: string;
   };
 }
 
@@ -22,6 +23,7 @@ export function requestContext(c: Context<HttpEnvironment>): RequestContext {
     ip: c.get('ip'),
     signal: c.get('signal'),
     onAuthenticated: (adminId) => c.set('actorId', adminId),
+    onCredential: (credentialId) => c.set('credentialId', credentialId),
     ...(authorization?.startsWith('Bearer ') ? { token: authorization.slice(7) } : {}),
     ...(key === undefined ? {} : { idempotencyKey: key }),
   };

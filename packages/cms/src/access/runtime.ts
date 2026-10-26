@@ -5,6 +5,7 @@ import { withIdempotency } from '@new-cms/cms/platform/idempotency';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
 import type { AccessRuntime, AuthorizedWork } from './types.ts';
 import { createAuthorization } from './authorization.ts';
+import { actorReference } from './authorization.ts';
 
 function databaseFailure(error: unknown): never {
   if (error instanceof CmsError) throw error;
@@ -63,7 +64,7 @@ export function idempotent<T>(
   return withIdempotency(
     state.tx,
     {
-      actorId: state.actor.id,
+      actor: actorReference(state.actor),
       operationId: input.operationId,
       key: state.ctx.idempotencyKey,
       input: input.input,

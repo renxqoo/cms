@@ -3,7 +3,23 @@ import type { AssetsOptions, UploadRow } from '../types.ts';
 import type { AssetState } from '../runtime.ts';
 import { session } from '../runtime.ts';
 
-export function authorizeSession(
+export async function authorizeSession(
+  runtime: AssetsOptions,
+  state: AssetState,
+  input: { row: UploadRow; forMutation?: boolean },
+) {
+  if (input.forMutation && input.row.delegation_id !== null) {
+    const actor = await runtime.authorizeActor(state.tx, {
+      actor: { id: input.row.actor_id, delegationId: input.row.delegation_id },
+      operationId: state.operationId,
+      scope: { scopeKind: 'collection', collectionKey: input.row.collection_key },
+    });
+    await sessionContent(runtime, { ...state, actor }, input);
+  }
+  return sessionContent(runtime, state, input);
+}
+
+function sessionContent(
   runtime: AssetsOptions,
   state: AssetState,
   input: { row: UploadRow; forMutation?: boolean },

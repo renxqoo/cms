@@ -206,6 +206,7 @@ export async function createFixture(
         [revisionId, data.documentId, data.revision + 1, data.actor.id],
       );
       await assets.participants.bind(tx, {
+        operationId: 'documents.create',
         actorId: data.actor.id,
         collectionKey: data.collectionKey,
         documentId: data.documentId,

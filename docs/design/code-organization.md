@@ -263,3 +263,11 @@ http/content/publications.routes.ts 与协议 schema
 ## 9. OneAster 前端与共享UI
 
 前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；proxy只传递实际受保护pathname，不承担身份验证。server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力，原始字节、上传进度及私有Blob继续走同一边界。features/auth与session拥有认证和真实布局装配，account/admins/roles/permissions/navigation/endpoints/audit拥有对应管理流程，access-control拥有主体实例的完整授权快照，management-shared提供有界读取及表格弹窗；fields提供安全metadata驱动的20类编辑节点；collections拥有目录、列表、字段编辑、版本、发布、回收站、批量、文件夹及多语言复制；assets拥有资源、上传队列、私有Blob和图片任务；jobs与asset-cleanups拥有可发现任务、上传会话及安全清理重试。离站保护按实例聚合，并在导航时读取已提交的实时嵌套状态。features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口，逐spec连接独立真实API/Next世界。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。
+
+## CLI/MCP 凭据扩展
+
+`apps/cli` 与 `apps/mcp` 只消费 `packages/api-client` 的显式 client/operations 入口，通过 HTTP 调用 API，不导入 CMS/database。生成命令 `tooling/generate-api-client.ts` 读取真实注册操作和 schema，lint/build 验证无漂移。CLI 的 SDK 命令、OAuth 回调和本地状态按职责分开；MCP 的入口/HTTP 生命周期、协议处理和工具映射分开。
+
+`identity/delegations` 拥有 OAuth/DCR、个人凭据存储、完整父链与有界维护；access 通过注入 identity participants 检查当前 RBAC、委托范围和个人管理子树。HTTP OAuth 适配只消费 identity 的公开业务 API。`ActorReference` 在内容、媒体、任务和幂等协议中显式携带 delegationId；历史任务来源 UUID 不因凭据清理而置空。新增物理表仍属于 database 的 identity schema owner。
+
+前端 `features/credentials` 包含个人凭据与授权同意流程；ResourcePermissionEditor 由两条流程复用，页面只装配。新单测就近放置，进程旅程 `e2e/cli-mcp-api.spec.ts` 使用真实 Node API/CLI/MCP 与 PostgreSQL，协议替身旅程保留用于传输异常及跨进程刷新锁。

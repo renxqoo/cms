@@ -1,0 +1,12 @@
+{
+  "name": "@new-cms/api-client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./operations": "./src/operations.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  }
+}

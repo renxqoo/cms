@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   char,
@@ -95,8 +96,12 @@ export const assetUploads = pgTable(
     failureCode: text('failure_code'),
     jobId: uuid('job_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    delegationId: uuid('delegation_id'),
   },
   (table): PgTableExtraConfigValue[] => [
+    index('asset_uploads_delegation_idx')
+      .on(table.delegationId)
+      .where(sql`${table.delegationId} IS NOT NULL`),
     foreignKey({
       name: 'asset_uploads_job_fk',
       columns: [table.jobId],
@@ -132,30 +137,39 @@ export const assetReferences = pgTable(
   ],
 );
 
-export const assetJobs = pgTable('asset_jobs', {
-  id: uuid('id').primaryKey(),
-  actorId: uuid('actor_id')
-    .notNull()
-    .references(() => admins.id),
-  collectionKey: text('collection_key').notNull(),
-  action: text('action').notNull(),
-  uploadId: uuid('upload_id')
-    .notNull()
-    .references(() => assetUploads.id),
-  documentId: uuid('document_id'),
-  expectedRevision: integer('expected_revision'),
-  recipe: jsonb('recipe').notNull(),
-  status: text('status').notNull(),
-  owner: uuid('owner'),
-  generation: integer('generation').notNull(),
-  leaseUntil: timestamp('lease_until', { withTimezone: true }),
-  attempts: integer('attempts').notNull(),
-  failureCode: text('failure_code'),
-  manifestId: uuid('manifest_id').references(() => assetManifests.id),
-  nextRunAt: timestamp('next_run_at', { withTimezone: true }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  finishedAt: timestamp('finished_at', { withTimezone: true }),
-});
+export const assetJobs = pgTable(
+  'asset_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    actorId: uuid('actor_id')
+      .notNull()
+      .references(() => admins.id),
+    collectionKey: text('collection_key').notNull(),
+    action: text('action').notNull(),
+    uploadId: uuid('upload_id')
+      .notNull()
+      .references(() => assetUploads.id),
+    documentId: uuid('document_id'),
+    expectedRevision: integer('expected_revision'),
+    recipe: jsonb('recipe').notNull(),
+    status: text('status').notNull(),
+    owner: uuid('owner'),
+    generation: integer('generation').notNull(),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    attempts: integer('attempts').notNull(),
+    failureCode: text('failure_code'),
+    manifestId: uuid('manifest_id').references(() => assetManifests.id),
+    nextRunAt: timestamp('next_run_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    delegationId: uuid('delegation_id'),
+  },
+  (t) => [
+    index('asset_jobs_delegation_idx')
+      .on(t.delegationId)
+      .where(sql`${t.delegationId} IS NOT NULL`),
+  ],
+);
 
 export const assetJobObjects = pgTable(
   'asset_job_objects',

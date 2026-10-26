@@ -45,6 +45,14 @@ export const adminRoutes = [
     detail: false,
   },
   {
+    id: 'credentials',
+    path: '/dashboard/account/credentials',
+    icon: 'key',
+    label: { zh: '个人访问凭据', en: 'Personal access credentials' },
+    operation: null,
+    detail: false,
+  },
+  {
     id: 'admins',
     path: '/dashboard/admins',
     icon: 'users',

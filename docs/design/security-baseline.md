@@ -169,3 +169,9 @@ Vitest 单测、真实 PostgreSQL 的 HTTP 集成测试与真实 Node 产物旅�
 
 
 身份/RBAC本期审查修复：精确GET/HEAD /livez独立于共享限流和业务准入，保留报文/Host/Origin边界；/readyz反映依赖和生产运行账号权限。审计防变更包括TRUNCATE及最小权限账号，迁移与运行凭据分离，具体执行与边界见[修复契约](user-rbac-review-fixes.md)。
+
+## 个人 CLI/MCP 凭据
+
+CLI 的授权码、S256 PKCE、单次消费、refresh 轮换与重放撤销，及 MCP 的 Key/OAuth 资源绑定使用[CLI/MCP 设计](cli-mcp-design.md)的封闭 profile。普通业务入口的实际权限同时受当前 RBAC、完整委托父链和创建时资源上限限制；内部媒体、复制、异步任务和幂等回放必须携带不可变 delegationId。委托回收不会把任务来源置空。上传提交和首次文档绑定同时复查原上传来源及当前提交者。授权、登录与凭据页面的实际 HTML 响应设置 CSP frame-ancestors none 与 X-Frame-Options DENY；BFF Origin 检查不能替代此保护。浏览器 BFF 的 HttpOnly 身份边界保持不变，API Key 秘密只有创建响应可见。
+
+OAuth 协议 form/JSON 正文单独限制为 64 KiB，拒绝重复字段、非法媒体类型、无效回调和非 public client 认证方式；未知扩展按协议忽略。授权码及 refresh 重放在数据库事务中先提交该委托及全部后代的撤销，再返回协议错误，并写不含令牌的审计。IP、账号及凭据协议限流均使用共享 PostgreSQL，桥接秘密不能独立取得任何账号权限。

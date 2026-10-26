@@ -1,4 +1,4 @@
-import type { Principal, AccessAuthorization } from '@new-cms/cms/access';
+import type { Principal, AccessAuthorization, AccessActorAuthorization } from '@new-cms/cms/access';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
 
@@ -125,14 +125,7 @@ export interface AssetsOptions {
   resourceLockKey: number;
   limits: AssetLimits;
   authorize: AccessAuthorization;
-  authorizeActor: (
-    tx: SqlExecutor,
-    input: {
-      actorId: string;
-      operationId: string;
-      scope: { scopeKind: 'collection'; collectionKey: string };
-    },
-  ) => Promise<Principal>;
+  authorizeActor: AccessActorAuthorization;
   commitProcessing: (
     tx: SqlExecutor,
     input: {
@@ -200,6 +193,7 @@ export interface UploadSessionView {
 export interface UploadRow {
   id: string;
   actor_id: string;
+  delegation_id: string | null;
   collection_key: string;
   purpose: 'create' | 'replace';
   document_id: string | null;
@@ -244,6 +238,7 @@ export interface AuthorizedManifest {
 }
 
 export interface BindAssetInput {
+  operationId: string;
   actorId: string;
   collectionKey: string;
   documentId: string;

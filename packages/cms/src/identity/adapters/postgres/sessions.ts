@@ -1,32 +1,18 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import type { SqlExecutor } from '@new-cms/database/client';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { CmsPolicy, RequestContext } from '@new-cms/cms/platform/contracts';
 import type { Account, LoginResult } from '../../types.ts';
-import { findAccount } from './accounts.ts';
-import { checkedToken } from '../../validation.ts';
+import { randomToken, tokenDigest } from '../../tokens.ts';
+import { authenticateCredential, authenticateOperation } from '../../delegations/authentication.ts';
+import { revokeGrant } from '../../delegations/manage.ts';
 
-export function tokenDigest(token: string): Buffer {
-  return createHash('sha256').update(token).digest();
-}
-
-export function randomToken(): string {
-  return randomBytes(32).toString('base64url');
-}
-
-export async function authenticate(tx: SqlExecutor, ctx: RequestContext): Promise<Account> {
-  const token = checkedToken(ctx.token);
-  const result = await tx.query<{ admin_id: string }>(
-    `SELECT admin_id FROM sessions
-    WHERE token_hash=$1 AND revoked_at IS NULL AND expires_at>clock_timestamp()`,
-    [tokenDigest(token)],
-  );
-  const [row] = result.rows;
-  if (!row) fail('unauthenticated');
-  const account = await findAccount(tx, row.admin_id);
-  if (account?.status !== 'active' || account.activation !== 'activated') fail('unauthenticated');
-  ctx.onAuthenticated?.(account.id);
-  return account;
+export async function authenticate(
+  tx: SqlExecutor,
+  ctx: RequestContext,
+  policy: CmsPolicy,
+): Promise<Account> {
+  return (await authenticateCredential(tx, ctx, policy)).account;
 }
 
 export async function issueSession(
@@ -53,7 +39,7 @@ export async function issueSession(
 
 export async function revokeSession(
   tx: SqlExecutor,
-  token: string,
+  input: { token: string; ctx: RequestContext; policy: CmsPolicy },
 ): Promise<{ adminId: string; changed: boolean; authenticated: boolean }> {
   const result = await tx.query<{
     admin_id: string;
@@ -64,17 +50,37 @@ export async function revokeSession(
     AND EXISTS(SELECT 1 FROM admins a JOIN credentials c ON c.admin_id=a.id
     WHERE a.id=s.admin_id AND a.status='active') AS authenticated
     FROM sessions s WHERE s.token_hash=$1 FOR UPDATE`,
-    [tokenDigest(token)],
+    [tokenDigest(input.token)],
   );
   const [row] = result.rows;
-  if (!row) fail('unauthenticated');
+  if (!row) return revokeDelegatedSession(tx, input);
   if (row.revoked_at === null)
     await tx.query('UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash=$1', [
-      tokenDigest(token),
+      tokenDigest(input.token),
     ]);
   return {
     adminId: row.admin_id,
     changed: row.revoked_at === null,
     authenticated: row.authenticated,
   };
+}
+
+async function revokeDelegatedSession(
+  tx: SqlExecutor,
+  input: { token: string; ctx: RequestContext; policy: CmsPolicy },
+) {
+  const result = await tx.query<{ id: string; admin_id: string; active: boolean }>(
+    "SELECT g.id,g.admin_id,g.revoked_at IS NULL AND g.expires_at>clock_timestamp() AS active FROM credential_tokens t JOIN credential_grants g ON g.id=t.grant_id WHERE t.token_hash=$1 AND t.kind='access' AND t.resource='api'",
+    [tokenDigest(input.token)],
+  );
+  const [row] = result.rows;
+  if (!row) fail('unauthenticated');
+  if (row.active)
+    await authenticateOperation(tx, {
+      ctx: input.ctx,
+      policy: input.policy,
+      operationId: 'identity.logout',
+    });
+  const changed = await revokeGrant(tx, row.id);
+  return { adminId: row.admin_id, changed: changed > 0, authenticated: row.active };
 }

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { SqlExecutor } from '@new-cms/database/client';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { TokenPurpose } from '../../types.ts';
-import { randomToken, tokenDigest } from './sessions.ts';
+import { randomToken, tokenDigest } from '../../tokens.ts';
 
 export interface ActionToken {
   id: string;

@@ -112,6 +112,7 @@ describe('PostgreSQL migrations and owner schema', () => {
         '0010_assets.sql',
         '0011_ui_api.sql',
         '0014_localized_publications.sql',
+        '0015_delegated_credentials.sql',
       ]);
       expect(after.rows[0]).toEqual(before.rows[0]);
       await expect(result.database.query('TRUNCATE audit_events')).rejects.toMatchObject({

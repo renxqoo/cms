@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { displayNameSchema } from '@new-cms/cms/identity';
+import { displayNameSchema, credentialInputSchemas } from '@new-cms/cms/identity';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import { recoveryInputSchema } from './recovery/input.ts';
 import {
@@ -164,6 +164,7 @@ export function accessInputSchemas(policy: CmsPolicy) {
     ...navigationWrite,
     ...bindingWrite,
     ...selfWrite,
+    ...credentialInputSchemas(policy),
     ...lists(policy),
     'access.readRecovery': recoveryInputSchema(policy),
     'roles.create': z.strictObject({

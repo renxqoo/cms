@@ -1,10 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SqlExecutor } from '@new-cms/database/client';
 import { fail } from './contracts.ts';
-import type { Scope } from './contracts.ts';
+import type { Scope, ActorReference } from './contracts.ts';
 
 export interface IdempotencyInput {
-  actorId: string;
+  actor: ActorReference;
   operationId: string;
   scope?: Scope;
   key: string | undefined;
@@ -37,7 +37,11 @@ export async function withIdempotency<T>(
 ): Promise<T> {
   if (!input.key || !/^[\x20-\x7e]{16,128}$/.test(input.key)) fail('invalid_input');
   const scope = input.scope?.collectionKey ? `collection:${input.scope.collectionKey}` : 'global';
-  const values = [input.actorId, input.operationId, scope, input.key];
+  const key =
+    input.actor.delegationId === null
+      ? input.key
+      : `\u0001${fingerprint([input.actor.delegationId, input.key])}`;
+  const values = [input.actor.id, input.operationId, scope, key];
   await tx.query(
     'DELETE FROM idempotency_records WHERE actor_id=$1 AND operation_id=$2 AND scope_ref=$3 AND key=$4 AND expires_at<=clock_timestamp()',
     values,

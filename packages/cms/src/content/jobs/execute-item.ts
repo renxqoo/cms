@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { actorReference } from '@new-cms/cms/access';
 import { CmsError, fail } from '@new-cms/cms/platform/contracts';
 import type { ErrorCode } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
@@ -47,7 +48,7 @@ export async function jobState(
 ): Promise<ContentState> {
   const scope = { scopeKind: 'collection' as const, collectionKey: input.job.collection_key };
   const actor = await input.runtime.authorizeActor(tx, {
-    actorId: input.job.actor_id,
+    actor: { id: input.job.actor_id, delegationId: input.job.delegation_id },
     operationId: input.job.source_operation,
     scope,
   });
@@ -64,7 +65,7 @@ export async function jobState(
   };
   const original = collectionPredicate(base);
   await input.runtime.authorizeActor(tx, {
-    actorId: actor.id,
+    actor: actorReference(actor),
     operationId: input.operationId,
     scope,
   });

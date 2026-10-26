@@ -10,6 +10,7 @@ it('completes a real upload, pins immutable bytes to a document revision and dow
   const resource = await fixture.revision();
   const bound = await fixture.database.transaction((tx) =>
     fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       documentId: resource.documentId,
@@ -96,7 +97,12 @@ it('rejects a forged manifest grant, wrong actor and replacement revision while 
   };
   await expect(
     fixture.database.transaction((tx) =>
-      fixture.assets.participants.bind(tx, { ...base, actorId: randomUUID(), uploadId: ready.id }),
+      fixture.assets.participants.bind(tx, {
+        operationId: 'documents.create',
+        ...base,
+        actorId: randomUUID(),
+        uploadId: ready.id,
+      }),
     ),
   ).rejects.toMatchObject({ code: 'forbidden' });
   const replacement = await readyUpload(fixture, pdf, {
@@ -106,6 +112,7 @@ it('rejects a forged manifest grant, wrong actor and replacement revision while 
   await expect(
     fixture.database.transaction((tx) =>
       fixture.assets.participants.bind(tx, {
+        operationId: 'documents.create',
         ...base,
         actorId: fixture.admin.id,
         expectedRevision: 2,
@@ -139,6 +146,7 @@ it('keeps old source bindings readable after media replaces bytes and its own ol
   const media = await fixture.revision();
   await fixture.database.transaction((tx) =>
     fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...media,
@@ -154,6 +162,7 @@ it('keeps old source bindings readable after media replaces bytes and its own ol
       mediaDocumentId: media.documentId,
     });
     return fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...source,
@@ -168,6 +177,7 @@ it('keeps old source bindings readable after media replaces bytes and its own ol
   const changed = await fixture.revision(media.documentId, 2);
   await fixture.database.transaction(async (tx) => {
     await fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...changed,
@@ -202,6 +212,7 @@ it('reprocesses into a new manifest sharing the original and commits one replace
   const media = await fixture.revision();
   await fixture.database.transaction((tx) =>
     fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...media,
@@ -449,6 +460,7 @@ it('session inspection cannot deadlock a document write that consumes the same r
       });
     }
     await fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       documentId: media.documentId,
@@ -471,6 +483,7 @@ it('copying a media file binds the shared bytes to the new media identity', asyn
   const original = await fixture.revision();
   await fixture.database.transaction((tx) =>
     fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...original,
@@ -486,6 +499,7 @@ it('copying a media file binds the shared bytes to the new media identity', asyn
       mediaDocumentId: original.documentId,
     });
     await fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...copied,

@@ -31,7 +31,7 @@ export function createAssets(options: AssetsOptions) {
       reprocess: createReprocessor(runtime),
       readJob: createJobReader(runtime),
     },
-    participants: createParticipants(options.limits.retentionMs),
+    participants: createParticipants(options),
     ...createAssetLifecycle({ runtime, capacity, controller }),
   };
 }

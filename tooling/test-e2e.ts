@@ -13,6 +13,7 @@ const contentFeatures = [
   'admin-images',
   'admin-article-media',
   'admin-jobs',
+  'admin-credentials',
   'admin-content-presentation',
   'admin-content-presentation-en',
   'admin-content-folders',
@@ -96,6 +97,7 @@ async function execute() {
     if (target.kind === 'browser') await browserJourneys(target.args);
     else {
       await run(['tooling/build-api.ts']);
+      await run(['tooling/build-clients.ts']);
       await run([
         '--bun',
         'node_modules/vitest/vitest.mjs',

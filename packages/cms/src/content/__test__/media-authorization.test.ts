@@ -323,7 +323,7 @@ it('maps renamed field and locale bindings when copying a migrated historical re
       mode: 'shared',
       async work(tx) {
         const actor = await kit.access.authorizeActor(tx, {
-          actorId: history.actorId,
+          actor: { id: history.actorId, delegationId: null },
           operationId: 'assets.downloadBinding',
           scope: { scopeKind: 'collection', collectionKey: 'articles' },
         });

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { actorReference } from '@new-cms/cms/access';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { withIdempotency } from '@new-cms/cms/platform/idempotency';
@@ -64,7 +65,7 @@ export function createReprocessor(runtime: AssetsOptions) {
         const result = await withIdempotency(
           state.tx,
           {
-            actorId: state.actor.id,
+            actor: actorReference(state.actor),
             operationId: 'assets.reprocess',
             scope: { scopeKind: 'collection', collectionKey: data.collection },
             key: ctx.idempotencyKey,
@@ -106,8 +107,8 @@ async function insertReprocessing(
   const uploadId = randomUUID();
   const jobId = randomUUID();
   await state.tx.query(
-    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at,original_object_id)
-     VALUES($1,$2,$3,'replace',$4,$5,$6,$7,$8,$9::jsonb,'processing',clock_timestamp()+$10*interval '1 millisecond',$11)`,
+    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at,original_object_id,delegation_id)
+     VALUES($1,$2,$3,'replace',$4,$5,$6,$7,$8,$9::jsonb,'processing',clock_timestamp()+$10*interval '1 millisecond',$11,$12)`,
     [
       uploadId,
       state.actor.id,
@@ -120,10 +121,25 @@ async function insertReprocessing(
       JSON.stringify(authorization.upload),
       runtime.limits.sessionTtlMs,
       original.object_id,
+      state.actor.delegation?.id ?? null,
     ],
   );
+  await insertReprocessingJob(state, { jobId, uploadId, data });
+  await state.tx.query('UPDATE asset_uploads SET job_id=$2 WHERE id=$1', [uploadId, jobId]);
+  return { uploadId, jobId };
+}
+
+async function insertReprocessingJob(
+  state: AssetState,
+  input: {
+    jobId: string;
+    uploadId: string;
+    data: z.infer<ReturnType<typeof assetsInputSchemas>['assets.reprocess']>;
+  },
+) {
+  const { jobId, uploadId, data } = input;
   await state.tx.query(
-    `INSERT INTO asset_jobs(id,actor_id,collection_key,action,upload_id,document_id,expected_revision,recipe,status) VALUES($1,$2,$3,'reprocess',$4,$5,$6,$7::jsonb,'queued')`,
+    `INSERT INTO asset_jobs(id,actor_id,collection_key,action,upload_id,document_id,expected_revision,recipe,status,delegation_id) VALUES($1,$2,$3,'reprocess',$4,$5,$6,$7::jsonb,'queued',$8)`,
     [
       jobId,
       state.actor.id,
@@ -132,8 +148,7 @@ async function insertReprocessing(
       data.id,
       data.revision,
       JSON.stringify(data.recipe),
+      state.actor.delegation?.id ?? null,
     ],
   );
-  await state.tx.query('UPDATE asset_uploads SET job_id=$2 WHERE id=$1', [uploadId, jobId]);
-  return { uploadId, jobId };
 }

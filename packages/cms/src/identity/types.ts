@@ -1,5 +1,6 @@
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import type { SqlExecutor } from '@new-cms/database/client';
+import type { DelegationParticipants } from './delegations/participants.ts';
 
 export type AccountStatus = 'active' | 'disabled' | 'archived';
 export type DeliveryStatus = 'pending' | 'sending' | 'accepted' | 'failed' | 'unknown';
@@ -57,6 +58,7 @@ export interface InvitationIssue {
 }
 
 export interface IdentityParticipants {
+  delegations: DelegationParticipants;
   authenticate(tx: SqlExecutor, ctx: RequestContext): Promise<Account>;
   account(tx: SqlExecutor, id: string): Promise<Account | null>;
   delivery(tx: SqlExecutor, id: string): Promise<Delivery | null>;

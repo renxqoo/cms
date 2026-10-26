@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { actorReference } from '@new-cms/cms/access';
+import type { ActorReference } from '@new-cms/cms/platform/contracts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { SqlExecutor } from '@new-cms/database/client';
 import type {
@@ -47,7 +49,7 @@ export async function mediaState(
   tx: SqlExecutor,
   input: {
     runtime: ContentRuntime;
-    actorId: string;
+    actor: ActorReference;
     operationId: string;
     collectionKey: string;
     mode?: 'editing' | 'published';
@@ -55,7 +57,7 @@ export async function mediaState(
   },
 ): Promise<ContentState> {
   const actor = await input.runtime.authorizeActor(tx, {
-    actorId: input.actorId,
+    actor: input.actor,
     operationId: input.operationId,
     scope: { scopeKind: 'collection', collectionKey: input.collectionKey },
   });
@@ -259,7 +261,7 @@ export function createMediaAuthorizer(runtime: ContentRuntime): ContentAuthorize
     const operationId = mediaOperation(request.action);
     const state = await mediaState(executor, {
       runtime,
-      actorId: request.actor.id,
+      actor: actorReference(request.actor),
       operationId,
       collectionKey: request.collectionKey,
       ...(request.mode ? { mode: request.mode } : {}),
@@ -327,7 +329,7 @@ export function createProcessingCommitter(runtime: ContentRuntime) {
     await lockContentMutation(tx, runtime);
     const state = await mediaState(tx, {
       runtime,
-      actorId: input.actor.id,
+      actor: actorReference(input.actor),
       operationId: 'documents.update',
       collectionKey: input.collectionKey,
     });
@@ -364,7 +366,7 @@ async function assetOperationPolicy(
     return;
   }
   const actor = await input.runtime.authorizeActor(state.tx, {
-    actorId: state.actor.id,
+    actor: actorReference(state.actor),
     operationId,
     scope: { scopeKind: 'collection', collectionKey: state.collection.key },
   });

@@ -1,4 +1,9 @@
-import type { RequestContext, Scope, OperationDefinition } from '@new-cms/cms/platform/contracts';
+import type {
+  RequestContext,
+  Scope,
+  OperationDefinition,
+  ActorReference,
+} from '@new-cms/cms/platform/contracts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { Account } from '@new-cms/cms/identity/composition';
 import type { SqlExecutor } from '@new-cms/database/client';
@@ -11,6 +16,10 @@ import type { AccessRuntime, Principal } from './types.ts';
 import { requireScope } from './validation.ts';
 
 export const globalScope: Scope = { scopeKind: 'global', collectionKey: null };
+
+export function actorReference(actor: Principal): ActorReference {
+  return { id: actor.id, delegationId: actor.delegation?.id ?? null };
+}
 
 function operationFor(runtime: AccessRuntime, operationId: string, scope: Scope) {
   const operation = runtime.operationMap.get(operationId);
@@ -47,21 +56,55 @@ export function createAuthorization(runtime: AccessRuntime) {
   ): Promise<Principal | null> {
     const operation = operationFor(runtime, operationId, scope);
     if (operation.access === 'public') return null;
-    const account = await runtime.identity.authenticate(tx, ctx);
-    return authorizeAccount(tx, { account, operation, scope });
+    const authentication = await runtime.identity.delegations.authenticate(tx, ctx);
+    const actor = await authorizeAccount(tx, { account: authentication.account, operation, scope });
+    if (!authentication.delegation) return actor;
+    await runtime.identity.delegations.authorize(tx, {
+      id: authentication.delegation.id,
+      adminId: actor.id,
+      operationId,
+      scope,
+    });
+    return {
+      ...actor,
+      delegation: {
+        id: authentication.delegation.id,
+        grants: await runtime.identity.delegations.authority(tx, {
+          id: authentication.delegation.id,
+          adminId: actor.id,
+        }),
+      },
+    };
   };
 }
 
 export function createActorAuthorization(runtime: AccessRuntime) {
   return async function authorizeActor(
     tx: SqlExecutor,
-    input: { actorId: string; operationId: string; scope: Scope },
+    input: { actor: ActorReference; operationId: string; scope: Scope },
   ): Promise<Principal> {
     const operation = operationFor(runtime, input.operationId, input.scope);
     if (operation.access === 'public' || operation.access === 'authenticated') fail('forbidden');
-    const account = await runtime.identity.account(tx, input.actorId);
+    const account = await runtime.identity.account(tx, input.actor.id);
     if (account?.status !== 'active' || account.activation !== 'activated') fail('forbidden');
-    return authorizeAccount(tx, { account, operation, scope: input.scope });
+    const actor = await authorizeAccount(tx, { account, operation, scope: input.scope });
+    if (input.actor.delegationId === null) return actor;
+    await runtime.identity.delegations.authorize(tx, {
+      id: input.actor.delegationId,
+      adminId: account.id,
+      operationId: input.operationId,
+      scope: input.scope,
+    });
+    return {
+      ...actor,
+      delegation: {
+        id: input.actor.delegationId,
+        grants: await runtime.identity.delegations.authority(tx, {
+          id: input.actor.delegationId,
+          adminId: account.id,
+        }),
+      },
+    };
   };
 }
 

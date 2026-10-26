@@ -1,5 +1,5 @@
-import type { AccessAuthorization, Principal } from '@new-cms/cms/access';
-import type { CmsPolicy, RequestContext, Scope } from '@new-cms/cms/platform/contracts';
+import type { AccessAuthorization, AccessActorAuthorization, Principal } from '@new-cms/cms/access';
+import type { CmsPolicy, RequestContext } from '@new-cms/cms/platform/contracts';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
 import type { AssetsApi } from '@new-cms/cms/assets';
 import type {
@@ -36,10 +36,7 @@ export interface ContentOptions {
   registry: ContentRegistry;
   mapping: ContentMapping;
   authorize: AccessAuthorization;
-  authorizeActor(
-    tx: SqlExecutor,
-    input: { actorId: string; operationId: string; scope: Scope },
-  ): Promise<Principal>;
+  authorizeActor: AccessActorAuthorization;
   assets?: AssetsParticipants;
   uploadApi?: AssetsApi;
   uploadPolicy: {

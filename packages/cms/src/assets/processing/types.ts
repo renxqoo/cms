@@ -3,6 +3,7 @@ import type { ImageRecipe, UploadRow } from '../types.ts';
 export interface JobRow {
   id: string;
   actor_id: string;
+  delegation_id: string | null;
   collection_key: string;
   action: 'process' | 'reprocess';
   upload_id: string;

@@ -5,9 +5,11 @@ export interface RequestContext {
   idempotencyKey?: string;
   signal?: AbortSignal;
   onAuthenticated?(adminId: string): void;
+  onCredential?(credentialId: string): void;
 }
 
 export interface CmsPolicy {
+  delegation: DelegationPolicy;
   sessionTtlMs: number;
   invitationTtlMs: number;
   resetTtlMs: number;
@@ -49,9 +51,35 @@ export interface CmsPolicy {
   deliveryStaleMs: number;
 }
 
+export interface DelegationPolicy {
+  requestTtlMs: number;
+  codeTtlMs: number;
+  accessTtlMs: number;
+  oauthTtlMs: number;
+  maxKeyTtlMs: number;
+  maxActiveGrants: number;
+  maxRetainedGrants: number;
+  maxGrantOperations: number;
+  maxDepth: number;
+  maxClients: number;
+  clientTtlMs: number;
+  maxRequests: number;
+  maxRefreshTokens: number;
+  maxAccessTokens: number;
+  cleanupBatchSize: number;
+  grantCleanupBatchSize: number;
+  lastUsedIntervalMs: number;
+  cleanupIntervalMs: number;
+}
+
 export interface Scope {
   scopeKind: 'global' | 'collection';
   collectionKey: string | null;
+}
+
+export interface ActorReference {
+  id: string;
+  delegationId: string | null;
 }
 
 export interface OperationDefinition {

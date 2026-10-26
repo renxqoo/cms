@@ -1,7 +1,9 @@
+import { delegationPolicy } from '../config/delegation-policy.ts';
 import { z } from 'zod';
 import { loadStorageConfig } from './storage-config.ts';
 import type { StorageConfig } from './storage-config.ts';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
+import type { OAuthConfiguration } from '@new-cms/cms/identity/composition';
 import { navigationIconsSchema, navigationPathsSchema } from './navigation-config.ts';
 
 const environmentSchema = z.object({
@@ -11,6 +13,9 @@ const environmentSchema = z.object({
     .regex(/^[a-z_][a-z0-9_]*$/)
     .default('public'),
   CMS_RATE_LIMIT_SECRET: z.string().min(32),
+  CMS_API_ORIGIN: z.url().optional(),
+  CMS_MCP_RESOURCE: z.url().default('http://127.0.0.1:3002/mcp'),
+  CMS_MCP_BRIDGE_SECRET: z.string().min(32).optional(),
   API_HOST: z.string().default('127.0.0.1'),
   API_PORT: z.coerce.number().int().min(0).max(65535).default(3001),
   API_ALLOWED_HOSTS: z.string().default('localhost,127.0.0.1,[::1]'),
@@ -30,6 +35,7 @@ const environmentSchema = z.object({
 });
 
 export interface ApplicationConfig {
+  oauth: OAuthConfiguration;
   assetProcessingIntervalMs: number;
   mode: 'development' | 'test' | 'production';
   storage: StorageConfig;
@@ -50,6 +56,7 @@ export interface ApplicationConfig {
     allowedHosts: string[];
     allowedOrigins: string[];
     bodyLimitBytes: number;
+    oauthBodyLimitBytes: number;
     uploadBodyLimitBytes: number;
     uploadTimeoutMs: number;
     headerLimitBytes: number;
@@ -73,6 +80,7 @@ export interface ApplicationConfig {
 
 export function defaultPolicy(rateLimitSecret: string): CmsPolicy {
   return {
+    delegation: delegationPolicy(),
     sessionTtlMs: 28_800_000,
     invitationTtlMs: 86_400_000,
     resetTtlMs: 1_800_000,
@@ -139,6 +147,15 @@ function smtpOptions(env: z.infer<typeof environmentSchema>): ApplicationConfig[
 function validateProduction(env: z.infer<typeof environmentSchema>): void {
   if (env.NODE_ENV !== 'production') return;
   if (!env.CMS_FRONTEND_URL.startsWith('https://')) throw new Error('HTTPS frontend is required');
+  if (
+    !env.CMS_API_ORIGIN?.startsWith('https://') ||
+    !env.CMS_MCP_RESOURCE.startsWith('https://') ||
+    !env.CMS_MCP_BRIDGE_SECRET ||
+    env.CMS_MCP_BRIDGE_SECRET === env.CMS_RATE_LIMIT_SECRET
+  )
+    throw new Error(
+      'Public HTTPS OAuth resources and an independent MCP bridge secret are required',
+    );
   for (const origin of commaList(env.API_ALLOWED_ORIGINS)) {
     if (!origin.startsWith('https://')) throw new Error('HTTPS origins are required');
   }
@@ -151,6 +168,30 @@ function requireDatabaseTls(env: { NODE_ENV: string; DATABASE_URL: string }): vo
   if (modes.length !== 1 || modes[0] !== 'verify-full') {
     throw new Error('Verified PostgreSQL TLS is required in production');
   }
+}
+
+function oauthConfiguration(env: z.infer<typeof environmentSchema>): OAuthConfiguration {
+  const issuer = new URL(env.CMS_API_ORIGIN ?? `http://127.0.0.1:${env.API_PORT || 3001}`);
+  const resource = new URL(env.CMS_MCP_RESOURCE);
+  if (!validOAuthUrl(issuer, '/') || !validOAuthUrl(resource, '/mcp'))
+    throw new Error('Invalid OAuth issuer or MCP resource');
+  return {
+    issuer: issuer.origin,
+    mcpResource: resource.href,
+    frontendUrl: env.CMS_FRONTEND_URL,
+    bridgeSecret: env.CMS_MCP_BRIDGE_SECRET ?? env.CMS_RATE_LIMIT_SECRET,
+  };
+}
+
+function validOAuthUrl(url: URL, path: string): boolean {
+  return (
+    ['http:', 'https:'].includes(url.protocol) &&
+    !url.username &&
+    !url.password &&
+    url.pathname === path &&
+    !url.search &&
+    !url.hash
+  );
 }
 
 export function loadDatabaseConfig(
@@ -181,6 +222,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
   const env = environmentSchema.parse(source);
   validateProduction(env);
   return {
+    oauth: oauthConfiguration(env),
     storage: loadStorageConfig(source, env.NODE_ENV === 'production'),
     assetProcessingIntervalMs: env.CMS_ASSET_PROCESSING_INTERVAL_MS,
     mode: env.NODE_ENV,
@@ -201,6 +243,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
       allowedHosts: commaList(env.API_ALLOWED_HOSTS),
       allowedOrigins: commaList(env.API_ALLOWED_ORIGINS),
       bodyLimitBytes: 1_048_576,
+      oauthBodyLimitBytes: 65_536,
       uploadBodyLimitBytes: 20_971_520,
       uploadTimeoutMs: 60_000,
       headerLimitBytes: 16_384,

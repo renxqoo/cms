@@ -102,6 +102,7 @@ function httpServices(services: Services, config: ApplicationConfig) {
   if (!uploads) throw new Error('Content upload services are missing');
   return {
     identity: services.identity.api,
+    oauth: services.identity.oauth(config.oauth),
     access: services.access.api,
     check: services.access.check,
     operations: services.operations,
@@ -164,7 +165,10 @@ export function createRuntime(config: ApplicationConfig) {
     verifyDatabaseAccess,
     close,
     maintenance: () => maintainServices(services),
-    maintenanceIntervalMs: config.policy.cleanupIntervalMs,
+    maintenanceIntervalMs: Math.min(
+      config.policy.cleanupIntervalMs,
+      config.policy.delegation.cleanupIntervalMs,
+    ),
     assetProcessingIntervalMs: config.assetProcessingIntervalMs,
     stop: () => {
       accepting = false;

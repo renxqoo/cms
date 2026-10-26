@@ -20,6 +20,7 @@ import {
   updateAccountSchema,
 } from './validation.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
+import { createDelegations } from './delegations/participants.ts';
 
 async function createAccount(tx: SqlExecutor, input: CreateAccountInput) {
   try {
@@ -59,7 +60,8 @@ export function createParticipants(
   executor: DeliveryExecutor,
 ): IdentityParticipants {
   return {
-    authenticate,
+    delegations: createDelegations(deps),
+    authenticate: (tx, ctx) => authenticate(tx, ctx, deps.policy),
     account: findAccount,
     delivery: findDelivery,
     listAccounts: (tx, input) => listAccounts(tx, input, deps.policy),

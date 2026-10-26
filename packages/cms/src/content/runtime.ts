@@ -206,7 +206,7 @@ export function idempotentReference<T>(
   return withIdempotency(
     state.tx,
     {
-      actorId: state.actor.id,
+      actor: actorReference(state.actor),
       operationId: state.operationId,
       scope: { scopeKind: 'collection', collectionKey: state.collection.key },
       key: state.ctx.idempotencyKey,
@@ -251,7 +251,7 @@ export function authorizeStateOperation(
   const scope = { scopeKind: 'collection' as const, collectionKey: input.collection };
   return state.actorAuthorization
     ? input.runtime.authorizeActor(state.tx, {
-        actorId: state.actor.id,
+        actor: actorReference(state.actor),
         operationId: input.operationId,
         scope,
       })
@@ -292,3 +292,4 @@ export function policyUsesRelations(state: ContentState, runtime: ContentRuntime
 export async function policyRelations(state: ContentState, runtime: ContentRuntime) {
   return policyUsesRelations(state, runtime) ? runtime.resolveRelationScopes(state) : {};
 }
+import { actorReference } from '@new-cms/cms/access';

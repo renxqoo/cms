@@ -61,7 +61,7 @@ test('all endpoint and operation pages are addressable while overlarge offsets a
     await fixture.access.api.listEndpoints(fixture.owner, { module: 'unknown' }),
   ).toMatchObject({ rows: [], total: 0 });
   const operations = await fixture.access.api.myOperations(fixture.owner, { pageSize: 100 });
-  expect(operations.total).toBe(31);
+  expect(operations.total).toBe(37);
   expect(operations.rows.some((operation) => operation.operationId === 'access.readRecovery')).toBe(
     true,
   );
@@ -69,8 +69,8 @@ test('all endpoint and operation pages are addressable while overlarge offsets a
     false,
   );
   expect(
-    await fixture.access.api.myOperations(fixture.owner, { pageSize: 1, page: 32 }),
-  ).toMatchObject({ rows: [], total: 31 });
+    await fixture.access.api.myOperations(fixture.owner, { pageSize: 1, page: 38 }),
+  ).toMatchObject({ rows: [], total: 37 });
   await expect(
     fixture.access.api.listEndpoints(fixture.owner, {
       page: Number.MAX_SAFE_INTEGER,
@@ -85,7 +85,7 @@ test('all endpoint and operation pages are addressable while overlarge offsets a
 test('registry rejects duplicate routes and ids, invalid categories and incompatible catalog reuse', async () => {
   const fixture = await createFixture();
   const { operations } = fixture.accessOptions;
-  const [first] = operations;
+  const first = operations.find((operation) => operation.access === 'permission');
   if (!first) throw new Error('Registration missing');
   expect(() =>
     createAccess({ ...fixture.accessOptions, operations: [...operations, first] }),

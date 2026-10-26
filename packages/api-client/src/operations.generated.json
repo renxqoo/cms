@@ -1,0 +1,3022 @@
+[
+  {
+    "id": "identity.login",
+    "module": "identity",
+    "method": "POST",
+    "path": "/v1/auth/login",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "identity login",
+    "tool": "identity_login",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "maxLength": 255,
+          "format": "email",
+          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "password": { "type": "string", "minLength": 1 }
+      },
+      "required": ["email", "password"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "identity.logout",
+    "module": "identity",
+    "method": "POST",
+    "path": "/v1/auth/logout",
+    "access": "authenticated",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "identity logout",
+    "tool": "identity_logout",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "identity.acceptInvitation",
+    "module": "identity",
+    "method": "POST",
+    "path": "/v1/auth/invitation-acceptances",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "identity accept-invitation",
+    "tool": "identity_acceptInvitation",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "token": { "type": "string", "pattern": "^[A-Za-z0-9_-]{43}$" },
+        "newPassword": { "type": "string" }
+      },
+      "required": ["token", "newPassword"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "identity.requestPasswordReset",
+    "module": "identity",
+    "method": "POST",
+    "path": "/v1/auth/password-reset-requests",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "successStatus": 202,
+    "command": "identity request-password-reset",
+    "tool": "identity_requestPasswordReset",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "maxLength": 255,
+          "format": "email",
+          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        }
+      },
+      "required": ["email"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "identity.resetPassword",
+    "module": "identity",
+    "method": "POST",
+    "path": "/v1/auth/password-resets",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "identity reset-password",
+    "tool": "identity_resetPassword",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "token": { "type": "string", "pattern": "^[A-Za-z0-9_-]{43}$" },
+        "newPassword": { "type": "string" }
+      },
+      "required": ["token", "newPassword"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "identity.changePassword",
+    "module": "identity",
+    "method": "PUT",
+    "path": "/v1/me/password",
+    "access": "authenticated",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "identity change-password",
+    "tool": "identity_changePassword",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "currentPassword": { "type": "string", "minLength": 1 },
+        "newPassword": { "type": "string" }
+      },
+      "required": ["currentPassword", "newPassword"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "credentials.list",
+    "method": "GET",
+    "path": "/v1/me/credentials",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "credentials list",
+    "tool": "credentials_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+        "kind": { "type": "string", "enum": ["api_key", "oauth"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "credentials.createKey",
+    "method": "POST",
+    "path": "/v1/me/api-keys",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "successStatus": 201,
+    "command": "credentials create-key",
+    "tool": "credentials_createKey",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "grants": {
+          "minItems": 1,
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+              "collectionKey": {
+                "anyOf": [
+                  { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                  { "type": "null" }
+                ]
+              }
+            },
+            "required": ["operationId", "scopeKind", "collectionKey"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["name", "expiresAt", "grants"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "credentials.revoke",
+    "method": "DELETE",
+    "path": "/v1/me/credentials/:id",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "credentials revoke",
+    "tool": "credentials_revoke",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "credentials.revokeClient",
+    "method": "POST",
+    "path": "/v1/me/oauth-clients/:clientId/revocations",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "credentials revoke-client",
+    "tool": "credentials_revokeClient",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "clientId": { "type": "string", "minLength": 1, "maxLength": 128 } },
+      "required": ["clientId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "credentials.getAuthorization",
+    "method": "GET",
+    "path": "/v1/oauth/requests/:requestId",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "credentials get-authorization",
+    "tool": "credentials_getAuthorization",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "requestId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{43}$" } },
+      "required": ["requestId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "credentials.decideAuthorization",
+    "method": "POST",
+    "path": "/v1/oauth/requests/:requestId/decisions",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "credentials decide-authorization",
+    "tool": "credentials_decideAuthorization",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "requestId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{43}$" },
+        "approved": { "type": "boolean" },
+        "grants": {
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+              "collectionKey": {
+                "anyOf": [
+                  { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                  { "type": "null" }
+                ]
+              }
+            },
+            "required": ["operationId", "scopeKind", "collectionKey"],
+            "additionalProperties": false
+          }
+        },
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 }
+      },
+      "required": ["requestId", "approved", "grants"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "admins.list",
+    "method": "GET",
+    "path": "/v1/admins",
+    "access": "permission",
+    "defaultPermission": "admins:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "admins list",
+    "tool": "admins_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "default": "", "type": "string", "maxLength": 128 },
+        "order": { "default": "desc", "type": "string", "enum": ["asc", "desc"] },
+        "sortBy": {
+          "default": "createdAt",
+          "type": "string",
+          "enum": ["createdAt", "email", "displayName", "lastLoginAt"]
+        },
+        "status": { "type": "string", "enum": ["active", "disabled", "archived"] },
+        "activation": { "type": "string", "enum": ["pending", "activated"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "admins.get",
+    "method": "GET",
+    "path": "/v1/admins/:id",
+    "access": "permission",
+    "defaultPermission": "admins:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "admins get",
+    "tool": "admins_get",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "admins.create",
+    "method": "POST",
+    "path": "/v1/admins",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "idempotency": "required",
+    "successStatus": 201,
+    "command": "admins create",
+    "tool": "admins_create",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 255 },
+        "displayName": {
+          "default": null,
+          "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 64 }, { "type": "null" }]
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["email", "roleId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "admins.update",
+    "method": "PATCH",
+    "path": "/v1/admins/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "admins update",
+    "tool": "admins_update",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "displayName": {
+          "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 64 }, { "type": "null" }]
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "status": { "type": "string", "enum": ["active", "disabled", "archived"] }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "admins.invite",
+    "method": "POST",
+    "path": "/v1/admins/:id/invitations",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "idempotency": "required",
+    "successStatus": 201,
+    "command": "admins invite",
+    "tool": "admins_invite",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "roles.list",
+    "method": "GET",
+    "path": "/v1/roles",
+    "access": "permission",
+    "defaultPermission": "roles:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "roles list",
+    "tool": "roles_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "default": "", "type": "string", "maxLength": 128 },
+        "order": { "default": "desc", "type": "string", "enum": ["asc", "desc"] },
+        "sortBy": {
+          "default": "createdAt",
+          "type": "string",
+          "enum": ["createdAt", "code", "name"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "roles.get",
+    "method": "GET",
+    "path": "/v1/roles/:id",
+    "access": "permission",
+    "defaultPermission": "roles:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "roles get",
+    "tool": "roles_get",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "roles.create",
+    "method": "POST",
+    "path": "/v1/roles",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "idempotency": "required",
+    "successStatus": 201,
+    "command": "roles create",
+    "tool": "roles_create",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "description": {
+          "default": null,
+          "anyOf": [{ "type": "string", "maxLength": 512 }, { "type": "null" }]
+        },
+        "permissionIds": {
+          "default": [],
+          "maxItems": 2000,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        }
+      },
+      "required": ["code", "name"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "roles.update",
+    "method": "PATCH",
+    "path": "/v1/roles/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "roles update",
+    "tool": "roles_update",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "description": { "anyOf": [{ "type": "string", "maxLength": 512 }, { "type": "null" }] },
+        "status": { "type": "string", "enum": ["active", "disabled"] }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "roles.replacePermissions",
+    "method": "PUT",
+    "path": "/v1/roles/:id/permissions",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "roles replace-permissions",
+    "tool": "roles_replacePermissions",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "permissionIds": {
+          "maxItems": 2000,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        }
+      },
+      "required": ["id", "version", "permissionIds"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "roles.delete",
+    "method": "DELETE",
+    "path": "/v1/roles/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "roles delete",
+    "tool": "roles_delete",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "permissions.list",
+    "method": "GET",
+    "path": "/v1/permissions",
+    "access": "permission",
+    "defaultPermission": "permissions:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "permissions list",
+    "tool": "permissions_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "default": "", "type": "string", "maxLength": 128 },
+        "order": { "default": "desc", "type": "string", "enum": ["asc", "desc"] },
+        "sortBy": {
+          "default": "createdAt",
+          "type": "string",
+          "enum": ["createdAt", "code", "name"]
+        },
+        "status": { "type": "string", "enum": ["active", "disabled"] },
+        "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+        "collectionKey": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "permissions.create",
+    "method": "POST",
+    "path": "/v1/permissions",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "idempotency": "required",
+    "successStatus": 201,
+    "command": "permissions create",
+    "tool": "permissions_create",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "maxLength": 160,
+          "pattern": "^[a-z][a-z0-9_-]*(?::[a-z][a-z0-9_-]*){1,3}$"
+        },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "description": {
+          "default": null,
+          "anyOf": [{ "type": "string", "maxLength": 512 }, { "type": "null" }]
+        },
+        "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+        "collectionKey": {
+          "default": null,
+          "anyOf": [{ "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" }, { "type": "null" }]
+        }
+      },
+      "required": ["code", "name", "scopeKind"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "permissions.update",
+    "method": "PATCH",
+    "path": "/v1/permissions/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "permissions update",
+    "tool": "permissions_update",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "description": { "anyOf": [{ "type": "string", "maxLength": 512 }, { "type": "null" }] },
+        "status": { "type": "string", "enum": ["active", "disabled"] }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "permissions.delete",
+    "method": "DELETE",
+    "path": "/v1/permissions/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "permissions delete",
+    "tool": "permissions_delete",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "navigation.list",
+    "method": "GET",
+    "path": "/v1/navigation",
+    "access": "permission",
+    "defaultPermission": "navigation:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "navigation list",
+    "tool": "navigation_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "navigation.create",
+    "method": "POST",
+    "path": "/v1/navigation",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "idempotency": "required",
+    "successStatus": 201,
+    "command": "navigation create",
+    "tool": "navigation_create",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "parentId": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "type": { "type": "string", "enum": ["group", "page", "action"] },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "path": {
+          "default": null,
+          "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 255 }, { "type": "null" }]
+        },
+        "icon": {
+          "default": null,
+          "anyOf": [{ "type": "string", "maxLength": 64 }, { "type": "null" }]
+        },
+        "sortOrder": {
+          "default": 0,
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "visibility": { "type": "string", "enum": ["container", "authenticated", "permission"] },
+        "permissionId": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["type", "name", "visibility"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "navigation.update",
+    "method": "PATCH",
+    "path": "/v1/navigation/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "navigation update",
+    "tool": "navigation_update",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "type": { "type": "string", "enum": ["group", "page", "action"] },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "path": {
+          "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 255 }, { "type": "null" }]
+        },
+        "icon": { "anyOf": [{ "type": "string", "maxLength": 64 }, { "type": "null" }] },
+        "sortOrder": { "type": "integer", "minimum": -2147483648, "maximum": 2147483647 },
+        "visibility": { "type": "string", "enum": ["container", "authenticated", "permission"] },
+        "permissionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "status": { "type": "string", "enum": ["active", "disabled"] }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "navigation.delete",
+    "method": "DELETE",
+    "path": "/v1/navigation/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "navigation delete",
+    "tool": "navigation_delete",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "endpoints.list",
+    "method": "GET",
+    "path": "/v1/endpoints",
+    "access": "permission",
+    "defaultPermission": "endpoints:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "endpoints list",
+    "tool": "endpoints_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "module": { "type": "string", "maxLength": 32 },
+        "accessKind": {
+          "type": "string",
+          "enum": ["public", "authenticated", "security", "permission"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "endpoints.createBinding",
+    "method": "POST",
+    "path": "/v1/endpoint-bindings",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "idempotency": "required",
+    "successStatus": 201,
+    "command": "endpoints create-binding",
+    "tool": "endpoints_createBinding",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "operationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+        "collectionKey": {
+          "default": null,
+          "anyOf": [{ "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" }, { "type": "null" }]
+        },
+        "permissionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["operationId", "scopeKind", "permissionId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "endpoints.updateBinding",
+    "method": "PATCH",
+    "path": "/v1/endpoint-bindings/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "endpoints update-binding",
+    "tool": "endpoints_updateBinding",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "permissionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["id", "version", "permissionId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "endpoints.deleteBinding",
+    "method": "DELETE",
+    "path": "/v1/endpoint-bindings/:id",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "endpoints delete-binding",
+    "tool": "endpoints_deleteBinding",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "access.me",
+    "method": "GET",
+    "path": "/v1/me",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "access me",
+    "tool": "access_me",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "access.readRecovery",
+    "method": "GET",
+    "path": "/v1/security/recovery",
+    "access": "security",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "access read-recovery",
+    "tool": "access_readRecovery",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "resource": { "type": "string", "const": "endpoints" },
+            "page": {
+              "default": 1,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "pageSize": { "default": 20, "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+            "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+            "collectionKey": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "operationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "module": { "type": "string", "minLength": 1, "maxLength": 32 }
+          },
+          "required": ["resource"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resource": { "type": "string", "const": "bindings" },
+            "page": {
+              "default": 1,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "pageSize": { "default": 20, "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+            "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+            "collectionKey": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "operationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "permissionId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["resource"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resource": { "type": "string", "const": "permissions" },
+            "page": {
+              "default": 1,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "pageSize": { "default": 20, "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+            "scopeKind": { "type": "string", "enum": ["global", "collection"] },
+            "collectionKey": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "code": { "type": "string", "minLength": 1, "maxLength": 160 },
+            "status": { "type": "string", "enum": ["active", "disabled"] }
+          },
+          "required": ["resource"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "access.updateOwnProfile",
+    "method": "PATCH",
+    "path": "/v1/me",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "access update-own-profile",
+    "tool": "access_updateOwnProfile",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "displayName": {
+          "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 64 }, { "type": "null" }]
+        }
+      },
+      "required": ["version", "displayName"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "access.myNavigation",
+    "method": "GET",
+    "path": "/v1/me/navigation",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "access my-navigation",
+    "tool": "access_myNavigation",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "access.myOperations",
+    "method": "GET",
+    "path": "/v1/me/operations",
+    "access": "authenticated",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "access my-operations",
+    "tool": "access_myOperations",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "audit.list",
+    "method": "GET",
+    "path": "/v1/audit-logs",
+    "access": "permission",
+    "defaultPermission": "audit:read",
+    "module": "access",
+    "scopeKind": "global",
+    "bindingConfigurable": true,
+    "command": "audit list",
+    "tool": "audit_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "default": "", "type": "string", "maxLength": 128 },
+        "order": { "default": "desc", "type": "string", "enum": ["asc", "desc"] },
+        "sortBy": { "default": "createdAt", "type": "string", "const": "createdAt" },
+        "actorId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "operationId": { "type": "string", "maxLength": 128 },
+        "targetType": { "type": "string", "maxLength": 64 },
+        "targetId": { "type": "string", "maxLength": 160 },
+        "from": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "to": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "collections.list",
+    "method": "GET",
+    "path": "/v1/collections",
+    "module": "content",
+    "access": "authenticated",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "collections list",
+    "tool": "collections_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "resources.list",
+    "method": "GET",
+    "path": "/v1/resources",
+    "module": "content",
+    "access": "authenticated",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "resources list",
+    "tool": "resources_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "fallback": {
+          "maxItems": 20,
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+        },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "select": {
+          "maxItems": 500,
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "type": "string", "maxLength": 256 },
+        "where": {},
+        "sort": {
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+              "order": { "type": "string", "enum": ["asc", "desc"] }
+            },
+            "required": ["field", "order"],
+            "additionalProperties": false
+          }
+        },
+        "trashed": { "default": false, "type": "boolean" },
+        "folderId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "collections.get",
+    "method": "GET",
+    "path": "/v1/collections/:collection",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "collections get",
+    "tool": "collections_get",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" } },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "collections.editor",
+    "method": "GET",
+    "path": "/v1/collections/:collection/editor",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "collections editor",
+    "tool": "collections_editor",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "intent": { "type": "string", "const": "create" },
+            "mode": { "default": "editing", "type": "string", "const": "editing" }
+          },
+          "required": ["collection", "intent"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "intent": { "type": "string", "enum": ["update", "autosave", "copy"] },
+            "mode": { "default": "editing", "type": "string", "const": "editing" }
+          },
+          "required": ["collection", "id", "intent"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "intent": { "default": "read", "type": "string", "const": "read" },
+            "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+            "fallback": { "maxItems": 20, "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["collection", "id"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "content.listJobs",
+    "method": "GET",
+    "path": "/v1/collections/:collection/jobs",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "content list-jobs",
+    "tool": "content_listJobs",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "action": {
+          "type": "string",
+          "enum": ["batch", "publication", "extension", "process", "reprocess"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["queued", "running", "succeeded", "partial", "failed", "cancelled"]
+        },
+        "documentId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.list",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents list",
+    "tool": "documents_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "fallback": {
+          "maxItems": 20,
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+        },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "select": {
+          "maxItems": 500,
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "type": "string", "maxLength": 256 },
+        "where": {},
+        "sort": {
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+              "order": { "type": "string", "enum": ["asc", "desc"] }
+            },
+            "required": ["field", "order"],
+            "additionalProperties": false
+          }
+        },
+        "trashed": { "default": false, "type": "boolean" },
+        "folderId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.create",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 201,
+    "path": "/v1/collections/:collection/documents",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents create",
+    "tool": "documents_create",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "data": {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": {}
+            },
+            "uploadId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "folderId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": ["collection", "data"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "dataByLocale": {
+              "type": "object",
+              "propertyNames": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+              "additionalProperties": {
+                "type": "object",
+                "propertyNames": { "type": "string" },
+                "additionalProperties": {}
+              },
+              "minProperties": 1,
+              "maxProperties": 20
+            },
+            "uploadId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "folderId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": ["collection", "dataByLocale"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "documents.get",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents get",
+    "tool": "documents_get",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "fallback": {
+          "maxItems": 20,
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+        },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "select": {
+          "maxItems": 500,
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+      },
+      "required": ["collection", "id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.update",
+    "method": "PATCH",
+    "path": "/v1/collections/:collection/documents/:id",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents update",
+    "tool": "documents_update",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "data": {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": {},
+              "minProperties": 1
+            },
+            "uploadId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "folderId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": ["collection", "id", "revision"],
+          "additionalProperties": false,
+          "anyOf": [
+            { "required": ["data"] },
+            { "required": ["uploadId"] },
+            { "required": ["folderId"] }
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "dataByLocale": {
+              "type": "object",
+              "propertyNames": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+              "additionalProperties": {
+                "type": "object",
+                "propertyNames": { "type": "string" },
+                "additionalProperties": {}
+              },
+              "minProperties": 1,
+              "maxProperties": 20
+            },
+            "uploadId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "folderId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": ["collection", "id", "revision", "dataByLocale"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "documents.archive",
+    "method": "DELETE",
+    "path": "/v1/collections/:collection/documents/:id",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents archive",
+    "tool": "documents_archive",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "revision"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.copy",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 201,
+    "path": "/v1/collections/:collection/documents/:id/copies",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents copy",
+    "tool": "documents_copy",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "data": {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": {}
+            },
+            "folderId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": ["collection", "id", "revision"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "dataByLocale": {
+              "type": "object",
+              "propertyNames": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+              "additionalProperties": {
+                "type": "object",
+                "propertyNames": { "type": "string" },
+                "additionalProperties": {}
+              },
+              "minProperties": 1,
+              "maxProperties": 20
+            },
+            "folderId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": ["collection", "id", "revision", "dataByLocale"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "documents.restoreTrash",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 200,
+    "path": "/v1/collections/:collection/documents/:id/trash-restorations",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents restore-trash",
+    "tool": "documents_restoreTrash",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "revision"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.purge",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 200,
+    "path": "/v1/collections/:collection/documents/:id/purges",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents purge",
+    "tool": "documents_purge",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "revision"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.autosave",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 201,
+    "path": "/v1/collections/:collection/documents/:id/autosaves",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents autosave",
+    "tool": "documents_autosave",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "data": {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": {}
+            },
+            "uploadId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["collection", "id", "revision", "data"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "dataByLocale": {
+              "type": "object",
+              "propertyNames": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+              "additionalProperties": {
+                "type": "object",
+                "propertyNames": { "type": "string" },
+                "additionalProperties": {}
+              },
+              "minProperties": 1,
+              "maxProperties": 20
+            },
+            "uploadId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["collection", "id", "revision", "dataByLocale"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "documents.publish",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 200,
+    "path": "/v1/collections/:collection/documents/:id/publications",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents publish",
+    "tool": "documents_publish",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+      },
+      "required": ["collection", "id", "revision"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.unpublish",
+    "method": "DELETE",
+    "path": "/v1/collections/:collection/documents/:id/publication",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents unpublish",
+    "tool": "documents_unpublish",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+      },
+      "required": ["collection", "id", "revision"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "versions.list",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/versions",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "versions list",
+    "tool": "versions_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 }
+      },
+      "required": ["collection", "id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "versions.get",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/versions/:versionId",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "versions get",
+    "tool": "versions_get",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "versionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "fallback": {
+          "maxItems": 20,
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+        },
+        "select": {
+          "maxItems": 500,
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+      },
+      "required": ["collection", "id", "versionId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "versions.restore",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 201,
+    "path": "/v1/collections/:collection/documents/:id/restorations",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "versions restore",
+    "tool": "versions_restore",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "versionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+      },
+      "required": ["collection", "id", "revision", "versionId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "versions.diff",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/version-diff",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "versions diff",
+    "tool": "versions_diff",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "from": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "to": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+      },
+      "required": ["collection", "id", "from", "to"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "content.schedulePublication",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 202,
+    "path": "/v1/collections/:collection/documents/:id/publication-schedules",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "content schedule-publication",
+    "tool": "content_schedulePublication",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "versionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "action": { "default": "publish", "type": "string", "enum": ["publish", "unpublish"] },
+        "executeAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        }
+      },
+      "required": ["collection", "id", "revision", "versionId", "executeAt"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "content.cancelPublicationSchedule",
+    "method": "DELETE",
+    "path": "/v1/collections/:collection/documents/:id/publication-schedules/:scheduleId",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "content cancel-publication-schedule",
+    "tool": "content_cancelPublicationSchedule",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "scheduleId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "id", "scheduleId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "content.batch",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 200,
+    "path": "/v1/collections/:collection/batches",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "content batch",
+    "tool": "content_batch",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "action": { "type": "string", "const": "update" },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "items": {
+              "minItems": 1,
+              "maxItems": 1000,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+                  "data": {
+                    "type": "object",
+                    "propertyNames": { "type": "string" },
+                    "additionalProperties": {}
+                  }
+                },
+                "required": ["id", "revision", "data"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["collection", "action", "items"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "action": { "type": "string", "const": "copy" },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "items": {
+              "minItems": 1,
+              "maxItems": 1000,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+                  "data": {
+                    "type": "object",
+                    "propertyNames": { "type": "string" },
+                    "additionalProperties": {}
+                  }
+                },
+                "required": ["id", "revision"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["collection", "action", "items"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "action": { "type": "string", "enum": ["archive", "restoreTrash"] },
+            "items": {
+              "minItems": 1,
+              "maxItems": 1000,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+                },
+                "required": ["id", "revision"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["collection", "action", "items"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "action": { "type": "string", "enum": ["update", "copy"] },
+            "items": {
+              "minItems": 1,
+              "maxItems": 1000,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+                  "dataByLocale": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$"
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "propertyNames": { "type": "string" },
+                      "additionalProperties": {}
+                    },
+                    "minProperties": 1,
+                    "maxProperties": 20
+                  }
+                },
+                "required": ["id", "revision", "dataByLocale"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["collection", "action", "items"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "content.getJob",
+    "method": "GET",
+    "path": "/v1/collections/:collection/jobs/:jobId",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "content get-job",
+    "tool": "content_getJob",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "jobId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "jobId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "resources.references",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/references",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "resources references",
+    "tool": "resources_references",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 }
+      },
+      "required": ["collection", "id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "folders.list",
+    "method": "GET",
+    "path": "/v1/folders",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "folders list",
+    "tool": "folders_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" } },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "folders.create",
+    "method": "POST",
+    "idempotency": "required",
+    "successStatus": 201,
+    "path": "/v1/folders",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "folders create",
+    "tool": "folders_create",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["collection", "name"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "folders.update",
+    "method": "PATCH",
+    "path": "/v1/folders/:id",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "folders update",
+    "tool": "folders_update",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["collection", "id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "folders.delete",
+    "method": "DELETE",
+    "path": "/v1/folders/:id",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "folders delete",
+    "tool": "folders_delete",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.createUpload",
+    "method": "POST",
+    "path": "/v1/collections/:collection/uploads",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "idempotency": "required",
+    "successStatus": 201,
+    "command": "assets create-upload",
+    "tool": "assets_createUpload",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "purpose": { "type": "string", "enum": ["create", "replace"] },
+        "documentId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "exclusiveMinimum": 0, "maximum": 9007199254740991 },
+        "filename": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "mimeType": { "type": "string", "minLength": 1, "maxLength": 127 },
+        "bytes": { "type": "integer", "exclusiveMinimum": 0, "maximum": 9007199254740991 }
+      },
+      "required": ["collection", "purpose", "filename", "mimeType", "bytes"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.listUploads",
+    "method": "GET",
+    "path": "/v1/collections/:collection/uploads",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "command": "assets list-uploads",
+    "tool": "assets_listUploads",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "uploading",
+            "processing",
+            "ready",
+            "consumed",
+            "failed",
+            "cancelled",
+            "expired"
+          ]
+        },
+        "purpose": { "type": "string", "enum": ["create", "replace"] },
+        "documentId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.writeUpload",
+    "method": "PUT",
+    "path": "/v1/collections/:collection/uploads/:uploadId/content",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "command": "assets write-upload",
+    "tool": "assets_writeUpload",
+    "transport": "upload",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "uploadId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "uploadId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.completeUpload",
+    "method": "POST",
+    "path": "/v1/collections/:collection/uploads/:uploadId/completions",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "idempotency": "required",
+    "successStatus": 202,
+    "command": "assets complete-upload",
+    "tool": "assets_completeUpload",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "uploadId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "uploadId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.readUpload",
+    "method": "GET",
+    "path": "/v1/collections/:collection/uploads/:uploadId",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "command": "assets read-upload",
+    "tool": "assets_readUpload",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "uploadId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "uploadId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.cancelUpload",
+    "method": "DELETE",
+    "path": "/v1/collections/:collection/uploads/:uploadId",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "command": "assets cancel-upload",
+    "tool": "assets_cancelUpload",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "uploadId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "uploadId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.download",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/file",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "command": "assets download",
+    "tool": "assets_download",
+    "transport": "download",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "versionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "variant": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] }
+      },
+      "required": ["collection", "id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.downloadBinding",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/media-bindings/:bindingId/file",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "command": "assets download-binding",
+    "tool": "assets_downloadBinding",
+    "transport": "download",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "bindingId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "versionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "variant": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] }
+      },
+      "required": ["collection", "id", "bindingId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.reprocess",
+    "method": "POST",
+    "path": "/v1/collections/:collection/documents/:id/file-processings",
+    "module": "assets",
+    "scopeKind": "collection",
+    "access": "permission",
+    "bindingConfigurable": true,
+    "idempotency": "required",
+    "successStatus": 202,
+    "command": "assets reprocess",
+    "tool": "assets_reprocess",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "exclusiveMinimum": 0, "maximum": 9007199254740991 },
+        "recipe": {
+          "type": "object",
+          "properties": {
+            "variants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "fit": { "type": "string", "enum": ["cover", "contain", "inside"] },
+                  "format": { "type": "string", "enum": ["jpeg", "png", "webp"] },
+                  "quality": { "type": "integer", "minimum": 1, "maximum": 100 }
+                },
+                "required": ["name", "width", "height", "fit", "format", "quality"],
+                "additionalProperties": false
+              }
+            },
+            "focalPoint": {
+              "type": "object",
+              "properties": {
+                "x": { "type": "number", "minimum": 0, "maximum": 1 },
+                "y": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "required": ["x", "y"],
+              "additionalProperties": false
+            },
+            "crop": {
+              "type": "object",
+              "properties": {
+                "left": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+                "top": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+                "width": { "type": "integer", "exclusiveMinimum": 0, "maximum": 9007199254740991 },
+                "height": { "type": "integer", "exclusiveMinimum": 0, "maximum": 9007199254740991 }
+              },
+              "required": ["left", "top", "width", "height"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["variants"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["collection", "id", "revision", "recipe"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.listCleanup",
+    "method": "GET",
+    "path": "/v1/asset-cleanups",
+    "module": "assets",
+    "access": "security",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "assets list-cleanup",
+    "tool": "assets_listCleanup",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "blocked": { "default": true, "type": "boolean" },
+        "state": { "type": "string", "enum": ["pending", "ready", "deleting", "deleted"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.getCleanup",
+    "method": "GET",
+    "path": "/v1/asset-cleanups/:id",
+    "module": "assets",
+    "access": "security",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "assets get-cleanup",
+    "tool": "assets_getCleanup",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "assets.retryCleanup",
+    "method": "POST",
+    "path": "/v1/asset-cleanups/:id/retries",
+    "module": "assets",
+    "access": "security",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "idempotency": "required",
+    "successStatus": 202,
+    "command": "assets retry-cleanup",
+    "tool": "assets_retryCleanup",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    }
+  }
+]

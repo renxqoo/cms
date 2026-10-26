@@ -4,6 +4,7 @@ import { managementResponseSchemas } from './management-schemas.ts';
 import { editorResponseSchemas } from './editor-schemas.ts';
 import { discoveryResponseSchemas } from './discovery-schemas.ts';
 import { recoveryResponseSchemas } from './recovery-schemas.ts';
+import { credentialResponseSchemas } from './credential-schemas.ts';
 import type { OperationDefinition } from '@new-cms/cms/platform/contracts';
 import { id, time, integer, text, object, reference, array, page } from './schema.ts';
 import type { Schema } from './schema.ts';
@@ -137,6 +138,7 @@ export function responseSchemas(): Record<string, Schema> {
     ...editorResponseSchemas(),
     ...discoveryResponseSchemas(),
     ...recoveryResponseSchemas(),
+    ...credentialResponseSchemas(),
     AllowedOperation: object({ operationId: text, ...scope }),
     Endpoint: object({
       operationId: text,
@@ -174,6 +176,11 @@ export function responseSchemas(): Record<string, Schema> {
 }
 
 const responses: Record<string, string> = {
+  'credentials.list': 'CredentialPage',
+  'credentials.createKey': 'ApiKeyCreated',
+  'credentials.revokeClient': 'ClientGrantsRevoked',
+  'credentials.getAuthorization': 'OAuthAuthorizationRequest',
+  'credentials.decideAuthorization': 'OAuthAuthorizationDecision',
   'identity.login': 'Login',
   'identity.requestPasswordReset': 'ResetAccepted',
   'admins.list': 'AdminPage',
