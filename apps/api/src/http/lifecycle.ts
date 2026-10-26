@@ -37,7 +37,10 @@ function validateBoundary(c: Context<HttpEnvironment>, config: ApplicationConfig
     throw new CmsError('payload_too_large');
   }
   const origin = c.req.header('origin');
-  if (origin !== undefined && !config.allowedOrigins.includes(origin))
+  const metadata =
+    c.req.path === '/.well-known/oauth-authorization-server' &&
+    ['GET', 'HEAD'].includes(c.req.method);
+  if (origin !== undefined && !metadata && !config.allowedOrigins.includes(origin))
     throw new CmsError('forbidden');
   if (origin !== undefined) {
     c.header('access-control-allow-origin', origin);
@@ -93,6 +96,7 @@ function recordAccess(
       operationId: route ? (operationIds.get(`${route.method}:${route.path}`) ?? null) : null,
       path: route?.path ?? null,
       actorId: c.get('actorId') ?? null,
+      credentialId: c.get('credentialId') ?? null,
       ip: c.get('ip'),
       status: c.res.status,
       durationMs: Date.now() - startedAt,

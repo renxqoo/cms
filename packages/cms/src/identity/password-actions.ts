@@ -2,7 +2,7 @@ import { appendAudit } from '@new-cms/cms/audit/composition';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import { credentialById, writeCredential } from './adapters/postgres/credentials.ts';
-import { authenticate } from './adapters/postgres/sessions.ts';
+import { authenticateOperation } from './delegations/authentication.ts';
 import { consumeAction, validAction } from './adapters/postgres/action-tokens.ts';
 import { revokeAccount } from './adapters/postgres/accounts.ts';
 import { assertRunning, databaseWork, secure } from './runtime.ts';
@@ -17,7 +17,11 @@ export async function changePassword(
 ): Promise<void> {
   const input = parseInput(changePasswordSchema, value);
   const snapshot = await databaseWork(deps.database, async (tx) => {
-    const account = await authenticate(tx, ctx);
+    const account = await authenticateOperation(tx, {
+      ctx,
+      policy: deps.policy,
+      operationId: 'identity.changePassword',
+    });
     return credentialById(tx, account.id);
   });
   if (
@@ -28,7 +32,11 @@ export async function changePassword(
   const hash = await deps.passwords.hash(input.newPassword, ctx.signal);
   assertRunning(ctx);
   await secure(deps, ctx, async (tx) => {
-    const account = await authenticate(tx, ctx);
+    const account = await authenticateOperation(tx, {
+      ctx,
+      policy: deps.policy,
+      operationId: 'identity.changePassword',
+    });
     const current = await credentialById(tx, account.id);
     if (!current || current.admin_id !== snapshot.admin_id || current.version !== snapshot.version)
       fail('invalid_credentials');

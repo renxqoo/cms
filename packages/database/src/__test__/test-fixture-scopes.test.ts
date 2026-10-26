@@ -42,6 +42,7 @@ it('default full fixture keeps every production migration and the application na
     '0010_assets.sql',
     '0011_ui_api.sql',
     '0014_localized_publications.sql',
+    '0015_delegated_credentials.sql',
     '0015_oneaster_content.sql',
     '0016_content_preview_grants.sql',
   ]);
@@ -77,6 +78,7 @@ it('explicit library fixture omits application native DDL but keeps localized pu
     '0010_assets.sql',
     '0011_ui_api.sql',
     '0014_localized_publications.sql',
+    '0015_delegated_credentials.sql',
     '0016_content_preview_grants.sql',
   ]);
   for (const table of [

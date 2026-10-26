@@ -2,6 +2,7 @@ import type { Principal } from '@new-cms/cms/access';
 import { randomUUID } from 'node:crypto';
 import { fail } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
+import type { ActorReference } from '@new-cms/cms/platform/contracts';
 import type { SqlExecutor } from '@new-cms/database/client';
 import type { AssetsOptions, ProcessedImage } from '../types.ts';
 import { audit, lockAssets } from '../runtime.ts';
@@ -82,9 +83,28 @@ async function authorizeWork(
   tx: SqlExecutor,
   input: { runtime: AssetsOptions; claimed: ClaimedJob },
 ) {
+  const { claimed } = input;
+  if (
+    claimed.upload.delegation_id !== null &&
+    claimed.upload.delegation_id !== claimed.job.delegation_id
+  )
+    await authorizeWorkActor(tx, {
+      ...input,
+      actor: { id: claimed.upload.actor_id, delegationId: claimed.upload.delegation_id },
+    });
+  return authorizeWorkActor(tx, {
+    ...input,
+    actor: { id: claimed.job.actor_id, delegationId: claimed.job.delegation_id },
+  });
+}
+
+async function authorizeWorkActor(
+  tx: SqlExecutor,
+  input: { runtime: AssetsOptions; claimed: ClaimedJob; actor: ActorReference },
+) {
   const { runtime, claimed } = input;
   const actor = await runtime.authorizeActor(tx, {
-    actorId: claimed.job.actor_id,
+    actor: input.actor,
     operationId: claimed.job.action === 'reprocess' ? 'assets.reprocess' : 'assets.completeUpload',
     scope: { scopeKind: 'collection', collectionKey: claimed.job.collection_key },
   });

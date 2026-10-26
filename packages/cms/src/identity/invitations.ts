@@ -43,7 +43,7 @@ export async function createActionDelivery(
 }
 
 async function checkInvitationLimit(tx: SqlExecutor, policy: CmsPolicy, ctx: RequestContext) {
-  const actor = await authenticate(tx, ctx);
+  const actor = await authenticate(tx, ctx, policy);
   const result = await consumeRateLimit(tx, {
     key: rateLimitKey(policy.rateLimitSecret, ['invite-actor', actor.id]),
     limit: policy.invitationActorLimit,

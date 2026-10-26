@@ -1,0 +1,12 @@
+{
+  "name": "@new-cms/cli",
+  "private": true,
+  "bin": {
+    "cms": "dist/main.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "@new-cms/api-client": "workspace:*",
+    "@renxqoo/agent-cli-sdk": "1.0.2"
+  }
+}

@@ -51,7 +51,7 @@ async function prepareCopy(
     });
   }
   await input.runtime.authorizeActor(state.tx, {
-    actorId: state.actor.id,
+    actor: actorReference(state.actor),
     operationId: 'documents.create',
     scope: { scopeKind: 'collection', collectionKey: state.collection.key },
   });
@@ -124,3 +124,4 @@ async function copyDocument(runtime: ContentRuntime, ctx: RequestContext, raw: u
 export function createCopyDocumentApi(runtime: ContentRuntime) {
   return { copyDocument: (ctx: RequestContext, raw: unknown) => copyDocument(runtime, ctx, raw) };
 }
+import { actorReference } from '@new-cms/cms/access';

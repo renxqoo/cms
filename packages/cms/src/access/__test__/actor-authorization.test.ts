@@ -34,7 +34,7 @@ it('persistent work rechecks current grants without retaining a session token', 
   const authorize = () =>
     fixture.database.transaction((tx) =>
       fixture.access.authorizeActor(tx, {
-        actorId: editor.admin.id,
+        actor: { id: editor.admin.id, delegationId: null },
         operationId: publish.id,
         scope,
       }),
@@ -71,7 +71,7 @@ it('persistent work rejects disabled, pending, missing actors and unsuitable ope
     await expect(
       fixture.database.transaction((tx) =>
         fixture.access.authorizeActor(tx, {
-          actorId,
+          actor: { id: actorId, delegationId: null },
           operationId: publish.id,
           scope,
         }),
@@ -82,7 +82,7 @@ it('persistent work rejects disabled, pending, missing actors and unsuitable ope
     await expect(
       fixture.database.transaction((tx) =>
         fixture.access.authorizeActor(tx, {
-          actorId: fixture.admin.id,
+          actor: { id: fixture.admin.id, delegationId: null },
           operationId,
           scope: { scopeKind: 'global', collectionKey: null },
         }),
@@ -96,7 +96,7 @@ it('persistent super administrator work still needs the exact live collection bi
   const authorize = (target: Scope) =>
     fixture.database.transaction((tx) =>
       fixture.access.authorizeActor(tx, {
-        actorId: fixture.admin.id,
+        actor: { id: fixture.admin.id, delegationId: null },
         operationId: publish.id,
         scope: target,
       }),

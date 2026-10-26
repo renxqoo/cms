@@ -28,6 +28,7 @@ it('regression: available application entries do not report an empty menu', () =
   expect(navigation.groups.flatMap((item) => item.items.map((link) => link.href))).toEqual([
     '/dashboard',
     '/dashboard/account',
+    '/dashboard/account/credentials',
     '/dashboard/admins',
   ]);
   expect(navigation.empty).toBe(false);
@@ -36,6 +37,7 @@ it('regression: available application entries do not report an empty menu', () =
   expect(denied.groups.flatMap((item) => item.items.map((link) => link.href))).toEqual([
     '/dashboard',
     '/dashboard/account',
+    '/dashboard/account/credentials',
   ]);
   expect(denied.empty).toBe(true);
 });
@@ -75,6 +77,7 @@ it('does not create duplicate sidebar keys or duplicate built-in self-service en
     navigation: [
       group([
         node({ path: '/dashboard' }),
+        node({ id: 'credentials', path: '/dashboard/account/credentials' }),
         node(),
         node({ id: 'duplicate', name: 'Duplicate users' }),
       ]),
@@ -83,7 +86,12 @@ it('does not create duplicate sidebar keys or duplicate built-in self-service en
     can: () => false,
   });
   const paths = navigation.groups.flatMap((item) => item.items.map((entry) => entry.href));
-  expect(paths).toEqual(['/dashboard', '/dashboard/account', '/dashboard/admins']);
+  expect(paths).toEqual([
+    '/dashboard',
+    '/dashboard/account',
+    '/dashboard/account/credentials',
+    '/dashboard/admins',
+  ]);
   expect(new Set(paths).size).toBe(paths.length);
 });
 

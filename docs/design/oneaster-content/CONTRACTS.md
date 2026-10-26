@@ -98,6 +98,8 @@ sitemap 参数仅支持 bucket，不接收 locale；每桶包含所有启用且�
 
 新增 `POST /v1/collections/:collection/documents/:id/preview-tickets`，集合权限操作，body为locale和expectedRevision，成功201返回ticketId、expiresAt与可信client预览入口。仅允许公开交付白名单中的模型集合；发布与查看草稿权限仍分开。新增 `DELETE /v1/collections/:collection/documents/:id/preview-tickets/:ticketId`，签发者或具有相应管理权限的管理员可撤销，幂等200且记录审计。新增 `GET /v1/preview/models/:slug?locale` 和 `GET /v1/preview/media/:bindingId`，均必须携带短期grant，不保留旧预览路径别名。
 
+预览分享仅支持交互式管理员会话。CLI/API OAuth、MCP OAuth和Agent API Key交换得到的API access token即使具有模型读与预览签发operation，也不得签发预览票据；业务在读取文档、拼接slug、保存票据和票据审计前返回forbidden。委托凭据仍按原operation与collection范围使用其他原生文档能力。当前系统不创建委托来源的预览票据，因此持有grant读取以非委托issuer身份重新检查当前角色、集合与字段读权限；不将委托凭据静默提升为管理员分享权限。完整委托预览若另行启用，须显式保存并逐次重查原始授权来源及完整撤销链。
+
 grant使用至少256位随机值，仅摘要入库，绑定issuer、collection、document UUID、versionId、locale、client origin、expiresAt与revokedAt；最多600秒。签发和读取通过注入的access能力重新检查issuer当前有效身份/读权限，不接受客户端自报actor。篡改、撤销、过期、跨模型/语言/revision、已清除revision和无权限均拒绝。清理通过现有有界维护执行器，过期判定不依赖清理已运行。
 
 完整预览使用签发者当前`documents.get`上下文，对固定revision的实际完整数据执行原生`projectData`字段read策略。权限投影移除任何实际字段时拒绝预览，避免正文、SEO、调用样例或私有媒体绕过字段权限；未存储值的隐藏可选字段不阻断。签发在保存grant、审计票据和拼接slug之前检查，拒绝返回forbidden且事务不保存票据。模型、代码示例和私有媒体每次读取都重新授权并重新检查字段策略，失权统一返回unauthenticated；不使用签发时缓存的字段权限。普通匿名已发布投影合同保持独立。

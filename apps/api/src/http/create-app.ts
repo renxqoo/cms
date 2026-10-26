@@ -3,6 +3,7 @@ import { responseSecurityHeaders } from './security-headers.ts';
 import { CmsError } from '@new-cms/cms/platform/contracts';
 import type { AccessApi, AccessCheck } from '@new-cms/cms/access';
 import type { IdentityApi } from '@new-cms/cms/identity';
+import type { OAuthApi } from '@new-cms/cms/identity';
 import type { OperationDefinition, RequestContext } from '@new-cms/cms/platform/contracts';
 import type { Schema } from './openapi/schema.ts';
 import { z } from 'zod';
@@ -17,8 +18,10 @@ import { businessHandlers } from './handlers.ts';
 import type { Admission } from './lifecycle.ts';
 import { requestLifecycle } from './lifecycle.ts';
 import { openApiDocument } from './openapi/document.ts';
+import { registerOAuth } from './oauth.ts';
 
 export interface HttpDependencies extends Admission {
+  oauth?: OAuthApi;
   identity: IdentityApi;
   access: AccessApi;
   check: AccessCheck;
@@ -107,6 +110,7 @@ export function createApp(deps: HttpDependencies, config: ApplicationConfig['htt
   app.onError((error, c) => errorResponse(error, c.get('requestId')));
   app.notFound((c) => errorResponse(new CmsError('not_found'), c.get('requestId')));
   registerInfrastructure(app, deps);
+  if (deps.oauth) registerOAuth(app, deps.oauth, config.oauthBodyLimitBytes);
   registerOperations(app, deps, config.bodyLimitBytes);
   return app;
 }

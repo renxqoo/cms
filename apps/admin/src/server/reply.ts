@@ -7,6 +7,13 @@ import {
   resetAcceptedSchema,
 } from '../contracts/auth';
 import type { OperationDefinition } from '../contracts/operations';
+import {
+  authorizationDecisionSchema,
+  authorizationRequestSchema,
+  clientRevocationSchema,
+  credentialListSchema,
+  keyCreatedSchema,
+} from '../contracts/credentials';
 import { errorSchema } from '../api/result';
 import type { AdminConfig } from './config';
 import { backendLoginSchema, sessionCookie } from './session';
@@ -59,6 +66,11 @@ function safeSchema(operation: OperationDefinition): z.ZodType | undefined {
   if (operation.id === 'access.myOperations') return allowedOperationsSchema;
   if (operation.id === 'access.myNavigation') return myNavigationSchema;
   if (operation.id === 'identity.requestPasswordReset') return resetAcceptedSchema;
+  if (operation.id === 'credentials.list') return credentialListSchema;
+  if (operation.id === 'credentials.createKey') return keyCreatedSchema;
+  if (operation.id === 'credentials.revokeClient') return clientRevocationSchema;
+  if (operation.id === 'credentials.getAuthorization') return authorizationRequestSchema;
+  if (operation.id === 'credentials.decideAuthorization') return authorizationDecisionSchema;
   return undefined;
 }
 

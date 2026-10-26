@@ -28,6 +28,7 @@ it('stores and serves variant bytes through immutable per-generation candidates'
   const document = await fixture.revision();
   await fixture.database.transaction((tx) =>
     fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...document,
@@ -179,6 +180,7 @@ it('rejects manifest capabilities reused across transactions and protects consum
   const media = await fixture.revision();
   const binding = await fixture.database.transaction((tx) =>
     fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...media,
@@ -196,6 +198,7 @@ it('rejects manifest capabilities reused across transactions and protects consum
   await expect(
     fixture.database.transaction((tx) =>
       fixture.assets.participants.bind(tx, {
+        operationId: 'documents.create',
         actorId: fixture.admin.id,
         collectionKey: 'media',
         ...copied,
@@ -223,6 +226,7 @@ it('releases all document references atomically and detects corrupted download b
   const media = await fixture.revision();
   await fixture.database.transaction((tx) =>
     fixture.assets.participants.bind(tx, {
+      operationId: 'documents.create',
       actorId: fixture.admin.id,
       collectionKey: 'media',
       ...media,

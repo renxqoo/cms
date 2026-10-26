@@ -2,6 +2,7 @@ import type { Database } from '@new-cms/database/client';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import { cleanupIdempotency } from '@new-cms/cms/platform/idempotency';
 import { cleanupRateLimits } from '@new-cms/cms/platform/rate-limits';
+import { maintainDelegations } from './delegations/maintenance.ts';
 
 export async function maintainIdentity(database: Database, policy: CmsPolicy): Promise<void> {
   await database.transaction(async (tx) => {
@@ -18,6 +19,7 @@ export async function maintainIdentity(database: Database, policy: CmsPolicy): P
       [policy.deliveryStaleMs, policy.cleanupBatchSize],
     );
     await cleanExpired(tx, policy);
+    await maintainDelegations(tx, policy);
     await cleanupIdempotency(tx, policy.cleanupBatchSize);
     await cleanupRateLimits(tx, policy.cleanupBatchSize);
   });

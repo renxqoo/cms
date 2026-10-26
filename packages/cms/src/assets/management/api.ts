@@ -45,7 +45,7 @@ async function retryCleanup(
     withIdempotency(
       state.tx,
       {
-        actorId: state.actor.id,
+        actor: actorReference(state.actor),
         operationId: state.operationId,
         key: ctx.idempotencyKey,
         input,
@@ -87,3 +87,4 @@ export function createCleanupApi(runtime: AssetsOptions) {
     retryCleanup: (ctx: RequestContext, raw: unknown) => retryCleanup(runtime, ctx, raw),
   };
 }
+import { actorReference } from '@new-cms/cms/access';

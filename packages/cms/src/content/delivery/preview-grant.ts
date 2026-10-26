@@ -45,7 +45,7 @@ async function issuerState(
   if (collection.id !== grant.collection_id || !collection.locales.supported.includes(grant.locale))
     fail('unauthenticated');
   const actor = await runtime.authorizeActor(tx, {
-    actorId: grant.issuer_id,
+    actor: { id: grant.issuer_id, delegationId: null },
     operationId: 'documents.get',
     scope: { scopeKind: 'collection', collectionKey: 'models' },
   });

@@ -112,6 +112,7 @@ describe('PostgreSQL migrations and owner schema', () => {
         '0010_assets.sql',
         '0011_ui_api.sql',
         '0014_localized_publications.sql',
+        '0015_delegated_credentials.sql',
         '0015_oneaster_content.sql',
         '0016_content_preview_grants.sql',
       ]);

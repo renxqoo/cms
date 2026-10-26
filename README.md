@@ -2,7 +2,7 @@
 
 面向结构化内容、文件资料和 RBAC 管理的自研 CMS。后端采用 Hono、PostgreSQL 和 Drizzle；开发与脚本使用 Bun 1.4.4，生产使用 Node.js，测试使用 Vitest。
 
-后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。项目包含API、CMS、数据库、管理端和共享UI五个私有工作区，注册76个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
+后端包括后台账户/RBAC、Collections 配置编译、文档/版本/发布/回收站、持久化批量及计划任务、上传型集合、图片处理与私有文件恢复。项目包含 API、CLI、MCP、CMS、公共 API client、数据库、管理端和共享 UI 八个私有工作区，注册 82 个管理操作，提供 OpenAPI、真实 PostgreSQL 集成与 Bun/Node 网络测试。
 
 应用配置启用 articles、pages、media 和 settings 集合。管理后台提供真实认证、账户/RBAC、配置驱动内容编辑、版本与回收站、资源上传及私有预览、图片处理、任务与清理管理；UI组件库和隔离组件工作台供独立验收。界面范围见[应用联调方案](docs/design/admin-application-design.md)，不开放任意菜单 URL 或运行时建表。
 
@@ -17,6 +17,7 @@
 - [Collections 后端方案](docs/design/collections-design.md)、[施工与验收](docs/design/collections-implementation.md)、[单元契约](docs/design/collections-units.md)及[资产实现](docs/design/assets-implementation.md)：当前外部契约、迁移回填与验证。
 - [Collections UI 接口](docs/design/collections-ui-api-design.md)及[验证记录](docs/design/collections-ui-api-verification.md)：安全编辑布局、任务/上传发现、超管清理恢复与升级约束。
 - [RBAC 恢复读取](docs/design/rbac-recovery-read-contract.md)及[施工与验证](docs/design/rbac-recovery-read-implementation.md)：普通读取权限或绑定失效时，活动超管通过安全分页取得恢复所需ID和CAS版本。
+- [CLI/MCP 与个人凭据](docs/design/cli-mcp-design.md)、[实施验证](docs/design/cli-mcp-implementation.md)与[命令及配置](docs/design/cli-mcp-clients-implementation.md)：全操作命令/工具、OAuth 2.1 profile、资源权限与登录吊销。
 - [安全基线](docs/design/security-baseline.md)：入口、Node、Hono 和业务模块的责任。
 - [近期研究证据](docs/design/research-evidence.md)：2026-07-25 至 2026-10-25 官方资料、源码快照及稳定原理。
 - [本地 Payload 架构分析](docs/design/payload-architecture-analysis.md)：真实调用链、配置/权限/事务/文件边界及采纳取舍。
@@ -40,6 +41,24 @@ bun run dev:admin
 账户页面提供资料和密码管理；管理员、角色、权限、导航、端点绑定、审计以及访问恢复位于/dashboard对应入口。操作以当前主体的完整授权快照判断，实际HTTP再次鉴权。邀请与重置通过实际邮件链接完成；普通目录被误配拒绝后，有效超级管理员可使用访问恢复读取最新绑定并按原CAS协议修复。验收范围和当前进度见[应用实施与验收](docs/design/admin-application-implementation.md)。
 
 内容入口为/dashboard/collections，提供安全metadata驱动的字段、单例、草稿与自动保存、发布、完整多语言复制和历史恢复、回收站、批量与文件夹。/dashboard/resources提供上传、替换、PNG/PDF私有下载与图片重处理；/dashboard/jobs发现实际任务和上传会话，刷新后可继续核实；/dashboard/asset-cleanups仅活动超管可读取并请求阻塞清理重试，202只表示受理。具体行为见[内容实施契约](docs/design/admin-content-implementation.md)、[资源验收](docs/design/admin-assets-verification.md)与[任务验收](docs/design/admin-jobs-verification.md)。
+
+## CLI、MCP 与个人凭据
+
+`/dashboard/account/credentials` 管理本人 API Key 和 OAuth 登录，可按操作及集合选择资源权限、设置到期、撤销单次登录或同应用全部登录。创建 Key 的明文只返回一次；有效权限始终取凭据上限与账号当前权限的交集。Key 用于远程 MCP；CLI 使用浏览器授权码和 S256 PKCE 登录。
+
+```sh
+bun run cli auth login
+bun run cli documents list --input '{"input":{"collection":"articles","folderId":null}}'
+bun run dev:mcp
+```
+
+CLI 配置 `CMS_API_ORIGIN`；默认 profile 为 default，状态在 `~/.cms`。Node 产物为 `apps/cli/dist/main.js` 和 `apps/mcp/dist/main.js`，由 `bun run build` 生成。复杂请求支持 `--input-file` 或 stdin；完整命令与字节传输说明见[客户端说明](docs/design/cli-mcp-clients-implementation.md)。
+
+API 与 MCP 共享 `CMS_API_ORIGIN`、`CMS_MCP_RESOURCE` 和独立的 `CMS_MCP_BRIDGE_SECRET`（至少 32 字符随机秘密）；后台 origin 由 `CMS_FRONTEND_URL` 指定。生产 API 和 MCP 的公开地址必须 HTTPS，API issuer 为 origin，MCP resource 为完整 `/mcp` URI。`API_ALLOWED_HOSTS` 与 `MCP_ALLOWED_HOSTS` 包含各自公开主机；浏览器客户端 origin 分别配置到 `API_ALLOWED_ORIGINS` 与 `MCP_ALLOWED_ORIGINS`，服务端 MCP 客户端不需要 Origin。桥接秘密只在两个服务之间使用，不配置给调用方。
+
+支持 Header 的 MCP 客户端将个人 Key 放在 `Authorization: Bearer <key>`；OAuth 客户端通过公开 metadata 注册并完成本人同意。已实现官方 MCP 新旧协议的本地跨进程验证；ChatGPT、Claude、Cursor、VS Code 等实际公网连接需部署后按各产品的配置和管理员策略验收。
+
+发布前使用迁移账号执行 `bun run db:migrate`，核对注册操作并重新授予运行账号表权限（`bun run operations:reconcile`、`bun run db:grant-runtime`）。新增迁移为 `0015_delegated_credentials.sql`，保留已有会话及任务语义。多 API/MCP 实例共享 PostgreSQL、一致 issuer/resource 和桥接秘密，不依赖粘性会话。生产资产还需共享存储；readiness、备份恢复、TLS 和故障切换步骤见[部署验收](docs/production-acceptance.md)。
 
 ## 本地运行
 
@@ -128,7 +147,7 @@ bun run test
 
 lint包含工作区、HTTP/业务依赖和schema owner导入约束及类型感知Oxlint；typecheck使用bun check检查后端、UI包和Next应用；build构建Node API、命令、SQL迁移、规范插件及Next生产产物；test运行Vitest/Istanbul、React交互测试、真实PostgreSQL集成、Bun/Node网络旅程及开发/生产浏览器冒烟。覆盖率包含全部本期手写业务代码及原插件范围，门槛为statements/functions/lines90%、branches85%，不排除入口或SQL适配器。
 
-测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，连接需具备CREATEDB/CREATEROLE。其他环境设置CMS_TEST_DATABASE_URL；所有数据库装置尊重该连接并显式隔离迁移连接，不使用部署凭据。CI使用PostgreSQL17，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。网络测试使用真实Bun与Node（可用CMS_NODE_BINARY指定），缺失运行时直接失败。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test执行账户、内容和媒体三组共6条旅程，并运行开发/生产浏览器旅程。浏览器入口为bun run test:e2e e2e/admin-ui.browser.spec.ts，可追加--project production或--grep。首次运行执行bun --bun node_modules/@playwright/test/cli.js install chromium；CI安装浏览器及系统依赖。
+测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，连接需具备CREATEDB/CREATEROLE。其他环境设置CMS_TEST_DATABASE_URL；所有数据库装置尊重该连接并显式隔离迁移连接，不使用部署凭据。CI使用PostgreSQL17，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。网络测试使用真实Bun与Node（可用CMS_NODE_BINARY指定），缺失运行时直接失败。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test执行账户、内容、媒体、CLI/MCP传输及业务接缝五个spec共14条进程旅程，并运行26个浏览器spec在开发/生产模式下的122条旅程。浏览器入口为bun run test:e2e e2e/admin-ui.browser.spec.ts，可追加--project production或--grep。首次运行执行bun --bun node_modules/@playwright/test/cli.js install chromium；CI安装浏览器及系统依赖。
 
 Husky由bun install时的prepare安装：pre-commit跑lint/typecheck，pre-push跑build/test，失败立即阻断。GitHub Actions对push/PR执行相同四门，固定Bun1.4.4、Node26.9.0和官方Action SHA，不部署。CI仅在安装时禁用本地hook，随后显式执行全部检查。
 

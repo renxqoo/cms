@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { actorReference } from '@new-cms/cms/access';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import { withIdempotency } from '@new-cms/cms/platform/idempotency';
@@ -20,7 +21,7 @@ function idempotent<T>(
   return withIdempotency(
     state.tx,
     {
-      actorId: state.actor.id,
+      actor: actorReference(state.actor),
       operationId: input.operationId,
       scope: { scopeKind: 'collection', collectionKey: input.collection },
       key: state.ctx.idempotencyKey,
@@ -44,8 +45,8 @@ async function insertSession(
   });
   const id = randomUUID();
   await state.tx.query(
-    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at)
-     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,'pending',clock_timestamp()+$11*interval '1 millisecond')`,
+    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at,delegation_id)
+     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,'pending',clock_timestamp()+$11*interval '1 millisecond',$12)`,
     [
       id,
       state.actor.id,
@@ -58,6 +59,7 @@ async function insertSession(
       data.bytes,
       JSON.stringify(authorized.upload),
       runtime.limits.sessionTtlMs,
+      state.actor.delegation?.id ?? null,
     ],
   );
   await audit(state.tx, {
@@ -86,8 +88,15 @@ async function queueProcessing(runtime: AssetsOptions, state: AssetState, row: U
   if (object.rowCount !== 1) fail('version_conflict');
   const jobId = randomUUID();
   await state.tx.query(
-    `INSERT INTO asset_jobs(id,actor_id,collection_key,action,upload_id,recipe,status) VALUES($1,$2,$3,'process',$4,$5::jsonb,'queued')`,
-    [jobId, state.actor.id, row.collection_key, row.id, JSON.stringify(row.settings.recipe)],
+    `INSERT INTO asset_jobs(id,actor_id,collection_key,action,upload_id,recipe,status,delegation_id) VALUES($1,$2,$3,'process',$4,$5::jsonb,'queued',$6)`,
+    [
+      jobId,
+      state.actor.id,
+      row.collection_key,
+      row.id,
+      JSON.stringify(row.settings.recipe),
+      state.actor.delegation?.id ?? null,
+    ],
   );
   await state.tx.query("UPDATE asset_uploads SET status='processing',job_id=$2 WHERE id=$1", [
     row.id,

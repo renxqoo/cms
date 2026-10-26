@@ -63,6 +63,7 @@ async function insertTicket(
   return { ticketId: id, expiresAt: new Date(expires).toISOString(), credential };
 }
 async function issue(state: ContentState, work: IssueWork): Promise<PublicPreviewTicket> {
+  if (state.actor.delegation) fail('forbidden');
   const { runtime, options, input } = work;
   const reader = await requireAdditionalOperation(state, {
     runtime,

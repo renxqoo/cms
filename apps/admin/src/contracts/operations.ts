@@ -53,6 +53,22 @@ export const operations = [
     responseKind: 'empty',
   }),
   defineOperation('identity.changePassword', ['PUT', '/v1/me/password'], { responseKind: 'empty' }),
+  defineOperation('credentials.list', ['GET', '/v1/me/credentials'], {
+    queryKeys: [...page, 'kind'],
+  }),
+  defineOperation('credentials.createKey', ['POST', '/v1/me/api-keys']),
+  defineOperation('credentials.revoke', ['DELETE', '/v1/me/credentials/:id'], {
+    responseKind: 'empty',
+  }),
+  defineOperation('credentials.revokeClient', [
+    'POST',
+    '/v1/me/oauth-clients/:clientId/revocations',
+  ]),
+  defineOperation('credentials.getAuthorization', ['GET', '/v1/oauth/requests/:requestId']),
+  defineOperation('credentials.decideAuthorization', [
+    'POST',
+    '/v1/oauth/requests/:requestId/decisions',
+  ]),
   defineOperation('admins.list', ['GET', '/v1/admins'], {
     queryKeys: [...list, 'status', 'activation'],
   }),

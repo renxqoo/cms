@@ -68,6 +68,7 @@ async function bindOwnFile(state: ContentState, input: BindInput): Promise<void>
     : undefined;
   if (!input.uploadId && !old) fail('invalid_input');
   await assets.bind(state.tx, {
+    operationId: state.operationId,
     actorId: state.actor.id,
     collectionKey: state.collection.key,
     documentId: input.documentId,
@@ -114,6 +115,7 @@ async function bindMediaReference(
     });
   }
   await assets.bind(state.tx, {
+    operationId: state.operationId,
     actorId: state.actor.id,
     collectionKey: state.collection.key,
     documentId: input.documentId,

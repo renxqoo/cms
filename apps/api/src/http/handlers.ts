@@ -9,6 +9,12 @@ export function businessHandlers(
   access: AccessApi,
 ): Map<string, BusinessHandler> {
   return new Map<string, BusinessHandler>([
+    ['credentials.list', access.listCredentials],
+    ['credentials.createKey', access.createApiKey],
+    ['credentials.revoke', access.revokeCredential],
+    ['credentials.revokeClient', access.revokeClientGrants],
+    ['credentials.getAuthorization', access.getAuthorization],
+    ['credentials.decideAuthorization', access.decideAuthorization],
     ['identity.login', identity.login.bind(identity)],
     ['identity.logout', identity.logout.bind(identity)],
     ['identity.changePassword', identity.changePassword.bind(identity)],

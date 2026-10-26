@@ -115,6 +115,10 @@ function unchanged(current: Account, next: Account): boolean {
 
 export async function revokeAccount(tx: SqlExecutor, adminId: string): Promise<void> {
   await tx.query(
+    'UPDATE credential_grants SET revoked_at=clock_timestamp() WHERE admin_id=$1 AND revoked_at IS NULL',
+    [adminId],
+  );
+  await tx.query(
     'UPDATE sessions SET revoked_at=clock_timestamp() WHERE admin_id=$1 AND revoked_at IS NULL',
     [adminId],
   );

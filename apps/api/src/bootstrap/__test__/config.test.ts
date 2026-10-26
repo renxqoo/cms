@@ -1,6 +1,12 @@
 import { expect, it } from 'vitest';
 import { loadConfig, loadDatabaseConfig, loadMigrationDatabaseConfig } from '../load-config.ts';
 
+const oauthProduction = {
+  CMS_API_ORIGIN: 'https://api.example.test',
+  CMS_MCP_RESOURCE: 'https://mcp.example.test/mcp',
+  CMS_MCP_BRIDGE_SECRET: 'independent-mcp-bridge-secret-with-32-characters',
+};
+
 const base = {
   DATABASE_URL: 'postgresql:///postgres?host=/tmp',
   CMS_RATE_LIMIT_SECRET: 'an-independent-test-secret-with-32-characters',
@@ -22,6 +28,7 @@ it('validates production transport and parses origins, SMTP credentials and port
     loadConfig({
       ...base,
       NODE_ENV: 'production',
+      ...oauthProduction,
       CMS_FRONTEND_URL: 'https://cms.example.test',
       API_ALLOWED_ORIGINS: 'http://cms.example.test',
     }),
@@ -30,6 +37,7 @@ it('validates production transport and parses origins, SMTP credentials and port
     ...base,
     DATABASE_URL: 'postgresql://cms@database.example.test/cms?sslmode=verify-full',
     NODE_ENV: 'production',
+    ...oauthProduction,
     CMS_STORAGE_DRIVER: 's3',
     CMS_S3_BUCKET: 'cms-test-private',
     CMS_S3_REGION: 'ap-southeast-1',
@@ -62,6 +70,7 @@ it('rejects production database URLs that do not require certificate and hostnam
         ...base,
         DATABASE_URL: url,
         NODE_ENV: 'production',
+        ...oauthProduction,
         CMS_FRONTEND_URL: 'https://cms.example.test',
       }),
     ).toThrow('Verified PostgreSQL TLS');
@@ -72,6 +81,7 @@ it('rejects duplicate sslmode parameters before the driver can override the veri
   const env = {
     ...base,
     NODE_ENV: 'production',
+    ...oauthProduction,
     CMS_FRONTEND_URL: 'https://cms.example.test',
     DATABASE_URL: 'postgresql://cms@database.example.test/cms?sslmode=verify-full&sslmode=disable',
   };
@@ -85,6 +95,7 @@ it('requires a separate explicit migration connection in production and keeps de
   expect(
     loadMigrationDatabaseConfig({
       NODE_ENV: 'production',
+      ...oauthProduction,
       CMS_MIGRATION_DATABASE_URL: migration,
       DATABASE_SCHEMA: 'cms',
     }),
@@ -92,12 +103,14 @@ it('requires a separate explicit migration connection in production and keeps de
   expect(() =>
     loadMigrationDatabaseConfig({
       NODE_ENV: 'production',
+      ...oauthProduction,
       DATABASE_URL: migration,
     }),
   ).toThrow('CMS_MIGRATION_DATABASE_URL');
   expect(() =>
     loadMigrationDatabaseConfig({
       NODE_ENV: 'production',
+      ...oauthProduction,
       CMS_MIGRATION_DATABASE_URL: 'postgresql://owner@db.example.test/cms',
     }),
   ).toThrow('Verified PostgreSQL TLS');
@@ -148,9 +161,39 @@ it('uses one canonical client origin and rejects insecure or credential-bearing 
     NODE_ENV: 'production',
     CMS_FRONTEND_URL: 'https://cms.example.test',
     DATABASE_URL: 'postgresql://cms@database.example.test/cms?sslmode=verify-full',
+    ...oauthProduction,
   };
   expect(() => loadConfig(production)).toThrow('ONEASTER_CLIENT_ORIGIN');
   expect(() =>
     loadConfig({ ...production, ONEASTER_CLIENT_ORIGIN: 'http://localhost:9090' }),
   ).toThrow('ONEASTER_CLIENT_ORIGIN');
+});
+
+it.each([
+  { CMS_API_ORIGIN: 'https://api.example.test/path' },
+  { CMS_API_ORIGIN: 'https://user:secret@api.example.test' },
+  { CMS_API_ORIGIN: 'https://api.example.test?query=value' },
+  { CMS_MCP_RESOURCE: 'https://mcp.example.test/other' },
+  { CMS_MCP_RESOURCE: 'https://mcp.example.test/mcp#fragment' },
+])('rejects noncanonical issuer and resource configuration %j', (value) => {
+  expect(() => loadConfig({ ...base, ...value })).toThrow('Invalid OAuth issuer or MCP resource');
+});
+
+it('requires HTTPS API/MCP resources and an independent bridge secret in production', () => {
+  const production = {
+    ...base,
+    ...oauthProduction,
+    NODE_ENV: 'production',
+    CMS_FRONTEND_URL: 'https://cms.example.test',
+    DATABASE_URL: 'postgresql://cms@db.example.test/cms?sslmode=verify-full',
+    ONEASTER_CLIENT_ORIGIN: 'https://client.example.test',
+  };
+  for (const bad of [
+    { CMS_API_ORIGIN: 'http://127.0.0.1:3001' },
+    { CMS_MCP_RESOURCE: 'http://127.0.0.1:3002/mcp' },
+    { CMS_MCP_BRIDGE_SECRET: base.CMS_RATE_LIMIT_SECRET },
+  ])
+    expect(() => loadConfig({ ...production, ...bad })).toThrow(
+      'Public HTTPS OAuth resources and an independent MCP bridge secret',
+    );
 });

@@ -41,6 +41,7 @@ export const contentJobs = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     finishedAt: timestamp('finished_at', { withTimezone: true }),
+    delegationId: uuid('delegation_id'),
   },
   (t) => [
     foreignKey({
@@ -53,6 +54,9 @@ export const contentJobs = pgTable(
     }).onDelete('restrict'),
     index('content_jobs_due_idx').on(t.status, t.executeAt, t.leaseUntil, t.id),
     index('content_jobs_document_idx').on(t.documentId, t.status),
+    index('content_jobs_delegation_idx')
+      .on(t.delegationId)
+      .where(sql`${t.delegationId} IS NOT NULL`),
     check(
       'content_job_revision_check',
       sql`${t.expectedRevision} IS NULL OR ${t.expectedRevision}>0`,

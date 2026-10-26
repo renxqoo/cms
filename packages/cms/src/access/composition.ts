@@ -13,6 +13,7 @@ import { createCatalog, operationRegistry } from './catalog.ts';
 import { accessInputSchemas } from './input-schemas.ts';
 import { createInitializer } from './initialize.ts';
 import { createRecoveryApi } from './recovery/api.ts';
+import { createCredentialsApi } from './credentials.ts';
 import type { AccessOptions, AccessRuntime, InitialCollectionPermission } from './types.ts';
 
 export function createAccessCatalog(
@@ -57,6 +58,7 @@ export function createAccess(options: AccessOptions) {
   };
   return {
     api: {
+      ...createCredentialsApi(runtime),
       ...createAdminApi(runtime),
       ...createRoleApi(runtime),
       ...createPermissionApi(runtime),

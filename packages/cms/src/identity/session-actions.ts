@@ -6,7 +6,8 @@ import { issueSession, revokeSession } from './adapters/postgres/sessions.ts';
 import { admitLogin } from './admission.ts';
 import { assertRunning, databaseWork, secure } from './runtime.ts';
 import type { IdentityDependencies } from './runtime.ts';
-import { checkedToken, identityInputSchemas, loginSchema, parseInput } from './validation.ts';
+import { identityInputSchemas, loginSchema, parseInput } from './validation.ts';
+import { bearerSchema } from './delegations/validation.ts';
 
 export async function login(deps: IdentityDependencies, ctx: RequestContext, value: unknown) {
   const input = parseInput(loginSchema, value);
@@ -52,9 +53,15 @@ export async function logout(
   value?: unknown,
 ): Promise<void> {
   parseInput(identityInputSchemas['identity.logout'], value === undefined ? {} : value);
-  const token = checkedToken(ctx.token);
+  const parsed = bearerSchema.safeParse(ctx.token);
+  if (!parsed.success) fail('unauthenticated');
+  const token = parsed.data;
   await secure(deps, ctx, async (tx) => {
-    const { adminId, changed, authenticated } = await revokeSession(tx, token);
+    const { adminId, changed, authenticated } = await revokeSession(tx, {
+      token,
+      ctx,
+      policy: deps.policy,
+    });
     if (authenticated) ctx.onAuthenticated?.(adminId);
     if (!changed) return;
     await appendAudit(

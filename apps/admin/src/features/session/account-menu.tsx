@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOutIcon, ShieldCheckIcon, UserRoundIcon } from 'lucide-react';
+import { KeyRoundIcon, LogOutIcon, ShieldCheckIcon, UserRoundIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import {
   Menu,
@@ -55,6 +55,10 @@ export function AccountMenu({
         <MenuItem render={<AppLink href={getAdminRoute('account').path} prefetch={false} />}>
           <UserRoundIcon />
           {managementMessages[locale].account}
+        </MenuItem>
+        <MenuItem render={<AppLink href={getAdminRoute('credentials').path} prefetch={false} />}>
+          <KeyRoundIcon />
+          {getAdminRoute('credentials').label[locale]}
         </MenuItem>
         {canRecover ? (
           <MenuItem render={<AppLink href={getAdminRoute('recovery').path} prefetch={false} />}>

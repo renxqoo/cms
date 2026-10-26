@@ -173,7 +173,7 @@ async function requireCopyPrerequisites(
   runtime: ContentRuntime,
 ): Promise<void> {
   await runtime.authorizeActor(context.state.tx, {
-    actorId: context.state.actor.id,
+    actor: actorReference(context.state.actor),
     operationId: 'documents.create',
     scope: { scopeKind: 'collection', collectionKey: context.state.collection.key },
   });
@@ -266,3 +266,4 @@ export async function requireActionPrerequisites(
   }
   await required;
 }
+import { actorReference } from '@new-cms/cms/access';

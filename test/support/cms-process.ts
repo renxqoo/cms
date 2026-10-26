@@ -9,8 +9,10 @@ import { runCommand, startProcess } from './process.ts';
 import { nodeExecutable } from './node-runtime.ts';
 import { cleanupAll } from './cleanup.ts';
 import type { ApiClient, ApiOptions } from './cms-api.ts';
+import { availablePort } from './tcp-port.ts';
 
 export interface CmsProcessOptions {
+  environment?: NodeJS.ProcessEnv;
   frontendUrl?: string;
   navigationPaths?: readonly string[];
   navigationIcons?: readonly string[];
@@ -43,7 +45,11 @@ export async function createCmsProcess(mode: 'bun' | 'node', options: CmsProcess
   try {
     smtp = await createTestSmtp();
     storage = await mkdtemp(join(tmpdir(), 'cms-network-assets-'));
-    const { binary, folder, extension, env } = settings(mode, { store, smtp, storage }, options);
+    const { binary, folder, extension, env } = await processSettings(
+      mode,
+      { store, smtp, storage },
+      options,
+    );
     processes = processControls({ binary, folder, extension, env });
     initializeProcesses(
       { binary, folder, extension, env },
@@ -56,6 +62,22 @@ export async function createCmsProcess(mode: 'bun' | 'node', options: CmsProcess
     await close();
     throw error;
   }
+}
+
+async function processSettings(
+  mode: 'bun' | 'node',
+  input: Parameters<typeof settings>[1],
+  options: CmsProcessOptions,
+) {
+  const port = await availablePort();
+  return settings(mode, input, {
+    ...options,
+    environment: {
+      ...options.environment,
+      API_PORT: String(port),
+      CMS_API_ORIGIN: `http://127.0.0.1:${port}`,
+    },
+  });
 }
 
 type RunningServer = Awaited<ReturnType<typeof startProcess>>;
@@ -128,6 +150,7 @@ function settings(
     ...(options.frontendUrl ? { CMS_FRONTEND_URL: options.frontendUrl } : {}),
     ...(options.navigationPaths ? { CMS_NAVIGATION_PATHS: options.navigationPaths.join(',') } : {}),
     ...(options.navigationIcons ? { CMS_NAVIGATION_ICONS: options.navigationIcons.join(',') } : {}),
+    ...options.environment,
   };
   return { binary, folder, extension, env };
 }
@@ -181,7 +204,10 @@ function processControls(config: ReturnType<typeof settings>) {
         await start();
       },
       async startPeer() {
-        const peer = await startProcess(binary, `${folder}/main.${extension}`, env);
+        const peer = await startProcess(binary, `${folder}/main.${extension}`, {
+          ...env,
+          API_PORT: '0',
+        });
         peers.add(peer);
         return {
           port: peer.port,

@@ -9,6 +9,32 @@ interface Declaration {
 }
 
 const declarations: Declaration[] = [
+  { id: 'credentials.list', method: 'GET', path: '/me/credentials', access: 'authenticated' },
+  { id: 'credentials.createKey', method: 'POST', path: '/me/api-keys', access: 'authenticated' },
+  {
+    id: 'credentials.revoke',
+    method: 'DELETE',
+    path: '/me/credentials/:id',
+    access: 'authenticated',
+  },
+  {
+    id: 'credentials.revokeClient',
+    method: 'POST',
+    path: '/me/oauth-clients/:clientId/revocations',
+    access: 'authenticated',
+  },
+  {
+    id: 'credentials.getAuthorization',
+    method: 'GET',
+    path: '/oauth/requests/:requestId',
+    access: 'authenticated',
+  },
+  {
+    id: 'credentials.decideAuthorization',
+    method: 'POST',
+    path: '/oauth/requests/:requestId/decisions',
+    access: 'authenticated',
+  },
   {
     id: 'admins.list',
     method: 'GET',
@@ -109,6 +135,7 @@ export const accessOperations: readonly OperationDefinition[] = declarations.map
   module: 'access',
   scopeKind: 'global',
   bindingConfigurable: declaration.access === 'permission',
+  ...(declaration.id === 'credentials.createKey' ? { successStatus: 201 as const } : {}),
   ...(declaration.method === 'POST' && declaration.access === 'security'
     ? { idempotency: 'required' as const, successStatus: 201 as const }
     : {}),

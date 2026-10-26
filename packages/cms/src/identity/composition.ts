@@ -6,8 +6,11 @@ import { requestReset } from './reset-requests.ts';
 import { login, logout } from './session-actions.ts';
 import type { IdentityDependencies } from './runtime.ts';
 import type { IdentityApi } from './types.ts';
+import { createOAuth } from './delegations/oauth.ts';
+import type { OAuthConfiguration } from './delegations/types.ts';
 
 export type { IdentityDependencies } from './runtime.ts';
+export type { OAuthConfiguration } from './delegations/types.ts';
 export type {
   Account,
   AccountPage,
@@ -41,6 +44,7 @@ export function createIdentity(deps: IdentityDependencies) {
   }
   return {
     api,
+    oauth: (configuration: OAuthConfiguration) => createOAuth(deps, configuration),
     participants,
     maintenance: () => maintainIdentity(deps.database, deps.policy),
     close,

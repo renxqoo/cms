@@ -140,8 +140,8 @@ it('documents all registered business operations and protects production API des
   const ids = Object.values(document.paths).flatMap((methods) =>
     Object.values(methods).map((operation) => operation.operationId),
   );
-  expect(ids).toHaveLength(93);
-  expect(new Set(ids).size).toBe(93);
+  expect(ids).toHaveLength(99);
+  expect(new Set(ids).size).toBe(99);
   expect(ids).toContain('identity.resetPassword');
   expect(ids).toContain('endpoints.updateBinding');
   expect(ids).toContain('documents.publish');

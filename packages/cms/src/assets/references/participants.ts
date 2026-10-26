@@ -4,10 +4,10 @@ import type { SqlExecutor } from '@new-cms/database/client';
 import { authorizedManifestBrand } from '../types.ts';
 import type {
   AssetsParticipants,
+  AssetsOptions,
   AuthorizedManifest,
   BindAssetInput,
   UploadRow,
-  AssetsOptions,
 } from '../types.ts';
 import { createBindingDownloader } from '../manifests/binding-download.ts';
 import { lockManifest, readManifest, readManifests } from '../manifests/read-manifest.ts';
@@ -78,7 +78,7 @@ export function createParticipants(
       );
       return result.rowCount !== 0;
     },
-    bind: (tx, input) => bind(tx, { input, grants }),
+    bind: (tx, input) => bind(tx, { input, grants, runtime }),
     releaseRevision: (tx, input) =>
       releaseReferences(tx, { revisionId: input.revisionId, retentionMs }),
     async resolveRevisionMedia(tx, input) {
@@ -135,7 +135,11 @@ async function listRevisionBindings(tx: SqlExecutor, input: { revisionIds: reado
   });
 }
 
-async function bindingTarget(tx: SqlExecutor, input: BindAssetInput) {
+async function bindingTarget(
+  tx: SqlExecutor,
+  state: { input: BindAssetInput; runtime: Pick<AssetsOptions, 'authorizeActor'> },
+) {
+  const { input, runtime } = state;
   if (!input.uploadId) fail('invalid_input');
   const result = await tx.query<UploadRow>(
     'SELECT *,expires_at>clock_timestamp() AS is_active,lease_until>clock_timestamp() AS lease_active FROM asset_uploads WHERE id=$1 FOR UPDATE',
@@ -143,6 +147,12 @@ async function bindingTarget(tx: SqlExecutor, input: BindAssetInput) {
   );
   const [row] = result.rows;
   validateUpload(row, input);
+  if (row.delegation_id !== null)
+    await runtime.authorizeActor(tx, {
+      actor: { id: row.actor_id, delegationId: row.delegation_id },
+      operationId: input.operationId,
+      scope: { scopeKind: 'collection', collectionKey: input.collectionKey },
+    });
   if (!row.manifest_id) fail('invalid_input');
   await tx.query(
     "UPDATE asset_uploads SET status='consumed',bound_document_id=$2,bound_revision_id=$3 WHERE id=$1",
@@ -157,13 +167,17 @@ async function bindingTarget(tx: SqlExecutor, input: BindAssetInput) {
 
 async function bind(
   tx: SqlExecutor,
-  state: { input: BindAssetInput; grants: WeakMap<AuthorizedManifest, SqlExecutor> },
+  state: {
+    input: BindAssetInput;
+    grants: WeakMap<AuthorizedManifest, SqlExecutor>;
+    runtime: Pick<AssetsOptions, 'authorizeActor'>;
+  },
 ) {
   const { input, grants } = state;
   if (Boolean(input.uploadId) === Boolean(input.authorizedManifest)) fail('invalid_input');
   const grant = input.authorizedManifest;
   if (grant && grants.get(grant) !== tx) fail('forbidden');
-  const target = grant ?? (await bindingTarget(tx, input));
+  const target = grant ?? (await bindingTarget(tx, { input, runtime: state.runtime }));
   const mediaDocumentId = input.sourcePath === '$file' ? input.documentId : target.mediaDocumentId;
   const mediaCollectionKey =
     input.sourcePath === '$file' ? input.collectionKey : target.mediaCollectionKey;

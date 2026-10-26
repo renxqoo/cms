@@ -6,6 +6,7 @@ import type {
 } from '@new-cms/cms/platform/contracts';
 import type { accessInputSchemas } from './input-schemas.ts';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
+import type { CredentialGrant } from '@new-cms/cms/identity';
 
 export interface Resource {
   id: string;
@@ -89,6 +90,7 @@ export interface AdminDetail extends Admin {
 
 export interface Principal extends Admin {
   role: Role;
+  delegation?: { id: string; grants: CredentialGrant[] };
 }
 
 export interface AccessOptions {
