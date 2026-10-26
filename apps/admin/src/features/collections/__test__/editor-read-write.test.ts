@@ -3,6 +3,7 @@ import { requestApi } from '../../../api/client';
 import { failure } from '../../../api/result';
 import { matchingEditor, readEditor, readArchivedDocument } from '../editor-read';
 import { writeEditor } from '../editor-write';
+import { collectionEditorSchema } from '../../../contracts/editor';
 import type { EditorWrite } from '../editor-controller';
 import {
   catalog,
@@ -21,6 +22,16 @@ const request = vi.mocked(requestApi);
 const target = { collection: 'articles', id: documentId, locale: 'en', intent: 'update' } as const;
 beforeEach(() => {
   request.mockReset();
+});
+it('accepts native dynamic-language publication metadata without dropping its selected-language field', () => {
+  const base = editor();
+  const parsed = collectionEditorSchema.parse({
+    ...base,
+    publicationLocalesField: 'contentLocales',
+    locales: { ...base.locales, enabled: ['en'] },
+  });
+  expect(parsed.publicationLocalesField).toBe('contentLocales');
+  expect(parsed.locales.enabled).toEqual(['en']);
 });
 
 it('pairs catalog, safe write metadata, and no-fallback depth-zero document reads', async () => {

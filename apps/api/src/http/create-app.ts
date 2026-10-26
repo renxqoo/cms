@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { secureHeaders } from 'hono/secure-headers';
+import { responseSecurityHeaders } from './security-headers.ts';
 import { CmsError } from '@new-cms/cms/platform/contracts';
 import type { AccessApi, AccessCheck } from '@new-cms/cms/access';
 import type { IdentityApi } from '@new-cms/cms/identity';
@@ -91,7 +91,10 @@ function registerInfrastructure(app: Hono<HttpEnvironment>, deps: HttpDependenci
   app.options('*', (c) => {
     if (!c.req.header('origin')) throw new CmsError('invalid_input');
     c.header('access-control-allow-methods', 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS');
-    c.header('access-control-allow-headers', 'Authorization,Content-Type,Idempotency-Key');
+    c.header(
+      'access-control-allow-headers',
+      'Authorization,Content-Type,Idempotency-Key,If-None-Match,If-Range,Range',
+    );
     c.header('access-control-max-age', '600');
     return c.body(null, 204);
   });
@@ -99,7 +102,7 @@ function registerInfrastructure(app: Hono<HttpEnvironment>, deps: HttpDependenci
 
 export function createApp(deps: HttpDependencies, config: ApplicationConfig['http']) {
   const app = new Hono<HttpEnvironment>();
-  app.use('*', secureHeaders());
+  app.use('*', responseSecurityHeaders());
   app.use('*', requestLifecycle(config, deps, deps.operations));
   app.onError((error, c) => errorResponse(error, c.get('requestId')));
   app.notFound((c) => errorResponse(new CmsError('not_found'), c.get('requestId')));

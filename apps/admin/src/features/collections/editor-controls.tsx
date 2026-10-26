@@ -26,6 +26,8 @@ import { PublicationSchedule } from './schedule';
 import { DocumentHistory } from './history';
 import { StatusCell } from '@new-cms/ui/data';
 import { documentStatus } from './document-status';
+import { DefaultLanguageControl } from './languages/default-language';
+import { ContentPreviewControl } from './preview/content-preview';
 
 function editorStatus(model: ContentEditorModel) {
   if (model.busy) return model.t.saving;
@@ -219,6 +221,36 @@ function DocumentActions(props: DocumentActionProps) {
   } = model;
   return (
     <>
+      {snapshot?.document ? (
+        <ContentPreviewControl
+          key={`${snapshot.document.id}:${snapshot.document.revision}:${snapshot.editor.locale}`}
+          target={{
+            collection: snapshot.collection.key,
+            id: snapshot.document.id,
+            revision: snapshot.document.revision,
+            locale: snapshot.editor.locale,
+          }}
+          disabled={busy || dirty || invalid}
+          permitted={model.canPreview}
+          canRevoke={model.canRevokePreview}
+          t={t}
+          report={model.reportResult}
+        />
+      ) : null}
+      {snapshot?.document ? (
+        <DefaultLanguageControl
+          key={`${snapshot.document.id}:${snapshot.document.revision}`}
+          document={snapshot.document}
+          permitted={model.canSetDefaultLanguage}
+          disabled={busy || dirty || invalid}
+          onChanged={() => {
+            void controller.reload();
+          }}
+          onBusy={controller.setExternalBusy}
+          report={model.reportResult}
+          t={t}
+        />
+      ) : null}
       {allowed('documents.publish') ? (
         <Button
           variant="outline"

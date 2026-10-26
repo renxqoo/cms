@@ -1,3 +1,4 @@
+import type { SqlExecutor } from '@new-cms/database/client';
 import { requireWritableSchema } from './schema-state.ts';
 import { backfillSchema, activateSchema } from './schema-backfill.ts';
 import { queryCollections } from './query-collections.ts';
@@ -20,34 +21,48 @@ import { syncActiveUnique } from './unique-reservations.ts';
 export function createContentStore(options: {
   mapping: ContentMapping;
   limits: ContentLimits;
+  mappingFor?(tx: SqlExecutor): Promise<ContentMapping>;
 }): ContentStore {
+  async function scoped(tx: SqlExecutor) {
+    return {
+      ...options,
+      mapping: options.mappingFor ? await options.mappingFor(tx) : options.mapping,
+    };
+  }
   return {
     ...createHistoryStore(options),
     definition: (collection, schemaVersion) =>
       options.mapping.get(collection, schemaVersion).definition,
-    readDocument: (tx, input) => readDocument(tx, { ...options, ...input }),
+    readDocument: async (tx, input) => readDocument(tx, { ...(await scoped(tx)), ...input }),
     lockDocuments,
-    queryCollections: (tx, input) => queryCollections(tx, { ...options, ...input }),
-    readRevisionDataBatch: (tx, input) => readRevisionDataBatch(tx, { ...options, ...input }),
+    queryCollections: async (tx, input) =>
+      queryCollections(tx, { ...(await scoped(tx)), ...input }),
+    readRevisionDataBatch: async (tx, input) =>
+      readRevisionDataBatch(tx, { ...(await scoped(tx)), ...input }),
     async insertDocument(tx, input) {
-      await requireWritableSchema(tx, { ...options, ...input });
-      return insertDocument(tx, { ...options, ...input });
+      const current = await scoped(tx);
+      await requireWritableSchema(tx, { ...current, ...input });
+      return insertDocument(tx, { ...current, ...input });
     },
     async insertRevision(tx, input) {
-      await requireWritableSchema(tx, { ...options, ...input });
-      const revision = await insertRevision(tx, { ...options, ...input });
-      await writeIndexProjections(tx, { ...options, ...input, versionId: input.id });
+      const current = await scoped(tx);
+      await requireWritableSchema(tx, { ...current, ...input });
+      const revision = await insertRevision(tx, { ...current, ...input });
+      await writeIndexProjections(tx, { ...current, ...input, versionId: input.id });
       return revision;
     },
-    readRevisionData: (tx, input) => readRevisionData(tx, { ...options, ...input }),
-    readRevision: (tx, input) => readRevision(tx, { ...options, ...input }),
+    readRevisionData: async (tx, input) =>
+      readRevisionData(tx, { ...(await scoped(tx)), ...input }),
+    readRevision: async (tx, input) => readRevision(tx, { ...(await scoped(tx)), ...input }),
     async updateDocumentPointers(tx, input) {
-      await requireWritableSchema(tx, { ...options, ...input });
-      return updateDocumentPointers(tx, { ...options, ...input });
+      const current = await scoped(tx);
+      await requireWritableSchema(tx, { ...current, ...input });
+      return updateDocumentPointers(tx, { ...current, ...input });
     },
-    queryDocuments: (tx, input) => queryDocuments(tx, { ...options, ...input }),
-    backfillSchema: (tx, input) => backfillSchema(tx, { ...options, ...input }),
-    activateSchema: (tx) => activateSchema(tx, options),
-    syncActiveUnique: (tx, input) => syncActiveUnique(tx, { ...options, ...input }),
+    queryDocuments: async (tx, input) => queryDocuments(tx, { ...(await scoped(tx)), ...input }),
+    backfillSchema: async (tx, input) => backfillSchema(tx, { ...(await scoped(tx)), ...input }),
+    activateSchema: async (tx) => activateSchema(tx, await scoped(tx)),
+    syncActiveUnique: async (tx, input) =>
+      syncActiveUnique(tx, { ...(await scoped(tx)), ...input }),
   };
 }

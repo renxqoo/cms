@@ -9,7 +9,12 @@ import type {
   AssetsParticipants,
   ContentAuthorizer,
 } from '@new-cms/cms/assets/composition';
-import type { ContentLimits, ContentRegistry, DocumentData } from './definition.ts';
+import type {
+  ContentLimits,
+  ContentRegistry,
+  DocumentData,
+  ContentLocaleSource,
+} from './definition.ts';
 import type { ContentMapping, DocumentView, RelationScope } from './model.ts';
 import type { ContentStore } from './adapters/postgres/store-contract.ts';
 import type { CollectionDefinition, Where } from './definition.ts';
@@ -35,6 +40,17 @@ export interface ContentOptions {
   workPolicy: ContentWorkPolicy;
   registry: ContentRegistry;
   mapping: ContentMapping;
+  resolveLocaleSource?(source: string, tx: SqlExecutor): Promise<ContentLocaleSource>;
+  validateAfterMutation?(
+    tx: SqlExecutor,
+    input: { collection: string; operationId: string },
+  ): Promise<void>;
+  validatePublication?(input: {
+    collection: string;
+    locale: string;
+    data: DocumentData;
+    media: readonly { sourcePath: string; mimeType: string }[];
+  }): boolean;
   authorize: AccessAuthorization;
   authorizeActor(
     tx: SqlExecutor,
@@ -73,6 +89,7 @@ export interface ContentOptions {
 
 export interface ContentRuntime extends ContentOptions {
   store: ContentStore;
+  resolveCollection(tx: SqlExecutor, key: string): Promise<CollectionDefinition>;
   schemas: ReturnType<typeof contentInputSchemas>;
   resolveRelationScopes(state: ContentState): Promise<{ relationScopes: RelationScope[] }>;
 }

@@ -1,12 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { createDatabase } from '@new-cms/database/client';
 import { migrate } from '@new-cms/database/migrate';
+import { createLibraryMigrationDirectory } from './library-migrations.ts';
 
 export interface TestDatabaseOptions {
   connectionString?: string;
   lockTimeoutMs?: number;
   maxConnections?: number;
   migrationDirectory?: string;
+  migrationScope?: 'full' | 'library';
 }
 
 export function testDatabaseConnectionString(): string {
@@ -25,26 +27,35 @@ export async function createTestDatabase(options: TestDatabaseOptions = {}) {
     statementTimeoutMs: 5000,
     connectionTimeoutMs: 2000,
   });
+  let library: Awaited<ReturnType<typeof createLibraryMigrationDirectory>> | undefined;
+  let closing: Promise<void> | undefined;
+  function close() {
+    closing ??= (async () => {
+      try {
+        await database.close();
+      } finally {
+        try {
+          await control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+        } finally {
+          try {
+            await control.close();
+          } finally {
+            await library?.close();
+          }
+        }
+      }
+    })();
+    return closing;
+  }
   try {
+    if (options.migrationScope === 'library')
+      library = await createLibraryMigrationDirectory(options.migrationDirectory);
+    const directory = library?.directory ?? options.migrationDirectory;
     await control.query(`CREATE SCHEMA ${schema}`);
-    await migrate(
-      database,
-      options.migrationDirectory === undefined ? {} : { directory: options.migrationDirectory },
-    );
+    await migrate(database, directory === undefined ? {} : { directory });
   } catch (error) {
-    await database.close();
-    await control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
-    await control.close();
+    await close();
     throw error;
   }
-  return {
-    database,
-    schema,
-    connectionString,
-    close: async () => {
-      await database.close();
-      await control.query(`DROP SCHEMA ${schema} CASCADE`);
-      await control.close();
-    },
-  };
+  return { database, schema, connectionString, close };
 }

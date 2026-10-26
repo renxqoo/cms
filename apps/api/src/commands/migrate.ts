@@ -1,7 +1,10 @@
 import { createDatabase } from '@new-cms/database/client';
 import { migrate } from '@new-cms/database/migrate';
 import { createAccessCatalog } from '@new-cms/cms/access/composition';
-import { createPublicationMigrator } from '@new-cms/cms/content/composition';
+import {
+  createPublicationMigrator,
+  createContentLocaleResolver,
+} from '@new-cms/cms/content/composition';
 import { contentConfiguration } from '../bootstrap/create-content.ts';
 import { contentWorkPolicy } from '../config/content-policy.ts';
 import { loadContentMigrationConfig } from '../bootstrap/load-config.ts';
@@ -23,6 +26,7 @@ async function main(): Promise<void> {
     const publicationMigrator = createPublicationMigrator({
       database,
       registry: content.registry,
+      resolveLocaleSource: createContentLocaleResolver(content),
       policy: config.policy,
       resourceLockKey: contentWorkPolicy().resourceLockKey,
       maxPageSize: content.limits.maxPageSize,

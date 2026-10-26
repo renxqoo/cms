@@ -10,6 +10,7 @@ export interface HttpEnvironment {
     signal: AbortSignal;
     ip: string;
     streaming?: boolean;
+    traffic: 'administration' | 'public-content';
     actorId?: string;
   };
 }

@@ -131,6 +131,8 @@ export function FieldNode({
   const readOnly =
     inheritedReadOnly || field.readOnly === true || node.write === 'denied' || node.type === 'join';
   const props = { node, location, readOnly };
+  const control = field.renderControl?.(props);
+  if (control !== undefined) return control;
   if (['group', 'row', 'collapsible'].includes(node.type))
     return <ContainerField {...props} renderChildren={renderChildren} />;
   if (node.type === 'tabs') return <TabsField {...props} renderChildren={renderChildren} />;

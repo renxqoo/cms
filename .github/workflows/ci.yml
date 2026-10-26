@@ -30,6 +30,24 @@ jobs:
           --health-timeout 5s
           --health-retries 12
     steps:
+      - name: Configure PostgreSQL migration lock capacity
+        env:
+          CMS_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker exec "$CMS_POSTGRES_CONTAINER" psql -U postgres -d cms_test -v ON_ERROR_STOP=1 -c 'ALTER SYSTEM SET max_locks_per_transaction = 1024' -c "ALTER SYSTEM SET max_wal_size = '4GB'" -c "ALTER SYSTEM SET checkpoint_timeout = '30min'"
+          docker restart "$CMS_POSTGRES_CONTAINER"
+          for attempt in $(seq 1 60); do
+            if docker exec "$CMS_POSTGRES_CONTAINER" pg_isready -U postgres -d cms_test; then
+              break
+            fi
+            sleep 1
+          done
+          test "$(docker exec "$CMS_POSTGRES_CONTAINER" psql -U postgres -d cms_test -At -v ON_ERROR_STOP=1 -c 'SHOW max_locks_per_transaction')" = '1024'
+          test "$(docker exec "$CMS_POSTGRES_CONTAINER" psql -U postgres -d cms_test -At -v ON_ERROR_STOP=1 -c 'SHOW max_wal_size')" = '4GB'
+          test "$(docker exec "$CMS_POSTGRES_CONTAINER" psql -U postgres -d cms_test -At -v ON_ERROR_STOP=1 -c 'SHOW checkpoint_timeout')" = '30min'
+          test "$(docker exec "$CMS_POSTGRES_CONTAINER" psql -U postgres -d cms_test -At -v ON_ERROR_STOP=1 -c 'SHOW fsync')" = 'on'
+          test "$(docker exec "$CMS_POSTGRES_CONTAINER" psql -U postgres -d cms_test -At -v ON_ERROR_STOP=1 -c 'SHOW full_page_writes')" = 'on'
+          test "$(docker exec "$CMS_POSTGRES_CONTAINER" psql -U postgres -d cms_test -At -v ON_ERROR_STOP=1 -c 'SHOW synchronous_commit')" = 'on'
       - name: Check out source with checkout v7.0.1
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:

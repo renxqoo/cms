@@ -35,7 +35,7 @@ export function dataFingerprint(definition: CollectionDefinition): string {
     schemaVersion: definition.schemaVersion,
     mode: definition.mode,
     upload: definition.upload !== undefined,
-    locales: definition.locales,
+    locales: definition.localeSource ? { source: definition.localeSource } : definition.locales,
     fields: fieldsFingerprint(definition.fields),
     indexes: definition.indexes ?? [],
     search: definition.search ?? [],

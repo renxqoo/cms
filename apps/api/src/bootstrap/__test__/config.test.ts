@@ -33,6 +33,7 @@ it('validates production transport and parses origins, SMTP credentials and port
     CMS_STORAGE_DRIVER: 's3',
     CMS_S3_BUCKET: 'cms-test-private',
     CMS_S3_REGION: 'ap-southeast-1',
+    ONEASTER_CLIENT_ORIGIN: 'https://client.example.test',
     API_PORT: '0',
     SMTP_SECURE: 'false',
     SMTP_HOST: 'mail.example.test',
@@ -45,6 +46,7 @@ it('validates production transport and parses origins, SMTP credentials and port
   expect(result.http.allowedOrigins).toEqual([
     'https://cms.example.test',
     'https://other.example.test',
+    'https://client.example.test',
   ]);
   expect(result.smtp.requireTLS).toBe(true);
   expect(result.smtp.user).toBe('cms');
@@ -125,4 +127,30 @@ it.each([
   { CMS_NAVIGATION_ICONS: '<script>' },
 ])('rejects noncanonical or duplicate navigation configuration %j', (configuration) => {
   expect(() => loadConfig({ ...base, ...configuration })).toThrow('CMS_NAVIGATION');
+});
+
+it('uses one canonical client origin and rejects insecure or credential-bearing preview destinations', () => {
+  expect(loadConfig(base).delivery.clientOrigin).toBe('http://localhost:9090');
+  for (const origin of [
+    'https://client.example.test/path',
+    'https://user:secret@client.example.test',
+    'https://client.example.test?token=x',
+    'https://client.example.test#token',
+    'http://remote.example.test',
+    'https://client.example.test/',
+  ]) {
+    expect(() => loadConfig({ ...base, ONEASTER_CLIENT_ORIGIN: origin })).toThrow(
+      'ONEASTER_CLIENT_ORIGIN',
+    );
+  }
+  const production = {
+    ...base,
+    NODE_ENV: 'production',
+    CMS_FRONTEND_URL: 'https://cms.example.test',
+    DATABASE_URL: 'postgresql://cms@database.example.test/cms?sslmode=verify-full',
+  };
+  expect(() => loadConfig(production)).toThrow('ONEASTER_CLIENT_ORIGIN');
+  expect(() =>
+    loadConfig({ ...production, ONEASTER_CLIENT_ORIGIN: 'http://localhost:9090' }),
+  ).toThrow('ONEASTER_CLIENT_ORIGIN');
 });

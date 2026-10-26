@@ -24,7 +24,7 @@ export function testPasswords(): PasswordHasher {
 export async function fixture(
   options: { policy?: Partial<CmsPolicy>; mailer?: Mailer; passwords?: PasswordHasher } = {},
 ) {
-  const world = await createTestDatabase();
+  const world = await createTestDatabase({ migrationScope: 'library' });
   const policy = createTestPolicy({
     loginIpLimit: 1000,
     loginEmailIpLimit: 1000,

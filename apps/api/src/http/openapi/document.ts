@@ -10,7 +10,7 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
   if (operation.id === 'access.readRecovery') return recoveryOperationInput(schema);
   const input = z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' });
   const properties = inputProperties(input);
-  const parameters: unknown[] = [];
+  const parameters: unknown[] = conditionalHeaders(operation);
   if (operation.idempotency === 'required') {
     parameters.push({
       name: 'Idempotency-Key',
@@ -25,7 +25,7 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
     parameters.push({
       name,
       in: pathParameter ? 'path' : 'query',
-      ...(!pathParameter && ['where', 'sort', 'select', 'fallback'].includes(name)
+      ...(jsonQuery(operation, name, pathParameter)
         ? {
             content: {
               'application/json': {
@@ -47,6 +47,7 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
 }
 
 function requestBodyFor(operation: OperationDefinition, input: InputSchema) {
+  if (operation.id === 'previewContent.revoke') return {};
   if (operation.id === 'assets.writeUpload')
     return {
       requestBody: {
@@ -56,7 +57,7 @@ function requestBodyFor(operation: OperationDefinition, input: InputSchema) {
     };
   return {
     requestBody: {
-      required: operation.id !== 'identity.logout',
+      required: !['identity.logout', 'previewContent.revoke'].includes(operation.id),
       content: {
         'application/json': {
           schema: bodySchema(input, operation.path),
@@ -80,7 +81,7 @@ export function openApiDocument(
     paths[path][operation.method.toLowerCase()] = {
       operationId: operation.id,
       tags: [operation.module],
-      security: operation.access === 'public' ? [] : [{ bearerAuth: [] }],
+      security: operationSecurity(operation),
       ...operationInput(operation, schema),
       responses: operationResponses(operation),
       'x-access-kind': operation.access,
@@ -94,7 +95,46 @@ export function openApiDocument(
     paths,
     components: {
       schemas: { ...responseSchemas(), ...extraSchemas },
-      securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer' } },
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer' },
+        previewGrant: {
+          type: 'http',
+          scheme: 'bearer',
+          description: 'Short-lived opaque preview grant; CMS session tokens are not accepted.',
+        },
+      },
     },
   };
+}
+
+function operationSecurity(operation: OperationDefinition) {
+  if (operation.id.startsWith('previewContent.')) return [{ previewGrant: [] }];
+  return operation.access === 'public' ? [] : [{ bearerAuth: [] }];
+}
+function jsonQuery(operation: OperationDefinition, name: string, pathParameter: boolean): boolean {
+  return (
+    !pathParameter &&
+    !operation.id.startsWith('publicContent.') &&
+    ['where', 'sort', 'select', 'fallback'].includes(name)
+  );
+}
+
+function conditionalHeaders(operation: OperationDefinition): unknown[] {
+  if (operation.id === 'publicContent.media' || operation.id === 'previewContent.media')
+    return [
+      {
+        name: 'Range',
+        in: 'header',
+        schema: { type: 'string' },
+        description: 'One byte range; supported by GET and HEAD.',
+      },
+      { name: 'If-Range', in: 'header', schema: { type: 'string' } },
+      ...(operation.id === 'publicContent.media'
+        ? [{ name: 'If-None-Match', in: 'header', schema: { type: 'string' } }]
+        : []),
+    ];
+  return operation.id.startsWith('publicContent.') &&
+    !['publicContent.index', 'publicContent.sitemap'].includes(operation.id)
+    ? [{ name: 'If-None-Match', in: 'header', schema: { type: 'string' } }]
+    : [];
 }

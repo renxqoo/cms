@@ -47,6 +47,7 @@ const contentTables: Readonly<Record<string, readonly RuntimeTablePrivilege[]>> 
   content_folders: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
   content_documents: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
   content_publications: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+  content_preview_grants: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
   content_revisions: ['SELECT', 'INSERT', 'DELETE'],
   content_references: ['SELECT', 'INSERT', 'DELETE'],
   content_jobs: ['SELECT', 'INSERT', 'UPDATE'],

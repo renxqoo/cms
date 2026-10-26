@@ -1,0 +1,6361 @@
+CREATE TABLE "cf_0088481c341041835b7af0b4" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4c04d8f0b30b9a80a52ae0ef" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_da1f5f3534b8a748f5f5aa6f" ON "cf_0088481c341041835b7af0b4" USING btree ("revision_id","locale");
+CREATE TABLE "cf_00b4f45510db45cb2c850e5b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1cba11672c247cdac397f6ab" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ef9a84a577831d81f0dbcc34" ON "cf_00b4f45510db45cb2c850e5b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_013660f332f61d68db2208e0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5775a6d8b7fa25fa21dd6d4b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_442273fbc84855adec10dbd5" ON "cf_013660f332f61d68db2208e0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_01da1cb2eb901be340107314" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_281577241070b9136cf66fe4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4671255636bfe663034df99b" ON "cf_01da1cb2eb901be340107314" USING btree ("revision_id","locale");
+CREATE TABLE "cf_02526c8b30d43e90ac7a0d21" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c433626d9a42b835e4d61eb2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d72eebddb4194aed6b0bae2a" ON "cf_02526c8b30d43e90ac7a0d21" USING btree ("revision_id","locale");
+CREATE INDEX "ix_443b9ebe82f94a591f1b94d8" ON "cf_02526c8b30d43e90ac7a0d21" USING btree ("value","locale","revision_id");
+CREATE TABLE "cf_028c0db9a63d86d772a3efe7" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c2b9a776022897b3835561da" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b5b6ce00be147eb0043af5ba" ON "cf_028c0db9a63d86d772a3efe7" USING btree ("revision_id","locale");
+CREATE TABLE "cf_034568ea85ac572096be2729" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e65e1c79a2430abfbb6958bf" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3fa287eda689f20570650f39" ON "cf_034568ea85ac572096be2729" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0351104188c7478a52a42fb3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a7879b9215f9519402bbd684" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ddb9d5a21b8847435b82d7c0" ON "cf_0351104188c7478a52a42fb3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_035a3fe01de39d0cd4449d57" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c05231059b3d972992620bea" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_126c08b3836eafd8a2575384" ON "cf_035a3fe01de39d0cd4449d57" USING btree ("revision_id","locale");
+CREATE TABLE "cf_03e7ff32590dbaed6ea42fa0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_57c11ff92b3c127e6cfc90b0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e5b0742ffbd97c578af10458" ON "cf_03e7ff32590dbaed6ea42fa0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_03e9a644899e99d2f08d790b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_85984c3d38d66f7897addf0e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d5c55543f8a4a422a65a7ebd" ON "cf_03e9a644899e99d2f08d790b" USING btree ("revision_id","locale");
+CREATE INDEX "ix_0a259ee25cee007878f7330a" ON "cf_03e9a644899e99d2f08d790b" USING btree ("value","locale","revision_id");
+CREATE TABLE "cf_0416cab8460eb6479c4c7ead" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_763ab0469a9e79cd3bacba91" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2007742083b9c62af34e4188" ON "cf_0416cab8460eb6479c4c7ead" USING btree ("revision_id","locale");
+CREATE TABLE "cf_043456302eb885af5d0321b2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e0343ca52605366d6164c34d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b455177f615c007571b84cb0" ON "cf_043456302eb885af5d0321b2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_04ef5d8bd3cd1a67bcc8e094" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6a4840c36acc7a69095f98b2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e2e9705f89f11121e7c5e2c4" ON "cf_04ef5d8bd3cd1a67bcc8e094" USING btree ("revision_id","locale");
+CREATE TABLE "cf_05599eb4ede4827c775ba01f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_88f1ead34cd4dc9661c364d3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0e848f5bc77e78dab4da5ec7" ON "cf_05599eb4ede4827c775ba01f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_05cbfcc9e119cc4362ebd16c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f37c298df93eafd7fedd07e7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_adf93211a539624ca2506e97" ON "cf_05cbfcc9e119cc4362ebd16c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_05fc51d4aa2542d68da21a5f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_227eec402e20cad50b1dd501" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_84a213c9639272f49833947e" ON "cf_05fc51d4aa2542d68da21a5f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_064b5731ef2860dcbe324722" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_213b60f16eb78c6024582009" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2a5c39c7da4c970dfcb3de04" ON "cf_064b5731ef2860dcbe324722" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0665325b992e64aef17f0260" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0bb109db9e7bbcdf6d553f94" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2a834e3c8c8fb4c895310da5" ON "cf_0665325b992e64aef17f0260" USING btree ("revision_id","locale");
+CREATE TABLE "cf_06d3b3cead47cf5018a18095" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_953053504442eb4b28d18091" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cfb39771324bec12d682eac0" ON "cf_06d3b3cead47cf5018a18095" USING btree ("revision_id","locale");
+CREATE TABLE "cf_07ce935fb863661f9758c36b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a4d5463d33e6eac52228ed62" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f820b0cde7650faeb5a29783" ON "cf_07ce935fb863661f9758c36b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_081730d4d8c8bc3ac0b49f59" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8bdd92f4a71a97632294e247" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a7ee119d97db9ed8e34fc5bc" ON "cf_081730d4d8c8bc3ac0b49f59" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0862108f90ac59241b44ba56" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a4ec34e9f667d5875be96978" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f7e4e09a7201edd18e7a2ff3" ON "cf_0862108f90ac59241b44ba56" USING btree ("revision_id","locale");
+CREATE TABLE "cf_08a0f239446f2d4810223e6a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fb744169794fbe36ad7db68c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_97a771226b8d351cdb6dc658" ON "cf_08a0f239446f2d4810223e6a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_095330afb546397dfb0302f3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6b5f349eb6246101320aa910" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0ceb529e71dba7e237db3bae" ON "cf_095330afb546397dfb0302f3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0968ddf7208e7920bae93f0a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_378320f1f8fffea66c24aeb1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4902b9202a1af7e4274c03c7" ON "cf_0968ddf7208e7920bae93f0a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0a632dda66cdc288b1378480" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4c23790704c324f6919d56c8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_816d2f13f8755ad91ca965ca" ON "cf_0a632dda66cdc288b1378480" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0aaf95060c21fd2bb8a264a9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7999196b32a2596fb98640fa" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_13c8b5301b0c22d024f83777" ON "cf_0aaf95060c21fd2bb8a264a9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0b34f1a93a006b2e27aa3ac1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7aabb9ce3a2ad22bbadcb11a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_20511b6899ad9bda96d06f54" ON "cf_0b34f1a93a006b2e27aa3ac1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0c3c9f553e651f0ef585cf73" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_86dc31e89089228dd39c97b0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_720d55d48476419346970c7d" ON "cf_0c3c9f553e651f0ef585cf73" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0c41951bb142487db555ddc0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_448dc919a96e7e4e56f0eb5e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2243277fdcd1ee41582522ab" ON "cf_0c41951bb142487db555ddc0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0c5a8ec55a1d3c4f5ae4d434" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_10fd643a555a75f8738ad79b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_158722b9513ff4298a6ca8b0" ON "cf_0c5a8ec55a1d3c4f5ae4d434" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0c862abe4d2c4eb722e8ae41" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6cff4644ca49c178470d7c6b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e83c280399df7f732d574c8e" ON "cf_0c862abe4d2c4eb722e8ae41" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0d7a68fa3e7dd79567999eca" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_98d8eb86e5f6edd1a3952a86" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_615c329f9045198774472ef6" ON "cf_0d7a68fa3e7dd79567999eca" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0dc5036da550a8b4af4a08ee" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_84e2783bd8e2edebb710ae64" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0e9de44ae2dccbe56eb975d7" ON "cf_0dc5036da550a8b4af4a08ee" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0de211e03f8f00e9e7570d1e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d9241518cb919cb50021f4c2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0ab537effc50a7f12addf8a3" ON "cf_0de211e03f8f00e9e7570d1e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0e31d3d9cd60a082fef639e5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d52812a0141444cdd4345e79" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e9a1106af174f047ef26c35a" ON "cf_0e31d3d9cd60a082fef639e5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_0f428cc5f900d0459d75e73a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e923ce74e9a9f98922b69fe3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_133d3f7d5842f59a2ec6ecc9" ON "cf_0f428cc5f900d0459d75e73a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_101c779e9044ebee2331ab36" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_44d054aa423882ab46059fcb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_462474bd759a2a7bec5d93f9" ON "cf_101c779e9044ebee2331ab36" USING btree ("revision_id","locale");
+CREATE TABLE "cf_10c9513516869b7fbd5777e4" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0e394070381f0128d3c5b298" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d1052c4e62f21b180debd64c" ON "cf_10c9513516869b7fbd5777e4" USING btree ("revision_id","locale");
+CREATE TABLE "cf_110af125511b667dd0725c1b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_16f4fef2b7084fad5c235a21" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_0d0309ff633b0e7276e3b394" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_2ed4549fea113f1d84f95bff" ON "cf_110af125511b667dd0725c1b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1167a6c50226465061910ce8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_822178350f80ceccd530f67a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1fed4b12b846c9f3291db3d0" ON "cf_1167a6c50226465061910ce8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_11a883f71b96b223bfbae7e4" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8f06395693404426aea4b22d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ade03cdd3298d97e1ce84f4a" ON "cf_11a883f71b96b223bfbae7e4" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1255b32294cf1e119641e206" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e537cbb2510e5479be09de96" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e4c4dd5af4b7e101abaca167" ON "cf_1255b32294cf1e119641e206" USING btree ("revision_id","locale");
+CREATE TABLE "cf_12ae96dabe1bc0ab0a98f2dc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9737410b86c147a209e7925d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_040d73067c2f265c6a42f3c8" ON "cf_12ae96dabe1bc0ab0a98f2dc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_131fe365cf32cab6a5fc4545" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_86f5e95563831878d6f561af" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_72b50758728fdae195ea6f8b" ON "cf_131fe365cf32cab6a5fc4545" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1346b044569a6a03efbf73b9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_90e5c351984be72d933bb19c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1909ac9eee77f0c3f1ad1740" ON "cf_1346b044569a6a03efbf73b9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_138c87146ebbd594e4d063bc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_eb3d2c35445ca6d256438cba" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_88842b70fbf9c276f19b9842" ON "cf_138c87146ebbd594e4d063bc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_13c36a841d39cdacbbcf2495" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e0a5dd66ab19cc4960f1cd64" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_f31911d13ee665ae29ee1fd2" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_7f089a5ada484e150ce84e9a" ON "cf_13c36a841d39cdacbbcf2495" USING btree ("revision_id","locale");
+CREATE TABLE "cf_140a85b4b7d1be0b64f68725" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e46832e76d12f9720febbf16" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a0103309b786be447b027c33" ON "cf_140a85b4b7d1be0b64f68725" USING btree ("revision_id","locale");
+CREATE TABLE "cf_149fe3550b2faddf65920c38" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_41352ac1bee27e64258399cc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_231539604438447db33a3ddc" ON "cf_149fe3550b2faddf65920c38" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1529f5876d166e50e95b085e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a8e8532a48055c8b36001110" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9f50e98513973957a8bc69b1" ON "cf_1529f5876d166e50e95b085e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_16dcb943b322f30bfba992b6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_783529737007df5541771a30" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a315407b3bb67c3d4f6ccfb9" ON "cf_16dcb943b322f30bfba992b6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1732874fbee749f693497402" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6f3d6011bc144eab90b7ca33" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c45c2bf25a48e9094b46c0d9" ON "cf_1732874fbee749f693497402" USING btree ("revision_id","locale");
+CREATE TABLE "cf_18253db0cb8bf648f802e623" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a8276a111e5ee6bb65daaff1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7d2560dc14b92f144ac445e1" ON "cf_18253db0cb8bf648f802e623" USING btree ("revision_id","locale");
+CREATE TABLE "cf_188540fe3ec6467a2eb7fbdf" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3cfd8b34306b93413d72d658" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8ac82f565585059ec686b346" ON "cf_188540fe3ec6467a2eb7fbdf" USING btree ("revision_id","locale");
+CREATE TABLE "cf_18e7fee35d5c288d74afca6c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7201e5b8edc4a11142507f42" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4ba1437b060664c3181969fa" ON "cf_18e7fee35d5c288d74afca6c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_198b7a95645b8c461a55d13e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_930c9815ab73c4d3edb30d67" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5836a91868446f8a5f186373" ON "cf_198b7a95645b8c461a55d13e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_19fbbb513c2f0c015cb75b8e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_57e385f5285079e6da6111db" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e808b33f58f336d01cb8f8ed" ON "cf_19fbbb513c2f0c015cb75b8e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1a8e738fe8b8c3dbf05c9893" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "search_vector" tsvector GENERATED ALWAYS AS (to_tsvector('simple',coalesce("value",''))) STORED NOT NULL,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_aab5578f15a6b5f0b44fbede" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7d2d817f45b51f1ef0ed95e4" ON "cf_1a8e738fe8b8c3dbf05c9893" USING btree ("revision_id","locale");
+CREATE INDEX "ix_5a1b477c5d2962f054a82204" ON "cf_1a8e738fe8b8c3dbf05c9893" USING btree ("value","locale","revision_id");
+CREATE INDEX "ix_1d7544c0840479455da96c48" ON "cf_1a8e738fe8b8c3dbf05c9893" USING gin ("search_vector");
+CREATE TABLE "cf_1ab0baea22787ccdbd06fb77" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c6d576a3a78521fc292e578a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_91872f9703efbeebb06e1f4e" ON "cf_1ab0baea22787ccdbd06fb77" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1c0b51097d970e1d873884c0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ed2908ed61534fc150d1a65a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_78a1c2469d8ed2b3a92cd3d7" ON "cf_1c0b51097d970e1d873884c0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1d4975c250c23905f8440cc0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_02eab03b247ebf30c42197cb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ae41d9a82ed12e6c3484848a" ON "cf_1d4975c250c23905f8440cc0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1db4837dab49866ed3e07ee8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_789c5e74dfd6eeda50ac0809" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d27253a1edbbf964c573e8a0" ON "cf_1db4837dab49866ed3e07ee8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1dc3fc0b8c0755b22f09b979" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_dc6b4a3c09c35607cbfe2cc8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_6ad56185c5d86a31e05bbe2d" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_8b315175565bcc0755076faf" ON "cf_1dc3fc0b8c0755b22f09b979" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1e43f3c6788b75014d261bfc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_605046238277ff771e1107ee" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a1a0ae96694de072b1aa093e" ON "cf_1e43f3c6788b75014d261bfc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1e6f761b19557f5adb0bb7fe" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b1b51ff126832e7c94d46100" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5189706a376394bd24a3379b" ON "cf_1e6f761b19557f5adb0bb7fe" USING btree ("revision_id","locale");
+CREATE TABLE "cf_1f6d9defeca97b1a8a4910f9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b380567a179f59b846456e35" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_02b242c6f20d09865e72eb17" ON "cf_1f6d9defeca97b1a8a4910f9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_20b7f3a573dedf62a61e306a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_147667fc838d4021977b594e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4de71c8e231cc814ed0863be" ON "cf_20b7f3a573dedf62a61e306a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_20e0f52d34f288d84658114c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5a5d737812e1e6774ad24a89" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_33549af486047eb448f044d7" ON "cf_20e0f52d34f288d84658114c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2138014f84238acd889fdd70" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ccfa03b02a6a9510f535fd4a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8d6260895e091d122987c661" ON "cf_2138014f84238acd889fdd70" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2178911f7109da59c7681d4b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_02aa68a2a8f2e798fb15cd83" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_703618a3351a749ef82e4cff" ON "cf_2178911f7109da59c7681d4b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_21d6289cee17c7d4aeca0c4c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e5e8400b5bba2e99f61f65d0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9346564712193b02dafc3432" ON "cf_21d6289cee17c7d4aeca0c4c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2287d8abf123acecbc772176" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5b67de64a5f0af49ab0bc61d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_59dca234dce08b26f887e79d" ON "cf_2287d8abf123acecbc772176" USING btree ("revision_id","locale");
+CREATE TABLE "cf_237019001b0c9087308a831d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b7b8ffa585ba66668d1ee031" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b29b5b96c52d442df62cb269" ON "cf_237019001b0c9087308a831d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_23821814e722ec42f9d21735" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a73dcb3eb8229f26ee7d9e1b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2b43c317c0c5f130872fc1be" ON "cf_23821814e722ec42f9d21735" USING btree ("revision_id","locale");
+CREATE TABLE "cf_238285f12352e4483121497b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8846fc32e6a257d7533d45d4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_622e0cbe9259244f10c81207" ON "cf_238285f12352e4483121497b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_248cfa467914ba2a96287712" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c6a9e4e764ca76cb7c06996a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ad765521ec6dd120c7bb6751" ON "cf_248cfa467914ba2a96287712" USING btree ("revision_id","locale");
+CREATE TABLE "cf_24d65d1b4a13b1fe1585d094" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a34bd33a4651f6fbec2cc0c0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ef65cff774c1946ad4213f61" ON "cf_24d65d1b4a13b1fe1585d094" USING btree ("revision_id","locale");
+CREATE TABLE "cf_25455b0366e443ae91257a72" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e9ec6a7777a750f9478f8bd4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_073bd53ff28238a05a5c3d2f" ON "cf_25455b0366e443ae91257a72" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2574f9c7b7f77739027538d7" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_346442b9b469635d6c7f837e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bdfec808ddffb31072c7c0da" ON "cf_2574f9c7b7f77739027538d7" USING btree ("revision_id","locale");
+CREATE TABLE "cf_26ce048be930e7b99003b242" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0329ce573c109500dc92e2af" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_95c543c5d3f0f79e953d799c" ON "cf_26ce048be930e7b99003b242" USING btree ("revision_id","locale");
+CREATE TABLE "cf_28b82a4b28904a919cb7ecb5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_742c48a2a1969620a4e5e22b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f82d98612ff6b9428367ba68" ON "cf_28b82a4b28904a919cb7ecb5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_293132e6d9b505e56df7bee8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cbd65ac85fe687704aa6a99c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bed0f9458e354c82f8a7e820" ON "cf_293132e6d9b505e56df7bee8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2988081ab8d0073741fbead0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c437fd86167f14d1c8ba40ae" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e68ada69b620399611269952" ON "cf_2988081ab8d0073741fbead0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2a38a0d3dca39762985784e6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7790d10770cfc9feab424b52" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_73fcd9505ec927b902713822" ON "cf_2a38a0d3dca39762985784e6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2a74dd9a959fbec209271f9f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_67de708f69d1e2f5ba4a5d62" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_36a2017044725fc827980e95" ON "cf_2a74dd9a959fbec209271f9f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2a9b85d7546bf4bf333108b5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2edd0fb9f33b7d67d54fb8dd" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4f51c0361195bade0376b6c1" ON "cf_2a9b85d7546bf4bf333108b5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2bd929dddd2a3fcd11ae7e42" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_056ba81e840cbe26d70dfaf6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e308d1a04a9fc8e3a5960427" ON "cf_2bd929dddd2a3fcd11ae7e42" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2d6043574bf344c9a3959fc2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_70a7949ab6cb5d236053c1f9" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e28cf6f5a41d7fac73d7ba71" ON "cf_2d6043574bf344c9a3959fc2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2dddddf101b770776dde37c2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_da16aadfc243054578190946" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d7da102d27440e5d572c94a2" ON "cf_2dddddf101b770776dde37c2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2e45112ec999e6940f98fd5b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_16df582e51c2ba9b27796007" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_da208b5b91174d1cf5f6aa8e" ON "cf_2e45112ec999e6940f98fd5b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2e6dd2bd4b13b9f464eff792" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8ae3564c4d728df8a9eea4f5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8d46cab14a27e5e23e016949" ON "cf_2e6dd2bd4b13b9f464eff792" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2f8d9ea95d6452e244cc358e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a5c95e2ef4528f3a5588de65" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b4506a65f58c604dd5e2a23e" ON "cf_2f8d9ea95d6452e244cc358e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_2fd040e467b4dd00e9db277d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c2aaf50eb30d7562d7c4be1b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_94b5efbdf21ecb738884056e" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_9be57a2ef76c60c5a9b65d85" ON "cf_2fd040e467b4dd00e9db277d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3238ff8503409b88248b8ddf" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7f51d4aa60b6386f3bc6b8bf" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ba0578bb6356a794873ad683" ON "cf_3238ff8503409b88248b8ddf" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3252fe55ae60db51fab10de1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a4ab012c4cc8fd56db33db86" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_adb0559319955fc43d2061f9" ON "cf_3252fe55ae60db51fab10de1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_32e2bef3231c3f65d2909935" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f6ad92b7c1b7ca7d125b787d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_6a303b91dbb6f125c5cc07ca" ON "cf_32e2bef3231c3f65d2909935" USING btree ("revision_id","locale");
+CREATE TABLE "cf_330ba783f556682237656a3c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6f31e6219ceff8fdaf821966" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_21825c473df71fff97d7fdab" ON "cf_330ba783f556682237656a3c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_332f822bb18e4237e5556066" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_852ad156f784a0b50f05de13" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1e2e4fd01f50c4aa681e1f4b" ON "cf_332f822bb18e4237e5556066" USING btree ("revision_id","locale");
+CREATE TABLE "cf_33335232627c58d0714df000" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7a1ce054482e661fc6890a5d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8232479ea30a40f9e84e3635" ON "cf_33335232627c58d0714df000" USING btree ("revision_id","locale");
+CREATE TABLE "cf_335c396fbebf683a6a574e2d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e3859ef8d5ca96699f5c4361" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8aaf0b1e6c9ba44e6345f464" ON "cf_335c396fbebf683a6a574e2d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_33fcd0e17fc4d87e432ebab0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_57f4e154c211666fd25e80ae" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5645b6cc21a74ea48a8f2a42" ON "cf_33fcd0e17fc4d87e432ebab0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3550594e7cc2e7c620594e80" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3191332f3dec526540a1f8cf" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fa9acc7a4a8bc78220bc0764" ON "cf_3550594e7cc2e7c620594e80" USING btree ("revision_id","locale");
+CREATE TABLE "cf_356bcc11d8223066a44a8549" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_29a023880a4a6c90b1ca89d4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c44bd10ff311d39da2f99a2c" ON "cf_356bcc11d8223066a44a8549" USING btree ("revision_id","locale");
+CREATE TABLE "cf_368d7b6214f8656b5ca44d3f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1f0afc2b647352380d9d2e5d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4b221cf586f682df677c31b8" ON "cf_368d7b6214f8656b5ca44d3f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_36a7eba29b9bbbffa875de3b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3eee68681cddbdb9becb7a3a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b977cecceb5a6d294bb52eb6" ON "cf_36a7eba29b9bbbffa875de3b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_37915e4bb90105ceca0f420f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_72a7dd21dc7342f6fe7a08de" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_866fba69302ba51ac4a010a8" ON "cf_37915e4bb90105ceca0f420f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3850cc5bd69b1426ed29bd2d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c7cbeb4f9c70042e7dad9771" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2dab9a2bf52b9cda5f7d73e4" ON "cf_3850cc5bd69b1426ed29bd2d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_38c2e5e9c9ee9dadda6b1dfc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7bdae08de5dbbcc50ad39ee8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d6c8056efa8a36e2338e3a2e" ON "cf_38c2e5e9c9ee9dadda6b1dfc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_38d016379831a6d433810f77" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f229e38d7f4f28842003b93b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_22459ef6951f7ddb960499d1" ON "cf_38d016379831a6d433810f77" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3904379077f3e6bac976e5da" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_30ca09563e36f7c891284c3e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9e74b3ad52c5e9dc66ca15ee" ON "cf_3904379077f3e6bac976e5da" USING btree ("revision_id","locale");
+CREATE TABLE "cf_39b86b5e45393fb9ca43556c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_498f9bc42306611b558c806c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cb078ee7560a89523cb4491f" ON "cf_39b86b5e45393fb9ca43556c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3a8c243bd2da571399be9450" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d3d66acde94f0f0a8fd399ab" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fd98ae26cdac3c5b6094dcd8" ON "cf_3a8c243bd2da571399be9450" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3aa9d4a6389f5967a26f9444" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e891e2227f454554b4d67ddc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_876fd74bbfc8751fca25ff1f" ON "cf_3aa9d4a6389f5967a26f9444" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3c9adecf03e264ddbc04e168" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9ec937c749e799e309efdd08" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0f9b048448382da10245ebd9" ON "cf_3c9adecf03e264ddbc04e168" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3cac89938439b6b4ac8d5174" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_eb239782fe6755f17c113215" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_752de8f4929435f085b2d977" ON "cf_3cac89938439b6b4ac8d5174" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3ce2e154f386bb4879063256" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_daa2ddbab95670140ee7ad59" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_16c42a8d1a6af2c654fb0d88" ON "cf_3ce2e154f386bb4879063256" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3cf3dd55e6e7e14e25a47a33" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9e07f2c0820cf4618398f081" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_143aabb9d9513704ef43ca80" ON "cf_3cf3dd55e6e7e14e25a47a33" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3d6c4ec3db1186eec0a17261" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_13f714af83c3ec7bf6441458" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_40d15ecc82b929ce4845ac0e" ON "cf_3d6c4ec3db1186eec0a17261" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3dd29a566678be98b8e22259" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d8d946a2b628bc4cb019d62c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1c48a93e1acf22c6ac2e3339" ON "cf_3dd29a566678be98b8e22259" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3e8c1aa7f708a050db0b7793" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a582bcc3dc729ec824437e7a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_038673c84c6c5a36399c7776" ON "cf_3e8c1aa7f708a050db0b7793" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3eb26942674108e1dd45249c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0bddd8d24982977fe0e81716" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a7423a8235b1dd849c4849eb" ON "cf_3eb26942674108e1dd45249c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3ecc00f4a9f2461ff760c936" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_748eca1e1b25e80f85d935ac" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e77ec6ecce9e72e71b83ac33" ON "cf_3ecc00f4a9f2461ff760c936" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3f00440b3e9cea131ad6c915" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9705b11e592a6d0c8a668236" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d9c608fabdbd85571d89dfc2" ON "cf_3f00440b3e9cea131ad6c915" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3f3d39bdd545689d6a777c47" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b8b514a7c1c3f40182ebc403" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ee9acf6a91fbd2184108cd25" ON "cf_3f3d39bdd545689d6a777c47" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3f7ec79916ee43b030269b8e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_442a18eaf53812f84dd6f3f0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_07f684f0242fa5fbb6c04616" ON "cf_3f7ec79916ee43b030269b8e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3f8756c5756b73435aeac340" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1db1dc5882520c2f8be08172" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8752e80d3a948d7d1e7c1883" ON "cf_3f8756c5756b73435aeac340" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3f9d02fff8ffcaa8dcf2cff2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b8a1baa19fbe89f6bd599ef2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3261a3543982b56ff5cfec90" ON "cf_3f9d02fff8ffcaa8dcf2cff2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3fc05503da9eea0a8650f161" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f148f02c2f6d11c070099224" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_76f3f1984f1ef9b08de362ff" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_f8bb6a343aec59c5c8db903f" ON "cf_3fc05503da9eea0a8650f161" USING btree ("revision_id","locale");
+CREATE TABLE "cf_3fe98a9f63b96cc7a93bb5ef" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_15c9fd1d99c20301c5c1c3fd" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3738785215cdd635f6ea93b5" ON "cf_3fe98a9f63b96cc7a93bb5ef" USING btree ("revision_id","locale");
+CREATE TABLE "cf_404280873717e4fe9c92a62b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b3c752c19a033fc6e25a93fe" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_113cf1a886b9176768be7274" ON "cf_404280873717e4fe9c92a62b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_40c14082e7702706ead21a17" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d46224325dfb374e0310e8d8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d46c1348347c1e3205f2a076" ON "cf_40c14082e7702706ead21a17" USING btree ("revision_id","locale");
+CREATE TABLE "cf_40ee2a20147ca7b6ef3474c2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9234548b4b6c20d4496df069" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9258f0fc50e61e13c0c5cebe" ON "cf_40ee2a20147ca7b6ef3474c2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_414b6e47e2994f3c5ff93162" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5fb9f3ec94188789bdd535b1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bfbaaac560c8c87bebeef85f" ON "cf_414b6e47e2994f3c5ff93162" USING btree ("revision_id","locale");
+CREATE TABLE "cf_41a85911b17b231c892ce6e6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ba3d8a14d4f3d2086a47ff3b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_72daadbf10dc187c2588d2be" ON "cf_41a85911b17b231c892ce6e6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_41d38ca8aedf95e27993e478" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_47b0e3ddccc46af13a2a3165" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e1c7f065a0c6cd2c035640e8" ON "cf_41d38ca8aedf95e27993e478" USING btree ("revision_id","locale");
+CREATE TABLE "cf_422cda15bd8ddeba12d83059" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_05bd82dca7b16c5751db749e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_7d0d7dcdf5f17cc28b741252" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_ce29f0ae5e8a50ec85cf2d18" ON "cf_422cda15bd8ddeba12d83059" USING btree ("revision_id","locale");
+CREATE TABLE "cf_428b05d8335c40c487e8628d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b395b72db78cea83d671574c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_eeb56d2dfb8dc8ff3d31b4c7" ON "cf_428b05d8335c40c487e8628d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_434e3965dfdae99099915cd3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c6a2326f682e9a478ccd6333" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f2237ded9d543e8730741a3f" ON "cf_434e3965dfdae99099915cd3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_443cccfc9d741d664b09a23d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ebd1dae240b6efa3ee0561f4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1089c19ec47f787121014ff5" ON "cf_443cccfc9d741d664b09a23d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_45c2373f96a39ec9a9f2334b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_246b9f8f07df1be5ca233c97" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_6672f84368142beade5ca9bf" ON "cf_45c2373f96a39ec9a9f2334b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_45c35924403ff85a2d3fe4c1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_bd129d7defd8d592803eb318" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_df9ff9524a9a4633364944d3" ON "cf_45c35924403ff85a2d3fe4c1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_460cbf80cd8ef5c7aac14b1e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_55703708af85a03cd5ec94c7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bc3b7d347871a8b8c3e2d249" ON "cf_460cbf80cd8ef5c7aac14b1e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_462a302a04a76c5c121b6f5f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9499c0c58f038eef725a1d36" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5cf6111cd6b4d8a32ad79440" ON "cf_462a302a04a76c5c121b6f5f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_46faabe28dde80aae6de81ac" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_41308232c5821a23905b73d2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_83f288dc0ac207d7a987a8c6" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_59cc1ed9ec48c69acefee64b" ON "cf_46faabe28dde80aae6de81ac" USING btree ("revision_id","locale");
+CREATE TABLE "cf_46fc8fb322402de542c46884" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_199d099aee44cd2af6c33ed2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_be6996fcbf5ecc8b41db6a0d" ON "cf_46fc8fb322402de542c46884" USING btree ("revision_id","locale");
+CREATE TABLE "cf_47baffba05437a07fa8278df" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0b3454f453dcabac3efa7bb8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_530ce73e626e74ffcce69ae4" ON "cf_47baffba05437a07fa8278df" USING btree ("revision_id","locale");
+CREATE TABLE "cf_494c7cda747c8960d059df3a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0bf6a2f243fffa69da7469f5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4edfb9ba560202a19a66071e" ON "cf_494c7cda747c8960d059df3a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4a7768ff77d66009484ef92d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f7dba9cd39ca88d77dc7cdd1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2231bf98194d8cbe1b4e28fc" ON "cf_4a7768ff77d66009484ef92d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4a9a6bda82348a7e6d5f5627" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9e536fbf6a8434579e203a58" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_87856270577ee3ea08198941" ON "cf_4a9a6bda82348a7e6d5f5627" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4c0615eb0a2959c12e3542ff" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d1e4e687ca8a7e6b393f9798" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2c26d8324f11e65e9213770a" ON "cf_4c0615eb0a2959c12e3542ff" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4c16614d0990fc8913887671" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9df53337960f3a2c6ba4d38b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_13c59c67a4cf9b690d5d29d4" ON "cf_4c16614d0990fc8913887671" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4cfdbddd685252ef93bd55e3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5b9766dfc8132f736a7c9fea" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0f1cbe85b45e17e01b2b31ee" ON "cf_4cfdbddd685252ef93bd55e3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4e58491139a1a18a3df9fe27" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a11ec82023294736c9e30583" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3e58875f61f1bbc96a23ce19" ON "cf_4e58491139a1a18a3df9fe27" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4e758fc6fcd9f43f53f598ff" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f8ab4431caa9b4eaae7cd3cc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_52d19fee2ece4ec8ab92d38b" ON "cf_4e758fc6fcd9f43f53f598ff" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4f101a06527a0fdf8f88ef1f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c825720c6d86e3824b342875" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c4b7b939acf415266e795d00" ON "cf_4f101a06527a0fdf8f88ef1f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_4f7ea6bb6cf18d6fde400f01" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4c737367f5e055c280a18765" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0ead955dfc9cf454effb37c9" ON "cf_4f7ea6bb6cf18d6fde400f01" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5135fc474348dbf66b1a04bd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_eb81af5f3150b5007dd63fff" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7e1cbc5943d42109d6b36aed" ON "cf_5135fc474348dbf66b1a04bd" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5173e268ed0203ea1c3f785a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c2502993b8d4441172384ef3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_38d521416947bfb3ee7ed9ce" ON "cf_5173e268ed0203ea1c3f785a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5174def21822925667afbcbd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_613a3e4c0be618dd049e832b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ae237df0cd87e7580cbaaa23" ON "cf_5174def21822925667afbcbd" USING btree ("revision_id","locale");
+CREATE TABLE "cf_51e979784df0a422a5e982e6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_31b58ab4917f1bf776467703" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4cd4bcdeea7dc808d1f03588" ON "cf_51e979784df0a422a5e982e6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_530314ddcc3a3121654caf8e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0a192753d9fd9f0c53bca78e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c53de82fb407c36328a36de2" ON "cf_530314ddcc3a3121654caf8e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_544d8bdcd206fd0ff74cd432" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_27ba50d3ff7682cbb4fffddb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_39d3d3d32b3d38b1b9be45af" ON "cf_544d8bdcd206fd0ff74cd432" USING btree ("revision_id","locale");
+CREATE TABLE "cf_545a95c2bbb417d95e4d6f2d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c6003d4e761694a3629ff0e5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0a6310c04d55a3a327b4b77d" ON "cf_545a95c2bbb417d95e4d6f2d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_546a663961b10d42ff09e963" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f96d3ff3ddacf27254cb5c40" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_adf3865c22d1b19d5030adc2" ON "cf_546a663961b10d42ff09e963" USING btree ("revision_id","locale");
+CREATE TABLE "cf_548d697ce53aa7102f91a75d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9b5a95b8892e888060c2e7c2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_434426b972d2afe179d7b6a4" ON "cf_548d697ce53aa7102f91a75d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_549f82db70886f0702640598" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_36f9b47a46a1559b239152ce" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2ca3ce8d84ebd39d8649aaf6" ON "cf_549f82db70886f0702640598" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5508d3da3ab6edffe4b1396d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3c25a5ed7e73b4a943e42da8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9702d63c46f22bbc1bd1b59e" ON "cf_5508d3da3ab6edffe4b1396d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_55149c15a5475e568ed819b1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_32e98dd11707929330b8f45e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a1dfa705235b8d4b91b44848" ON "cf_55149c15a5475e568ed819b1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5517cbfe760b7237dbabfc05" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9f5373d2c5be21f42e9ecfa2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b168eefc30bb1c3d6124485c" ON "cf_5517cbfe760b7237dbabfc05" USING btree ("revision_id","locale");
+CREATE TABLE "cf_555dc714b3c3fc09c7b58d0d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ca4f8b9b177f7ec1cb50308c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ab13bcea55b6e10285a2ba81" ON "cf_555dc714b3c3fc09c7b58d0d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_55b3203843899a28644202a3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4171bb12a16733ef02d8b78d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_26a2fbb433024f1c41f9de34" ON "cf_55b3203843899a28644202a3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_561c0e45ae0a72a2823ec9ec" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a2fb2ecd48f1403edf969ff5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_92a23f8027cd0ff2c026a467" ON "cf_561c0e45ae0a72a2823ec9ec" USING btree ("revision_id","locale");
+CREATE TABLE "cf_56aff9244c7ceee8e2065dac" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c5bf23c122b18a11776ea4ec" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f50dc15afe05bb9daa097efe" ON "cf_56aff9244c7ceee8e2065dac" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5740f07b2043449e056e147c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_842b7b838e4334356e4a40d2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_70f5ec249c653b40006a7968" ON "cf_5740f07b2043449e056e147c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_58094dd49062f96db42b3200" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e0433760885a4d1a0dd6db56" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a9d126aa1b87a88f0b25f394" ON "cf_58094dd49062f96db42b3200" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5830fdfdf6e2f6cb8e262be5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fab78c85e344eacddf68a14d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cb37c4dd9861351b52b5e5bb" ON "cf_5830fdfdf6e2f6cb8e262be5" USING btree ("revision_id","locale");
+CREATE INDEX "ix_2b2b67e6bacbba724fb47431" ON "cf_5830fdfdf6e2f6cb8e262be5" USING btree ("value","locale","revision_id");
+CREATE TABLE "cf_58766ce5c7a856cd9f1f6c81" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" timestamptz,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8e26b2f612e75efc9480bd06" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_18aabc58e6e6bb8aaf42e790" ON "cf_58766ce5c7a856cd9f1f6c81" USING btree ("revision_id","locale");
+CREATE TABLE "cf_58d6a462cb0dd0c0708a32f9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2183a7dca4146189fd37a72b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_09275fed39b96837d5756154" ON "cf_58d6a462cb0dd0c0708a32f9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_58e3812cd656b2284edc8acb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fa586543b418637ad635801c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a6795e5c65a59cb0187ef0cf" ON "cf_58e3812cd656b2284edc8acb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_58ef176879134b5654b36463" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_48d1757d1d3a67d523f2881d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0c9ca8ba959c0cb60b486cd8" ON "cf_58ef176879134b5654b36463" USING btree ("revision_id","locale");
+CREATE TABLE "cf_597bd95927f514a2d4a9ec55" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c52cad994ef6d34cf42dda24" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_012792a078e59858a1804c95" ON "cf_597bd95927f514a2d4a9ec55" USING btree ("revision_id","locale");
+CREATE TABLE "cf_59876e8035c6cad34355133d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c41b4ea757ea3555ebb0b740" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_81f40bb33d3ea01f3b9a2979" ON "cf_59876e8035c6cad34355133d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_59f5d8300127bef31e1f499b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8b60c98139c2b5d1a68df0ab" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9e973e73fcf10e6bbacf7bed" ON "cf_59f5d8300127bef31e1f499b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_59f5ea199ade7f4bbf25ac4b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6d50428a22133d31fb26dc3c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7218954f1428b32c340776e9" ON "cf_59f5ea199ade7f4bbf25ac4b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5a37cd63c04d4191a5292488" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_95cbcd5ac145c3c728660b21" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_889ccf4266c18398068a84e7" ON "cf_5a37cd63c04d4191a5292488" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5a9f43fd8429743c25d85709" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2483696da93c5fbfda6db1f6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4cb8e9a2c9b1aa84e6bad68f" ON "cf_5a9f43fd8429743c25d85709" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5ab3976cf030d55ff80d2c6f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_eeae9caf332d003223cfd8d9" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_e982f92cfbabf03de53debe2" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_2652f5a0d8229678ff19d879" ON "cf_5ab3976cf030d55ff80d2c6f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5ac769bfef9d2640b4eefb37" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5a0eeb503bb3964810b67e1c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8a76f1000296fb9c14ca5f1c" ON "cf_5ac769bfef9d2640b4eefb37" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5c34ce748eeaf24865f6672b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_89876c6c21dc3daefe5eb3e1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_aef86e6c6e1e01beda884fcd" ON "cf_5c34ce748eeaf24865f6672b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5d57bdc9432ccb5a3d805e79" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2a0d31a2e872167be9f964c0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_dc323c832cc121f9bbf24324" ON "cf_5d57bdc9432ccb5a3d805e79" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5d6d682508458a4fa6e84fdd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "search_vector" tsvector GENERATED ALWAYS AS (to_tsvector('simple',coalesce("value",''))) STORED NOT NULL,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_89546c4af6036b9b1f215567" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4b97ce0f605b6da1e1f48ff6" ON "cf_5d6d682508458a4fa6e84fdd" USING btree ("revision_id","locale");
+CREATE INDEX "ix_5becbdedc40fcc4aed706a90" ON "cf_5d6d682508458a4fa6e84fdd" USING gin ("search_vector");
+CREATE TABLE "cf_5d8191d4a07d7acb5cbd4b19" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cd30c8b981d236611ac2428f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e8aedf4fa27e88873d910a75" ON "cf_5d8191d4a07d7acb5cbd4b19" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5d9794e8c752ca3da1472172" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_30cdecc1f46a69ba5daf6b8b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_b17969b9d7313fe360b97593" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_895128f227faae5c4087d66a" ON "cf_5d9794e8c752ca3da1472172" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5de3bc725658e8ca8cab1725" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_05a90fe1633257aaf4594d7b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_dfc2f29a369f7f2483cb2be4" ON "cf_5de3bc725658e8ca8cab1725" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5deeae3f6c82049e91e26e70" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_52786f1f17585427aa216dbf" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_2b44b882438b657326288c72" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_5429e34b6b7c3583f089433c" ON "cf_5deeae3f6c82049e91e26e70" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5dfdcdd529e53729f2c1e05a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_73edaa7cc7b4465de098d931" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_85dfdbbac72f3ef390e8c76b" ON "cf_5dfdcdd529e53729f2c1e05a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5e47c051c49cadf21e50e8f2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1511954d6248036c16840fce" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d4875b61f519472ac69e0e79" ON "cf_5e47c051c49cadf21e50e8f2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5eac29fcac31f708a721049c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a009d2244ba714b6dcaae07b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7c5d09d4b834f042e686c601" ON "cf_5eac29fcac31f708a721049c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_5ecd870afdcb1696efbc041b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_13d2126ce24a13909db01014" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a634c5d213325eef41267fd0" ON "cf_5ecd870afdcb1696efbc041b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6020fd81b0b906e38f0a7e01" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fbc7a6f9d94bcc01652ebab7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_64ddd62946190fb93c0856f6" ON "cf_6020fd81b0b906e38f0a7e01" USING btree ("revision_id","locale");
+CREATE TABLE "cf_608cc9a4f6edbc028607fd17" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_122921280cf67b8d2121d72f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4ac0f508a4b276004963cdff" ON "cf_608cc9a4f6edbc028607fd17" USING btree ("revision_id","locale");
+CREATE TABLE "cf_60e716a332ec72d672f8ed8c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8f946360b82324192cfa3713" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b333bd0f3b6aeff3acba01fe" ON "cf_60e716a332ec72d672f8ed8c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_60fa4fc59ca671a8d59d41b9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ea26822cce54ae3d6f5ac1f4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_73fc72e2eae56eab9f1521ee" ON "cf_60fa4fc59ca671a8d59d41b9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_61c5f2431ae9884179bbd92d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7b41624e1ca44d4f6f516065" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bbe924b23e828ab612f4e346" ON "cf_61c5f2431ae9884179bbd92d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_62072c862093216de56aec46" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_228aab745aea942b2401fca0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_aa2cc9028bcf42f39477c16b" ON "cf_62072c862093216de56aec46" USING btree ("revision_id","locale");
+CREATE TABLE "cf_621ec4d25fbe611829c1a931" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0d939c9240de83a2c84d7636" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1f037853b63f5d614da1eacb" ON "cf_621ec4d25fbe611829c1a931" USING btree ("revision_id","locale");
+CREATE TABLE "cf_625be29f0ac2b7c97a1588b5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_59bc794f4a48850277a655bc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_36c3ff795d37610b02636f31" ON "cf_625be29f0ac2b7c97a1588b5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_629d833355b59afa0301c3bb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0b4d6d0e77c80202125d9b97" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7c1f6b13a4324baecd75212c" ON "cf_629d833355b59afa0301c3bb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_64b811e6590a94f6bfa4013c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f6cc66bbb34a297d11f3af4e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3b62d83174ce8a91a16a6571" ON "cf_64b811e6590a94f6bfa4013c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_64c08707a3df3dd5fb71ed64" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_26fa9bf2a3f5302981aca71b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7a3dc0f9e9e2a1c51088d1fa" ON "cf_64c08707a3df3dd5fb71ed64" USING btree ("revision_id","locale");
+CREATE TABLE "cf_652463b1f7c80ab536c13efc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8ac0d9296cbcf401cce65cb1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_8c184488277c36f8205ce86c" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_9bc7f4f92ec7e2867af742f8" ON "cf_652463b1f7c80ab536c13efc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_65e05c39f6648c9d821c7f2b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a78aba58365b8cba5a3b11d0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c279b585f530eec3baf07ebe" ON "cf_65e05c39f6648c9d821c7f2b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_66d6bd1bee05420c84dc7799" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_015eb0f5dae6bd74a186f2c8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4853372de2ad355a06ae5797" ON "cf_66d6bd1bee05420c84dc7799" USING btree ("revision_id","locale");
+CREATE TABLE "cf_676e9305a719546839f49ca8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_188fff2e5fd547892edfcac9" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0c9311e2238625c93095fc35" ON "cf_676e9305a719546839f49ca8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_679cef91c89473410d5d82b1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3f3445a2682591c7393ad89b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3c931c715e0d3389b0e6afda" ON "cf_679cef91c89473410d5d82b1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6a12bb7ba20cf36db2857421" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b6392f9d51961e414a6fdfd6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9a40b0014e6fc81231d0a6d1" ON "cf_6a12bb7ba20cf36db2857421" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6a1e2f74fcdf81c24a5e7f23" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5de932b02fa42259a5d3e8cc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1a2d1f1a7e15810417f7cccc" ON "cf_6a1e2f74fcdf81c24a5e7f23" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6a8de71095750376e7b4c735" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_50e6f03886ff69c8f0584274" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e6cf81f20407532d8a50aeb8" ON "cf_6a8de71095750376e7b4c735" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6a8f1fba16f4eb176dc90467" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f31076e4141d80958c1d33b0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_05c25b7364536d71a66002b0" ON "cf_6a8f1fba16f4eb176dc90467" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6af2e9f23bc328c1c58f6900" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cb1d6208a53c5170e0be7282" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_371887847a025745330e268b" ON "cf_6af2e9f23bc328c1c58f6900" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6c0e08671db9de63033b2605" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a9c2a7b252e7da7d45639f24" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cadedd2fa75b8ee3a7b26260" ON "cf_6c0e08671db9de63033b2605" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6c941f83d8019d827136dfbd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_be111c648de20ef2b0b83521" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cfe011f60921f17479dc009a" ON "cf_6c941f83d8019d827136dfbd" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6cce336dba9c22d9a2a94adb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e898afd8545340e5e0b8a253" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_35a43ed2df6c50d3fc4dd0c0" ON "cf_6cce336dba9c22d9a2a94adb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6d006d4ae795e608f64df38e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_46e7b0383754d60c781ca130" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e643d1a59d75502ec4db754e" ON "cf_6d006d4ae795e608f64df38e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6deee90eaa9303c8cc1e0f9a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_831d4690129fdd94aee63990" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_abe05cc61a1c4c13bf32162c" ON "cf_6deee90eaa9303c8cc1e0f9a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_6e4800b6305b186e0f9f7135" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9c8c3103f44cc4822dc1ef6c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_27772f9806ce8a326322f817" ON "cf_6e4800b6305b186e0f9f7135" USING btree ("revision_id","locale");
+CREATE TABLE "cf_70058ea66ee3db2ab1b8da5f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2dc3c3a22dc9881f22a1acc7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_db39520b454ec229041cd20f" ON "cf_70058ea66ee3db2ab1b8da5f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_723ca7c6410bf4af7ec07567" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_219120736efb69be655b5bea" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_844c9b572805ffdf2d5280f6" ON "cf_723ca7c6410bf4af7ec07567" USING btree ("revision_id","locale");
+CREATE TABLE "cf_72bb00fc30defa58ab01ffb2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ea9d1d8ed8b5562783424bf4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ea999f9ac947861fbb082b39" ON "cf_72bb00fc30defa58ab01ffb2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7447008978204ab305d13f44" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7b95845ac1d938ba34e21b31" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1a170ebdb4309a33c5c9fec2" ON "cf_7447008978204ab305d13f44" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7482782f0b935f98c5405d67" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_446ac995590c1292d68e0cbc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0ec127552c886bac7d90a773" ON "cf_7482782f0b935f98c5405d67" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7549ae30047402dea589dd2d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_05688a5a1abcd1234ff3031a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_c6e528df51cd417bf0f93eec" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_c4393d52a4d647f84e52b126" ON "cf_7549ae30047402dea589dd2d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_75558f4b6dad5e191679e42a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2407d177b95fe89abc55ee15" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4b29e4e747b51151bead7c3e" ON "cf_75558f4b6dad5e191679e42a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7575854e8437f1aabee95a12" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_693eade573ac80f6c92f192b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_eb2fa9b0eaed3cb01c3a87ea" ON "cf_7575854e8437f1aabee95a12" USING btree ("revision_id","locale");
+CREATE TABLE "cf_75d54c282fef49739f45cb15" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_989b9e51d1bb645f320b00b9" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_377ddb571ed48adcc6dbc7a5" ON "cf_75d54c282fef49739f45cb15" USING btree ("revision_id","locale");
+CREATE TABLE "cf_76010da95b54e22253bf339d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_be93f886359c4d7479d18561" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2578b49d135022e95c831b42" ON "cf_76010da95b54e22253bf339d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_761f35edeaedd7f976f05abc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "search_vector" tsvector GENERATED ALWAYS AS (to_tsvector('simple',coalesce("value",''))) STORED NOT NULL,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a0bdd34bb17166499c6c43fb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e8680e61c0e915be8f06258c" ON "cf_761f35edeaedd7f976f05abc" USING btree ("revision_id","locale");
+CREATE INDEX "ix_7beb73069459a04b1b690c89" ON "cf_761f35edeaedd7f976f05abc" USING gin ("search_vector");
+CREATE TABLE "cf_7690e017cfa61a9e114f4294" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d43b0d2ce50ce2e6ad9287a7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_116fa013a18b06692caaca56" ON "cf_7690e017cfa61a9e114f4294" USING btree ("revision_id","locale");
+CREATE TABLE "cf_76d6c9b513f13f37698328fa" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_47f609dbbb8e15fa3f657498" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_abf3766895edac3878a0e8be" ON "cf_76d6c9b513f13f37698328fa" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7758f4bbe723bfda85d82fe8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9e85725f18889cc91fdec7dc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_481661d7abe4af86e59284fa" ON "cf_7758f4bbe723bfda85d82fe8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_77749fe9e70d4fa5b5c5c377" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_259e32285f2d0610f5eee05c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_6b60042849ef8ee3e68c10eb" ON "cf_77749fe9e70d4fa5b5c5c377" USING btree ("revision_id","locale");
+CREATE TABLE "cf_77bd4bdae5bb5bd4bd8c9f64" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_971a464fbb7e809e8da693f0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d9157486e4326baef051c203" ON "cf_77bd4bdae5bb5bd4bd8c9f64" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7817529c281c07ed7f8026db" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d12dee94ac367bdd20acbdf4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_56fe4cb162afd5f2fe56d09c" ON "cf_7817529c281c07ed7f8026db" USING btree ("revision_id","locale");
+CREATE TABLE "cf_78c4897a668f5b76191e4e05" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5ce8d68b85d057a1cf50d026" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_60cba4616c88972f232a1874" ON "cf_78c4897a668f5b76191e4e05" USING btree ("revision_id","locale");
+CREATE TABLE "cf_79a6a941985e24a4a1330a4b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9a0d9f5f8c8cb56b87f17f6a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e2595060ebd3fc95b7070204" ON "cf_79a6a941985e24a4a1330a4b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_79a99200f05c0db1fda67675" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "search_vector" tsvector GENERATED ALWAYS AS (to_tsvector('simple',coalesce("value",''))) STORED NOT NULL,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_65dbf97d0be0cb15efd31d21" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ec6c9af62ad61b05b9b847f5" ON "cf_79a99200f05c0db1fda67675" USING btree ("revision_id","locale");
+CREATE INDEX "ix_cbb49377c042a475ab464254" ON "cf_79a99200f05c0db1fda67675" USING gin ("search_vector");
+CREATE TABLE "cf_7a4f7526dcf4ed7720ba8757" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2a1e1574f374dfa99174f221" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8eb75a9aa290c7508d32c3dd" ON "cf_7a4f7526dcf4ed7720ba8757" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7b33fb4eb5336a34abeade6d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fa57bc0360f647f8cf1ab271" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fc141cd5824df211938da1c1" ON "cf_7b33fb4eb5336a34abeade6d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7c83d76254f75d38fd5b45d3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ef9bddd3e4d74d58502b7db9" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_233e725ce807290929502374" ON "cf_7c83d76254f75d38fd5b45d3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7d4c55122e3ce6e49501347b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_57b85335b61e097732939ae6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_23df3f8e18674a709a623c7b" ON "cf_7d4c55122e3ce6e49501347b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7ef59f92342c800a848ee52b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1b30d944739c7172a6caa2e6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_45130a46f75954cb5c75b5e2" ON "cf_7ef59f92342c800a848ee52b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7f23e1826db46bf49f5b9829" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ad611eb304349bd23ea08c7d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_72b5106d6947cc276dd780ce" ON "cf_7f23e1826db46bf49f5b9829" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7f8ece3585e3668450608f61" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0d45af2170159a24629638c8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c0ca1712e380f07029c90d1d" ON "cf_7f8ece3585e3668450608f61" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7fd10147915357b1aefa3634" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f9d2608cf2b02b76b266fe07" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_de3db4c4ed86b5401339d88a" ON "cf_7fd10147915357b1aefa3634" USING btree ("revision_id","locale");
+CREATE TABLE "cf_7fdb0a12c9a8d9cc02d7135e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7fed420b776c2e35354cc2ea" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_731a96d98df20bf47540d8c5" ON "cf_7fdb0a12c9a8d9cc02d7135e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8048e198221ac50b7c4d4727" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_dc2e9ae83f721c1fd4c206c8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c1093491d3c1be2044ae29fa" ON "cf_8048e198221ac50b7c4d4727" USING btree ("revision_id","locale");
+CREATE TABLE "cf_80bafad94f0b317f5d9c9211" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d77b12d83cda7ad3c9ddbb1c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e2f7581a52bcbc6a3f4feec8" ON "cf_80bafad94f0b317f5d9c9211" USING btree ("revision_id","locale");
+CREATE TABLE "cf_815add62f012d8d87555f5dc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a6da487aa3a1a86245ab2dee" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d7399de3e6eff392ffadb018" ON "cf_815add62f012d8d87555f5dc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_81a11416a9b47ae4a412a5f9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cfb1c5cfe1cdda381aeb2508" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a4c9bc27dadcc76d0fef3eab" ON "cf_81a11416a9b47ae4a412a5f9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_81bda96c8cc38b0f7731f98b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_488616d55698cb4bbefbd4cc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_62caa4d9b9e949b37ca97c15" ON "cf_81bda96c8cc38b0f7731f98b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_825d2bd839bb8028d05f6a00" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6f1901159fcb3c500f54ad84" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d27040ff0c3fc0c5e1217407" ON "cf_825d2bd839bb8028d05f6a00" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8316e1c461d92723a607a85c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_63befa322617e4b877f2d102" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_823e5abd9370d637068fd2c8" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_d7a0a69f936057ac7550a0f6" ON "cf_8316e1c461d92723a607a85c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_84500cb5f28c8745cff08dc4" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8f0794e90458959ae1b54797" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9648038e1a55a387e035afd2" ON "cf_84500cb5f28c8745cff08dc4" USING btree ("revision_id","locale");
+CREATE TABLE "cf_849557e29e3c60a2e90f5b13" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4c3ca8ff25a552816f67d097" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_918fa278814d3a9bef4eeb38" ON "cf_849557e29e3c60a2e90f5b13" USING btree ("revision_id","locale");
+CREATE TABLE "cf_851b17b5e20210bb12646f4d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f09be2497df609ef695badf7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b888d44cc3bb510336efabe3" ON "cf_851b17b5e20210bb12646f4d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_85717be9211dee683f3938ed" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2f6620e39fd08f2395522a4c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_93c92e07ac24f85776591758" ON "cf_85717be9211dee683f3938ed" USING btree ("revision_id","locale");
+CREATE TABLE "cf_85aad0979fce790db2fbd543" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_289d6009c0d344279d09ecbb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ff40975d8736b152a68802e7" ON "cf_85aad0979fce790db2fbd543" USING btree ("revision_id","locale");
+CREATE TABLE "cf_86997dedd3ce2c4cbc069892" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_eca1229f2a72584cb1ae8bdc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_237281e99e5bac17754433ad" ON "cf_86997dedd3ce2c4cbc069892" USING btree ("revision_id","locale");
+CREATE TABLE "cf_86a1347b504fc416270f851e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9fe7d6f667b24451dfed34f1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cf764c3d716bdb201b061870" ON "cf_86a1347b504fc416270f851e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_86cc66152e73a87446721a33" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_bc41ae008f3f9d55ab0b5423" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_df2f4d11a5635004ccdcb413" ON "cf_86cc66152e73a87446721a33" USING btree ("revision_id","locale");
+CREATE TABLE "cf_874abc0f1082ae3656dc5859" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6285bd3e9d8d4d3880f50e9c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_80c83b3cab3cdaa4fd2f3943" ON "cf_874abc0f1082ae3656dc5859" USING btree ("revision_id","locale");
+CREATE TABLE "cf_874dd13f0dcbf4bee77e4a8c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6a68d95053cb498d81c9e1de" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d6f3e653811fbd37f7898526" ON "cf_874dd13f0dcbf4bee77e4a8c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8776a641937bc475eb47d551" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f967d6376366d2991ecc1e86" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cef55655e9ddcc89c497691b" ON "cf_8776a641937bc475eb47d551" USING btree ("revision_id","locale");
+CREATE TABLE "cf_87a648193aa7a01031f0fd7b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ce5795fe97121a79d7e475a7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b5b2551911baa476a82a4cb7" ON "cf_87a648193aa7a01031f0fd7b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8828bb2a137e0100aa46e7c4" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_33fb09a542de0c7554db3851" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f8b6493a4694453445691e55" ON "cf_8828bb2a137e0100aa46e7c4" USING btree ("revision_id","locale");
+CREATE TABLE "cf_888b5194e3b9f149e19da499" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_211e3d82a494754713a98710" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_de74a78163f242a65e2cad6c" ON "cf_888b5194e3b9f149e19da499" USING btree ("revision_id","locale");
+CREATE TABLE "cf_889938dde8ed26a28aec44f6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_82ebbae5dff73c3a376f49ab" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1464734566bb3f4de08ab5e5" ON "cf_889938dde8ed26a28aec44f6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8965d6756f03633aafe0f55a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_210e9b4672a481b9b497d64b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_02089099dd4f7c340bbee608" ON "cf_8965d6756f03633aafe0f55a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_89b4707290853535c24b7bef" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c04761746b4c3c6626a7fa84" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ad2a8882ab09f7d941a07718" ON "cf_89b4707290853535c24b7bef" USING btree ("revision_id","locale");
+CREATE TABLE "cf_89b5e83ad0746d60085a6eab" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d6a7df383f143f2357369606" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2fc59d361c9d8d21603368ca" ON "cf_89b5e83ad0746d60085a6eab" USING btree ("revision_id","locale");
+CREATE INDEX "ix_4f3ca1cf2548066527bcf2d2" ON "cf_89b5e83ad0746d60085a6eab" USING btree ("value","locale","revision_id");
+CREATE TABLE "cf_8a3ff99de25bbf8dc459c958" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_989ec8c8a55c98229cc1a1e4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c34eaf94685b703deb3b07a3" ON "cf_8a3ff99de25bbf8dc459c958" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8a8d58bf29670cd7c87d9b4a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5bb07036f389477fee74b768" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4683b06366516c9e0f2c0d02" ON "cf_8a8d58bf29670cd7c87d9b4a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8b4a3e843ed23595e0a0df3f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9187c693039a55964b055da0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4779ee0583e14f8720b47d6a" ON "cf_8b4a3e843ed23595e0a0df3f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8bfa27c1b598b742babedebe" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_42ea1ed819906bb48da75b22" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bd2a3980d40571b7ebfa3034" ON "cf_8bfa27c1b598b742babedebe" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8c55315cc59263f9962b1775" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cc68d19af723d6e8b00df114" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_29056a0397bca774727990c7" ON "cf_8c55315cc59263f9962b1775" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8c5e25b0ce65acffee1ea80c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ce83b098e7f848a1e23a0cc7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e9b4dbdb7347f47d1e3bd0ef" ON "cf_8c5e25b0ce65acffee1ea80c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8d58ea6afb761fd4c254aab9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a8ccd16d9aa258638a23ab2e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0cf1e322ee13c3f09c1c865d" ON "cf_8d58ea6afb761fd4c254aab9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8e49ad5bb92ef10f92de2d37" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e073e387e107b9a1a9ef554c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f72b4c3e6ae65bb4897be707" ON "cf_8e49ad5bb92ef10f92de2d37" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8f3c8fc44c8d11fa4da90872" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fc060ab74a2bbbfe9f6afbf1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f43180b7587779372d7b2e92" ON "cf_8f3c8fc44c8d11fa4da90872" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8fca1745d718bf69a312cdfb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_869c8b845f221b08bd065447" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_488fd06324514a33820189ea" ON "cf_8fca1745d718bf69a312cdfb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_8fef229341ac1bf497990d13" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4c3604a9f37e16865cc5bc9d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c29dd1ad85f0618ff9eba177" ON "cf_8fef229341ac1bf497990d13" USING btree ("revision_id","locale");
+CREATE TABLE "cf_90380ace66bcff014e139dd3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_411319eb75d078f5db842c70" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bbb69da033a890223b37c545" ON "cf_90380ace66bcff014e139dd3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_906f77c12f9a0f7c5a8d58ca" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_511483d18af8f5a68ff9057a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_44de763ccc2590eeabd6599b" ON "cf_906f77c12f9a0f7c5a8d58ca" USING btree ("revision_id","locale");
+CREATE TABLE "cf_913257db3451a9ac7621f48a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_784fd292e4e0f920c1a7a0f2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_397c1ebcc040d51836f30514" ON "cf_913257db3451a9ac7621f48a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_91c03b733a23918846588a2f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_bd06e7fbe13f102d39361800" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_659c74746694192150610530" ON "cf_91c03b733a23918846588a2f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9281d88e7fc0efac24cd0439" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6fd55ce089da4f438143b38e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9f9e7d651281426e50b39736" ON "cf_9281d88e7fc0efac24cd0439" USING btree ("revision_id","locale");
+CREATE TABLE "cf_92829a69776ad52790993a61" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e98862cc8f025a12d8ea86e8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f43bee6f1494c321158e6d1d" ON "cf_92829a69776ad52790993a61" USING btree ("revision_id","locale");
+CREATE TABLE "cf_929e4cf21f97996fed484788" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6ec25d85cadf26f74c14ce86" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b06378adf6c9b9cbb2413f72" ON "cf_929e4cf21f97996fed484788" USING btree ("revision_id","locale");
+CREATE TABLE "cf_92a1d63bc508c7703084d687" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_54f8e184e97d4ab26066383f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8464049644d97eb8a717c14c" ON "cf_92a1d63bc508c7703084d687" USING btree ("revision_id","locale");
+CREATE TABLE "cf_92dfcdccc3e80b46aa13818d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_dbfe1e133071d13fbb72499f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cdf66be73652ce510a76d8b6" ON "cf_92dfcdccc3e80b46aa13818d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_938520f4a8d983ddc1b9c23a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5d8259cc891704d847b66245" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_28110c1062704375255c5a20" ON "cf_938520f4a8d983ddc1b9c23a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_93eb792864d7072c7c7b5f4b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_110b2ecbb5293ff5354068ea" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_88979d889bdc2648d6de93a5" ON "cf_93eb792864d7072c7c7b5f4b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_941141f804cd0bd5725e831b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_395e54a6cc2eb61c47365012" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_58d779511ea5bd2c1c8ff098" ON "cf_941141f804cd0bd5725e831b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_949eb9b813c3df46605b0773" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ac8d2c4063099e4aef74aacd" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1cf0ff6585f3e827c47f93ba" ON "cf_949eb9b813c3df46605b0773" USING btree ("revision_id","locale");
+CREATE TABLE "cf_958c57ca877c479ca1f596ae" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8c909c8ae31ce27f94fbc33c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d645d583c78a8229e173b781" ON "cf_958c57ca877c479ca1f596ae" USING btree ("revision_id","locale");
+CREATE TABLE "cf_967ee5e052e4f0bfebeacd45" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_021826c089a4b1ce9d001a09" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fdaaa0d9580906a57d0439b6" ON "cf_967ee5e052e4f0bfebeacd45" USING btree ("revision_id","locale");
+CREATE TABLE "cf_96c58b9ffc710fb6cd4781c5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ee150ca4f11b983d6c4cd26e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_17bf351249fee7d3ecee1533" ON "cf_96c58b9ffc710fb6cd4781c5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_96f91d79d216efce46187daa" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_37de9c8a2f3bbd7145908d5a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ad8972f86f32c850eb2013b9" ON "cf_96f91d79d216efce46187daa" USING btree ("revision_id","locale");
+CREATE TABLE "cf_96fdf03bb528fa5bec0978ef" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b6773ba61870addc065f69fb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8facdd39ffcde5cfff8176c6" ON "cf_96fdf03bb528fa5bec0978ef" USING btree ("revision_id","locale");
+CREATE TABLE "cf_97142d43bb312a19e7d9a2cf" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_35cb16632bc8223be057cd6f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0118d9096542116a83a9200a" ON "cf_97142d43bb312a19e7d9a2cf" USING btree ("revision_id","locale");
+CREATE TABLE "cf_97a33d2330b43aa33f0becdc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d9863820f1c74f72a41b6c40" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_be7df890ab0d81a08eef47d7" ON "cf_97a33d2330b43aa33f0becdc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_98432137ef25c6a50313fde5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0b5fbdfe143d99e15ba69a08" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1fdb53fd985f31ba95870556" ON "cf_98432137ef25c6a50313fde5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9875a9629ff521082e8f3591" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ad69b183a7b7b04aebdd4d71" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_958eb06047c75838da332394" ON "cf_9875a9629ff521082e8f3591" USING btree ("revision_id","locale");
+CREATE TABLE "cf_98c1971e9f287e7ff1256b9c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b7924b6af30ad17230c1fdba" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9a7937515e40e4206bd59910" ON "cf_98c1971e9f287e7ff1256b9c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_98ee6ecb7bb30f9dadbad182" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_675c3aae259858ce17815fb3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fc9ec15c88eb7862d7cf2976" ON "cf_98ee6ecb7bb30f9dadbad182" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9960ac1cb27aeb689110ee34" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fd37ca27830dade2f2eac334" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_dcd023618caa2452b67f07b3" ON "cf_9960ac1cb27aeb689110ee34" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9969bc9e2fbe11ed840cba38" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ab7368de5deb5275708f5a71" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_07726e6e5c97fcf7a57d74b6" ON "cf_9969bc9e2fbe11ed840cba38" USING btree ("revision_id","locale");
+CREATE TABLE "cf_998ee292dbe95a0841a10e0a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_dda9e5d16cd3066f814591c5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3cc0513d4a12936777fd3e3f" ON "cf_998ee292dbe95a0841a10e0a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9a5455cf79b6f8172f87cf5c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_bb31df153fd9e740812232ed" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ba8c2d01c3c3ab9e6026707b" ON "cf_9a5455cf79b6f8172f87cf5c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9a5474c208e306b8f729630c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3a66e96fbfc8d77388a22fd4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3f9dd32bc911826286e4295e" ON "cf_9a5474c208e306b8f729630c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9ad6e9e99320994ece0b40a9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4bde13321dec5465416302c7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_90d162a5b62e89687574c25d" ON "cf_9ad6e9e99320994ece0b40a9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9b2060e0a6d045a7e0618ff3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ec356c690f95f106cbfcd772" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_267b355b877f7ab45169d2ee" ON "cf_9b2060e0a6d045a7e0618ff3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9c8a3723556d72ba7d8e5566" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4cda66a3da4232d28e51c77a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_598aff662f3a5054b9085eb7" ON "cf_9c8a3723556d72ba7d8e5566" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9cd092b8df8f161d26983865" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9ec465a02d295fcaa01127f5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_123425991f2d1b76ed5943b5" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_90e8075bb6c97101a77e4d49" ON "cf_9cd092b8df8f161d26983865" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9d070e2b2b22d6f44fdc7b99" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_87465646246517d03bb346ff" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a5ebe0628253593853bff51c" ON "cf_9d070e2b2b22d6f44fdc7b99" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9d8474135207b327c100d116" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_bd941abbed8feabe822a56ad" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_effdaf774df364f336875af9" ON "cf_9d8474135207b327c100d116" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9d9e61f21ba4380be8c8ea88" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5fac06ff7d79abe4260c3881" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2a8f492a4dad3cc8d5207ec5" ON "cf_9d9e61f21ba4380be8c8ea88" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9df763b4ab32fcd12da7d5f8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7b3f08c52f6c171bf0205af0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5dcc45e7ffae752ee00de0b3" ON "cf_9df763b4ab32fcd12da7d5f8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9dfc89b2dfd4b8ef1cf5a942" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_35598851409a8fd3ceadce77" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_89d846c68b2d814980a7ece5" ON "cf_9dfc89b2dfd4b8ef1cf5a942" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9e78a0fece465f591defb6d5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_34892c940015c8caef4584f5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2eac6836ef227d550520c3cc" ON "cf_9e78a0fece465f591defb6d5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9ea52c9068333d1f84c67e23" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_22bdf214ad2e6dcdf66ebc83" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_225e8ba6ae3c63f79ad41bbd" ON "cf_9ea52c9068333d1f84c67e23" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9fccd8f79760f6ed773514dd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_20cf6b1aae4e7ecc131020c8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_04056212f713f695559157e0" ON "cf_9fccd8f79760f6ed773514dd" USING btree ("revision_id","locale");
+CREATE TABLE "cf_9ff505954757fe126de03d4b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_74086c247549fda5197bdfd3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f66892873e62ee073db76739" ON "cf_9ff505954757fe126de03d4b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a0b1c4c19435c7b7d245dd9e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d47d38ab1a2b97dcbca2acd1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c2db9777934a487bf37172ee" ON "cf_a0b1c4c19435c7b7d245dd9e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a2b04ecd11caf98249029a46" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cea30b94d30e41008be71dda" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3c6cb1ca72132db58dda56fe" ON "cf_a2b04ecd11caf98249029a46" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a2c0c13ff4b0b64dd8166c56" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_72d9b60f662aa7cb34a5309e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9735f3d94e09623d91bb52e0" ON "cf_a2c0c13ff4b0b64dd8166c56" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a3a85157c5875e45c67dd386" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_33c1fe75dafdd0c8d67f3b40" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1d0af7b16bade759fe915f49" ON "cf_a3a85157c5875e45c67dd386" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a3d19bae6aaf602b2783444f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_21b62b0d20e186c72c5b24c8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d436b6cf714153a3eb0dd14d" ON "cf_a3d19bae6aaf602b2783444f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a4d2040ccc4d2267223ee6d1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a32a07fcf66a9fd4c5018a4c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3336297767531b22e3fd5978" ON "cf_a4d2040ccc4d2267223ee6d1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a4d48adffc1744d7ddd859d5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_13d29c42ebd447e02c1dc2c0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0b9df05c39e500803178a52e" ON "cf_a4d48adffc1744d7ddd859d5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a4e8e1b58c079b6d295a0b44" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_81e0a54e3f75dd3a221e8470" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ced39c2d4893a86f22e9189f" ON "cf_a4e8e1b58c079b6d295a0b44" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a4ef4c05bfe0659745ee0229" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cb85c8d95eaff592c11564b5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7a1e2effa5fb461990eb486e" ON "cf_a4ef4c05bfe0659745ee0229" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a54daa2d3b520001a3cbb2cb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d7150a2099c4bc1a5028b10f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3a6684a3fc3bace9039f24b8" ON "cf_a54daa2d3b520001a3cbb2cb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a6f67237dd53303d228f401d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_48fc2f6aab559fc718d6e73b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_46a184ec77a183dedcfd73e5" ON "cf_a6f67237dd53303d228f401d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a70a075c854a2199069dcfcb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a57a077d0eb35f6a02b26f46" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_07e35647564b4b5fd2bd4598" ON "cf_a70a075c854a2199069dcfcb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a8437cd1fece6c1ae770ecc2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a9d0426d55c661fa480df24c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a4bdad17b7e594cab3654589" ON "cf_a8437cd1fece6c1ae770ecc2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_a9157dee9eb5baf3cb0ec259" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_af3a309aac8891aa2aa3bf6a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d84fc115c7737b16117a4cdb" ON "cf_a9157dee9eb5baf3cb0ec259" USING btree ("revision_id","locale");
+CREATE TABLE "cf_aafcbccf6f48db893f8bfb9c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e2f2ee0cc9949c786750011d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_27bd66a19dc575a3fb19785a" ON "cf_aafcbccf6f48db893f8bfb9c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ab5294672999b899d9dd79c2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_40ff046bfd3d8a38afe00331" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bc789de8e4b6f0a530ba6ec9" ON "cf_ab5294672999b899d9dd79c2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_abeaf6f5cf406be0c5ea86c9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1a13203d1a637965d7c865b3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_85a3343ca98de9916864b888" ON "cf_abeaf6f5cf406be0c5ea86c9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ac35c22cb5d278ec2ea5e2bd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a81c1cee1023438182326739" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_804badad0bd7c25d8ff0c6a8" ON "cf_ac35c22cb5d278ec2ea5e2bd" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ac9cda88954c0f01f1fe394e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b364d952cbb11652ccc4eb0c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_cc5843cb3e8b3a1beb8e719a" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_ffcc0d30e0bf08c9f29c32e4" ON "cf_ac9cda88954c0f01f1fe394e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ad2f75aa04964314b796002c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6526211317871b83e03028b8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_87637c30b52d0078e385640f" ON "cf_ad2f75aa04964314b796002c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_adc8fec0e0f183e2050ea7c3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d5056bdb7c51bc1a66c791dd" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a4fc1f57fb0ef3fd630ddad6" ON "cf_adc8fec0e0f183e2050ea7c3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_af2cfcf2527dd10503bad43c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f93628c5770bf46531c0a998" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0b361f53190cce50e6ad4e03" ON "cf_af2cfcf2527dd10503bad43c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b0412a702456c2d81e7db7f9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f6a9defecdd0f4105309c107" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3229fd98eb756b2abc339b36" ON "cf_b0412a702456c2d81e7db7f9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b048c65964a9f9c2d8e5102e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0a2b1654b6a44fb4676b3e70" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1b855a1a109303c54fb3d84e" ON "cf_b048c65964a9f9c2d8e5102e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b04fd65ea3adc0db548d6f00" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9ce8c539785c56996d3db936" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7b2fcad2368555fd51f0db28" ON "cf_b04fd65ea3adc0db548d6f00" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b091cdb2a7315fbd00f1ab37" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7a707e2d1c98154422b67fad" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c594038c7cd742b04d8465cd" ON "cf_b091cdb2a7315fbd00f1ab37" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b0bd570a9d6cbe91285e404c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3fcc5c0b676bc0a6a8f57903" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_de8e5bf9da46598a728af3db" ON "cf_b0bd570a9d6cbe91285e404c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b134367476d0bd2382c0ac11" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_26f9ed6a68119170c99b75f3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_29c9973b58d403bb4c5f3a1b" ON "cf_b134367476d0bd2382c0ac11" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b5b54efa7becc947afeed61c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_40ac5ae9c38002230842fbfe" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0c28c15d3fcf51fb9fcde1b6" ON "cf_b5b54efa7becc947afeed61c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b6eed262f569483eeb7aa5bc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5065961be69bef87d8af454c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cdf91e1d2bfaa14d1a3f4994" ON "cf_b6eed262f569483eeb7aa5bc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b8320f1859970ca10ee3289e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fce29c4adf6c722f708c83da" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b8b505cb6b2d365b84df77a5" ON "cf_b8320f1859970ca10ee3289e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b89e9eb816ce433d003012a3" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e7c19988e57ce73b4e5eeea8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d8abac545b0385a9cae8b4ee" ON "cf_b89e9eb816ce433d003012a3" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b928f8f2092ea23eec6bfdbb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_602070deb409d42647bc9403" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_eee55b85226ca9bae5c3237f" ON "cf_b928f8f2092ea23eec6bfdbb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b938e2c42b620740573a4552" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c6f0382a73bd25409e0cf178" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8a2581e4ec87e9839e629106" ON "cf_b938e2c42b620740573a4552" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b955a89ac44e12e8694d80da" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1e88e864c1c11db56c00c266" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e87f44829f45ee1eba3a7857" ON "cf_b955a89ac44e12e8694d80da" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b971a8059842c2c1c3509540" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9694432360d283a9c893e89e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_44d4c72c58378c11b1ec47fb" ON "cf_b971a8059842c2c1c3509540" USING btree ("revision_id","locale");
+CREATE TABLE "cf_b9a3663d219c4e5a3b1ddbca" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_603677674aa8eec4874836c6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_028f952a9535a43c39f8345f" ON "cf_b9a3663d219c4e5a3b1ddbca" USING btree ("revision_id","locale");
+CREATE TABLE "cf_bb6da7934470c8df634c6fba" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d4241d0841cf5ee30845bb67" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_c148fc404bc3ae47433a9b15" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_9b12654303da70b08c3dfd12" ON "cf_bb6da7934470c8df634c6fba" USING btree ("revision_id","locale");
+CREATE TABLE "cf_bb7df60063c3a0a21f46fb5a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_da05c0c0ba4555445a9e7c96" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4d79dd8633c6bdedf388d2e3" ON "cf_bb7df60063c3a0a21f46fb5a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_bbfe540c4b32730036548bb1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f5cd5ed841a3729e0812317b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4cb0e59003cbe29af37c55c4" ON "cf_bbfe540c4b32730036548bb1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_bc7777836762011dfa7bebfc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7571fa16362ed57b34906401" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2ab12984c90be365eb0a64ea" ON "cf_bc7777836762011dfa7bebfc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_bcb5417ed0c99e8c593edc94" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8a560eb104274c6c86a705d8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_08ffb598def65fb12fbb2c91" ON "cf_bcb5417ed0c99e8c593edc94" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c01ea48e0f03c0240808aafc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5d1ebcf3bcd64e3ab6cd8658" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_01c7428639dcf7ed49fec921" ON "cf_c01ea48e0f03c0240808aafc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c0fa13010cfb334ee642a775" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1b09eabc953994599dfa6c3f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_339de18beb63b64bb1815ad0" ON "cf_c0fa13010cfb334ee642a775" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c2220244dc82a95b0571e8e2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_63ff77c8eef0e227f544ee51" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8300626c28a77ddd7c0720bf" ON "cf_c2220244dc82a95b0571e8e2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c2f8635c7d06764fdd105758" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_226d729db028c4537f3d400f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5700688641bfd59ba03c9b51" ON "cf_c2f8635c7d06764fdd105758" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c3e6cf00970675e3f9e0f938" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_aff88c26df54f3d3f6fc619f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_5c6a0d53170ff6bde86908f8" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_99b536116aa59a5631278774" ON "cf_c3e6cf00970675e3f9e0f938" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c42b002c57ee1eaa702cf264" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_53d79963581cc69b3337ac2d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_56c53d347d168680e6145942" ON "cf_c42b002c57ee1eaa702cf264" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c4986caf85d95bf3658c7a0b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d2c3e72c88c9e787286dcd89" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_881cd90d282a355999ba56df" ON "cf_c4986caf85d95bf3658c7a0b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c4bd62068157597da5d84457" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_662cc13712663c1adad41e7f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5b6cac50f0616cb6aaeb7345" ON "cf_c4bd62068157597da5d84457" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c62155a4d0186218eb446dda" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c2474c0beb86a007f0de4cd5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b963c1930ae68518cbfa1285" ON "cf_c62155a4d0186218eb446dda" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c6246b4257ea889f04c52b24" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fa901fa0004c6d4f74c28cee" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_04d69b03501e96e8635172ba" ON "cf_c6246b4257ea889f04c52b24" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c6d23e816fb22b5bae5d6984" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cb725946eaba22490cf04773" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8bf8b14ab0b176288a74d3ac" ON "cf_c6d23e816fb22b5bae5d6984" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c7a21b86881cc4bee63f6cd7" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6875e545128e36ce3229b6e4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_909055bf37fba75cad41f83a" ON "cf_c7a21b86881cc4bee63f6cd7" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c811037465e5c32fc99047bb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ceb39111059b0aa3123dbd19" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b441fc31de5e834c38ffbbd7" ON "cf_c811037465e5c32fc99047bb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c83be34e05b29133c012f4dc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3cfbd67e0c11e607dbdf411d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3c187d4b5a769cf503c13d0b" ON "cf_c83be34e05b29133c012f4dc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c85ce1a5bc3449109b68a2bf" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1078716e0e2906b8fb1d662c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cdca3ea474e290c238d51f08" ON "cf_c85ce1a5bc3449109b68a2bf" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c888b90025ed123d6f3ce155" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_16992381bac297ca7f6e92f5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_faf3b42f82ecd4388b1975c1" ON "cf_c888b90025ed123d6f3ce155" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c88c13277a8e496bd8f42426" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e5c48c5560095d285bb0b68e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5b01ab1b5e53ca3d5668dc50" ON "cf_c88c13277a8e496bd8f42426" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c968328cd9eb837879022b81" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d875c0ce97ec11573a3df667" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e6e9e4a93f4bb007b01dcd12" ON "cf_c968328cd9eb837879022b81" USING btree ("revision_id","locale");
+CREATE TABLE "cf_c9d1f918fec2c144d641c93d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5566103aadde5defe2ede827" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_760c02bb4afb7ffdb00e93f7" ON "cf_c9d1f918fec2c144d641c93d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ca1fba197e3eda7cb86450b0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f32567c0ae02ac3214caeec4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b3804c54bb136cddf586b03e" ON "cf_ca1fba197e3eda7cb86450b0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ca40ae9ea713307f4c7b4604" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_da23777c67a8e75e0a7bcfc4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3e65dda02c8ce1a4e38364bf" ON "cf_ca40ae9ea713307f4c7b4604" USING btree ("revision_id","locale");
+CREATE TABLE "cf_cb2f872e0ca6310d7b6e6fa2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f892e6be2c48221357b85dcc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_86d18da34ec956b4066725b9" ON "cf_cb2f872e0ca6310d7b6e6fa2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_cc12139fa72dc136efc70af6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8499f8752dab1968614339cf" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ceb70e87872cf9a631745e22" ON "cf_cc12139fa72dc136efc70af6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_cd413b47f4f216f24ba6c380" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_983657403cf5fa14d7499e54" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_65e1a25ad0c5c90731b881b9" ON "cf_cd413b47f4f216f24ba6c380" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ce051ddf37e7df53914081dd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_def7b4833940e5efc43d6f4d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_60cf4dd717505362d9a0021e" ON "cf_ce051ddf37e7df53914081dd" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ce5a0226b3bea34c9408286e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_834e160e4e7e7d8255dc2cd4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c95ae280620f90024722e84b" ON "cf_ce5a0226b3bea34c9408286e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ce8b575953c93027c3a8a26e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e1ca51e0c8795876fcda047d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d9b8cdad67e52f40244ae599" ON "cf_ce8b575953c93027c3a8a26e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_cea69e849b3fb0d7e6bd46eb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f2810c7fc65afbb761a04746" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8c834180fe31cc1d052d8d2b" ON "cf_cea69e849b3fb0d7e6bd46eb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_cf0a0594b71077c0bb5230aa" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4f4f88a1ce1d238e49ce754d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ebd8cb70cf28936906179263" ON "cf_cf0a0594b71077c0bb5230aa" USING btree ("revision_id","locale");
+CREATE TABLE "cf_cf52ca39c9868f5285ea6be2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_41b3ce6cebf7b7befc425228" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0f0476f6274b57749c9a88de" ON "cf_cf52ca39c9868f5285ea6be2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d02f070e8a6cda96205f8cc0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_768cf8a1177e575fa125dec5" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_109b21450e50c37890f5321b" ON "cf_d02f070e8a6cda96205f8cc0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d078630daa805450c1042f8f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_474410f19e5c102e9c5bc4f2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_eca564333f551dc8f3f017e6" ON "cf_d078630daa805450c1042f8f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d07bc4d2754ca3be5da81571" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c745262e3c6787c3e54bdfb7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_08a86a8efc80f4e5c6396733" ON "cf_d07bc4d2754ca3be5da81571" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d13e7400f0cf2e8ff90f61b4" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_717bd2c51b7903d90b17909d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f27bee93d750684d982e0577" ON "cf_d13e7400f0cf2e8ff90f61b4" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d1e96a827aa19cd31f6b5b9a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c13a2f71a99118db023e60e8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bbbbd563ce7c81bf9687cd7b" ON "cf_d1e96a827aa19cd31f6b5b9a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d3d1a9443914e0098c77614f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cadc549e68d067f9cf3a5699" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bddb342fe20e3f099597ca1a" ON "cf_d3d1a9443914e0098c77614f" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d40fd6e7ebe77262ec9ab9fa" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a65b6856a696e4738eee2041" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cfc54b7aedb59d7cff4bab00" ON "cf_d40fd6e7ebe77262ec9ab9fa" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d482d832fab169771f413d57" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_976c3927f71a71c3f3479a85" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fbd14d9f32fb00593853a568" ON "cf_d482d832fab169771f413d57" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d4a67c4d3ad970bf07c591b7" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8c4a9d69e4da97edfa5e1ed6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_18e70ae110610c5951db05a0" ON "cf_d4a67c4d3ad970bf07c591b7" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d4abaee3a57fde37af0b1fb0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cc749402c2df11cf638b9ca3" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b8e363e9aa12b95e0a2ec133" ON "cf_d4abaee3a57fde37af0b1fb0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d4e3ae8c01b32e1fe0b0db89" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a80630a7f8a23fa19a253dbb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_22db428e5d96a0d0eb97f60f" ON "cf_d4e3ae8c01b32e1fe0b0db89" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d596322d384c4cc028f66eab" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_d04d749ad29ae34cf0fd4141" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cc64769e3ea21acf0f9a96e5" ON "cf_d596322d384c4cc028f66eab" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d5a9bf92bebcf300c069ff27" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_45fd78a3d854547e586669e0" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5869aabcd8ced3fb2985e4de" ON "cf_d5a9bf92bebcf300c069ff27" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d5b213341c89e73cbd02cfd6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_130b7954bfaacfd5072af451" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2861849d919278c3fb5976d7" ON "cf_d5b213341c89e73cbd02cfd6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d619fbd6c712044096d57490" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c1ad6effa80338eecb40fb77" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_926f177787985c1d7f476597" ON "cf_d619fbd6c712044096d57490" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d7a31d3942b5a52f095663c5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_4022a9ff6f170af1eda54e2b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c700035b545ac682d3b6cc66" ON "cf_d7a31d3942b5a52f095663c5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d89592638d0045ae8894ebbe" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c7d4ead2355ee7240aeec29d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bf619dec26bb436223115a75" ON "cf_d89592638d0045ae8894ebbe" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d8dc13feed469431ca47e64c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_9a452448eecff021f25f0d7d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2f31470fc33208ab9377784e" ON "cf_d8dc13feed469431ca47e64c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d8e7243b05dfee5587b65e8b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b0a7a3e589ea28bec4cce4bc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_285ef9735abdd07c3bac7510" ON "cf_d8e7243b05dfee5587b65e8b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_d9a317f2b5e1db2e70cacfde" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b575e5b016f5f9a0762da927" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b9aca849ab96e3b1c44b77f8" ON "cf_d9a317f2b5e1db2e70cacfde" USING btree ("revision_id","locale");
+CREATE TABLE "cf_dce8ae0827ef924dafaa4aab" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_a375d94164dce66de7010426" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_c19ca4fc5494c48ff3761b78" ON "cf_dce8ae0827ef924dafaa4aab" USING btree ("revision_id","locale");
+CREATE TABLE "cf_dd0ae38c1d24f663363803cb" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6de2a3e7323c4c963ba9917b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cd32aae2a9301009f3acb5bb" ON "cf_dd0ae38c1d24f663363803cb" USING btree ("revision_id","locale");
+CREATE TABLE "cf_dde6f18a2ff4720ef789fbd9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f3834a08813b791bc4d6a59e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_6627b7f68a7aa4b754a59340" ON "cf_dde6f18a2ff4720ef789fbd9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_de6c3d199e79deb12e4b5e85" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" timestamptz,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_1bcf545092c0af1419ce3ca2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_65b4676098670d8b0d4ec204" ON "cf_de6c3d199e79deb12e4b5e85" USING btree ("revision_id","locale");
+CREATE TABLE "cf_de8027278f47bf70865420c1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_290d28527aa6a22b889b3da9" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a2fdf4d60e52e1400938fbb4" ON "cf_de8027278f47bf70865420c1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_df168cd35e5af7fed4298a60" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_69c5e4fdc91547492848cc7f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d8fb99e240935662b879634e" ON "cf_df168cd35e5af7fed4298a60" USING btree ("revision_id","locale");
+CREATE TABLE "cf_df3363b47791d04385226b68" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ea818fc9f2a7f22393f96aba" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_6234e99b15558e6d4afe4d9d" ON "cf_df3363b47791d04385226b68" USING btree ("revision_id","locale");
+CREATE TABLE "cf_df3a13ed00976e1982a114bd" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6742b83c7f632d459247755c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e00ace01674ee68e649ecc99" ON "cf_df3a13ed00976e1982a114bd" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e001233052ae3eb9e0afb472" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b936b148e4225f2b2d1bfe38" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f1f18e31125fecacb64acd56" ON "cf_e001233052ae3eb9e0afb472" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e066ebbb576073ae70af1a29" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_0ce857ea76ff28c8b8838c28" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b9f3580ff0419dbacab84c51" ON "cf_e066ebbb576073ae70af1a29" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e08bd72fc37999bfe425856b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5027875ba02433747809b3bf" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_61c8589cad2f176311cce216" ON "cf_e08bd72fc37999bfe425856b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e0ede25f6b040fb92b4a9ba0" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7dbf9ecadb89d722c326a638" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_845aceec75b5488252fd95d0" ON "cf_e0ede25f6b040fb92b4a9ba0" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e11b8b3a30832e2d5a095fd7" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_672413ad9dc227a5bf1c9918" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2901373460192477a7fd05f6" ON "cf_e11b8b3a30832e2d5a095fd7" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e22dd565be7dca618060ec4b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fcb9dc5dd6befd84ad475673" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_a5306b69601f35df6b44588a" ON "cf_e22dd565be7dca618060ec4b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e2b6218bc8bc2e6d596a409e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_425c447dcc909e2ef41864fa" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0282baa7cd7e5166192bc6e5" ON "cf_e2b6218bc8bc2e6d596a409e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e2e7706ab0707f42c4fd49a8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f01f1a22d19811434fe0a937" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0c59839b74c8be408d96590d" ON "cf_e2e7706ab0707f42c4fd49a8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e376725b356b0d45ebcb8b09" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_10e1ec2bd0d6ee4981857f72" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5600b020631f5a10897d6963" ON "cf_e376725b356b0d45ebcb8b09" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e390d2211e76d14865735375" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_192d445049745749560c727b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_eefe9629921a2ffe58c41130" ON "cf_e390d2211e76d14865735375" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e3b34f211e41afa4c8c290e6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "search_vector" tsvector GENERATED ALWAYS AS (to_tsvector('simple',coalesce("value",''))) STORED NOT NULL,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_70da76fa36d129ceaaefc85b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d7610b8781b2799f0e75cac5" ON "cf_e3b34f211e41afa4c8c290e6" USING btree ("revision_id","locale");
+CREATE INDEX "ix_a9e1effc2df95ac98534b39f" ON "cf_e3b34f211e41afa4c8c290e6" USING gin ("search_vector");
+CREATE TABLE "cf_e3e3281c79271e3f349cd65a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_62595923f0c279d8d7ba403a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4fe2652c75787720d2e631e9" ON "cf_e3e3281c79271e3f349cd65a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e5c22f20cd27618e41787fb2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_63ca78096dec4f3e89a59404" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f6f5de0fe90e70ab6c09f48c" ON "cf_e5c22f20cd27618e41787fb2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e63826c955be1c04467a310b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" double precision,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_71f944fc7e2b30d9c339b40e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_6de2a21443b404f721830ce7" ON "cf_e63826c955be1c04467a310b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e7b9de96bc19fd4da4ebf6c1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_fc09710f0689ff2a9d04a266" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4bf230112106862ef6c03b40" ON "cf_e7b9de96bc19fd4da4ebf6c1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e7c3e92de74e85e202804cd9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_b1ddfd3729abd25d0a7e4f30" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_08ac53bf1e74dd38fa9f89ff" ON "cf_e7c3e92de74e85e202804cd9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e7e4960af3dc49cd66e7e4f4" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8d937845b276e86004d4a8d2" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_40ab8abf2a4bd1c4158b132f" ON "cf_e7e4960af3dc49cd66e7e4f4" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e80a3d7fece26f2d8d097ac6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f4ab6ece21dd55d38a077e84" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1b4796f98aac9fccb1a77b66" ON "cf_e80a3d7fece26f2d8d097ac6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e8b67bb5d4afe76a306bd5b2" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_633b03676ee2d7b97c04387d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f2e40c913bae9f9f9ee52e82" ON "cf_e8b67bb5d4afe76a306bd5b2" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e8dd92902a797b4607e47837" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_de4b64302ad18714f5887352" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5d9dbb8bbc241baa9c497372" ON "cf_e8dd92902a797b4607e47837" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e8f1481023a5b73ea8faf660" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ebeb3172fc225d700a7bfca7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_257b61fcf01ebd78a1774716" ON "cf_e8f1481023a5b73ea8faf660" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e8fdb8f8c1aefd602d826d8a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3cc19074f6b90bbd3ef75fad" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2c2ef095b47aa6eb34cd453a" ON "cf_e8fdb8f8c1aefd602d826d8a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e9ba09ebb5de47a167fb4147" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_bc7d36244fff501966179479" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_017c1fd268428e45b32b5906" ON "cf_e9ba09ebb5de47a167fb4147" USING btree ("revision_id","locale");
+CREATE TABLE "cf_e9ef4df589feae2e7bf74ecc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_299bb662c550ed3112c1a578" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_913062544eb5d14460e0e2e8" ON "cf_e9ef4df589feae2e7bf74ecc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ea4e71fc03abd40cd4f5abf9" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_afc3f4d09ff450c52f4566ed" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d202f3ef9b5d553b09e2b0dd" ON "cf_ea4e71fc03abd40cd4f5abf9" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ea531966c32f9edd88c095dc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_33de1aaf53e4352c42145e1a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_9d344ab47f2617564ef64625" ON "cf_ea531966c32f9edd88c095dc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_eadb212e7320a59dcc5af18b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cecfb79cb616858c5588987f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fa319e3ada11c4a3bc5b2254" ON "cf_eadb212e7320a59dcc5af18b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_eb3af47fe2ee156bae490f72" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_386e1937cf98888212f19624" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_229a9dd1cfb4686648fe631a" ON "cf_eb3af47fe2ee156bae490f72" USING btree ("revision_id","locale");
+CREATE TABLE "cf_eb51779a96b85b2fe0a20a78" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f07412f108a7b4e15327304f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_909f0cbf3b90aad53e473182" ON "cf_eb51779a96b85b2fe0a20a78" USING btree ("revision_id","locale");
+CREATE TABLE "cf_eb9f134d3d7273c42e9e6cd1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ac2d2d507f0e17b7132febff" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_092c7ec48b3f663b4b577137" ON "cf_eb9f134d3d7273c42e9e6cd1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ebdfc84d3944eeebeddeb0d5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2767489cc7a89eb889333da4" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_cc88f4286289468dae9a8fa0" ON "cf_ebdfc84d3944eeebeddeb0d5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_eca49aaf91324c4351aa5471" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8e1bad0849899a4e14206068" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_627efbfae7fc975e17f0783a" ON "cf_eca49aaf91324c4351aa5471" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ede5d45fba779e441a24025b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "search_vector" tsvector GENERATED ALWAYS AS (to_tsvector('simple',coalesce("value",''))) STORED NOT NULL,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_929714943cdef05e1569df6f" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_ca574f4a34226e5c86359642" ON "cf_ede5d45fba779e441a24025b" USING btree ("revision_id","locale");
+CREATE INDEX "ix_57be6ce5e4c17c7701dbe546" ON "cf_ede5d45fba779e441a24025b" USING gin ("search_vector");
+CREATE TABLE "cf_eeb9b4caa097e6a5c96ed387" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_569ef924350dd48bb616bc85" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b73f641d4c336a2be0c428db" ON "cf_eeb9b4caa097e6a5c96ed387" USING btree ("revision_id","locale");
+CREATE TABLE "cf_eec46ee72bafba479320353b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7f6d3b452f1ba8053ce3d48d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_267e4c18225cffaba275044d" ON "cf_eec46ee72bafba479320353b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f0c986609eec7b12191c8b83" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_96a43b3fa513208efa29730e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_43b43248bcb6459cc73f6b4f" ON "cf_f0c986609eec7b12191c8b83" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f102aa1a8d1f73cd07c5cbe1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_34733426ae9c11f141713fb6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3139e1cca70750fadb617092" ON "cf_f102aa1a8d1f73cd07c5cbe1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f1b91a01b2e2d6b6b047f81d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_f52f12f4d31dfc05106d896a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_3a8cffdb07233daf3e7d66c5" ON "cf_f1b91a01b2e2d6b6b047f81d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f2146dfbfaa5b356b83f6882" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c6a7b9b159d3f12f7150e2ca" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_b300f149464306ad79617948" ON "cf_f2146dfbfaa5b356b83f6882" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f233f3586d3d721066d9150e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c713addbfcf23e7564b8302d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_065efb58a38826a0de2ea30d" ON "cf_f233f3586d3d721066d9150e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f284fcf26208ec0e06d88bfa" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_2361466038ed504f716c6b69" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d35a1c60e556490b62ba8318" ON "cf_f284fcf26208ec0e06d88bfa" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f2a32a64231599330f13ac24" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_00ecf8b7081aa590eb9f8a78" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5d0f32cc55884431911f44d2" ON "cf_f2a32a64231599330f13ac24" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f550a137e133838c52f1c8dc" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_451a7b359d64b9557087e447" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_76ab55fc55b8e8910d4c2e82" ON "cf_f550a137e133838c52f1c8dc" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f5b5e68ee8e0a37e363d4e98" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_54914ea4c5c6aa55c1ba9b77" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_4d7891e5ffad55c834cf2303" ON "cf_f5b5e68ee8e0a37e363d4e98" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f5bc96d222d4815f4fc33653" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_de111e2ce667b603f0c9ba80" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_20e5e54ad6c91eb1c4d2160c" ON "cf_f5bc96d222d4815f4fc33653" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f5d8fbd2c8b904664f760e69" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" uuid,
+  "target_collection_id" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_7804c4a6fa25331843f665d6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE,
+  CONSTRAINT "fk_a232a55db64cf5d581834e0c" FOREIGN KEY ("value","target_collection_id") REFERENCES "content_documents" ("id","collection_id") ON DELETE RESTRICT
+);
+CREATE INDEX "ix_1a03d9a025e28f8dba86f152" ON "cf_f5d8fbd2c8b904664f760e69" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f78c914e2167ea5963ce660a" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_c69e64ab202cdb9b8f637d82" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_7004762d602c3072a1aa5216" ON "cf_f78c914e2167ea5963ce660a" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f7ca024010e5dc3d44ed721e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8487fb5473ec416367d4bbf7" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_805562ea6b50a69e9720446a" ON "cf_f7ca024010e5dc3d44ed721e" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f7e21de4b7e98566fde9898b" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5d242796c14cabef04e8f9bc" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0360692e48767df4d7897033" ON "cf_f7e21de4b7e98566fde9898b" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f8550fa279d96f44f9d9ad7d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_47e0fef8e16a4d5ad2a3715c" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_43a37f90529090a766510ddf" ON "cf_f8550fa279d96f44f9d9ad7d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f86e49e81c9e7e724aec552c" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" boolean,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3c30a448645e0f4d2bf9cd3d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_1b45b4e5aa965a5983c9b788" ON "cf_f86e49e81c9e7e724aec552c" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f88fa4e7b0fad0f76e646d63" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_bc2f7e56b748834eb980af4a" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_bea83aa4e73149f28a082958" ON "cf_f88fa4e7b0fad0f76e646d63" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f8ef78e1d243d6869762cefa" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_624fc61a1f7d41a7a67cd187" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_dce13ab605c0d4bfb3e09a3b" ON "cf_f8ef78e1d243d6869762cefa" USING btree ("revision_id","locale");
+CREATE TABLE "cf_f9ac4e44a4f32a68e69f1b50" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8b6071d5c3f873473b804746" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_68f6e4ddb2682c8738ef86c4" ON "cf_f9ac4e44a4f32a68e69f1b50" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fa337ef422d9eea5041a02d6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5245b8dd68578cc42296950d" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_5b2f2788d20df0d5a14094bd" ON "cf_fa337ef422d9eea5041a02d6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fa658749c7d10910501500a6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_48f43bdabd817269a35aa667" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_e1aaf55d89bd05a2dcf2e7a8" ON "cf_fa658749c7d10910501500a6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fad4e04f41f19a4f1493b394" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" jsonb,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e5fc32cb3282e5806a7e8119" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_fa2dd99ad05eef0e3956afbd" ON "cf_fad4e04f41f19a4f1493b394" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fbd0f37d4381b0c3baca525d" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_ff77e8fa166666576691da7b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_55e2f705d55cc50e4c1f2b1e" ON "cf_fbd0f37d4381b0c3baca525d" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fc208fe77cecbe2ccac17e77" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e7498840778286fd5735f16e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_8e46e47b492443eb4f23c369" ON "cf_fc208fe77cecbe2ccac17e77" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fd1faadd7cb3cbaf1e904a19" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_6a27284efc3222f26817f75b" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_94e5c17082a3dde98ffa4710" ON "cf_fd1faadd7cb3cbaf1e904a19" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fd7e3ba78b48fd3cd250e6c6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_e975f22ae80aa3fb6542657e" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_0406d909e8ef8f3d89cd9ea5" ON "cf_fd7e3ba78b48fd3cd250e6c6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fdb357d28894d9fc63579ec6" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_107390c227499de2268cca22" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_247e054b3d14367541842c3c" ON "cf_fdb357d28894d9fc63579ec6" USING btree ("revision_id","locale");
+CREATE TABLE "cf_fddf3433941b3b1e81518a92" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8a29c69d361cc2f5428abef8" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_01a8c5331c5b1fcf2097df24" ON "cf_fddf3433941b3b1e81518a92" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ff2c49715ff3344a4263f2b8" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_86223245eaa50e2a3d129ce6" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_6f6e942087000e001a5a5b76" ON "cf_ff2c49715ff3344a4263f2b8" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ff3b4e2b43e3c836fe2cf2c5" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_5f3c9466539d8f18d70968d1" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_81ff3ce5d809d76dda9cff74" ON "cf_ff3b4e2b43e3c836fe2cf2c5" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ff7837a47c31d4f1f6b58b06" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_8d35145b330b775993a7a025" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_f9ab628e0f02c0c866027376" ON "cf_ff7837a47c31d4f1f6b58b06" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ff7a72ca096d81e876af5a07" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_cca24a46faa5886703d9e444" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_60ad571bf7ce1597cd72a400" ON "cf_ff7a72ca096d81e876af5a07" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ff96bd33fabae812828a56a1" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  "item_id" uuid,
+  "block_type" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_3d46407270cf497aaaf53298" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_2c7a41c8d8fed4c45fd685b6" ON "cf_ff96bd33fabae812828a56a1" USING btree ("revision_id","locale");
+CREATE TABLE "cf_ffe7b0a33e5a8df3b27eb69f" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "parent_path" text NOT NULL,
+  "position" integer NOT NULL,
+  "state" text NOT NULL,
+  "value" text,
+  PRIMARY KEY ("revision_id","locale","parent_path","position"),
+  CONSTRAINT "fk_640045c6c06347827f4fd126" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_76ea704157785aa304667649" ON "cf_ffe7b0a33e5a8df3b27eb69f" USING btree ("revision_id","locale");
+CREATE TABLE "ci_9ad8315da76c8848b8870f2e" (
+  "revision_id" uuid NOT NULL,
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "k0" text,
+  "p0" boolean NOT NULL,
+  "b0" boolean NOT NULL,
+  "k1" text,
+  "p1" boolean NOT NULL,
+  "b1" boolean NOT NULL,
+  "k2" text,
+  "p2" boolean NOT NULL,
+  "b2" boolean NOT NULL,
+  PRIMARY KEY ("revision_id","locale"),
+  CONSTRAINT "fk_d0d4eb4ee34c7660c18a83eb" FOREIGN KEY ("revision_id","document_id") REFERENCES "content_revisions" ("id","document_id") ON DELETE CASCADE
+);
+CREATE INDEX "ix_d0d4eb4ee34c7660c18a83eb" ON "ci_9ad8315da76c8848b8870f2e" USING btree ("locale","k0","k1","k2","revision_id");
+CREATE TABLE "cu_631e9d9ab06536489ec1bf68" (
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "k0" text NOT NULL,
+  PRIMARY KEY ("document_id","locale","k0"),
+  CONSTRAINT "fk_f1e610ac618d94b19d777778" FOREIGN KEY ("document_id") REFERENCES "content_documents" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX "uq_f1e610ac618d94b19d777778" ON "cu_631e9d9ab06536489ec1bf68" USING btree ("locale","k0");
+CREATE TABLE "cu_9ad8315da76c8848b8870f2e" (
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "k0" text NOT NULL,
+  "k1" text NOT NULL,
+  "k2" text NOT NULL,
+  PRIMARY KEY ("document_id","locale","k0","k1","k2"),
+  CONSTRAINT "fk_3faad57ef6750a920225310f" FOREIGN KEY ("document_id") REFERENCES "content_documents" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX "uq_3faad57ef6750a920225310f" ON "cu_9ad8315da76c8848b8870f2e" USING btree ("locale","k0","k1","k2");
+CREATE TABLE "cu_9ebd5bf548269fa650fdc041" (
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "k0" text NOT NULL,
+  PRIMARY KEY ("document_id","locale","k0"),
+  CONSTRAINT "fk_4f8845d18ee71787b9dbdf31" FOREIGN KEY ("document_id") REFERENCES "content_documents" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX "uq_4f8845d18ee71787b9dbdf31" ON "cu_9ebd5bf548269fa650fdc041" USING btree ("locale","k0");
+CREATE TABLE "cu_9fc3ba7abbb5417fdf607bd2" (
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "k0" text NOT NULL,
+  PRIMARY KEY ("document_id","locale","k0"),
+  CONSTRAINT "fk_165e20ac2a57a0c66d5a175d" FOREIGN KEY ("document_id") REFERENCES "content_documents" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX "uq_165e20ac2a57a0c66d5a175d" ON "cu_9fc3ba7abbb5417fdf607bd2" USING btree ("locale","k0");
+CREATE TABLE "cu_9fc63b40de5cb1d63eac7f2f" (
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "k0" text NOT NULL,
+  PRIMARY KEY ("document_id","locale","k0"),
+  CONSTRAINT "fk_5481179621e4f3c7356f3eca" FOREIGN KEY ("document_id") REFERENCES "content_documents" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX "uq_5481179621e4f3c7356f3eca" ON "cu_9fc63b40de5cb1d63eac7f2f" USING btree ("locale","k0");
+CREATE TABLE "cu_fac1ffad8f8a01b78464605c" (
+  "document_id" uuid NOT NULL,
+  "locale" text NOT NULL,
+  "k0" text NOT NULL,
+  PRIMARY KEY ("document_id","locale","k0"),
+  CONSTRAINT "fk_cdbdc2532df6ca877ce9eb19" FOREIGN KEY ("document_id") REFERENCES "content_documents" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX "uq_cdbdc2532df6ca877ce9eb19" ON "cu_fac1ffad8f8a01b78464605c" USING btree ("locale","k0");
+SELECT cms_register_content_schema('articles',1,'54017320837d84c322bbc620902f482d6af28f17ee08829e8ad94d88fa35eedd');
+SELECT cms_register_content_schema('media',1,'2ce10526ffba8cca62a899b56c6ee766b192710a7eec85b544ecfe25061a9aa2');
+SELECT cms_register_content_schema('oneaster_developers',1,'b7b7b15058059546163eda2bc4e2c5391cb11921f9c088d331fce147f18a5174');
+SELECT cms_register_content_schema('oneaster_documents',1,'0aed2fbb46a841ce3d2ea34b0784028e8bfad8f91705d7c1ec7bd138bf286c15');
+SELECT cms_register_content_schema('oneaster_home',1,'2639f05efb34cd88a080e2ab3fbfc7e07672abd1666d89b09f913729265105b5');
+SELECT cms_register_content_schema('oneaster_languages',1,'05617fad0889b8556ea523d6b289c28de781675e29d37487b89317d1068e7181');
+SELECT cms_register_content_schema('oneaster_message_bundles',1,'fc3abc21f317bdc0a64083bd97fde41aee891b7f2699676bf004d0ed9ab29b95');
+SELECT cms_register_content_schema('oneaster_models',1,'3f51b14bb6e54546116079b7a2a66e3d531a255889b8f324065402eeffcef7e0');
+SELECT cms_register_content_schema('oneaster_site',1,'f914f3141460b258dc28a4c84a60800cd5d051a8557cf999aa8f63720c0c1117');
+SELECT cms_register_content_schema('pages',1,'c6ae2083f67e96e38591f0489f7705b400c5b538b2a8df9b6e12b03eac9eea6c');
+SELECT cms_register_content_schema('settings',1,'5b3a9a442798773344f315d77d524126ff7c0b61257056391597c4f6fc194b89');
+INSERT INTO content_schema_control(collection_id,schema_version) VALUES('oneaster_developers',1);
+INSERT INTO content_schema_control(collection_id,schema_version) VALUES('oneaster_documents',1);
+INSERT INTO content_schema_control(collection_id,schema_version) VALUES('oneaster_home',1);
+INSERT INTO content_schema_control(collection_id,schema_version) VALUES('oneaster_languages',1);
+INSERT INTO content_schema_control(collection_id,schema_version) VALUES('oneaster_message_bundles',1);
+INSERT INTO content_schema_control(collection_id,schema_version) VALUES('oneaster_models',1);
+INSERT INTO content_schema_control(collection_id,schema_version) VALUES('oneaster_site',1);
+INSERT INTO content_schema_manifests(fingerprint,plan,status) VALUES('eb7eaa2b77fd36ed241c9c271b6ab035772267265006e37717589bd6f22c3a5c','{"version":1,"tables":[{"name":"cf_0088481c341041835b7af0b4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_da1f5f3534b8a748f5f5aa6f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4c04d8f0b30b9a80a52ae0ef","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_00b4f45510db45cb2c850e5b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ef9a84a577831d81f0dbcc34","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1cba11672c247cdac397f6ab","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_013660f332f61d68db2208e0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_442273fbc84855adec10dbd5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5775a6d8b7fa25fa21dd6d4b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_01da1cb2eb901be340107314","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4671255636bfe663034df99b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_281577241070b9136cf66fe4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_02526c8b30d43e90ac7a0d21","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d72eebddb4194aed6b0bae2a","columns":["revision_id","locale"]},{"name":"ix_443b9ebe82f94a591f1b94d8","columns":["value","locale","revision_id"]}],"foreignKeys":[{"name":"fk_c433626d9a42b835e4d61eb2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_028c0db9a63d86d772a3efe7","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b5b6ce00be147eb0043af5ba","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c2b9a776022897b3835561da","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_034568ea85ac572096be2729","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3fa287eda689f20570650f39","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e65e1c79a2430abfbb6958bf","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0351104188c7478a52a42fb3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ddb9d5a21b8847435b82d7c0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a7879b9215f9519402bbd684","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_035a3fe01de39d0cd4449d57","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_126c08b3836eafd8a2575384","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c05231059b3d972992620bea","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_03e7ff32590dbaed6ea42fa0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e5b0742ffbd97c578af10458","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_57c11ff92b3c127e6cfc90b0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_03e9a644899e99d2f08d790b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d5c55543f8a4a422a65a7ebd","columns":["revision_id","locale"]},{"name":"ix_0a259ee25cee007878f7330a","columns":["value","locale","revision_id"]}],"foreignKeys":[{"name":"fk_85984c3d38d66f7897addf0e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0416cab8460eb6479c4c7ead","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2007742083b9c62af34e4188","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_763ab0469a9e79cd3bacba91","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_043456302eb885af5d0321b2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b455177f615c007571b84cb0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e0343ca52605366d6164c34d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_04ef5d8bd3cd1a67bcc8e094","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e2e9705f89f11121e7c5e2c4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6a4840c36acc7a69095f98b2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_05599eb4ede4827c775ba01f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0e848f5bc77e78dab4da5ec7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_88f1ead34cd4dc9661c364d3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_05cbfcc9e119cc4362ebd16c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_adf93211a539624ca2506e97","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f37c298df93eafd7fedd07e7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_05fc51d4aa2542d68da21a5f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_84a213c9639272f49833947e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_227eec402e20cad50b1dd501","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_064b5731ef2860dcbe324722","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2a5c39c7da4c970dfcb3de04","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_213b60f16eb78c6024582009","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0665325b992e64aef17f0260","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2a834e3c8c8fb4c895310da5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0bb109db9e7bbcdf6d553f94","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_06d3b3cead47cf5018a18095","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cfb39771324bec12d682eac0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_953053504442eb4b28d18091","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_07ce935fb863661f9758c36b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f820b0cde7650faeb5a29783","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a4d5463d33e6eac52228ed62","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_081730d4d8c8bc3ac0b49f59","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a7ee119d97db9ed8e34fc5bc","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8bdd92f4a71a97632294e247","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0862108f90ac59241b44ba56","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f7e4e09a7201edd18e7a2ff3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a4ec34e9f667d5875be96978","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_08a0f239446f2d4810223e6a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_97a771226b8d351cdb6dc658","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fb744169794fbe36ad7db68c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_095330afb546397dfb0302f3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0ceb529e71dba7e237db3bae","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6b5f349eb6246101320aa910","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0968ddf7208e7920bae93f0a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4902b9202a1af7e4274c03c7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_378320f1f8fffea66c24aeb1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0a632dda66cdc288b1378480","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_816d2f13f8755ad91ca965ca","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4c23790704c324f6919d56c8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0a667456a824cb0c20c2221d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a613a9142f77c0ac7732b867","columns":["revision_id","locale"]},{"name":"ix_aa77214f3deccb95937051c4","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_22e686460c226e1ee4eca42b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0aaf95060c21fd2bb8a264a9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_13c8b5301b0c22d024f83777","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7999196b32a2596fb98640fa","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0b34f1a93a006b2e27aa3ac1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_20511b6899ad9bda96d06f54","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7aabb9ce3a2ad22bbadcb11a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0c3c9f553e651f0ef585cf73","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_720d55d48476419346970c7d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_86dc31e89089228dd39c97b0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0c41951bb142487db555ddc0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2243277fdcd1ee41582522ab","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_448dc919a96e7e4e56f0eb5e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0c5a8ec55a1d3c4f5ae4d434","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_158722b9513ff4298a6ca8b0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_10fd643a555a75f8738ad79b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0c862abe4d2c4eb722e8ae41","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e83c280399df7f732d574c8e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6cff4644ca49c178470d7c6b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0d7a68fa3e7dd79567999eca","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_615c329f9045198774472ef6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_98d8eb86e5f6edd1a3952a86","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0dc5036da550a8b4af4a08ee","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0e9de44ae2dccbe56eb975d7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_84e2783bd8e2edebb710ae64","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0de211e03f8f00e9e7570d1e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0ab537effc50a7f12addf8a3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d9241518cb919cb50021f4c2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0e31d3d9cd60a082fef639e5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e9a1106af174f047ef26c35a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d52812a0141444cdd4345e79","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_0f428cc5f900d0459d75e73a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_133d3f7d5842f59a2ec6ecc9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e923ce74e9a9f98922b69fe3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_101c779e9044ebee2331ab36","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_462474bd759a2a7bec5d93f9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_44d054aa423882ab46059fcb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_10c9513516869b7fbd5777e4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d1052c4e62f21b180debd64c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0e394070381f0128d3c5b298","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_110af125511b667dd0725c1b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2ed4549fea113f1d84f95bff","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_16f4fef2b7084fad5c235a21","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_0d0309ff633b0e7276e3b394","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_1167a6c50226465061910ce8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1fed4b12b846c9f3291db3d0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_822178350f80ceccd530f67a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_11a883f71b96b223bfbae7e4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ade03cdd3298d97e1ce84f4a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8f06395693404426aea4b22d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1255b32294cf1e119641e206","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e4c4dd5af4b7e101abaca167","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e537cbb2510e5479be09de96","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_12ae96dabe1bc0ab0a98f2dc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_040d73067c2f265c6a42f3c8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9737410b86c147a209e7925d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_131fe365cf32cab6a5fc4545","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_72b50758728fdae195ea6f8b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_86f5e95563831878d6f561af","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1346b044569a6a03efbf73b9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1909ac9eee77f0c3f1ad1740","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_90e5c351984be72d933bb19c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_138c87146ebbd594e4d063bc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_88842b70fbf9c276f19b9842","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_eb3d2c35445ca6d256438cba","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_13c36a841d39cdacbbcf2495","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7f089a5ada484e150ce84e9a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e0a5dd66ab19cc4960f1cd64","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_f31911d13ee665ae29ee1fd2","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_140a85b4b7d1be0b64f68725","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a0103309b786be447b027c33","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e46832e76d12f9720febbf16","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_149fe3550b2faddf65920c38","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_231539604438447db33a3ddc","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_41352ac1bee27e64258399cc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1529f5876d166e50e95b085e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9f50e98513973957a8bc69b1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a8e8532a48055c8b36001110","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_16dcb943b322f30bfba992b6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a315407b3bb67c3d4f6ccfb9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_783529737007df5541771a30","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1732874fbee749f693497402","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c45c2bf25a48e9094b46c0d9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6f3d6011bc144eab90b7ca33","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_18253db0cb8bf648f802e623","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7d2560dc14b92f144ac445e1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a8276a111e5ee6bb65daaff1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_188540fe3ec6467a2eb7fbdf","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8ac82f565585059ec686b346","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3cfd8b34306b93413d72d658","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_18e7fee35d5c288d74afca6c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4ba1437b060664c3181969fa","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7201e5b8edc4a11142507f42","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_198b7a95645b8c461a55d13e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5836a91868446f8a5f186373","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_930c9815ab73c4d3edb30d67","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_19fbbb513c2f0c015cb75b8e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e808b33f58f336d01cb8f8ed","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_57e385f5285079e6da6111db","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1a8e738fe8b8c3dbf05c9893","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7d2d817f45b51f1ef0ed95e4","columns":["revision_id","locale"]},{"name":"ix_5a1b477c5d2962f054a82204","columns":["value","locale","revision_id"]},{"name":"ix_1d7544c0840479455da96c48","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_aab5578f15a6b5f0b44fbede","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1ab0baea22787ccdbd06fb77","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_91872f9703efbeebb06e1f4e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c6d576a3a78521fc292e578a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1c0b51097d970e1d873884c0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_78a1c2469d8ed2b3a92cd3d7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ed2908ed61534fc150d1a65a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1d4975c250c23905f8440cc0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ae41d9a82ed12e6c3484848a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_02eab03b247ebf30c42197cb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1db4837dab49866ed3e07ee8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d27253a1edbbf964c573e8a0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_789c5e74dfd6eeda50ac0809","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1dc3fc0b8c0755b22f09b979","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8b315175565bcc0755076faf","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_dc6b4a3c09c35607cbfe2cc8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_6ad56185c5d86a31e05bbe2d","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_1e43f3c6788b75014d261bfc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a1a0ae96694de072b1aa093e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_605046238277ff771e1107ee","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1e6f761b19557f5adb0bb7fe","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5189706a376394bd24a3379b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b1b51ff126832e7c94d46100","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_1f6d9defeca97b1a8a4910f9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_02b242c6f20d09865e72eb17","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b380567a179f59b846456e35","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_20b7f3a573dedf62a61e306a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4de71c8e231cc814ed0863be","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_147667fc838d4021977b594e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_20e0f52d34f288d84658114c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_33549af486047eb448f044d7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5a5d737812e1e6774ad24a89","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2138014f84238acd889fdd70","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8d6260895e091d122987c661","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ccfa03b02a6a9510f535fd4a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2178911f7109da59c7681d4b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_703618a3351a749ef82e4cff","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_02aa68a2a8f2e798fb15cd83","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_21d6289cee17c7d4aeca0c4c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9346564712193b02dafc3432","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e5e8400b5bba2e99f61f65d0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_21f6b86732a72abf00d33602","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7d79e92d5990ebdae66e9d9d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d3708415fec81a3d69208025","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_b77e3d83737da872db722594","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_2287d8abf123acecbc772176","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_59dca234dce08b26f887e79d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5b67de64a5f0af49ab0bc61d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_237019001b0c9087308a831d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b29b5b96c52d442df62cb269","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b7b8ffa585ba66668d1ee031","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_23821814e722ec42f9d21735","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2b43c317c0c5f130872fc1be","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a73dcb3eb8229f26ee7d9e1b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_238285f12352e4483121497b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_622e0cbe9259244f10c81207","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8846fc32e6a257d7533d45d4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_248cfa467914ba2a96287712","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ad765521ec6dd120c7bb6751","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c6a9e4e764ca76cb7c06996a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_24d65d1b4a13b1fe1585d094","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ef65cff774c1946ad4213f61","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a34bd33a4651f6fbec2cc0c0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_25455b0366e443ae91257a72","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_073bd53ff28238a05a5c3d2f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e9ec6a7777a750f9478f8bd4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2574f9c7b7f77739027538d7","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bdfec808ddffb31072c7c0da","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_346442b9b469635d6c7f837e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_26ce048be930e7b99003b242","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_95c543c5d3f0f79e953d799c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0329ce573c109500dc92e2af","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_280f50f4a07d1f985ae45183","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_dd49413c692ec0c2036715b6","columns":["revision_id","locale"]},{"name":"ix_d49cc086e7a35274ec12fb3e","columns":["value","locale","revision_id"]},{"name":"ix_de0d62b97db6b79cc42ec1dd","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_ec57fd4ce678ffd369bb178e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_28b82a4b28904a919cb7ecb5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f82d98612ff6b9428367ba68","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_742c48a2a1969620a4e5e22b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_293132e6d9b505e56df7bee8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bed0f9458e354c82f8a7e820","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cbd65ac85fe687704aa6a99c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2988081ab8d0073741fbead0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e68ada69b620399611269952","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c437fd86167f14d1c8ba40ae","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2a38a0d3dca39762985784e6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_73fcd9505ec927b902713822","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7790d10770cfc9feab424b52","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2a74dd9a959fbec209271f9f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_36a2017044725fc827980e95","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_67de708f69d1e2f5ba4a5d62","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2a9b85d7546bf4bf333108b5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4f51c0361195bade0376b6c1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2edd0fb9f33b7d67d54fb8dd","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2bd929dddd2a3fcd11ae7e42","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e308d1a04a9fc8e3a5960427","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_056ba81e840cbe26d70dfaf6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2d6043574bf344c9a3959fc2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e28cf6f5a41d7fac73d7ba71","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_70a7949ab6cb5d236053c1f9","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2dddddf101b770776dde37c2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d7da102d27440e5d572c94a2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_da16aadfc243054578190946","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2e45112ec999e6940f98fd5b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_da208b5b91174d1cf5f6aa8e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_16df582e51c2ba9b27796007","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2e6dd2bd4b13b9f464eff792","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8d46cab14a27e5e23e016949","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8ae3564c4d728df8a9eea4f5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2f8d9ea95d6452e244cc358e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b4506a65f58c604dd5e2a23e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a5c95e2ef4528f3a5588de65","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_2fd040e467b4dd00e9db277d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9be57a2ef76c60c5a9b65d85","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c2aaf50eb30d7562d7c4be1b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_94b5efbdf21ecb738884056e","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_3238ff8503409b88248b8ddf","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ba0578bb6356a794873ad683","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7f51d4aa60b6386f3bc6b8bf","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3252fe55ae60db51fab10de1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_adb0559319955fc43d2061f9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a4ab012c4cc8fd56db33db86","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_32e2bef3231c3f65d2909935","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6a303b91dbb6f125c5cc07ca","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f6ad92b7c1b7ca7d125b787d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_330ba783f556682237656a3c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_21825c473df71fff97d7fdab","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6f31e6219ceff8fdaf821966","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_332f822bb18e4237e5556066","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1e2e4fd01f50c4aa681e1f4b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_852ad156f784a0b50f05de13","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_33335232627c58d0714df000","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8232479ea30a40f9e84e3635","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7a1ce054482e661fc6890a5d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_335c396fbebf683a6a574e2d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8aaf0b1e6c9ba44e6345f464","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e3859ef8d5ca96699f5c4361","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_33fcd0e17fc4d87e432ebab0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5645b6cc21a74ea48a8f2a42","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_57f4e154c211666fd25e80ae","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3550594e7cc2e7c620594e80","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fa9acc7a4a8bc78220bc0764","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3191332f3dec526540a1f8cf","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_356bcc11d8223066a44a8549","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c44bd10ff311d39da2f99a2c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_29a023880a4a6c90b1ca89d4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_368d7b6214f8656b5ca44d3f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4b221cf586f682df677c31b8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1f0afc2b647352380d9d2e5d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_36a7eba29b9bbbffa875de3b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b977cecceb5a6d294bb52eb6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3eee68681cddbdb9becb7a3a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_37915e4bb90105ceca0f420f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_866fba69302ba51ac4a010a8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_72a7dd21dc7342f6fe7a08de","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3850cc5bd69b1426ed29bd2d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2dab9a2bf52b9cda5f7d73e4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c7cbeb4f9c70042e7dad9771","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_38c2e5e9c9ee9dadda6b1dfc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d6c8056efa8a36e2338e3a2e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7bdae08de5dbbcc50ad39ee8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_38d016379831a6d433810f77","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_22459ef6951f7ddb960499d1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f229e38d7f4f28842003b93b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3904379077f3e6bac976e5da","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9e74b3ad52c5e9dc66ca15ee","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_30ca09563e36f7c891284c3e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_39b86b5e45393fb9ca43556c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cb078ee7560a89523cb4491f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_498f9bc42306611b558c806c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3a8c243bd2da571399be9450","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fd98ae26cdac3c5b6094dcd8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d3d66acde94f0f0a8fd399ab","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3aa9d4a6389f5967a26f9444","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_876fd74bbfc8751fca25ff1f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e891e2227f454554b4d67ddc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3c9adecf03e264ddbc04e168","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0f9b048448382da10245ebd9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9ec937c749e799e309efdd08","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3cac89938439b6b4ac8d5174","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_752de8f4929435f085b2d977","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_eb239782fe6755f17c113215","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3ce2e154f386bb4879063256","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_16c42a8d1a6af2c654fb0d88","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_daa2ddbab95670140ee7ad59","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3cf3dd55e6e7e14e25a47a33","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_143aabb9d9513704ef43ca80","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9e07f2c0820cf4618398f081","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3d6c4ec3db1186eec0a17261","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_40d15ecc82b929ce4845ac0e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_13f714af83c3ec7bf6441458","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3dd29a566678be98b8e22259","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1c48a93e1acf22c6ac2e3339","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d8d946a2b628bc4cb019d62c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3e0e80a7fcfece8499494729","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6f853c45c124f80ce35dde14","columns":["revision_id","locale"]},{"name":"ix_713142a168d9df4c73d442d0","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_8f180ac8ffe6bc4a903e5f6a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3e8c1aa7f708a050db0b7793","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_038673c84c6c5a36399c7776","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a582bcc3dc729ec824437e7a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3eb26942674108e1dd45249c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a7423a8235b1dd849c4849eb","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0bddd8d24982977fe0e81716","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3ecc00f4a9f2461ff760c936","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e77ec6ecce9e72e71b83ac33","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_748eca1e1b25e80f85d935ac","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3f00440b3e9cea131ad6c915","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d9c608fabdbd85571d89dfc2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9705b11e592a6d0c8a668236","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3f3d39bdd545689d6a777c47","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ee9acf6a91fbd2184108cd25","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b8b514a7c1c3f40182ebc403","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3f7ec79916ee43b030269b8e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_07f684f0242fa5fbb6c04616","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_442a18eaf53812f84dd6f3f0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3f8756c5756b73435aeac340","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8752e80d3a948d7d1e7c1883","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1db1dc5882520c2f8be08172","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3f9d02fff8ffcaa8dcf2cff2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3261a3543982b56ff5cfec90","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b8a1baa19fbe89f6bd599ef2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_3fc05503da9eea0a8650f161","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f8bb6a343aec59c5c8db903f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f148f02c2f6d11c070099224","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_76f3f1984f1ef9b08de362ff","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_3fe98a9f63b96cc7a93bb5ef","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3738785215cdd635f6ea93b5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_15c9fd1d99c20301c5c1c3fd","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_404280873717e4fe9c92a62b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_113cf1a886b9176768be7274","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b3c752c19a033fc6e25a93fe","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_40c14082e7702706ead21a17","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d46c1348347c1e3205f2a076","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d46224325dfb374e0310e8d8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_40ee2a20147ca7b6ef3474c2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9258f0fc50e61e13c0c5cebe","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9234548b4b6c20d4496df069","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_414b6e47e2994f3c5ff93162","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bfbaaac560c8c87bebeef85f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5fb9f3ec94188789bdd535b1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_41a85911b17b231c892ce6e6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_72daadbf10dc187c2588d2be","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ba3d8a14d4f3d2086a47ff3b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_41d38ca8aedf95e27993e478","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e1c7f065a0c6cd2c035640e8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_47b0e3ddccc46af13a2a3165","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_422cda15bd8ddeba12d83059","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ce29f0ae5e8a50ec85cf2d18","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_05bd82dca7b16c5751db749e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_7d0d7dcdf5f17cc28b741252","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_428b05d8335c40c487e8628d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_eeb56d2dfb8dc8ff3d31b4c7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b395b72db78cea83d671574c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_42da07b7f18f954621ae7ee5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bea00b7d6a39c5e589110634","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5c2b08789d17eff8f05480b7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_434e3965dfdae99099915cd3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f2237ded9d543e8730741a3f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c6a2326f682e9a478ccd6333","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_443cccfc9d741d664b09a23d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1089c19ec47f787121014ff5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ebd1dae240b6efa3ee0561f4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_45c2373f96a39ec9a9f2334b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6672f84368142beade5ca9bf","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_246b9f8f07df1be5ca233c97","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_45c35924403ff85a2d3fe4c1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_df9ff9524a9a4633364944d3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bd129d7defd8d592803eb318","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_460cbf80cd8ef5c7aac14b1e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bc3b7d347871a8b8c3e2d249","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_55703708af85a03cd5ec94c7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_462a302a04a76c5c121b6f5f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5cf6111cd6b4d8a32ad79440","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9499c0c58f038eef725a1d36","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_46faabe28dde80aae6de81ac","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_59cc1ed9ec48c69acefee64b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_41308232c5821a23905b73d2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_83f288dc0ac207d7a987a8c6","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_46fc8fb322402de542c46884","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_be6996fcbf5ecc8b41db6a0d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_199d099aee44cd2af6c33ed2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_47baffba05437a07fa8278df","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_530ce73e626e74ffcce69ae4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0b3454f453dcabac3efa7bb8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_494c7cda747c8960d059df3a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4edfb9ba560202a19a66071e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0bf6a2f243fffa69da7469f5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4a7768ff77d66009484ef92d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2231bf98194d8cbe1b4e28fc","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f7dba9cd39ca88d77dc7cdd1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4a9a6bda82348a7e6d5f5627","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_87856270577ee3ea08198941","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9e536fbf6a8434579e203a58","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4c0615eb0a2959c12e3542ff","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2c26d8324f11e65e9213770a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d1e4e687ca8a7e6b393f9798","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4c16614d0990fc8913887671","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_13c59c67a4cf9b690d5d29d4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9df53337960f3a2c6ba4d38b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4cfdbddd685252ef93bd55e3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0f1cbe85b45e17e01b2b31ee","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5b9766dfc8132f736a7c9fea","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4e58491139a1a18a3df9fe27","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3e58875f61f1bbc96a23ce19","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a11ec82023294736c9e30583","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4e758fc6fcd9f43f53f598ff","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_52d19fee2ece4ec8ab92d38b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f8ab4431caa9b4eaae7cd3cc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4f101a06527a0fdf8f88ef1f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c4b7b939acf415266e795d00","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c825720c6d86e3824b342875","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4f7ea6bb6cf18d6fde400f01","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0ead955dfc9cf454effb37c9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4c737367f5e055c280a18765","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_4feb0997e56246a822486a3d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c529cc5fe7a7e8c20732a0d5","columns":["revision_id","locale"]},{"name":"ix_c97ecc7bdd6d06a4e2d53daf","columns":["value","locale","revision_id"]}],"foreignKeys":[{"name":"fk_a80297c9624f42355017f54f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5135fc474348dbf66b1a04bd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7e1cbc5943d42109d6b36aed","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_eb81af5f3150b5007dd63fff","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5173e268ed0203ea1c3f785a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_38d521416947bfb3ee7ed9ce","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c2502993b8d4441172384ef3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5174def21822925667afbcbd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ae237df0cd87e7580cbaaa23","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_613a3e4c0be618dd049e832b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_51e979784df0a422a5e982e6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4cd4bcdeea7dc808d1f03588","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_31b58ab4917f1bf776467703","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_52372aed6ba38c9b2a3046b3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d5e5b0184614aa207b8377d1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a5b09833b487e617510c4884","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_530314ddcc3a3121654caf8e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c53de82fb407c36328a36de2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0a192753d9fd9f0c53bca78e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_544d8bdcd206fd0ff74cd432","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_39d3d3d32b3d38b1b9be45af","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_27ba50d3ff7682cbb4fffddb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_545a95c2bbb417d95e4d6f2d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0a6310c04d55a3a327b4b77d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c6003d4e761694a3629ff0e5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_546a663961b10d42ff09e963","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_adf3865c22d1b19d5030adc2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f96d3ff3ddacf27254cb5c40","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_548d697ce53aa7102f91a75d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_434426b972d2afe179d7b6a4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9b5a95b8892e888060c2e7c2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_549f82db70886f0702640598","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2ca3ce8d84ebd39d8649aaf6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_36f9b47a46a1559b239152ce","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5508d3da3ab6edffe4b1396d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9702d63c46f22bbc1bd1b59e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3c25a5ed7e73b4a943e42da8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_55149c15a5475e568ed819b1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a1dfa705235b8d4b91b44848","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_32e98dd11707929330b8f45e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5517cbfe760b7237dbabfc05","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b168eefc30bb1c3d6124485c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9f5373d2c5be21f42e9ecfa2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_555dc714b3c3fc09c7b58d0d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ab13bcea55b6e10285a2ba81","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ca4f8b9b177f7ec1cb50308c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_55b3203843899a28644202a3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_26a2fbb433024f1c41f9de34","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4171bb12a16733ef02d8b78d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_561c0e45ae0a72a2823ec9ec","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_92a23f8027cd0ff2c026a467","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a2fb2ecd48f1403edf969ff5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_56aff9244c7ceee8e2065dac","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f50dc15afe05bb9daa097efe","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c5bf23c122b18a11776ea4ec","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5740f07b2043449e056e147c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_70f5ec249c653b40006a7968","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_842b7b838e4334356e4a40d2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_58094dd49062f96db42b3200","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a9d126aa1b87a88f0b25f394","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e0433760885a4d1a0dd6db56","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5830fdfdf6e2f6cb8e262be5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cb37c4dd9861351b52b5e5bb","columns":["revision_id","locale"]},{"name":"ix_2b2b67e6bacbba724fb47431","columns":["value","locale","revision_id"]}],"foreignKeys":[{"name":"fk_fab78c85e344eacddf68a14d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_58766ce5c7a856cd9f1f6c81","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"timestamptz","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_18aabc58e6e6bb8aaf42e790","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8e26b2f612e75efc9480bd06","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_58d6a462cb0dd0c0708a32f9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_09275fed39b96837d5756154","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2183a7dca4146189fd37a72b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_58e3812cd656b2284edc8acb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a6795e5c65a59cb0187ef0cf","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fa586543b418637ad635801c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_58ef176879134b5654b36463","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0c9ca8ba959c0cb60b486cd8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_48d1757d1d3a67d523f2881d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_597bd95927f514a2d4a9ec55","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_012792a078e59858a1804c95","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c52cad994ef6d34cf42dda24","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_59876e8035c6cad34355133d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_81f40bb33d3ea01f3b9a2979","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c41b4ea757ea3555ebb0b740","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_59f5d8300127bef31e1f499b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9e973e73fcf10e6bbacf7bed","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8b60c98139c2b5d1a68df0ab","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_59f5ea199ade7f4bbf25ac4b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7218954f1428b32c340776e9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6d50428a22133d31fb26dc3c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5a37cd63c04d4191a5292488","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_889ccf4266c18398068a84e7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_95cbcd5ac145c3c728660b21","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5a9f43fd8429743c25d85709","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4cb8e9a2c9b1aa84e6bad68f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2483696da93c5fbfda6db1f6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5ab3976cf030d55ff80d2c6f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2652f5a0d8229678ff19d879","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_eeae9caf332d003223cfd8d9","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_e982f92cfbabf03de53debe2","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_5ac769bfef9d2640b4eefb37","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8a76f1000296fb9c14ca5f1c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5a0eeb503bb3964810b67e1c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5c34ce748eeaf24865f6672b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_aef86e6c6e1e01beda884fcd","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_89876c6c21dc3daefe5eb3e1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5d57bdc9432ccb5a3d805e79","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_dc323c832cc121f9bbf24324","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2a0d31a2e872167be9f964c0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5d6d682508458a4fa6e84fdd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4b97ce0f605b6da1e1f48ff6","columns":["revision_id","locale"]},{"name":"ix_5becbdedc40fcc4aed706a90","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_89546c4af6036b9b1f215567","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5d8191d4a07d7acb5cbd4b19","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e8aedf4fa27e88873d910a75","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cd30c8b981d236611ac2428f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5d9794e8c752ca3da1472172","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_895128f227faae5c4087d66a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_30cdecc1f46a69ba5daf6b8b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_b17969b9d7313fe360b97593","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_5de3bc725658e8ca8cab1725","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_dfc2f29a369f7f2483cb2be4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_05a90fe1633257aaf4594d7b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5deeae3f6c82049e91e26e70","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5429e34b6b7c3583f089433c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_52786f1f17585427aa216dbf","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_2b44b882438b657326288c72","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_5dfdcdd529e53729f2c1e05a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_85dfdbbac72f3ef390e8c76b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_73edaa7cc7b4465de098d931","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5e47c051c49cadf21e50e8f2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d4875b61f519472ac69e0e79","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1511954d6248036c16840fce","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5eac29fcac31f708a721049c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7c5d09d4b834f042e686c601","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a009d2244ba714b6dcaae07b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_5ecd870afdcb1696efbc041b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a634c5d213325eef41267fd0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_13d2126ce24a13909db01014","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6020fd81b0b906e38f0a7e01","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_64ddd62946190fb93c0856f6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fbc7a6f9d94bcc01652ebab7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_608cc9a4f6edbc028607fd17","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4ac0f508a4b276004963cdff","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_122921280cf67b8d2121d72f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_60e716a332ec72d672f8ed8c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b333bd0f3b6aeff3acba01fe","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8f946360b82324192cfa3713","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_60fa4fc59ca671a8d59d41b9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_73fc72e2eae56eab9f1521ee","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ea26822cce54ae3d6f5ac1f4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_61c5f2431ae9884179bbd92d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bbe924b23e828ab612f4e346","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7b41624e1ca44d4f6f516065","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_62072c862093216de56aec46","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_aa2cc9028bcf42f39477c16b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_228aab745aea942b2401fca0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_621ec4d25fbe611829c1a931","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1f037853b63f5d614da1eacb","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0d939c9240de83a2c84d7636","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_625be29f0ac2b7c97a1588b5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_36c3ff795d37610b02636f31","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_59bc794f4a48850277a655bc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_629d833355b59afa0301c3bb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7c1f6b13a4324baecd75212c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0b4d6d0e77c80202125d9b97","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_64b811e6590a94f6bfa4013c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3b62d83174ce8a91a16a6571","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f6cc66bbb34a297d11f3af4e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_64c08707a3df3dd5fb71ed64","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7a3dc0f9e9e2a1c51088d1fa","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_26fa9bf2a3f5302981aca71b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_652463b1f7c80ab536c13efc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9bc7f4f92ec7e2867af742f8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8ac0d9296cbcf401cce65cb1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_8c184488277c36f8205ce86c","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_65e05c39f6648c9d821c7f2b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c279b585f530eec3baf07ebe","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a78aba58365b8cba5a3b11d0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_66d6bd1bee05420c84dc7799","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4853372de2ad355a06ae5797","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_015eb0f5dae6bd74a186f2c8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_676e9305a719546839f49ca8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0c9311e2238625c93095fc35","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_188fff2e5fd547892edfcac9","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_679cef91c89473410d5d82b1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3c931c715e0d3389b0e6afda","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3f3445a2682591c7393ad89b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6a12bb7ba20cf36db2857421","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9a40b0014e6fc81231d0a6d1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b6392f9d51961e414a6fdfd6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6a1e2f74fcdf81c24a5e7f23","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1a2d1f1a7e15810417f7cccc","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5de932b02fa42259a5d3e8cc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6a8de71095750376e7b4c735","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e6cf81f20407532d8a50aeb8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_50e6f03886ff69c8f0584274","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6a8f1fba16f4eb176dc90467","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_05c25b7364536d71a66002b0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f31076e4141d80958c1d33b0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6af2e9f23bc328c1c58f6900","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_371887847a025745330e268b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cb1d6208a53c5170e0be7282","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6c0e08671db9de63033b2605","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cadedd2fa75b8ee3a7b26260","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a9c2a7b252e7da7d45639f24","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6c941f83d8019d827136dfbd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cfe011f60921f17479dc009a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_be111c648de20ef2b0b83521","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6cce336dba9c22d9a2a94adb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_35a43ed2df6c50d3fc4dd0c0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e898afd8545340e5e0b8a253","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6d006d4ae795e608f64df38e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e643d1a59d75502ec4db754e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_46e7b0383754d60c781ca130","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6deee90eaa9303c8cc1e0f9a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_abe05cc61a1c4c13bf32162c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_831d4690129fdd94aee63990","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_6e4800b6305b186e0f9f7135","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_27772f9806ce8a326322f817","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9c8c3103f44cc4822dc1ef6c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_70058ea66ee3db2ab1b8da5f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_db39520b454ec229041cd20f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2dc3c3a22dc9881f22a1acc7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_723ca7c6410bf4af7ec07567","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_844c9b572805ffdf2d5280f6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_219120736efb69be655b5bea","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_72bb00fc30defa58ab01ffb2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ea999f9ac947861fbb082b39","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ea9d1d8ed8b5562783424bf4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7447008978204ab305d13f44","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1a170ebdb4309a33c5c9fec2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7b95845ac1d938ba34e21b31","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7482782f0b935f98c5405d67","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0ec127552c886bac7d90a773","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_446ac995590c1292d68e0cbc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7549ae30047402dea589dd2d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c4393d52a4d647f84e52b126","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_05688a5a1abcd1234ff3031a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_c6e528df51cd417bf0f93eec","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_75558f4b6dad5e191679e42a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4b29e4e747b51151bead7c3e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2407d177b95fe89abc55ee15","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7575854e8437f1aabee95a12","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_eb2fa9b0eaed3cb01c3a87ea","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_693eade573ac80f6c92f192b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_75d54c282fef49739f45cb15","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_377ddb571ed48adcc6dbc7a5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_989b9e51d1bb645f320b00b9","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_76010da95b54e22253bf339d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2578b49d135022e95c831b42","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_be93f886359c4d7479d18561","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_761f35edeaedd7f976f05abc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e8680e61c0e915be8f06258c","columns":["revision_id","locale"]},{"name":"ix_7beb73069459a04b1b690c89","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_a0bdd34bb17166499c6c43fb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7690e017cfa61a9e114f4294","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_116fa013a18b06692caaca56","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d43b0d2ce50ce2e6ad9287a7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_76d6c9b513f13f37698328fa","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_abf3766895edac3878a0e8be","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_47f609dbbb8e15fa3f657498","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7758f4bbe723bfda85d82fe8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_481661d7abe4af86e59284fa","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9e85725f18889cc91fdec7dc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_77749fe9e70d4fa5b5c5c377","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6b60042849ef8ee3e68c10eb","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_259e32285f2d0610f5eee05c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_77bd4bdae5bb5bd4bd8c9f64","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d9157486e4326baef051c203","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_971a464fbb7e809e8da693f0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7817529c281c07ed7f8026db","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_56fe4cb162afd5f2fe56d09c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d12dee94ac367bdd20acbdf4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_78c4897a668f5b76191e4e05","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_60cba4616c88972f232a1874","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5ce8d68b85d057a1cf50d026","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_79a6a941985e24a4a1330a4b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e2595060ebd3fc95b7070204","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9a0d9f5f8c8cb56b87f17f6a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_79a99200f05c0db1fda67675","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ec6c9af62ad61b05b9b847f5","columns":["revision_id","locale"]},{"name":"ix_cbb49377c042a475ab464254","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_65dbf97d0be0cb15efd31d21","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7a4f7526dcf4ed7720ba8757","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8eb75a9aa290c7508d32c3dd","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2a1e1574f374dfa99174f221","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7b33fb4eb5336a34abeade6d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fc141cd5824df211938da1c1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fa57bc0360f647f8cf1ab271","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7c83d76254f75d38fd5b45d3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_233e725ce807290929502374","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ef9bddd3e4d74d58502b7db9","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7d4c55122e3ce6e49501347b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_23df3f8e18674a709a623c7b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_57b85335b61e097732939ae6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7ef59f92342c800a848ee52b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_45130a46f75954cb5c75b5e2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1b30d944739c7172a6caa2e6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7f23e1826db46bf49f5b9829","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_72b5106d6947cc276dd780ce","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ad611eb304349bd23ea08c7d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7f8ece3585e3668450608f61","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c0ca1712e380f07029c90d1d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0d45af2170159a24629638c8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7fd10147915357b1aefa3634","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_de3db4c4ed86b5401339d88a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f9d2608cf2b02b76b266fe07","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_7fdb0a12c9a8d9cc02d7135e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_731a96d98df20bf47540d8c5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7fed420b776c2e35354cc2ea","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8048e198221ac50b7c4d4727","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c1093491d3c1be2044ae29fa","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_dc2e9ae83f721c1fd4c206c8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_80bafad94f0b317f5d9c9211","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e2f7581a52bcbc6a3f4feec8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d77b12d83cda7ad3c9ddbb1c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_815add62f012d8d87555f5dc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d7399de3e6eff392ffadb018","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a6da487aa3a1a86245ab2dee","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_81a11416a9b47ae4a412a5f9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a4c9bc27dadcc76d0fef3eab","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cfb1c5cfe1cdda381aeb2508","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_81bda96c8cc38b0f7731f98b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_62caa4d9b9e949b37ca97c15","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_488616d55698cb4bbefbd4cc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_825d2bd839bb8028d05f6a00","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d27040ff0c3fc0c5e1217407","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6f1901159fcb3c500f54ad84","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8316e1c461d92723a607a85c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d7a0a69f936057ac7550a0f6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_63befa322617e4b877f2d102","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_823e5abd9370d637068fd2c8","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_84500cb5f28c8745cff08dc4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9648038e1a55a387e035afd2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8f0794e90458959ae1b54797","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_849557e29e3c60a2e90f5b13","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_918fa278814d3a9bef4eeb38","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4c3ca8ff25a552816f67d097","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_851b17b5e20210bb12646f4d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b888d44cc3bb510336efabe3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f09be2497df609ef695badf7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_85717be9211dee683f3938ed","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_93c92e07ac24f85776591758","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2f6620e39fd08f2395522a4c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_85aad0979fce790db2fbd543","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ff40975d8736b152a68802e7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_289d6009c0d344279d09ecbb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8645764707487508dbdfe7bc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c51d54af19d524e1481abbca","columns":["revision_id","locale"]},{"name":"ix_cf143c9b4608adb7d8449faa","columns":["value","locale","revision_id"]}],"foreignKeys":[{"name":"fk_981d31349f7ee6a1ccbd64fa","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_86997dedd3ce2c4cbc069892","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_237281e99e5bac17754433ad","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_eca1229f2a72584cb1ae8bdc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_86a1347b504fc416270f851e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cf764c3d716bdb201b061870","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9fe7d6f667b24451dfed34f1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_86cc66152e73a87446721a33","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_df2f4d11a5635004ccdcb413","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bc41ae008f3f9d55ab0b5423","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_874abc0f1082ae3656dc5859","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_80c83b3cab3cdaa4fd2f3943","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6285bd3e9d8d4d3880f50e9c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_874dd13f0dcbf4bee77e4a8c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d6f3e653811fbd37f7898526","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6a68d95053cb498d81c9e1de","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8776a641937bc475eb47d551","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cef55655e9ddcc89c497691b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f967d6376366d2991ecc1e86","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_87a648193aa7a01031f0fd7b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b5b2551911baa476a82a4cb7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ce5795fe97121a79d7e475a7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_88216a9806aa317f2d47b3ad","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4609686e7e4715f9ff53058f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_26c7881fc008321f52c30f6a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8828bb2a137e0100aa46e7c4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f8b6493a4694453445691e55","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_33fb09a542de0c7554db3851","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_888b5194e3b9f149e19da499","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_de74a78163f242a65e2cad6c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_211e3d82a494754713a98710","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_889938dde8ed26a28aec44f6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1464734566bb3f4de08ab5e5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_82ebbae5dff73c3a376f49ab","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8965d6756f03633aafe0f55a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_02089099dd4f7c340bbee608","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_210e9b4672a481b9b497d64b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_89b4707290853535c24b7bef","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ad2a8882ab09f7d941a07718","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c04761746b4c3c6626a7fa84","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_89b5e83ad0746d60085a6eab","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2fc59d361c9d8d21603368ca","columns":["revision_id","locale"]},{"name":"ix_4f3ca1cf2548066527bcf2d2","columns":["value","locale","revision_id"]}],"foreignKeys":[{"name":"fk_d6a7df383f143f2357369606","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8a3ff99de25bbf8dc459c958","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c34eaf94685b703deb3b07a3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_989ec8c8a55c98229cc1a1e4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8a8d58bf29670cd7c87d9b4a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4683b06366516c9e0f2c0d02","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5bb07036f389477fee74b768","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8b4a3e843ed23595e0a0df3f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4779ee0583e14f8720b47d6a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9187c693039a55964b055da0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8bfa27c1b598b742babedebe","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bd2a3980d40571b7ebfa3034","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_42ea1ed819906bb48da75b22","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8c55315cc59263f9962b1775","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_29056a0397bca774727990c7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cc68d19af723d6e8b00df114","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8c5e25b0ce65acffee1ea80c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e9b4dbdb7347f47d1e3bd0ef","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ce83b098e7f848a1e23a0cc7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8d4ab27c16c5eec057b3dac4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2bb2abfd35ba2a31446ed53a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bc094d8f936880141a6c48b9","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8d58ea6afb761fd4c254aab9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0cf1e322ee13c3f09c1c865d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a8ccd16d9aa258638a23ab2e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8e49ad5bb92ef10f92de2d37","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f72b4c3e6ae65bb4897be707","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e073e387e107b9a1a9ef554c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8f3c8fc44c8d11fa4da90872","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f43180b7587779372d7b2e92","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fc060ab74a2bbbfe9f6afbf1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8fca1745d718bf69a312cdfb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_488fd06324514a33820189ea","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_869c8b845f221b08bd065447","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_8fef229341ac1bf497990d13","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c29dd1ad85f0618ff9eba177","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4c3604a9f37e16865cc5bc9d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_90380ace66bcff014e139dd3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bbb69da033a890223b37c545","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_411319eb75d078f5db842c70","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_906f77c12f9a0f7c5a8d58ca","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_44de763ccc2590eeabd6599b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_511483d18af8f5a68ff9057a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_913257db3451a9ac7621f48a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_397c1ebcc040d51836f30514","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_784fd292e4e0f920c1a7a0f2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_91c03b733a23918846588a2f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_659c74746694192150610530","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bd06e7fbe13f102d39361800","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9281d88e7fc0efac24cd0439","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9f9e7d651281426e50b39736","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6fd55ce089da4f438143b38e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_92829a69776ad52790993a61","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f43bee6f1494c321158e6d1d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e98862cc8f025a12d8ea86e8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_929e4cf21f97996fed484788","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b06378adf6c9b9cbb2413f72","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6ec25d85cadf26f74c14ce86","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_92a1d63bc508c7703084d687","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8464049644d97eb8a717c14c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_54f8e184e97d4ab26066383f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_92dfcdccc3e80b46aa13818d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cdf66be73652ce510a76d8b6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_dbfe1e133071d13fbb72499f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9364ab8dd417df11b960c946","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3a88f2ba457d5f0d3ecbc286","columns":["revision_id","locale"]},{"name":"ix_137a46e77226b3a6db9b42be","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_a719677a5f8367122b5cd292","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_938520f4a8d983ddc1b9c23a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_28110c1062704375255c5a20","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5d8259cc891704d847b66245","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_93eb792864d7072c7c7b5f4b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_88979d889bdc2648d6de93a5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_110b2ecbb5293ff5354068ea","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_941141f804cd0bd5725e831b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_58d779511ea5bd2c1c8ff098","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_395e54a6cc2eb61c47365012","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_949eb9b813c3df46605b0773","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1cf0ff6585f3e827c47f93ba","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ac8d2c4063099e4aef74aacd","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_958c57ca877c479ca1f596ae","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d645d583c78a8229e173b781","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8c909c8ae31ce27f94fbc33c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_967ee5e052e4f0bfebeacd45","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fdaaa0d9580906a57d0439b6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_021826c089a4b1ce9d001a09","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_96c58b9ffc710fb6cd4781c5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_17bf351249fee7d3ecee1533","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ee150ca4f11b983d6c4cd26e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_96f91d79d216efce46187daa","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ad8972f86f32c850eb2013b9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_37de9c8a2f3bbd7145908d5a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_96fdf03bb528fa5bec0978ef","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8facdd39ffcde5cfff8176c6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b6773ba61870addc065f69fb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_97142d43bb312a19e7d9a2cf","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0118d9096542116a83a9200a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_35cb16632bc8223be057cd6f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_97a33d2330b43aa33f0becdc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_be7df890ab0d81a08eef47d7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d9863820f1c74f72a41b6c40","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_98432137ef25c6a50313fde5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1fdb53fd985f31ba95870556","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0b5fbdfe143d99e15ba69a08","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9875a9629ff521082e8f3591","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_958eb06047c75838da332394","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ad69b183a7b7b04aebdd4d71","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_98c1971e9f287e7ff1256b9c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9a7937515e40e4206bd59910","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b7924b6af30ad17230c1fdba","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_98ee6ecb7bb30f9dadbad182","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fc9ec15c88eb7862d7cf2976","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_675c3aae259858ce17815fb3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9960ac1cb27aeb689110ee34","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_dcd023618caa2452b67f07b3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fd37ca27830dade2f2eac334","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9969bc9e2fbe11ed840cba38","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_07726e6e5c97fcf7a57d74b6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ab7368de5deb5275708f5a71","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_998ee292dbe95a0841a10e0a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3cc0513d4a12936777fd3e3f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_dda9e5d16cd3066f814591c5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9a5455cf79b6f8172f87cf5c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ba8c2d01c3c3ab9e6026707b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bb31df153fd9e740812232ed","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9a5474c208e306b8f729630c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3f9dd32bc911826286e4295e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3a66e96fbfc8d77388a22fd4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9ad6e9e99320994ece0b40a9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_90d162a5b62e89687574c25d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4bde13321dec5465416302c7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9af8ce6231cbfd87a30bbe1b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8ede323584972a172626c303","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2f675627ea75ce9efba1ea59","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_3fe1ba54fe4113625f333945","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_9b2060e0a6d045a7e0618ff3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_267b355b877f7ab45169d2ee","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ec356c690f95f106cbfcd772","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9c8a3723556d72ba7d8e5566","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_598aff662f3a5054b9085eb7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4cda66a3da4232d28e51c77a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9cd092b8df8f161d26983865","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_90e8075bb6c97101a77e4d49","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9ec465a02d295fcaa01127f5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_123425991f2d1b76ed5943b5","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_9d070e2b2b22d6f44fdc7b99","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a5ebe0628253593853bff51c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_87465646246517d03bb346ff","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9d8474135207b327c100d116","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_effdaf774df364f336875af9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bd941abbed8feabe822a56ad","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9d9e61f21ba4380be8c8ea88","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2a8f492a4dad3cc8d5207ec5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5fac06ff7d79abe4260c3881","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9df763b4ab32fcd12da7d5f8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5dcc45e7ffae752ee00de0b3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7b3f08c52f6c171bf0205af0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9dfc89b2dfd4b8ef1cf5a942","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_89d846c68b2d814980a7ece5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_35598851409a8fd3ceadce77","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9e78a0fece465f591defb6d5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2eac6836ef227d550520c3cc","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_34892c940015c8caef4584f5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9ea52c9068333d1f84c67e23","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_225e8ba6ae3c63f79ad41bbd","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_22bdf214ad2e6dcdf66ebc83","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9fccd8f79760f6ed773514dd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_04056212f713f695559157e0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_20cf6b1aae4e7ecc131020c8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_9ff505954757fe126de03d4b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f66892873e62ee073db76739","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_74086c247549fda5197bdfd3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a0b1c4c19435c7b7d245dd9e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c2db9777934a487bf37172ee","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d47d38ab1a2b97dcbca2acd1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a2b04ecd11caf98249029a46","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3c6cb1ca72132db58dda56fe","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cea30b94d30e41008be71dda","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a2c0c13ff4b0b64dd8166c56","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9735f3d94e09623d91bb52e0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_72d9b60f662aa7cb34a5309e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a3a85157c5875e45c67dd386","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1d0af7b16bade759fe915f49","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_33c1fe75dafdd0c8d67f3b40","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a3d19bae6aaf602b2783444f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d436b6cf714153a3eb0dd14d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_21b62b0d20e186c72c5b24c8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a4d2040ccc4d2267223ee6d1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3336297767531b22e3fd5978","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a32a07fcf66a9fd4c5018a4c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a4d48adffc1744d7ddd859d5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0b9df05c39e500803178a52e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_13d29c42ebd447e02c1dc2c0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a4e8e1b58c079b6d295a0b44","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ced39c2d4893a86f22e9189f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_81e0a54e3f75dd3a221e8470","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a4ef4c05bfe0659745ee0229","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7a1e2effa5fb461990eb486e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cb85c8d95eaff592c11564b5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a54daa2d3b520001a3cbb2cb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3a6684a3fc3bace9039f24b8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d7150a2099c4bc1a5028b10f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a6f67237dd53303d228f401d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_46a184ec77a183dedcfd73e5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_48fc2f6aab559fc718d6e73b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a70a075c854a2199069dcfcb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_07e35647564b4b5fd2bd4598","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a57a077d0eb35f6a02b26f46","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a8437cd1fece6c1ae770ecc2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a4bdad17b7e594cab3654589","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a9d0426d55c661fa480df24c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_a9157dee9eb5baf3cb0ec259","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d84fc115c7737b16117a4cdb","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_af3a309aac8891aa2aa3bf6a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_aafcbccf6f48db893f8bfb9c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_27bd66a19dc575a3fb19785a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e2f2ee0cc9949c786750011d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ab5294672999b899d9dd79c2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bc789de8e4b6f0a530ba6ec9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_40ff046bfd3d8a38afe00331","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_abeaf6f5cf406be0c5ea86c9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_85a3343ca98de9916864b888","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1a13203d1a637965d7c865b3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ac35c22cb5d278ec2ea5e2bd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_804badad0bd7c25d8ff0c6a8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a81c1cee1023438182326739","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ac9cda88954c0f01f1fe394e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ffcc0d30e0bf08c9f29c32e4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b364d952cbb11652ccc4eb0c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_cc5843cb3e8b3a1beb8e719a","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_ad2f75aa04964314b796002c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_87637c30b52d0078e385640f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6526211317871b83e03028b8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_adc8fec0e0f183e2050ea7c3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a4fc1f57fb0ef3fd630ddad6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d5056bdb7c51bc1a66c791dd","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_af2cfcf2527dd10503bad43c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0b361f53190cce50e6ad4e03","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f93628c5770bf46531c0a998","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b0412a702456c2d81e7db7f9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3229fd98eb756b2abc339b36","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f6a9defecdd0f4105309c107","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b048c65964a9f9c2d8e5102e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1b855a1a109303c54fb3d84e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0a2b1654b6a44fb4676b3e70","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b04fd65ea3adc0db548d6f00","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7b2fcad2368555fd51f0db28","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9ce8c539785c56996d3db936","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b091cdb2a7315fbd00f1ab37","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c594038c7cd742b04d8465cd","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7a707e2d1c98154422b67fad","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b0bd570a9d6cbe91285e404c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_de8e5bf9da46598a728af3db","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3fcc5c0b676bc0a6a8f57903","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b134367476d0bd2382c0ac11","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_29c9973b58d403bb4c5f3a1b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_26f9ed6a68119170c99b75f3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b5b54efa7becc947afeed61c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0c28c15d3fcf51fb9fcde1b6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_40ac5ae9c38002230842fbfe","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b6eed262f569483eeb7aa5bc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cdf91e1d2bfaa14d1a3f4994","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5065961be69bef87d8af454c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b8320f1859970ca10ee3289e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b8b505cb6b2d365b84df77a5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fce29c4adf6c722f708c83da","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b89e9eb816ce433d003012a3","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d8abac545b0385a9cae8b4ee","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e7c19988e57ce73b4e5eeea8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b928f8f2092ea23eec6bfdbb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_eee55b85226ca9bae5c3237f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_602070deb409d42647bc9403","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b938e2c42b620740573a4552","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8a2581e4ec87e9839e629106","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c6f0382a73bd25409e0cf178","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b955a89ac44e12e8694d80da","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e87f44829f45ee1eba3a7857","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1e88e864c1c11db56c00c266","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b971a8059842c2c1c3509540","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_44d4c72c58378c11b1ec47fb","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9694432360d283a9c893e89e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b9a3663d219c4e5a3b1ddbca","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_028f952a9535a43c39f8345f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_603677674aa8eec4874836c6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_b9c53070455cfc660071e87a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f5b5b074d62f92841cc6ea2b","columns":["revision_id","locale"]},{"name":"ix_8709f5ba2eaf8a97c3a0de55","columns":["value","locale","revision_id"]},{"name":"ix_2f75fc2691e80147d4fc1db6","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_a5ef083c8e81c353518f2c55","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_bb6da7934470c8df634c6fba","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9b12654303da70b08c3dfd12","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d4241d0841cf5ee30845bb67","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_c148fc404bc3ae47433a9b15","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_bb7df60063c3a0a21f46fb5a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4d79dd8633c6bdedf388d2e3","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_da05c0c0ba4555445a9e7c96","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_bbfe540c4b32730036548bb1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4cb0e59003cbe29af37c55c4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f5cd5ed841a3729e0812317b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_bc7777836762011dfa7bebfc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2ab12984c90be365eb0a64ea","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7571fa16362ed57b34906401","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_bcb5417ed0c99e8c593edc94","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_08ffb598def65fb12fbb2c91","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8a560eb104274c6c86a705d8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c01ea48e0f03c0240808aafc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_01c7428639dcf7ed49fec921","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5d1ebcf3bcd64e3ab6cd8658","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c0fa13010cfb334ee642a775","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_339de18beb63b64bb1815ad0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1b09eabc953994599dfa6c3f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c2220244dc82a95b0571e8e2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8300626c28a77ddd7c0720bf","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_63ff77c8eef0e227f544ee51","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c2f8635c7d06764fdd105758","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5700688641bfd59ba03c9b51","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_226d729db028c4537f3d400f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c3e6cf00970675e3f9e0f938","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_99b536116aa59a5631278774","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_aff88c26df54f3d3f6fc619f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_5c6a0d53170ff6bde86908f8","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_c42b002c57ee1eaa702cf264","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_56c53d347d168680e6145942","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_53d79963581cc69b3337ac2d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c4986caf85d95bf3658c7a0b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_881cd90d282a355999ba56df","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d2c3e72c88c9e787286dcd89","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c4bd62068157597da5d84457","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5b6cac50f0616cb6aaeb7345","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_662cc13712663c1adad41e7f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c62155a4d0186218eb446dda","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b963c1930ae68518cbfa1285","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c2474c0beb86a007f0de4cd5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c6246b4257ea889f04c52b24","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_04d69b03501e96e8635172ba","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fa901fa0004c6d4f74c28cee","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c6d23e816fb22b5bae5d6984","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8bf8b14ab0b176288a74d3ac","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cb725946eaba22490cf04773","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c7a21b86881cc4bee63f6cd7","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_909055bf37fba75cad41f83a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6875e545128e36ce3229b6e4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c811037465e5c32fc99047bb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b441fc31de5e834c38ffbbd7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ceb39111059b0aa3123dbd19","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c83be34e05b29133c012f4dc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3c187d4b5a769cf503c13d0b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3cfbd67e0c11e607dbdf411d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c85ce1a5bc3449109b68a2bf","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cdca3ea474e290c238d51f08","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1078716e0e2906b8fb1d662c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c888b90025ed123d6f3ce155","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_faf3b42f82ecd4388b1975c1","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_16992381bac297ca7f6e92f5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c88c13277a8e496bd8f42426","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5b01ab1b5e53ca3d5668dc50","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e5c48c5560095d285bb0b68e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c968328cd9eb837879022b81","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e6e9e4a93f4bb007b01dcd12","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d875c0ce97ec11573a3df667","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_c9d1f918fec2c144d641c93d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_760c02bb4afb7ffdb00e93f7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5566103aadde5defe2ede827","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ca1fba197e3eda7cb86450b0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b3804c54bb136cddf586b03e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f32567c0ae02ac3214caeec4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ca40ae9ea713307f4c7b4604","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3e65dda02c8ce1a4e38364bf","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_da23777c67a8e75e0a7bcfc4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_cb2f872e0ca6310d7b6e6fa2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_86d18da34ec956b4066725b9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f892e6be2c48221357b85dcc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_cc12139fa72dc136efc70af6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ceb70e87872cf9a631745e22","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8499f8752dab1968614339cf","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_cd413b47f4f216f24ba6c380","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_65e1a25ad0c5c90731b881b9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_983657403cf5fa14d7499e54","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ce051ddf37e7df53914081dd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_60cf4dd717505362d9a0021e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_def7b4833940e5efc43d6f4d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ce5a0226b3bea34c9408286e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c95ae280620f90024722e84b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_834e160e4e7e7d8255dc2cd4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ce8b575953c93027c3a8a26e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d9b8cdad67e52f40244ae599","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e1ca51e0c8795876fcda047d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_cea69e849b3fb0d7e6bd46eb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8c834180fe31cc1d052d8d2b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f2810c7fc65afbb761a04746","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_cf0a0594b71077c0bb5230aa","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ebd8cb70cf28936906179263","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4f4f88a1ce1d238e49ce754d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_cf52ca39c9868f5285ea6be2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0f0476f6274b57749c9a88de","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_41b3ce6cebf7b7befc425228","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_cfc695e6d66f296feb65bd73","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e0391e47193e74053310c663","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_920757954dc1a9e62f9b2178","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_cfabec6aa532777096d8c467","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_d02f070e8a6cda96205f8cc0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_109b21450e50c37890f5321b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_768cf8a1177e575fa125dec5","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d078630daa805450c1042f8f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_eca564333f551dc8f3f017e6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_474410f19e5c102e9c5bc4f2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d07bc4d2754ca3be5da81571","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_08a86a8efc80f4e5c6396733","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c745262e3c6787c3e54bdfb7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d13e7400f0cf2e8ff90f61b4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f27bee93d750684d982e0577","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_717bd2c51b7903d90b17909d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d1e96a827aa19cd31f6b5b9a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bbbbd563ce7c81bf9687cd7b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c13a2f71a99118db023e60e8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d3d1a9443914e0098c77614f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bddb342fe20e3f099597ca1a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cadc549e68d067f9cf3a5699","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d40fd6e7ebe77262ec9ab9fa","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cfc54b7aedb59d7cff4bab00","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a65b6856a696e4738eee2041","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d482d832fab169771f413d57","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fbd14d9f32fb00593853a568","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_976c3927f71a71c3f3479a85","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d4a67c4d3ad970bf07c591b7","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_18e70ae110610c5951db05a0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8c4a9d69e4da97edfa5e1ed6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d4abaee3a57fde37af0b1fb0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b8e363e9aa12b95e0a2ec133","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cc749402c2df11cf638b9ca3","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d4e3ae8c01b32e1fe0b0db89","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_22db428e5d96a0d0eb97f60f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a80630a7f8a23fa19a253dbb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d596322d384c4cc028f66eab","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cc64769e3ea21acf0f9a96e5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d04d749ad29ae34cf0fd4141","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d5a9bf92bebcf300c069ff27","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5869aabcd8ced3fb2985e4de","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_45fd78a3d854547e586669e0","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d5b213341c89e73cbd02cfd6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2861849d919278c3fb5976d7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_130b7954bfaacfd5072af451","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d619fbd6c712044096d57490","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_926f177787985c1d7f476597","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c1ad6effa80338eecb40fb77","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d7a31d3942b5a52f095663c5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c700035b545ac682d3b6cc66","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_4022a9ff6f170af1eda54e2b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d89592638d0045ae8894ebbe","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bf619dec26bb436223115a75","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c7d4ead2355ee7240aeec29d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d8dc13feed469431ca47e64c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2f31470fc33208ab9377784e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_9a452448eecff021f25f0d7d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d8e7243b05dfee5587b65e8b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_285ef9735abdd07c3bac7510","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b0a7a3e589ea28bec4cce4bc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_d9a317f2b5e1db2e70cacfde","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b9aca849ab96e3b1c44b77f8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b575e5b016f5f9a0762da927","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_dce8ae0827ef924dafaa4aab","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_c19ca4fc5494c48ff3761b78","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_a375d94164dce66de7010426","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_dd0ae38c1d24f663363803cb","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cd32aae2a9301009f3acb5bb","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6de2a3e7323c4c963ba9917b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_dde6f18a2ff4720ef789fbd9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6627b7f68a7aa4b754a59340","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f3834a08813b791bc4d6a59e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_de6c3d199e79deb12e4b5e85","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"timestamptz","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_65b4676098670d8b0d4ec204","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_1bcf545092c0af1419ce3ca2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_de8027278f47bf70865420c1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a2fdf4d60e52e1400938fbb4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_290d28527aa6a22b889b3da9","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_df168cd35e5af7fed4298a60","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d8fb99e240935662b879634e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_69c5e4fdc91547492848cc7f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_df3363b47791d04385226b68","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6234e99b15558e6d4afe4d9d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ea818fc9f2a7f22393f96aba","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_df3a13ed00976e1982a114bd","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e00ace01674ee68e649ecc99","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6742b83c7f632d459247755c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e001233052ae3eb9e0afb472","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f1f18e31125fecacb64acd56","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b936b148e4225f2b2d1bfe38","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e066ebbb576073ae70af1a29","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b9f3580ff0419dbacab84c51","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_0ce857ea76ff28c8b8838c28","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e08bd72fc37999bfe425856b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_61c8589cad2f176311cce216","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5027875ba02433747809b3bf","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e0ede25f6b040fb92b4a9ba0","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_845aceec75b5488252fd95d0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7dbf9ecadb89d722c326a638","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e11b8b3a30832e2d5a095fd7","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2901373460192477a7fd05f6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_672413ad9dc227a5bf1c9918","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e22dd565be7dca618060ec4b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_a5306b69601f35df6b44588a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fcb9dc5dd6befd84ad475673","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e2b6218bc8bc2e6d596a409e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0282baa7cd7e5166192bc6e5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_425c447dcc909e2ef41864fa","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e2e7706ab0707f42c4fd49a8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0c59839b74c8be408d96590d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f01f1a22d19811434fe0a937","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e376725b356b0d45ebcb8b09","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5600b020631f5a10897d6963","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_10e1ec2bd0d6ee4981857f72","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e390d2211e76d14865735375","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_eefe9629921a2ffe58c41130","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_192d445049745749560c727b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e3b34f211e41afa4c8c290e6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d7610b8781b2799f0e75cac5","columns":["revision_id","locale"]},{"name":"ix_a9e1effc2df95ac98534b39f","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_70da76fa36d129ceaaefc85b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e3e3281c79271e3f349cd65a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4fe2652c75787720d2e631e9","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_62595923f0c279d8d7ba403a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e5c22f20cd27618e41787fb2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f6f5de0fe90e70ab6c09f48c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_63ca78096dec4f3e89a59404","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e63826c955be1c04467a310b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"double precision","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6de2a21443b404f721830ce7","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_71f944fc7e2b30d9c339b40e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e7b9de96bc19fd4da4ebf6c1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4bf230112106862ef6c03b40","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_fc09710f0689ff2a9d04a266","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e7c3e92de74e85e202804cd9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_08ac53bf1e74dd38fa9f89ff","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_b1ddfd3729abd25d0a7e4f30","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e7e4960af3dc49cd66e7e4f4","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_40ab8abf2a4bd1c4158b132f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8d937845b276e86004d4a8d2","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e80a3d7fece26f2d8d097ac6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1b4796f98aac9fccb1a77b66","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f4ab6ece21dd55d38a077e84","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e8b67bb5d4afe76a306bd5b2","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f2e40c913bae9f9f9ee52e82","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_633b03676ee2d7b97c04387d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e8dd92902a797b4607e47837","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5d9dbb8bbc241baa9c497372","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_de4b64302ad18714f5887352","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e8f1481023a5b73ea8faf660","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_257b61fcf01ebd78a1774716","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ebeb3172fc225d700a7bfca7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e8fdb8f8c1aefd602d826d8a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2c2ef095b47aa6eb34cd453a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3cc19074f6b90bbd3ef75fad","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e9ba09ebb5de47a167fb4147","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_017c1fd268428e45b32b5906","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bc7d36244fff501966179479","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_e9ef4df589feae2e7bf74ecc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_913062544eb5d14460e0e2e8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_299bb662c550ed3112c1a578","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ea4e71fc03abd40cd4f5abf9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d202f3ef9b5d553b09e2b0dd","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_afc3f4d09ff450c52f4566ed","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ea531966c32f9edd88c095dc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_9d344ab47f2617564ef64625","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_33de1aaf53e4352c42145e1a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_eadb212e7320a59dcc5af18b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fa319e3ada11c4a3bc5b2254","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cecfb79cb616858c5588987f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_eb3af47fe2ee156bae490f72","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_229a9dd1cfb4686648fe631a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_386e1937cf98888212f19624","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_eb51779a96b85b2fe0a20a78","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_909f0cbf3b90aad53e473182","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f07412f108a7b4e15327304f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_eb9f134d3d7273c42e9e6cd1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_092c7ec48b3f663b4b577137","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ac2d2d507f0e17b7132febff","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ebdfc84d3944eeebeddeb0d5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_cc88f4286289468dae9a8fa0","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2767489cc7a89eb889333da4","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_eca49aaf91324c4351aa5471","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_627efbfae7fc975e17f0783a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8e1bad0849899a4e14206068","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ede5d45fba779e441a24025b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_ca574f4a34226e5c86359642","columns":["revision_id","locale"]},{"name":"ix_57be6ce5e4c17c7701dbe546","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_929714943cdef05e1569df6f","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_eeb9b4caa097e6a5c96ed387","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b73f641d4c336a2be0c428db","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_569ef924350dd48bb616bc85","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_eec46ee72bafba479320353b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_267e4c18225cffaba275044d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7f6d3b452f1ba8053ce3d48d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f02fa48abcf081f19822bfc9","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"search_vector","type":"tsvector","generated":{"kind":"textSearch","column":"value"}}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_46bf870e28763d53c24e8398","columns":["revision_id","locale"]},{"name":"ix_a34aad597dc43548dda6a99f","columns":["search_vector"],"method":"gin"}],"foreignKeys":[{"name":"fk_ce0d5e3c6c8f703ac0e137f6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f0c986609eec7b12191c8b83","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_43b43248bcb6459cc73f6b4f","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_96a43b3fa513208efa29730e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f102aa1a8d1f73cd07c5cbe1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3139e1cca70750fadb617092","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_34733426ae9c11f141713fb6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f1b91a01b2e2d6b6b047f81d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_3a8cffdb07233daf3e7d66c5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_f52f12f4d31dfc05106d896a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f2146dfbfaa5b356b83f6882","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_b300f149464306ad79617948","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c6a7b9b159d3f12f7150e2ca","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f233f3586d3d721066d9150e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_065efb58a38826a0de2ea30d","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c713addbfcf23e7564b8302d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f284fcf26208ec0e06d88bfa","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_d35a1c60e556490b62ba8318","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_2361466038ed504f716c6b69","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f2a32a64231599330f13ac24","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5d0f32cc55884431911f44d2","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_00ecf8b7081aa590eb9f8a78","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f550a137e133838c52f1c8dc","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_76ab55fc55b8e8910d4c2e82","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_451a7b359d64b9557087e447","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f5b5e68ee8e0a37e363d4e98","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_4d7891e5ffad55c834cf2303","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_54914ea4c5c6aa55c1ba9b77","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f5bc96d222d4815f4fc33653","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_20e5e54ad6c91eb1c4d2160c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_de111e2ce667b603f0c9ba80","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f5d8fbd2c8b904664f760e69","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"uuid","nullable":true},{"name":"target_collection_id","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1a03d9a025e28f8dba86f152","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_7804c4a6fa25331843f665d6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"},{"name":"fk_a232a55db64cf5d581834e0c","columns":["value","target_collection_id"],"targetTable":"content_documents","targetColumns":["id","collection_id"],"onDelete":"restrict"}]},{"name":"cf_f7172e3130217995c9960995","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8c6b455e1557487edc5bb7c6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_d60b7aa4d3189d6f5f120e34","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f78c914e2167ea5963ce660a","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_7004762d602c3072a1aa5216","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_c69e64ab202cdb9b8f637d82","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f7ca024010e5dc3d44ed721e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_805562ea6b50a69e9720446a","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8487fb5473ec416367d4bbf7","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f7e21de4b7e98566fde9898b","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0360692e48767df4d7897033","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5d242796c14cabef04e8f9bc","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f8550fa279d96f44f9d9ad7d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_43a37f90529090a766510ddf","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_47e0fef8e16a4d5ad2a3715c","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f86e49e81c9e7e724aec552c","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"boolean","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_1b45b4e5aa965a5983c9b788","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3c30a448645e0f4d2bf9cd3d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f88fa4e7b0fad0f76e646d63","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_bea83aa4e73149f28a082958","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_bc2f7e56b748834eb980af4a","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f8ef78e1d243d6869762cefa","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_dce13ab605c0d4bfb3e09a3b","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_624fc61a1f7d41a7a67cd187","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_f9ac4e44a4f32a68e69f1b50","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_68f6e4ddb2682c8738ef86c4","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8b6071d5c3f873473b804746","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fa337ef422d9eea5041a02d6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_5b2f2788d20df0d5a14094bd","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5245b8dd68578cc42296950d","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fa658749c7d10910501500a6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_e1aaf55d89bd05a2dcf2e7a8","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_48f43bdabd817269a35aa667","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fad4e04f41f19a4f1493b394","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"jsonb","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_fa2dd99ad05eef0e3956afbd","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e5fc32cb3282e5806a7e8119","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fbd0f37d4381b0c3baca525d","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_55e2f705d55cc50e4c1f2b1e","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_ff77e8fa166666576691da7b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fc208fe77cecbe2ccac17e77","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_8e46e47b492443eb4f23c369","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e7498840778286fd5735f16e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fd1faadd7cb3cbaf1e904a19","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_94e5c17082a3dde98ffa4710","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_6a27284efc3222f26817f75b","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fd7e3ba78b48fd3cd250e6c6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_0406d909e8ef8f3d89cd9ea5","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_e975f22ae80aa3fb6542657e","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fdb357d28894d9fc63579ec6","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_247e054b3d14367541842c3c","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_107390c227499de2268cca22","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_fddf3433941b3b1e81518a92","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_01a8c5331c5b1fcf2097df24","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8a29c69d361cc2f5428abef8","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ff2c49715ff3344a4263f2b8","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_6f6e942087000e001a5a5b76","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_86223245eaa50e2a3d129ce6","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ff3b4e2b43e3c836fe2cf2c5","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_81ff3ce5d809d76dda9cff74","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_5f3c9466539d8f18d70968d1","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ff7837a47c31d4f1f6b58b06","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_f9ab628e0f02c0c866027376","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_8d35145b330b775993a7a025","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ff7a72ca096d81e876af5a07","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_60ad571bf7ce1597cd72a400","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_cca24a46faa5886703d9e444","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ff96bd33fabae812828a56a1","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true},{"name":"item_id","type":"uuid","nullable":true},{"name":"block_type","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_2c7a41c8d8fed4c45fd685b6","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_3d46407270cf497aaaf53298","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cf_ffe7b0a33e5a8df3b27eb69f","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"parent_path","type":"text"},{"name":"position","type":"integer"},{"name":"state","type":"text"},{"name":"value","type":"text","nullable":true}],"primaryKey":["revision_id","locale","parent_path","position"],"indexes":[{"name":"ix_76ea704157785aa304667649","columns":["revision_id","locale"]}],"foreignKeys":[{"name":"fk_640045c6c06347827f4fd126","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"ci_9ad8315da76c8848b8870f2e","columns":[{"name":"revision_id","type":"uuid"},{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text","nullable":true},{"name":"p0","type":"boolean"},{"name":"b0","type":"boolean"},{"name":"k1","type":"text","nullable":true},{"name":"p1","type":"boolean"},{"name":"b1","type":"boolean"},{"name":"k2","type":"text","nullable":true},{"name":"p2","type":"boolean"},{"name":"b2","type":"boolean"}],"primaryKey":["revision_id","locale"],"indexes":[{"name":"ix_d0d4eb4ee34c7660c18a83eb","columns":["locale","k0","k1","k2","revision_id"]}],"foreignKeys":[{"name":"fk_d0d4eb4ee34c7660c18a83eb","columns":["revision_id","document_id"],"targetTable":"content_revisions","targetColumns":["id","document_id"],"onDelete":"cascade"}]},{"name":"cu_4b3157d1ad57acc25664c1b6","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"}],"primaryKey":["document_id","locale","k0"],"indexes":[{"name":"uq_f525015f11a85b71b3cdbc8c","columns":["locale","k0"],"unique":true}],"foreignKeys":[{"name":"fk_f525015f11a85b71b3cdbc8c","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]},{"name":"cu_631e9d9ab06536489ec1bf68","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"}],"primaryKey":["document_id","locale","k0"],"indexes":[{"name":"uq_f1e610ac618d94b19d777778","columns":["locale","k0"],"unique":true}],"foreignKeys":[{"name":"fk_f1e610ac618d94b19d777778","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]},{"name":"cu_9ad8315da76c8848b8870f2e","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"},{"name":"k1","type":"text"},{"name":"k2","type":"text"}],"primaryKey":["document_id","locale","k0","k1","k2"],"indexes":[{"name":"uq_3faad57ef6750a920225310f","columns":["locale","k0","k1","k2"],"unique":true}],"foreignKeys":[{"name":"fk_3faad57ef6750a920225310f","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]},{"name":"cu_9ebd5bf548269fa650fdc041","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"}],"primaryKey":["document_id","locale","k0"],"indexes":[{"name":"uq_4f8845d18ee71787b9dbdf31","columns":["locale","k0"],"unique":true}],"foreignKeys":[{"name":"fk_4f8845d18ee71787b9dbdf31","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]},{"name":"cu_9fc3ba7abbb5417fdf607bd2","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"}],"primaryKey":["document_id","locale","k0"],"indexes":[{"name":"uq_165e20ac2a57a0c66d5a175d","columns":["locale","k0"],"unique":true}],"foreignKeys":[{"name":"fk_165e20ac2a57a0c66d5a175d","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]},{"name":"cu_9fc63b40de5cb1d63eac7f2f","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"}],"primaryKey":["document_id","locale","k0"],"indexes":[{"name":"uq_5481179621e4f3c7356f3eca","columns":["locale","k0"],"unique":true}],"foreignKeys":[{"name":"fk_5481179621e4f3c7356f3eca","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]},{"name":"cu_d39b972415ec56d3b602e581","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"}],"primaryKey":["document_id","locale","k0"],"indexes":[{"name":"uq_adef3f37969bbb179117b763","columns":["locale","k0"],"unique":true}],"foreignKeys":[{"name":"fk_adef3f37969bbb179117b763","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]},{"name":"cu_fac1ffad8f8a01b78464605c","columns":[{"name":"document_id","type":"uuid"},{"name":"locale","type":"text"},{"name":"k0","type":"text"}],"primaryKey":["document_id","locale","k0"],"indexes":[{"name":"uq_cdbdc2532df6ca877ce9eb19","columns":["locale","k0"],"unique":true}],"foreignKeys":[{"name":"fk_cdbdc2532df6ca877ce9eb19","columns":["document_id"],"targetTable":"content_documents","targetColumns":["id"],"onDelete":"cascade"}]}]}'::jsonb,'ready') ON CONFLICT(fingerprint) DO NOTHING;

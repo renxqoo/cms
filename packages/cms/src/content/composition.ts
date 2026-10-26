@@ -1,3 +1,7 @@
+import { createLocaleMapping } from './locale-source.ts';
+import { createContentDelivery } from './delivery/api.ts';
+import { createLanguageManagementApi } from './delivery/language-management.ts';
+import type { ContentDeliveryOptions } from './delivery/types.ts';
 import { assetsOperations } from '@new-cms/cms/assets';
 import { contentOperations } from './operations.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
@@ -47,6 +51,11 @@ function validateOptions(options: ContentOptions): void {
     throw new Error('Upload collections require assets');
   validateAccessOperations(options);
   validateExtensionHandlers(options);
+  if (
+    options.registry.list.some((collection) => collection.localeSource) &&
+    !options.resolveLocaleSource
+  )
+    throw new Error('Content locale source resolver is missing');
   if (compileContent(options.registry).fingerprint !== options.mapping.fingerprint)
     throw new Error('Content mapping differs from the registry');
 }
@@ -113,14 +122,17 @@ function createApi(runtime: ContentRuntime) {
     ...createJobApi(runtime),
     ...createDiscoveryApi(runtime),
     ...createResourceApi(runtime),
+    ...createLanguageManagementApi(runtime),
   };
 }
 
 export function createContent(options: ContentOptions) {
   validateOptions(options);
+  const mappingFor = createLocaleMapping(options);
   const runtime: ContentRuntime = {
     ...options,
-    store: createContentStore({ mapping: options.mapping, limits: options.limits }),
+    store: createContentStore({ mapping: options.mapping, limits: options.limits, mappingFor }),
+    resolveCollection: async (tx, key) => (await mappingFor(tx)).get(key).definition,
     resolveRelationScopes: (state) => relationScopes(state, runtime),
     schemas: contentInputSchemas({
       ...options.limits,
@@ -130,6 +142,8 @@ export function createContent(options: ContentOptions) {
   const maintenance = createContentMaintenance(runtime);
   return {
     api: createApi(runtime),
+    createDelivery: (deliveryOptions: ContentDeliveryOptions) =>
+      createContentDelivery(runtime, deliveryOptions),
     uploads: options.uploadApi,
     authorizeMedia: createMediaAuthorizer(runtime),
     participants: { commitProcessing: createProcessingCommitter(runtime) },
@@ -140,6 +154,10 @@ export function createContent(options: ContentOptions) {
           "SELECT 1 FROM cms_migrations WHERE name='0004_content_work.sql'",
         );
         if (work.rowCount !== 1) fail('temporarily_unavailable');
+        const preview = await tx.query(
+          "SELECT 1 FROM cms_migrations WHERE name='0016_content_preview_grants.sql'",
+        );
+        if (preview.rowCount !== 1) fail('temporarily_unavailable');
       }, signal);
     },
     ...maintenance,
@@ -147,6 +165,13 @@ export function createContent(options: ContentOptions) {
 }
 
 export type ContentApi = ReturnType<typeof createContent>['api'];
+export type { ContentDeliveryApi } from './delivery/api.ts';
+export {
+  createContentLocaleResolver,
+  createContentLocaleValidator,
+} from './delivery/locale-resolver.ts';
+export type { ContentLocaleSource } from './definition.ts';
+
 export type {
   ContentOptions,
   ContentWorkPolicy,

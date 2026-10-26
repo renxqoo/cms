@@ -40,7 +40,8 @@ async function listCollections(runtime: ContentRuntime, ctx: RequestContext, raw
       const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
       await runtime.authorize(executor, ctx, 'collections.list');
       const rows = [];
-      for (const collection of runtime.registry.list) {
+      for (const definition of runtime.registry.list) {
+        const collection = await runtime.resolveCollection(executor, definition.key);
         try {
           const actor = await runtime.authorize(executor, ctx, 'collections.get', {
             scopeKind: 'collection',

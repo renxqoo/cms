@@ -14,17 +14,24 @@ export interface CmsProcessOptions {
   frontendUrl?: string;
   navigationPaths?: readonly string[];
   navigationIcons?: readonly string[];
+  clientOrigin?: string;
+  initializePublicContent?: boolean;
+  sharedStorage?: {
+    bucket: string;
+    region: string;
+    endpoint: string;
+    credentials: { accessKeyId: string; secretAccessKey: string };
+  };
 }
 
 export async function createCmsProcess(mode: 'bun' | 'node', options: CmsProcessOptions = {}) {
   const store = await createTestRuntimeDatabase();
   let smtp: Awaited<ReturnType<typeof createTestSmtp>> | undefined;
   let storage: string | undefined;
-  let server: Awaited<ReturnType<typeof startProcess>> | undefined;
-  const request = requestClient(() => server);
+  let processes: ReturnType<typeof processControls> | undefined;
   async function close() {
     try {
-      await server?.close();
+      await processes?.close();
     } finally {
       await cleanupAll([
         () => smtp?.close(),
@@ -37,28 +44,14 @@ export async function createCmsProcess(mode: 'bun' | 'node', options: CmsProcess
     smtp = await createTestSmtp();
     storage = await mkdtemp(join(tmpdir(), 'cms-network-assets-'));
     const { binary, folder, extension, env } = settings(mode, { store, smtp, storage }, options);
-    async function start() {
-      server = await startProcess(binary, `${folder}/main.${extension}`, env);
-    }
-    initializeProcesses({ binary, folder, extension, env });
-    await start();
-    const owner = await loginOwner(request);
-    return {
-      request,
-      owner,
-      smtp,
-      store,
-      close,
-      async restart() {
-        await server?.close();
-        server = undefined;
-        await start();
-      },
-      port: () => {
-        if (!server) throw new Error('Service is not running');
-        return server.port;
-      },
-    };
+    processes = processControls({ binary, folder, extension, env });
+    initializeProcesses(
+      { binary, folder, extension, env },
+      options.initializePublicContent === true,
+    );
+    await processes.start();
+    const owner = await loginOwner(processes.api.request);
+    return { ...processes.api, owner, smtp, store, close };
   } catch (error) {
     await close();
     throw error;
@@ -66,9 +59,13 @@ export async function createCmsProcess(mode: 'bun' | 'node', options: CmsProcess
 }
 
 type RunningServer = Awaited<ReturnType<typeof startProcess>>;
-function initializeProcesses(config: ReturnType<typeof settings>) {
+function initializeProcesses(config: ReturnType<typeof settings>, publicContent: boolean) {
   const { binary, folder, extension, env } = config;
-  runCommand(binary, `${folder}/commands/reconcile-operations.${extension}`, { env });
+  runCommand(
+    binary,
+    `${folder}/commands/${publicContent ? 'migrate' : 'reconcile-operations'}.${extension}`,
+    { env },
+  );
   runCommand(binary, `${folder}/commands/grant-runtime-role.${extension}`, { env });
   const activation = runCommand(binary, `${folder}/commands/backfill-content.${extension}`, {
     env,
@@ -82,6 +79,12 @@ function initializeProcesses(config: ReturnType<typeof settings>) {
     args: ['--email', 'content-owner@example.test'],
     input: 'Content owner password 2026\n',
   });
+  if (publicContent)
+    runCommand(binary, `${folder}/commands/initialize-content.${extension}`, {
+      env,
+      args: ['--email', 'content-owner@example.test'],
+      input: 'Content owner password 2026\n',
+    });
 }
 function settings(
   mode: 'bun' | 'node',
@@ -105,12 +108,23 @@ function settings(
     API_HOST: '127.0.0.1',
     API_PORT: '0',
     NODE_ENV: 'test',
-    CMS_STORAGE_DRIVER: 'local',
+    CMS_STORAGE_DRIVER: options.sharedStorage ? 's3' : 'local',
     CMS_STORAGE_ROOT: input.storage,
     CMS_MAINTENANCE_INTERVAL_MS: '100',
     SMTP_HOST: input.smtp.host,
     SMTP_PORT: String(input.smtp.port),
     SMTP_SECURE: 'false',
+    ...(options.clientOrigin ? { ONEASTER_CLIENT_ORIGIN: options.clientOrigin } : {}),
+    ...(options.sharedStorage
+      ? {
+          CMS_S3_BUCKET: options.sharedStorage.bucket,
+          CMS_S3_REGION: options.sharedStorage.region,
+          CMS_S3_ENDPOINT: options.sharedStorage.endpoint,
+          CMS_S3_FORCE_PATH_STYLE: 'true',
+          AWS_ACCESS_KEY_ID: options.sharedStorage.credentials.accessKeyId,
+          AWS_SECRET_ACCESS_KEY: options.sharedStorage.credentials.secretAccessKey,
+        }
+      : {}),
     ...(options.frontendUrl ? { CMS_FRONTEND_URL: options.frontendUrl } : {}),
     ...(options.navigationPaths ? { CMS_NAVIGATION_PATHS: options.navigationPaths.join(',') } : {}),
     ...(options.navigationIcons ? { CMS_NAVIGATION_ICONS: options.navigationIcons.join(',') } : {}),
@@ -130,6 +144,8 @@ function requestClient(server: () => RunningServer | undefined) {
         ...(options.token ? { authorization: `Bearer ${options.token}` } : {}),
       },
       ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
+    }).catch((error: unknown) => {
+      throw new Error(`CMS request failed: ${method} ${path}`, { cause: error });
     });
   };
 }
@@ -139,4 +155,45 @@ async function loginOwner(request: ApiClient) {
     body: { email: 'content-owner@example.test', password: 'Content owner password 2026' },
   });
   return z.object({ token: z.string() }).parse(await response.json());
+}
+
+function processControls(config: ReturnType<typeof settings>) {
+  const { binary, folder, extension, env } = config;
+  let server: RunningServer | undefined;
+  const peers = new Set<RunningServer>();
+  const request = requestClient(() => server);
+  async function start() {
+    server = await startProcess(binary, `${folder}/main.${extension}`, env);
+  }
+  async function stop() {
+    await server?.close();
+    server = undefined;
+  }
+  return {
+    start,
+    close: () =>
+      cleanupAll([...Array.from(peers, (peer) => () => peer.close()), () => server?.close()]),
+    api: {
+      request,
+      stop,
+      async restart() {
+        await stop();
+        await start();
+      },
+      async startPeer() {
+        const peer = await startProcess(binary, `${folder}/main.${extension}`, env);
+        peers.add(peer);
+        return {
+          port: peer.port,
+          async close() {
+            if (peers.delete(peer)) await peer.close();
+          },
+        };
+      },
+      port() {
+        if (!server) throw new Error('Service is not running');
+        return server.port;
+      },
+    },
+  };
 }

@@ -169,7 +169,7 @@ export async function projectReferenceGroup(
     targetId: string;
   },
 ): Promise<ReferenceSummary[]> {
-  const collection = input.runtime.registry.get(input.collection);
+  const collection = await input.runtime.resolveCollection(state.tx, input.collection);
   const located = input.references
     .map((reference) =>
       referenceLocation({ ...state, collection }, { runtime: input.runtime, reference }),

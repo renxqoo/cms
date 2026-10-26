@@ -33,7 +33,7 @@ function collection(fields: readonly FieldDefinition[], indexed = false): Collec
   };
 }
 async function fixture(definition: CollectionDefinition, others: CollectionDefinition[] = []) {
-  const kit = await createTestDatabase();
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   resources.push(kit);
   const limits = contentLimits();
   const registry = createRegistry({ collections: [definition, ...others], limits });

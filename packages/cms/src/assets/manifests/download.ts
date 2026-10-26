@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { checkedStream } from './checked-stream.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import type { AssetsOptions } from '../types.ts';
@@ -12,30 +12,6 @@ export interface AssetDownload {
   bytes: number;
   mimeType: string;
   digest: string;
-}
-
-function checkedStream(
-  stream: ReadableStream<Uint8Array>,
-  input: { bytes: number; digest: string; signal: AbortSignal },
-) {
-  let size = 0;
-  const hash = createHash('sha256');
-  const checked = stream.pipeThrough(
-    new TransformStream<Uint8Array, Uint8Array>({
-      transform(chunk, controller) {
-        input.signal.throwIfAborted();
-        size += chunk.byteLength;
-        if (size > input.bytes) fail('invalid_input');
-        hash.update(chunk);
-        controller.enqueue(chunk);
-      },
-      flush() {
-        if (size !== input.bytes || hash.digest('hex') !== input.digest) fail('invalid_input');
-      },
-    }),
-    { signal: input.signal },
-  );
-  return checked;
 }
 
 export function createDownloader(runtime: AssetsOptions & { signal: AbortSignal }) {

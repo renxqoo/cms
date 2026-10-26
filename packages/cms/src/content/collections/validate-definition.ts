@@ -147,6 +147,20 @@ function validateSort(entry: ReturnType<typeof fieldPaths>[number] | undefined):
       !['group', 'join', 'array', 'blocks'].includes(entry.field.type),
   );
 }
+function validatePublicationPolicy(collection: CollectionDefinition): void {
+  if (collection.publicationLocalesField) {
+    const field = dataFields(collection.fields).find(
+      (candidate) => candidate.name === collection.publicationLocalesField,
+    );
+    rejectUnless(
+      collection.mode === 'drafts' &&
+        !collection.localizeStatus &&
+        field !== undefined &&
+        !field.localized &&
+        (field.type === 'json' || (field.type === 'select' && field.hasMany === true)),
+    );
+  }
+}
 export function validateDefinition(
   collection: CollectionDefinition,
   limits: ContentLimits,
@@ -155,6 +169,7 @@ export function validateDefinition(
   rejectUnless(collection.mode !== 'drafts' || collection.history !== false);
   rejectUnless(!collection.localizeStatus || collection.mode === 'drafts');
   validateCollectionLocales(collection, limits);
+  validatePublicationPolicy(collection);
   validateFields({
     fields: collection.fields,
     limits,

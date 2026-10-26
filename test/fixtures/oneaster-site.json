@@ -1,0 +1,130 @@
+{
+  "brand": {
+    "name": "OneAster",
+    "tagline": "AI models, connected.",
+    "logo": null
+  },
+  "title": "OneAster",
+  "description": "AI models, connected.",
+  "apiBaseUrl": "https://gateway.example.com/v1",
+  "defaultDocumentSlug": "getting-started",
+  "header": {
+    "navigation": [
+      {
+        "id": "1a16eebc-160e-4f41-bb9b-735d06786e0b",
+        "link": {
+          "kind": "internal",
+          "label": "Platform",
+          "path": "/",
+          "anchor": "capabilities"
+        }
+      },
+      {
+        "id": "a0cf769b-08a1-474f-a8a6-693169abca59",
+        "link": {
+          "kind": "internal",
+          "label": "Models",
+          "path": "/models"
+        }
+      },
+      {
+        "id": "9c22cb40-323a-4626-9d5b-58fab3fcb260",
+        "link": {
+          "kind": "internal",
+          "label": "Quickstart",
+          "path": "/docs",
+          "anchor": "quickstart"
+        },
+        "homeLink": {
+          "kind": "internal",
+          "label": "Quickstart",
+          "path": "/",
+          "anchor": "connect"
+        }
+      },
+      {
+        "id": "499bde02-7ca4-4111-ad75-04bf81a4bc1b",
+        "link": {
+          "kind": "internal",
+          "label": "Docs",
+          "path": "/docs"
+        }
+      }
+    ],
+    "consoleLink": {
+      "kind": "action",
+      "label": "Console",
+      "action": "console"
+    }
+  },
+  "footer": {
+    "groups": [
+      {
+        "id": "991b29bd-0f7b-49f4-8480-dceb13811ce3",
+        "title": "Explore",
+        "links": [
+          {
+            "kind": "internal",
+            "label": "Platform",
+            "path": "/",
+            "anchor": "capabilities",
+            "id": "45d62501-0df6-4ffa-a091-ad293d805f06"
+          },
+          {
+            "kind": "internal",
+            "label": "Models",
+            "path": "/models",
+            "id": "15f8b253-d0bf-4dcc-aba6-87b07c82a230"
+          }
+        ]
+      },
+      {
+        "id": "876d46f7-5690-4d2d-8e5c-f91bab1cf2f2",
+        "title": "Developers",
+        "links": [
+          {
+            "kind": "internal",
+            "label": "Docs",
+            "path": "/docs",
+            "id": "33f127f5-5af2-43fc-9710-305ff3150b9a"
+          },
+          {
+            "kind": "internal",
+            "label": "Quickstart",
+            "path": "/docs",
+            "anchor": "quickstart",
+            "id": "b8248dcf-5de4-4473-94ff-307ccfb2b921"
+          }
+        ]
+      },
+      {
+        "id": "cf5fb493-d77d-43a7-93af-ad84b61af878",
+        "title": "Workspace",
+        "links": [
+          {
+            "kind": "action",
+            "label": "Console",
+            "action": "console",
+            "id": "2ccb9bd4-3f3d-49de-be0b-846fc831b21d"
+          }
+        ]
+      }
+    ],
+    "copyright": "Connect to possibilities.",
+    "disclaimer": "Interactive demo · Sample usage and pricing"
+  },
+  "ui": {
+    "homeLabel": "OneAster home",
+    "skip": "Skip to content",
+    "language": "Language",
+    "openNavigation": "Open navigation",
+    "closeNavigation": "Close navigation",
+    "mainNavigationLabel": "Main navigation",
+    "mobileNavigationLabel": "Mobile navigation",
+    "statusPreview": "Status preview",
+    "backToTop": "Back to top",
+    "account": "Account",
+    "register": "Sign up"
+  },
+  "contentLocales": ["en"]
+}

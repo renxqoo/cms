@@ -1,5 +1,8 @@
 import { createDatabase } from '@new-cms/database/client';
-import { createContentSchemaMigrator } from '@new-cms/cms/content/composition';
+import {
+  createContentSchemaMigrator,
+  createContentLocaleResolver,
+} from '@new-cms/cms/content/composition';
 import { contentConfiguration } from '../bootstrap/create-content.ts';
 import { loadContentMigrationConfig } from '../bootstrap/load-config.ts';
 import { contentMigrationPolicy, contentWorkPolicy } from '../config/content-policy.ts';
@@ -23,6 +26,7 @@ async function main(): Promise<void> {
     const migrator = createContentSchemaMigrator({
       database,
       ...configuration,
+      resolveLocaleSource: createContentLocaleResolver(configuration),
       policy: config.policy,
       resourceLockKey: contentWorkPolicy().resourceLockKey,
     });

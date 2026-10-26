@@ -8,6 +8,8 @@ import { createTestPolicy } from '../../../../../test/support/policy.ts';
 import { createRegistry, generateArtifacts, generateEvolution } from '../generate.ts';
 import type { CollectionDefinition } from '../definition.ts';
 import { createContentStore } from '../adapters/postgres/store.ts';
+import { createLocaleMapping } from '../locale-source.ts';
+import type { ContentOptions } from '../types.ts';
 import { createContentSchemaMigrator } from '../schema-migrator.ts';
 
 const resources: { close(): Promise<void> }[] = [];
@@ -46,8 +48,12 @@ function definitions() {
   };
   return { previous, next };
 }
-async function fixture(input: { prepare?: boolean; renameCollection?: boolean } = {}) {
-  const kit = await createTestDatabase();
+const resolveLocaleSource: NonNullable<ContentOptions['resolveLocaleSource']> = () =>
+  Promise.resolve({ default: 'en', supported: ['en', 'fr'], fallback: {}, enabled: ['en'] });
+async function fixture(
+  input: { prepare?: boolean; renameCollection?: boolean; dynamic?: boolean } = {},
+) {
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   resources.push(kit);
   const limits = contentLimits();
   const policy = createTestPolicy({ securityLockKey: randomInt(1, 1_000_000_000) });
@@ -56,6 +62,23 @@ async function fixture(input: { prepare?: boolean; renameCollection?: boolean } 
   if (input.renameCollection) {
     definition.previous = { ...definition.previous, key: 'legacy_records' };
     definition.next = { ...definition.next, previousSchemas: [definition.previous] };
+  }
+  if (input.dynamic) {
+    definition.previous = {
+      ...definition.previous,
+      localeSource: 'siteLanguages',
+      fields: definition.previous.fields.map((field) =>
+        field.id === 'value' ? { ...field, localized: true } : field,
+      ),
+    };
+    definition.next = {
+      ...definition.next,
+      localeSource: 'siteLanguages',
+      previousSchemas: [definition.previous],
+      fields: definition.next.fields.map((field) =>
+        field.id === 'value' ? { ...field, localized: true } : field,
+      ),
+    };
   }
   const oldRegistry = createRegistry({ collections: [definition.previous], limits });
   const old = generateArtifacts(oldRegistry);
@@ -72,7 +95,13 @@ async function fixture(input: { prepare?: boolean; renameCollection?: boolean } 
     input.renameCollection ? ['collectionKeyMigrationRequired:legacy_records:records'] : [],
   );
   if (input.prepare !== false) await kit.database.query(evolution.sql);
-  const oldStore = createContentStore({ mapping: old.mapping, limits });
+  const oldStore = createContentStore({
+    mapping: old.mapping,
+    limits,
+    ...(input.dynamic
+      ? { mappingFor: createLocaleMapping({ mapping: old.mapping, limits, resolveLocaleSource }) }
+      : {}),
+  });
   const options = {
     database: kit.database,
     registry,
@@ -80,6 +109,7 @@ async function fixture(input: { prepare?: boolean; renameCollection?: boolean } 
     limits,
     policy,
     resourceLockKey,
+    ...(input.dynamic ? { resolveLocaleSource } : {}),
   };
   const service = createContentSchemaMigrator(options);
   return { ...kit, actorId, oldRegistry, old, oldStore, options, service };
@@ -87,7 +117,7 @@ async function fixture(input: { prepare?: boolean; renameCollection?: boolean } 
 type Fixture = Awaited<ReturnType<typeof fixture>>;
 async function save(
   kit: Fixture,
-  input: { value: string; code: string; id?: string; publish?: boolean },
+  input: { value: string; code: string; id?: string; publish?: boolean; french?: string },
 ) {
   const id = input.id ?? randomUUID();
   const versionId = randomUUID();
@@ -107,6 +137,14 @@ async function save(
       actorId: kit.actorId,
       locale: 'en',
       data: { value: input.value, code: input.code },
+      ...(input.french
+        ? {
+            dataByLocale: {
+              en: { value: input.value, code: input.code },
+              fr: { value: input.french, code: input.code },
+            },
+          }
+        : {}),
       kind: 'save',
     });
     await kit.oldStore.updateDocumentPointers(tx, {
@@ -520,4 +558,39 @@ it('activates a stable collection identity after a reviewed API key change while
   ).toEqual([
     { collection_id: 'maintenance_records', schema_version: 2, prepared_schema_version: null },
   ]);
+});
+
+it('backfills registered disabled-language values without losing their original history or requiring translations for other languages', async () => {
+  const kit = await fixture({ dynamic: true });
+  const saved = await save(kit, { value: '10', code: 'dynamic', french: '20', publish: true });
+  expect(await complete(kit)).toBe(1);
+  await kit.service.activate();
+  const store = createContentStore({
+    mapping: kit.options.mapping,
+    limits: kit.options.limits,
+    mappingFor: createLocaleMapping(kit.options),
+  });
+  const translated = await kit.database.transaction((tx) =>
+    store.readRevisionData(tx, {
+      collection: 'records',
+      documentId: saved.id,
+      versionId: saved.versionId,
+      locale: 'fr',
+      fallback: [],
+    }),
+  );
+  expect(translated['value']).toBe(20);
+  expect(
+    (
+      await kit.database.transaction((tx) =>
+        kit.oldStore.readRevisionData(tx, {
+          collection: 'records',
+          documentId: saved.id,
+          versionId: saved.versionId,
+          locale: 'fr',
+          fallback: [],
+        }),
+      )
+    )['value'],
+  ).toBe('20');
 });

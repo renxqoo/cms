@@ -99,6 +99,7 @@ export const collectionEditorSchema = z.strictObject({
   schemaVersion: z.number().int().positive(),
   behaviorHash: z.string(),
   mappingFingerprint: z.string(),
+  publicationLocalesField: z.string().optional(),
   intent: editorIntentSchema,
   mode: z.enum(['editing', 'published']),
   locale: z.string(),
@@ -115,6 +116,7 @@ export const collectionEditorSchema = z.strictObject({
   locales: z.strictObject({
     default: z.string(),
     supported: z.array(z.string()),
+    enabled: z.array(z.string()).optional(),
     fallback: z.record(z.string(), z.array(z.string())),
   }),
   layout: z.array(editorNodeSchema),

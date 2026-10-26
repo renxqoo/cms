@@ -12,6 +12,7 @@ export interface SqlExecutor {
 
 export interface Database extends SqlExecutor {
   transaction<T>(work: (tx: SqlExecutor) => Promise<T>, signal?: AbortSignal): Promise<T>;
+  readOnlyTransaction<T>(work: (tx: SqlExecutor) => Promise<T>, signal?: AbortSignal): Promise<T>;
   close(): Promise<void>;
   orm: NodePgDatabase;
 }
@@ -58,8 +59,9 @@ function transactionExecutor(client: PoolClient, signal?: AbortSignal) {
 async function inTransaction<T>(
   pool: Pool,
   work: (tx: SqlExecutor) => Promise<T>,
-  signal?: AbortSignal,
+  options: { signal?: AbortSignal; readOnly?: boolean } = {},
 ): Promise<T> {
+  const { signal, readOnly } = options;
   signal?.throwIfAborted();
   const client = await pool.connect();
   const lease = transactionExecutor(client, signal);
@@ -72,7 +74,11 @@ async function inTransaction<T>(
   signal?.addEventListener('abort', abort, { once: true });
   try {
     signal?.throwIfAborted();
-    await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
+    await client.query(
+      readOnly
+        ? 'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY'
+        : 'BEGIN ISOLATION LEVEL READ COMMITTED',
+    );
     let result: T;
     try {
       result = await work(lease.executor);
@@ -106,7 +112,9 @@ export function createDatabase(options: DatabaseOptions): Database {
   return {
     orm: drizzle(pool),
     query: (text, values) => pool.query(text, values),
-    transaction: (work, signal) => inTransaction(pool, work, signal),
+    transaction: (work, signal) => inTransaction(pool, work, signal ? { signal } : {}),
+    readOnlyTransaction: (work, signal) =>
+      inTransaction(pool, work, { ...(signal ? { signal } : {}), readOnly: true }),
     close: () => pool.end(),
   };
 }

@@ -5,7 +5,11 @@ import {
 } from '@new-cms/database/schema/generated/content';
 import type { AccessAuthorization } from '@new-cms/cms/access';
 import type { AccessActorAuthorization } from '@new-cms/cms/access/composition';
-import { createContent } from '@new-cms/cms/content/composition';
+import {
+  createContent,
+  createContentLocaleResolver,
+  createContentLocaleValidator,
+} from '@new-cms/cms/content/composition';
 import { createAssets, assetDiscoverySources } from '@new-cms/cms/assets/composition';
 import { compileContent } from '@new-cms/cms/content/generate';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
@@ -21,6 +25,10 @@ import { createS3Storage } from '../adapters/storage/s3.ts';
 import { createSharpProcessor } from '../adapters/images/sharp.ts';
 import type { StorageConfig } from './storage-config.ts';
 
+import { contentDeliveryConfiguration } from '../config/delivery-policy.ts';
+import { validatePublicMedia } from '../config/collections/publication-media.ts';
+import { interfaceMessageContract } from '../config/message-contract.ts';
+
 export function contentConfiguration() {
   const limits = contentLimits();
   const registry = applicationRegistry(limits);
@@ -32,14 +40,16 @@ export function contentConfiguration() {
   return { registry, mapping, limits };
 }
 
-export function createContentServices(input: {
+interface ContentServiceInput {
   database: Database;
   policy: CmsPolicy;
   authorize: AccessAuthorization;
   authorizeActor: AccessActorAuthorization;
   storage: StorageConfig;
+  clientOrigin: string;
   configuration: ReturnType<typeof contentConfiguration>;
-}) {
+}
+export function createContentServices(input: ContentServiceInput) {
   const workPolicy = contentWorkPolicy();
   const imageLimits = assetLimits();
   const storage =
@@ -63,6 +73,12 @@ export function createContentServices(input: {
     database: input.database,
     policy: input.policy,
     ...input.configuration,
+    resolveLocaleSource: createContentLocaleResolver(input.configuration),
+    validateAfterMutation: createContentLocaleValidator(
+      input.configuration,
+      interfaceMessageContract,
+    ),
+    validatePublication: validatePublicMedia,
     workPolicy,
     uploadPolicy: contentUploadPolicy(imageLimits),
     authorize: input.authorize,
@@ -73,5 +89,9 @@ export function createContentServices(input: {
     assetDiscoverySources,
     afterCommitHandlers: {},
   });
-  return { content, assets };
+  return {
+    content,
+    assets,
+    delivery: content.createDelivery(contentDeliveryConfiguration(input.clientOrigin)),
+  };
 }

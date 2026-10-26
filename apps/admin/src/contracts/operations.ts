@@ -134,6 +134,19 @@ export const operations = [
   defineOperation('documents.get', ['GET', '/v1/collections/:collection/documents/:id'], {
     queryKeys: read,
   }),
+  defineOperation('documents.createPreviewTicket', [
+    'POST',
+    '/v1/collections/:collection/documents/:id/preview-tickets',
+  ]),
+  defineOperation('documents.revokePreviewTicket', [
+    'DELETE',
+    '/v1/collections/:collection/documents/:id/preview-tickets/:ticketId',
+  ]),
+  defineOperation(
+    'languages.setDefault',
+    ['POST', '/v1/collections/:collection/documents/:id/default-language'],
+    { idempotency: 'required' },
+  ),
   defineOperation('documents.update', ['PATCH', '/v1/collections/:collection/documents/:id']),
   defineOperation('documents.archive', ['DELETE', '/v1/collections/:collection/documents/:id'], {
     queryKeys: ['revision'],

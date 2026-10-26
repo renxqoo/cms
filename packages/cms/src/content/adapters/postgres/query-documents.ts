@@ -1,3 +1,4 @@
+import { projectionFields, projectReadData } from './read-projection.ts';
 import type { RelationScope } from '../../model.ts';
 import { historicalReadContext } from '../../fields/remap-locale.ts';
 import type { SqlExecutor } from '@new-cms/database/client';
@@ -19,6 +20,9 @@ import { decodeFields } from './value-codec.ts';
 import { assertWhereBudget } from '../../queries/parse-query.ts';
 
 export interface QueryOptions {
+  projection?: readonly string[];
+  orderByPublished?: boolean;
+  scan?: boolean;
   collection: string;
   query: QueryInput;
   where?: Where;
@@ -56,9 +60,10 @@ export function contextFor(input: QueryOptions, budget = { nodes: 0 }): QueryCon
     budget,
   };
 }
-export function querySql(
+export function matchingSql(
   context: QueryContext,
-  where: Where | undefined,
+  where?: Where,
+  orderByPublished = false,
 ): { sql: string; values: unknown[] } {
   const filters = [
     `d.collection_id=${parameter(context, context.collection.definition.id)}`,
@@ -81,7 +86,7 @@ export function querySql(
     }
   const search = compileSearch(context);
   if (search) filters.push(search);
-  const order = compileOrder(context);
+  const order = orderByPublished ? 'r.created_at DESC,d.id ASC' : compileOrder(context);
   const pointer =
     context.query.mode === 'published'
       ? publicationExpression(
@@ -92,15 +97,36 @@ export function querySql(
           ),
         )
       : 'd.current_version_id';
-  const limit = parameter(context, context.query.pageSize);
-  const offset = parameter(context, (context.query.page - 1) * context.query.pageSize);
   const from = `FROM content_documents d JOIN content_revisions r ON r.id=${pointer} ${[...context.joins.values()].join(' ')} WHERE ${filters.join(' AND ')}`;
   return {
-    sql: `WITH matches AS MATERIALIZED (SELECT ${documentProjection},r.id AS "versionId",r.revision AS "versionNumber",r.schema_version AS "schemaVersion",${dataSchemaSql('r', context.collection.definition.schemaVersion)} AS "dataSchemaVersion",r.kind,r.actor_id AS "actorId",r.created_at AS "versionCreatedAt",row_number() OVER(ORDER BY ${order}) AS ordinal ${from}) SELECT *, (SELECT count(*) FROM matches) AS total FROM matches ORDER BY ordinal LIMIT ${limit} OFFSET ${offset}`,
+    sql: `SELECT ${documentProjection},r.id AS "versionId",r.revision AS "versionNumber",r.schema_version AS "schemaVersion",${dataSchemaSql('r', context.collection.definition.schemaVersion)} AS "dataSchemaVersion",r.kind,r.actor_id AS "actorId",r.created_at AS "versionCreatedAt",row_number() OVER(ORDER BY ${order}) AS ordinal ${from}`,
     values: context.values,
   };
 }
-export async function queryDocuments(tx: SqlExecutor, input: QueryOptions): Promise<StoredPage> {
+export function querySql(
+  context: QueryContext,
+  where: Where | undefined,
+  options: { orderByPublished?: boolean; scan?: boolean } = {},
+): { sql: string; values: unknown[] } {
+  const matches = matchingSql(context, where, options.orderByPublished);
+  const limit = parameter(context, context.query.pageSize);
+  if (options.scan)
+    return { sql: `${matches.sql} ORDER BY d.id ASC LIMIT ${limit}`, values: context.values };
+  const offset = parameter(context, (context.query.page - 1) * context.query.pageSize);
+  return {
+    sql: `WITH matches AS MATERIALIZED (${matches.sql}) SELECT *, (SELECT count(*) FROM matches) AS total FROM matches ORDER BY ordinal LIMIT ${limit} OFFSET ${offset}`,
+    values: context.values,
+  };
+}
+function validateQueryInput(input: QueryOptions): void {
+  if (
+    input.scan &&
+    (input.query.page !== 1 ||
+      input.query.sort?.length !== 1 ||
+      input.query.sort[0]?.field !== 'id' ||
+      input.query.sort[0]?.order !== 'asc')
+  )
+    fail('invalid_input');
   if (
     input.query.pageSize > input.limits.maxPageSize ||
     input.query.pageSize < 1 ||
@@ -108,10 +134,14 @@ export async function queryDocuments(tx: SqlExecutor, input: QueryOptions): Prom
     !Number.isSafeInteger((input.query.page - 1) * input.query.pageSize)
   )
     fail('invalid_input');
+}
+export async function queryDocuments(tx: SqlExecutor, input: QueryOptions): Promise<StoredPage> {
+  validateQueryInput(input);
   const context = contextFor(input);
-  const statement = querySql(context, input.where);
+  projectionFields(context.collection, input.projection);
+  const statement = querySql(context, input.where, input);
   const result = await tx.query<RawQueryRow>(statement.sql, statement.values);
-  let total = Number(result.rows[0]?.total ?? 0);
+  let total = input.scan ? result.rows.length : Number(result.rows[0]?.total ?? 0);
   if (result.rows.length === 0 && input.query.page > 1) {
     const firstPage = statement.values.slice(0, -2);
     firstPage.push(1, 0);
@@ -125,11 +155,10 @@ export async function queryDocuments(tx: SqlExecutor, input: QueryOptions): Prom
 }
 
 export async function decodeRows(tx: SqlExecutor, input: QueryOptions, rawRows: RawQueryRow[]) {
-  const locale = publicationLocale(
-    input.mapping.get(input.collection).definition,
-    input.query.locale,
-  );
-  if (input.query.select?.length === 0) return rawRows.map((row) => storedRow(row, {}, locale));
+  const current = input.mapping.get(input.collection);
+  const locale = publicationLocale(current.definition, input.query.locale);
+  if (input.projection === undefined && input.query.select?.length === 0)
+    return rawRows.map((row) => storedRow(row, {}, locale));
   const grouped = new Map<number, RawQueryRow[]>();
   for (const row of rawRows) {
     const group = grouped.get(row.dataSchemaVersion) ?? [];
@@ -140,7 +169,7 @@ export async function decodeRows(tx: SqlExecutor, input: QueryOptions, rawRows: 
   for (const [version, rows] of grouped) {
     const collection = input.mapping.get(input.collection, version);
     const origin = historicalReadContext({
-      current: input.mapping.get(input.collection).definition,
+      current: current.definition,
       schemaVersion: version,
       locale: input.query.locale,
       fallback: input.query.fallback,
@@ -150,27 +179,28 @@ export async function decodeRows(tx: SqlExecutor, input: QueryOptions, rawRows: 
       versionIds: rows.map((row) => row.versionId),
       limits: input.limits,
       locales: [origin.locale, ...origin.fallback],
+      ...(version === current.definition.schemaVersion && input.projection !== undefined
+        ? { projection: input.projection }
+        : {}),
     });
-    for (const row of rows)
-      decoded.set(
-        row.versionId,
-        migrateData({
+    for (const row of rows) {
+      const data = migrateData({
+        mapping: input.mapping,
+        collection: input.collection,
+        schemaVersion: version,
+        data: decodeFields({
+          fields: collection.fields,
+          rows: values,
           mapping: input.mapping,
-          collection: input.collection,
-          schemaVersion: version,
-          data: decodeFields({
-            fields: collection.fields,
-            rows: values,
-            mapping: input.mapping,
-            versionId: row.versionId,
-            parentPath: 'root',
-            ...origin,
-          }),
+          versionId: row.versionId,
+          parentPath: 'root',
+          ...origin,
         }),
-      );
+      });
+      decoded.set(row.versionId, projectReadData(current, data, input.projection));
+    }
   }
-  const rows = rawRows.map((row) => storedRow(row, decoded.get(row.versionId) ?? {}, locale));
-  return rows;
+  return rawRows.map((row) => storedRow(row, decoded.get(row.versionId) ?? {}, locale));
 }
 
 function storedRow(row: RawQueryRow, data: ReturnType<typeof decodeFields>, locale: string) {

@@ -2,6 +2,7 @@ import { CmsError, fail } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
 import { appendAudit } from '@new-cms/cms/audit/composition';
 import { randomUUID } from 'node:crypto';
+import { prunePreviewGrants } from '../delivery/preview.ts';
 import { pruneDocumentVersions } from '../versions/retention.ts';
 import { ensureVisible, budgetedExecutor, lockContentMutation } from '../runtime.ts';
 import { claimJobs, completeJob, fenceJob, queuedItems } from './store.ts';
@@ -167,6 +168,7 @@ export function createContentMaintenance(runtime: ContentRuntime) {
     }
     if (!controller.signal.aborted)
       cursor = await pruneIdleVersions(runtime, { cursor, signal: controller.signal });
+    if (!controller.signal.aborted) await prunePreviewGrants(runtime, controller.signal);
   }
   return {
     maintenance() {

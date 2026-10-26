@@ -6,10 +6,12 @@
     "dev": "bun --watch src/main.ts",
     "migrate": "bun src/commands/migrate.ts",
     "grant-runtime": "bun src/commands/grant-runtime-role.ts",
-    "initialize-admin": "bun src/commands/initialize-admin.ts"
+    "initialize-admin": "bun src/commands/initialize-admin.ts",
+    "initialize-content": "bun src/commands/initialize-content.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1156.0",
+    "@formatjs/icu-messageformat-parser": "3.5.22",
     "@hono/node-server": "2.1.5",
     "@new-cms/cms": "workspace:*",
     "@new-cms/database": "workspace:*",

@@ -6,6 +6,8 @@ export type {
   FieldDefinition,
   ContentLimits,
   ContentRegistry,
+  CollectionLocales,
+  ContentLocaleSource,
   DocumentData,
   Where,
 } from './definition.ts';

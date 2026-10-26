@@ -296,7 +296,7 @@ async function fixtureStorage(
 }
 
 export async function createContentFixture(options: FixtureOptions = {}) {
-  const kit = await createTestDatabase();
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   const cleanup: (() => Promise<unknown>)[] = [kit.close];
   let closed = false;
   const close = async () => {

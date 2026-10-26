@@ -68,7 +68,7 @@ async function authorizedState(
     collectionKey: input.collection,
   });
   if (!actor) fail('unauthenticated');
-  const collection = runtime.registry.get(input.collection);
+  const collection = await runtime.resolveCollection(tx, input.collection);
   const state: Omit<ContentState, 'predicate'> = {
     tx,
     ctx: input.ctx,
@@ -98,14 +98,18 @@ export function createRunner(runtime: ContentRuntime) {
       ...(input.ctx.signal ? { signal: input.ctx.signal } : {}),
       async work(tx) {
         const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
-        if (
+        const mutating =
           [...contentOperations, ...assetsOperations].find(
             (operation) => operation.id === input.operationId,
-          )?.method !== 'GET'
-        )
-          await lockContentMutation(executor, runtime);
+          )?.method !== 'GET';
+        if (mutating) await lockContentMutation(executor, runtime);
         const state = await authorizedState(runtime, executor, input);
         const result = await work(state);
+        if (mutating)
+          await runtime.validateAfterMutation?.(executor, {
+            collection: state.collection.key,
+            operationId: input.operationId,
+          });
         if (
           result !== undefined &&
           Buffer.byteLength(JSON.stringify(result)) > runtime.limits.maxResponseBytes

@@ -61,6 +61,37 @@ it('recognizes allowed magic bytes and rejects scripts regardless of a filename'
     'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
   );
 });
+it('accepts audio and video container signatures without trusting extensions or ambiguous RIFF/MP4 brands', () => {
+  const wav = Buffer.alloc(44);
+  wav.write('RIFF', 0);
+  wav.writeUInt32LE(36, 4);
+  wav.write('WAVE', 8);
+  const mp4 = Buffer.alloc(24);
+  mp4.writeUInt32BE(24, 0);
+  mp4.write('ftyp', 4);
+  mp4.write('isom', 8);
+  for (const [bytes, mime] of [
+    [wav, 'audio/wav'],
+    [mp4, 'video/mp4'],
+    [Buffer.from([255, 251, 144, 0]), 'audio/mpeg'],
+  ] as const) {
+    expect(detectMime(bytes)).toBe(mime);
+    expect(() =>
+      validateSettings({ maxBytes: 100, mimeTypes: [mime], recipe: { variants: [] } }, limits),
+    ).not.toThrow();
+  }
+  const tagged = Buffer.concat([
+    Buffer.from([73, 68, 51, 4, 0, 0, 0, 0, 0, 0]),
+    Buffer.from([255, 251, 144, 0]),
+  ]);
+  expect(detectMime(tagged)).toBe('audio/mpeg');
+  for (const bytes of [
+    Buffer.from('RIFF1234AVI .....'),
+    Buffer.from('0000ftypavif0000'),
+    Buffer.from('ID3<script>'),
+  ])
+    expect(() => detectMime(bytes)).toThrow('unsupported media type');
+});
 
 it('rejects invalid configured MIME, bytes, duplicate variants and oversized recipes', () => {
   const settings = { maxBytes: 100, mimeTypes: ['image/png'], recipe: { variants: [] } };

@@ -83,3 +83,72 @@ test('regression: content creation captures its response before navigation and p
       .getByRole('heading', { name: 'Lexical story' }),
   ).toBeVisible();
 });
+
+async function seedInterfaceForLanguageSwitch(page: Page) {
+  const { interfaceMessageContract, interfaceMessageSeeds } =
+    await import('../apps/api/src/config/message-contract.ts');
+  const headers = { origin: new URL(page.url()).origin };
+  for (const locale of ['en', 'zh']) {
+    const messages = interfaceMessageSeeds[locale];
+    if (!messages) throw new Error('Missing browser software messages');
+    for (const [namespace, bundle] of Object.entries(messages)) {
+      const response = await page.request.post(
+        '/api/cms/v1/collections/message-bundles/documents',
+        {
+          headers: { ...headers, 'idempotency-key': crypto.randomUUID() },
+          data: {
+            data: {
+              contractVersion: interfaceMessageContract.version,
+              locale,
+              namespace,
+              messages: bundle,
+            },
+          },
+        },
+      );
+      expect(response.status()).toBe(201);
+    }
+  }
+  const result = [];
+  for (const code of ['en', 'zh']) {
+    const response = await page.request.post('/api/cms/v1/collections/languages/documents', {
+      headers: { ...headers, 'idempotency-key': crypto.randomUUID() },
+      data: {
+        data: { code, label: code, direction: 'ltr', enabled: true, default: code === 'en' },
+      },
+    });
+    expect(response.status()).toBe(201);
+    result.push(documentSchema.parse(await response.json()));
+  }
+  return result;
+}
+
+test('an administrator switches the default language atomically through the real editor', async ({
+  page,
+}) => {
+  expect((await loginManagement(page, applicationAccounts.owner)).status()).toBe(200);
+  const [english, chinese] = await seedInterfaceForLanguageSwitch(page);
+  if (!english || !chinese) throw new Error('Missing initialized languages');
+  await page.goto(`/dashboard/collections/languages/${chinese.id}?locale=en`);
+  const change = await captureApiJson(
+    page,
+    {
+      method: 'POST',
+      path: `/v1/collections/languages/documents/${chinese.id}/default-language`,
+      status: 200,
+    },
+    documentSchema,
+  );
+  await page.getByRole('button', { name: '设为默认语言', exact: true }).click();
+  const updated = await change.read();
+  expect(updated.data['default']).toBe(true);
+  expect(updated.revision).toBe(chinese.revision + 1);
+  await expect(page.getByRole('button', { name: '设为默认语言', exact: true })).toHaveCount(0);
+  const previous = documentSchema.parse(
+    await (
+      await page.request.get(`/api/cms/v1/collections/languages/documents/${english.id}`)
+    ).json(),
+  );
+  expect(previous.data['default']).toBe(false);
+  expect(previous.revision).toBe(english.revision + 1);
+});

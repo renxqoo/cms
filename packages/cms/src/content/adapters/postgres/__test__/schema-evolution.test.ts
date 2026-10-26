@@ -34,7 +34,7 @@ async function fixture(
   next: (definition: CollectionDefinition) => CollectionDefinition,
   previous = original,
 ) {
-  const kit = await createTestDatabase();
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   resources.push(kit);
   const limits = contentLimits();
   const first = generateArtifacts(createRegistry({ collections: [previous], limits }));

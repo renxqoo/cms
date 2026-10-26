@@ -1,3 +1,4 @@
+import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { afterEach, expect, it } from 'vitest';
@@ -54,11 +55,30 @@ it('regression: database migration alone makes all initial collections editable 
   const catalog = await kit.runtime.content.api.listCollections(owner(), {});
   expect(catalog.rows.map((row) => row.key).toSorted()).toEqual([
     'articles',
+    'developers',
+    'documents',
+    'home',
+    'languages',
+    'media',
+    'message-bundles',
+    'models',
+    'pages',
+    'settings',
+    'site',
+  ]);
+  for (const collection of [
+    'articles',
     'media',
     'pages',
     'settings',
-  ]);
-  for (const collection of ['articles', 'media', 'pages', 'settings']) {
+    'models',
+    'developers',
+    'documents',
+    'site',
+    'home',
+    'languages',
+    'message-bundles',
+  ]) {
     const editor = await kit.runtime.content.api.getEditor(owner(), {
       collection,
       intent: 'create',
@@ -79,17 +99,10 @@ it('preserves deliberately removed bindings and disabled permissions when migrat
   const kit = await fixture();
   runCommand(process.execPath, migrate, { env: kit.env });
   const owner = await kit.owner();
-  const endpoints = await kit.runtime.access.api.listEndpoints(owner(), {
-    module: 'content',
-    pageSize: 100,
-  });
-  const endpoint = endpoints.rows.find(
-    (row) => row.operationId === 'documents.create' && row.collectionKey === 'articles',
-  );
-  if (!endpoint?.binding) throw new Error('Initial article binding missing');
+  const binding = await initialArticleBinding(kit.runtime, owner());
   await kit.runtime.access.api.deleteBinding(owner(), {
-    id: endpoint.binding.id,
-    version: endpoint.binding.version,
+    id: binding.id,
+    version: binding.version,
   });
   const permissions = await kit.runtime.access.api.listPermissions(owner(), {
     collectionKey: 'media',
@@ -118,3 +131,21 @@ it('does not add default collection permissions to an existing catalog during an
   runCommand(process.execPath, migrate, { env: kit.env });
   expect((await kit.runtime.content.api.listCollections(owner(), {})).rows).toEqual([]);
 });
+
+async function initialArticleBinding(
+  runtime: ReturnType<typeof createRuntime>,
+  context: RequestContext,
+) {
+  for (let page = 1; ; page++) {
+    const endpoints = await runtime.access.api.listEndpoints(context, {
+      module: 'content',
+      page,
+      pageSize: 100,
+    });
+    const endpoint = endpoints.rows.find(
+      (row) => row.operationId === 'documents.create' && row.collectionKey === 'articles',
+    );
+    if (endpoint?.binding) return endpoint.binding;
+    if (page * 100 >= endpoints.total) throw new Error('Initial article binding missing');
+  }
+}

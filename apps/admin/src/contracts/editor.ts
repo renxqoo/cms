@@ -103,6 +103,7 @@ export const collectionEditorSchema = z.strictObject({
   mode: z.enum(['editing', 'published']),
   locale: z.string(),
   fallback: z.array(z.string()),
+  publicationLocalesField: z.string().optional(),
   richTextNodes: z.array(z.strictObject({ type: z.string(), version: z.string() })),
   document: z
     .strictObject({
@@ -115,6 +116,7 @@ export const collectionEditorSchema = z.strictObject({
   locales: z.strictObject({
     default: z.string(),
     supported: z.array(z.string()),
+    enabled: z.array(z.string()).optional(),
     fallback: z.record(z.string(), z.array(z.string())),
   }),
   layout: z.array(editorNodeSchema),

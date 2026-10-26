@@ -21,7 +21,7 @@ export async function targetState(
     collection: input.collection,
   });
   if (!actor) fail('unauthenticated');
-  const collection = input.runtime.registry.get(input.collection);
+  const collection = await input.runtime.resolveCollection(state.tx, input.collection);
   const { locale } = targetReadContext({
     collection,
     locale: state.locale,
@@ -70,7 +70,8 @@ export async function relationScopes(
   runtime: ContentRuntime,
 ): Promise<{ relationScopes: RelationScope[] }> {
   const scopes: RelationScope[] = [];
-  for (const collection of runtime.registry.list) {
+  for (const definition of runtime.registry.list) {
+    const collection = await runtime.resolveCollection(state.tx, definition.key);
     try {
       const actor = await authorizeStateOperation(state, {
         runtime,

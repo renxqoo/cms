@@ -13,7 +13,7 @@ afterEach(async () => {
   for (const resource of resources.splice(0)) await resource.close();
 });
 it('schema backfill allocates shared default array IDs once so every localized child survives activation and filtering', async () => {
-  const kit = await createTestDatabase();
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   resources.push(kit);
   const limits = contentLimits();
   const previous: CollectionDefinition = {

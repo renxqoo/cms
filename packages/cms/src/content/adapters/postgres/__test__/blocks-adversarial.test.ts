@@ -109,7 +109,7 @@ function actor(id: string): Principal {
   };
 }
 async function fixture(collections = definitions()) {
-  const kit = await createTestDatabase();
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   resources.push(kit);
   const limits = contentLimits();
   const registry = createRegistry({ collections, limits });

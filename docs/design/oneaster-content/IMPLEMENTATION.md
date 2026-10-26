@@ -1,6 +1,6 @@
 # OneAster 内容系统施工与验收
 
-状态：定稿，用户已确认实施。关联：[DESIGN](DESIGN.md)、[CONTRACTS](CONTRACTS.md)。
+状态：已实施，正在执行最终跨仓验收与独立复核。关联：[DESIGN](DESIGN.md)、[CONTRACTS](CONTRACTS.md)。
 
 ## 1. 起点与隔离
 
@@ -62,6 +62,7 @@
 - 公开范围矩阵：匿名/普通管理员/内容编辑/发布者 × 草稿/已发布/撤下/回收站 × 列表/详情/计数/关系/媒体/预览。无权内容不能通过total、facet、关联标题或媒体泄漏。
 - 公开聚合并发发布交错时同一响应来自同一事务视图；只保存草稿不改变公开DTO/ETag；相关记录发布会改变最终ETag。
 - 条件GET/HEAD/304、无对应body、跨locale、错误不缓存、CORS、Range、客户端断开、超大/截断/无效UTF8、异常状态和deadline。
+- 新执行profile先测失败：music.generate歌词/纯音乐约束、audio.transcribe语言与文件环境输入、H3四型号矩阵；七语言生成物须执行multipart/任务装置验证，供应商账号拒绝和unknown不得报告成功。
 - 模板按真实profile/SDK/tool组合覆盖；样例模型key只来自当前记录；JSON/shell/语言字符串正确转义；任务等待有终态和时限；样例不包含真实密钥。
 - UI消息缺键/多键/ICU参数或tag不匹配、禁用语言、新BCP47、RTL、翻译缺失、配置不可用。
 - 新预览篡改/过期/跨文档/跨语言/超时/退出、token脱敏、无索引、无缓存、无自动执行；metadata和正文使用相同版本。
@@ -84,7 +85,7 @@
 
 CMS复用 `test/support/content-runtime.ts`、database/runtime-database、cms-process、admin-application-process。client复用 `scripts/start-auth-e2e-server.ts`、content-e2e、studio-e2e、media-studio-e2e；内容源改为新协议。新增跨仓旅程必须连接真实new-cms进程和数据库，不能只让fixture模拟新CMS。
 
-client真实服务suite当前拦截真实生成POST；这类suite不能作为真实供应商付费执行证据。付费推理另走显式opt-in，在具备真实环境和授权时运行。当前本地Core缺少媒体公开目录，执行能力与环境配置就绪分别报告。
+client真实服务suite当前拦截真实生成POST；这类suite不能作为真实供应商付费执行证据。付费推理另走显式opt-in，在具备真实环境和授权时运行。本轮专用Core0.24候选已提供文本、图片、视频、音乐与ASR合同；供应商权限限制与软件执行能力分开报告。
 
 两仓分别执行真实 `bun run lint/typecheck/build/test`；CMS还按受影响文件选择 `bun run test:e2e`，client同样使用自己的test:e2e入口。源码目录重命名同步vitest覆盖率匹配，不能让new-cms reader移出原payload/core的perFile门禁。
 
@@ -102,11 +103,11 @@ client真实服务suite当前拦截真实生成POST；这类suite不能作为真
 - [ ] 生产构建、启动、就绪、摘流、发布/回滚、运行账号和共享存储手册可执行。
 - [ ] 两仓四门通过，测试数与覆盖率实测数字记录，独立审查问题逐条处置。
 - [ ] 无新增skip、有效断言未弱化、覆盖率阈值未降低；新测试可证伪错误行为。
-- [ ] 仅提交本次明确文件；CMS按既有授权在完成门禁后push，client未获push指令前不push；部署单独授权。
+- [ ] 仅提交本次明确文件；用户最新裁决：CMS/client先提交、push、合并main后继续验证；Core仅PR、不合main，PR受阻可提交issue；部署单独授权。
 
 ## 8. 当前验证记录
 
-本阶段仅只读盘点与方案编写，尚未运行四门、单测、覆盖率、浏览器或故障演练。不存在实测通过数。方案不能作为生产高可用已达成的证据。已检查四份新文档的本地链接和尾空白；仓库oxfmt配置显式忽略docs，未将其跳过误报为格式门禁通过。
+最终检查进行中，完整实测结果随后记录。运行与恢复步骤见 [OPERATIONS](OPERATIONS.md)。未执行的检查不计为通过；本地 Node 构建、真实 PostgreSQL 与 S3 协议测试服务的双节点证据不等于线上云存储、数据库灾备或月可用性已达标。
 
 ## 9. 独立方案审查处置
 
@@ -124,3 +125,15 @@ client真实服务suite当前拦截真实生成POST；这类suite不能作为真
 | R10 索引许可缺字段 | seo.allowIndex默认true，false统一影响metadata、索引链接和sitemap |
 
 独立审查已复核上述处置，方案层无剩余P1/P2；这不代表实现或测试已经完成。用户已确认整体方案，可以开始实现。
+
+## MiniMax profile 目标验证
+
+隔离engine worktree复制主集成profiles基线后增量实现；新合同先以10个失败测试复现，H3声明约束越界与macOS Bash缺文件错误退出码另有先红后绿回归。profiles六文件63项全部通过，目标覆盖statements99.02%、branches96.27%、functions100%、lines99.44%，满足当前90/85/90/90目标门禁；不代表全仓覆盖率。bun check487文件通过，目标type-aware oxlint零错误/警告、oxfmt及diff检查通过。全仓四门和集成生成物由主集成工作区统一执行。
+
+JavaScript、TypeScript、Python、cURL、Go示例实际启动子进程，对本地假HTTP装置验证单次multipart文件字节/字段、稳定意图、轮询、settled文本、MP3保存、unknown和缺文件/超大文件拒绝。Java17配官方Maven Jackson2.19.4另行编译并运行ASR与音乐两个旅程通过；PHP环境缺执行器，未实测运行，不声明已通过。上述装置不代替真实供应商/Core/client验收。cURL要求8.4以上以使未知Content-Length响应也受max-filesize限制，依据[官方手册](https://curl.se/docs/manpage.html#--max-filesize)。
+
+## Seedance 2.5及大请求示例验证
+
+基于Core523f200主线实际合同，新增video.seedance-25-text；独立先红3项覆盖20480 Unicode边界、四字段拒绝透传、比例/分辨率/时长与旧Lite约束。五语言JS/TS/Python/cURL/Go实际子进程完整发送20480字任务，仅一次POST和一次GET，读取settled URL。Java17最大输入曾实际编译失败constant string too long，分块运行时构造后编译及ASR/音乐/2.5三旅程均通过。cURL采用stdin承载JSON/base64，依据[Linux execve字符串限制](https://man7.org/linux/man-pages/man2/execve.2.html)，以131071字节参数预算装置先红后绿；这是模拟Linux参数限制，不冒充在Linux运行。PHP仍无执行器，未实测。
+
+最终profiles八文件72项通过，目标statements99.13%、branches96.7%、functions100%、lines99.5%，满足90/85/90/90门禁；bun check490文件、目标type-aware oxlint零错误/警告、oxfmt和diff检查通过。全仓门禁和内容生成物仍由主集成工作区收口。

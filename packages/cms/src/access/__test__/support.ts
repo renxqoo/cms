@@ -31,7 +31,7 @@ export async function createFixture(
     recoveryMaxResponseBytes?: number;
   } = {},
 ) {
-  const kit = await createTestDatabase();
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   const policy = createTestPolicy({
     securityLockKey: randomInt(1, 2_000_000_000),
     ...options.policy,

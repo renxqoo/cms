@@ -69,7 +69,10 @@ export interface InboundReference {
   active: boolean;
 }
 export interface CollectionsQueryInput {
-  collections: readonly Omit<Parameters<ContentStore['queryDocuments']>[1], 'limits'>[];
+  collections: readonly Omit<
+    Parameters<ContentStore['queryDocuments']>[1],
+    'limits' | 'projection'
+  >[];
   page: number;
   pageSize: number;
   sort: readonly SortField[];
@@ -92,6 +95,9 @@ export interface ContentStore {
   queryDocuments(
     tx: SqlExecutor,
     input: {
+      projection?: readonly string[];
+      orderByPublished?: boolean;
+      scan?: boolean;
       collection: string;
       query: QueryInput;
       where?: Where;

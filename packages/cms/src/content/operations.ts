@@ -9,6 +9,12 @@ interface Declaration {
 }
 
 const scoped: Declaration[] = [
+  {
+    id: 'languages.setDefault',
+    method: 'POST',
+    path: '/documents/:id/default-language',
+    idempotency: 'required',
+  },
   { id: 'collections.get', method: 'GET', path: '' },
   { id: 'collections.editor', method: 'GET', path: '/editor' },
   { id: 'content.listJobs', method: 'GET', path: '/jobs' },
@@ -21,6 +27,17 @@ const scoped: Declaration[] = [
     path: '/documents',
   },
   { id: 'documents.get', method: 'GET', path: '/documents/:id' },
+  {
+    id: 'documents.createPreviewTicket',
+    method: 'POST',
+    path: '/documents/:id/preview-tickets',
+    successStatus: 201,
+  },
+  {
+    id: 'documents.revokePreviewTicket',
+    method: 'DELETE',
+    path: '/documents/:id/preview-tickets/:ticketId',
+  },
   { id: 'documents.update', method: 'PATCH', path: '/documents/:id' },
   { id: 'documents.archive', method: 'DELETE', path: '/documents/:id' },
   {

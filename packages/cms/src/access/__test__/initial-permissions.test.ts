@@ -29,7 +29,7 @@ const initial: InitialCollectionPermission = {
 };
 
 async function fixture(permissions: readonly InitialCollectionPermission[] = [initial]) {
-  const store = await createTestDatabase();
+  const store = await createTestDatabase({ migrationScope: 'library' });
   stores.push(store);
   const options = {
     database: store.database,
