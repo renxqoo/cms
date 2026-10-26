@@ -7,8 +7,9 @@ import {
   seedGlobalBinding,
   storeOperation,
 } from './adapters/postgres/catalog-store.ts';
-import type { AccessRuntime } from './types.ts';
+import type { CatalogRuntime, InitialCollectionPermission } from './types.ts';
 import { permissionCode } from './validation.ts';
+import { seedInitialCollectionPermissions } from './initial-permissions.ts';
 
 const operationSchema = z.strictObject({
   id: z.string().min(1).max(128),
@@ -59,7 +60,10 @@ function compatible(current: OperationDefinition, stored: OperationDefinition | 
   );
 }
 
-export function createCatalog(runtime: AccessRuntime) {
+export function createCatalog(
+  runtime: CatalogRuntime,
+  initialPermissions: readonly InitialCollectionPermission[] = [],
+) {
   return {
     reconcile: () =>
       securityTransaction(runtime.database, runtime.policy, {
@@ -81,6 +85,8 @@ export function createCatalog(runtime: AccessRuntime) {
             await storeOperation(tx, operation);
             if (!stored) await seedGlobalBinding(tx, operation);
           }
+          if (previous.size === 0)
+            await seedInitialCollectionPermissions(tx, runtime, initialPermissions);
         },
       }),
     verifyReady: (signal?: AbortSignal) =>

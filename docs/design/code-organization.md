@@ -207,6 +207,8 @@ content/editor 从现有字段注册和真实读写上下文生成安全编辑�
 
 ## 6. 精确导出与依赖约定
 
+access/composition的createAccessCatalog为迁移命令提供仅依赖数据库、策略与应用操作定义的目录装配能力，可接收应用定义的首次集合权限。它复用正常access目录实现，不构造identity、邮件、存储或HTTP服务。apps/api/config维护实际操作清单与首次权限策略，database/migrate仍只执行物理SQL迁移；db:migrate负责顺序装配两者。
+
 当前私有包名为@new-cms/api、@new-cms/cms、@new-cms/database，实际入口以各manifest为准。content/assets、schema-plan、codegen及生成schema均通过精确入口导出。
 
 | 导出类型 | 允许的调用方 | 禁止的用法 |

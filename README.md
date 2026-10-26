@@ -48,12 +48,13 @@ bun run dev:admin
 bun install --frozen-lockfile
 bun run content:check
 bun run db:migrate
-bun run operations:reconcile
 bun run admin:initialize --email owner@example.com
 bun run dev
 ```
 
-初始化密码从终端隐藏输入，或从标准输入读取，不能放在命令行参数中。已有有效超管时初始化命令拒绝再次提权。构建后使用bun run start启动Node产物；迁移和操作目录核对由单独命令执行，API不会自动迁移或恢复管理员已解除的绑定。
+db:migrate统一执行表结构迁移和操作目录核对；空目录的首次初始化自动创建当前集合的管理权限与接口绑定，上传权限只配置到上传型集合。初始化管理员后即可新增内容。已有目录不会补回管理员解除的绑定、启用已停用的权限或改写角色授权；operations:reconcile仍可单独核对操作目录。
+
+初始化密码从终端隐藏输入，或从标准输入读取，不能放在命令行参数中。已有有效超管时初始化命令拒绝再次提权。构建后使用bun run start启动Node产物；迁移及首次权限配置由命令执行，API启动不执行这些写入。
 
 新密码必须为15—128个Unicode字符、UTF-8不超过512字节，保留空格，不要求固定字符种类。初始化输入前显示要求；密码不合规时明确提示规则且不创建账户，已有超管或邮箱占用等错误分别说明原因，不输出密码或数据库详情。
 

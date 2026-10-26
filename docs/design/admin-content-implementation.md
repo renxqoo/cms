@@ -4,6 +4,8 @@
 
 ## 1. 入口与归属
 
+集合目录成功返回空列表时显示无可访问集合的说明，提示管理员检查集合接口权限绑定与角色授权，并提供刷新。接口配置和权限管理入口分别要求当前主体具备对应读取及创建权限；失败、读取中和拒绝状态不显示为空目录，不从本地配置补造集合。
+
 /dashboard/collections展示当前主体可发现集合；/[collection]为文档列表与回收站，/new及/[id]为配置驱动编辑器，/structure展示安全结构。/dashboard/resources提供上传型集合资源与私有预览；/dashboard/jobs按集合发现持久化任务及上传会话；/dashboard/asset-cleanups只向具备security许可的主体提供受控清理账本与重试。所有页面服务端验证身份，实际数据通过封闭BFF读取并由后端再次授权。
 
 contracts/content.ts与assets.ts定义浏览器安全DTO，不从后端实现导入。features/fields拥有字段渲染与纯数据转换；features/collections拥有列表/编辑/版本/发布流程；features/assets拥有上传/私有预览/图片；features/jobs与asset-cleanups拥有真实查询和受控操作。复用access-control、management-shared、共享query导航、现有CMS组合及七组UI出口，不再建client、store或第二套表格弹窗。
