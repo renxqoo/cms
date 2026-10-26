@@ -6,6 +6,7 @@ import { basename, resolve } from 'node:path';
 
 const contentFeatures = [
   'admin-content',
+  'admin-content-workflow',
   'admin-assets',
   'admin-images',
   'admin-article-media',

@@ -161,6 +161,7 @@ function collection(key: string, label: string): Collection {
     mode: 'direct',
     history: false,
     singleton: key === 'settings',
+    defaultLocale: 'en',
     locales: ['en'],
     dataSchema: {},
     fields: [],

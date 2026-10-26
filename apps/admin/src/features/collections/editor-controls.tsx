@@ -24,6 +24,8 @@ import { collectionHref } from './query';
 import { FolderSelect } from './folders';
 import { PublicationSchedule } from './schedule';
 import { DocumentHistory } from './history';
+import { StatusCell } from '@new-cms/ui/data';
+import { documentStatus } from './document-status';
 
 function editorStatus(model: ContentEditorModel) {
   if (model.busy) return model.t.saving;
@@ -35,6 +37,9 @@ export function EditorToolbar({ model }: { model: ContentEditorModel }) {
   const { state, props, controller, navigation, t, busy, allowed } = model;
   const { snapshot } = state;
   if (!snapshot) return null;
+  const status = snapshot.document
+    ? documentStatus(snapshot.document, snapshot.collection, { t })
+    : null;
   return (
     <div className="flex flex-col gap-4 rounded-xl bg-card p-4 ring-1 ring-border/50 xl:flex-row xl:items-center xl:justify-between">
       <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(8rem,10rem)_minmax(10rem,18rem)] [&_select]:w-full">
@@ -62,10 +67,14 @@ export function EditorToolbar({ model }: { model: ContentEditorModel }) {
           onChange={controller.setFolder}
           label={t.folder}
           root={t.rootFolder}
-          disabled={busy || props.intent === 'read'}
+          disabled={busy || snapshot.editor.intent === 'read'}
         />
       </div>
       <div className="flex min-h-8 flex-wrap items-center gap-x-5 gap-y-3 border-t border-border/60 pt-4 xl:border-t-0 xl:border-l xl:pl-5 xl:pt-0">
+        {status ? <StatusCell tone={status.tone}>{status.label}</StatusCell> : null}
+        {snapshot.editor.intent === 'read' ? (
+          <span className="text-sm text-muted-foreground">{t.readOnly}</span>
+        ) : null}
         {snapshot.document &&
         snapshot.collection.capabilities.autosave &&
         allowed('documents.autosave') ? (

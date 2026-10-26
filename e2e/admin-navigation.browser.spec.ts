@@ -6,6 +6,7 @@ import {
   loginManagement,
   test,
   waitForApi,
+  captureApiJson,
 } from '../test/support/admin-browser-management.ts';
 
 test('navigation creates a legal group/page/action tree, links a registered route and hides disabled ancestors', async ({
@@ -33,11 +34,13 @@ test('navigation creates a legal group/page/action tree, links a registered rout
       await expect(dialog.getByLabel(/^页面路径/)).toHaveCount(0);
       await expect(dialog.getByLabel('图标', { exact: true })).toHaveCount(0);
     }
-    const saving = waitForApi(page, 'POST', '/v1/navigation');
+    const saving = await captureApiJson(
+      page,
+      { method: 'POST', path: '/v1/navigation', status: 201 },
+      z.object({ id: z.uuid() }),
+    );
     await dialog.getByRole('button', { name: '保存', exact: true }).click();
-    const response = await saving;
-    expect(response.status()).toBe(201);
-    created.push({ ...z.object({ id: z.uuid() }).parse(await response.json()), name: node.name });
+    created.push({ ...(await saving.read()), name: node.name });
     await expect(dialog).toHaveCount(0);
     await expect(
       page.getByRole('button', { name: `操作: ${node.name}`, exact: true }),

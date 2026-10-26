@@ -50,7 +50,10 @@ export function DocumentListPage({ collectionKey }: { collectionKey: string }) {
       {catalog.data ? (
         <DocumentList key={collectionKey} collection={catalog.data} />
       ) : (
-        <PageHeader title={collectionKey} description={denied ? t.denied : t.loading} />
+        <PageHeader
+          title={collectionKey}
+          description={denied ? t.denied : catalog.phase === 'failed' ? t.failed : t.loading}
+        />
       )}
     </ClientInteractionBoundary>
   );
@@ -83,18 +86,13 @@ function DocumentList({ collection }: { collection: Collection }) {
   const [search, update] = useQueryNavigation(params.toString());
   const query = parseDocumentQuery(new URLSearchParams(search), collection);
   const filter = queryFilter(query, collection);
-  const [selected, setSelected] = useState<Document[]>([]);
-  const [bulk, setBulk] = useState(false);
-  const [trash, setTrash] = useState<{ document: Document; action: 'restore' | 'purge' } | null>(
-    null,
-  );
   const [visible, setVisible] = useState(() => defaultVisibleFields(collection));
   const result = useApiQuery({
     operation: 'documents.list',
     params: { collection: collection.key },
     query: documentApiQuery(query, collection),
     response: documentPageSchema,
-    enabled: filter.valid && access.can('documents.list', scope),
+    enabled: queryFilter(query, collection).valid && access.can('documents.list', scope),
   });
   const folders = useApiQuery({
     operation: 'folders.list',
@@ -114,24 +112,15 @@ function DocumentList({ collection }: { collection: Collection }) {
       { scroll: false },
     );
   }
-  const columns = documentColumns({
-    collection,
-    t,
-    locale,
-    selected,
-    visible,
-    trashed: query.trashed,
-    select: (document, checked) =>
-      setSelected((previous) => selectedDocuments(previous, document, checked)),
-    open: (id) =>
-      router.push(
-        `${collectionHref(collection.key, id)}?locale=${encodeURIComponent(query.locale)}`,
-      ),
-    trash: (document, action) => setTrash({ document, action }),
-    canRestore: access.can('documents.restoreTrash', scope),
-    canPurge: access.can('documents.purge', scope),
-  });
-  const table = managementListState(access.phase, result.phase);
+  const selectionScope = JSON.stringify([
+    query.locale,
+    query.mode,
+    query.trashed,
+    query.q,
+    query.filterField,
+    query.filterValue,
+    query.folderId === undefined ? 'all' : query.folderId,
+  ]);
   return (
     <>
       <DocumentListHeader
@@ -161,6 +150,63 @@ function DocumentList({ collection }: { collection: Collection }) {
       />
       <ManagementFeedback error={result.error} onRetry={result.reload} />
       {!filter.valid ? <Banner tone="warning">{t.filterInvalid}</Banner> : null}
+      <DocumentListContent
+        key={selectionScope}
+        collection={collection}
+        query={query}
+        change={change}
+        result={result}
+        visible={visible}
+      />
+    </>
+  );
+}
+
+function DocumentListContent({
+  collection,
+  query,
+  change,
+  result,
+  visible,
+}: {
+  collection: Collection;
+  query: DocumentQuery;
+  change: (changes: Partial<DocumentQuery>) => void;
+  result: ReturnType<typeof useApiQuery<DocumentPage>>;
+  visible: string[];
+}) {
+  const locale = useShell((state) => state.locale);
+  const t = contentMessages[locale];
+  const access = useAccessControl();
+  const scope = { scopeKind: 'collection', collectionKey: collection.key } as const;
+  const router = useAppNavigation();
+  const filter = queryFilter(query, collection);
+  const [selected, setSelected] = useState<Document[]>([]);
+  const [bulk, setBulk] = useState(false);
+  const [trash, setTrash] = useState<{ document: Document; action: 'restore' | 'purge' } | null>(
+    null,
+  );
+  const columns = documentColumns({
+    collection,
+    t,
+    locale,
+    selected,
+    visible,
+    trashed: query.trashed,
+    mode: query.mode,
+    select: (document, checked) =>
+      setSelected((previous) => selectedDocuments(previous, document, checked)),
+    open: (id) =>
+      router.push(
+        `${collectionHref(collection.key, id)}?locale=${encodeURIComponent(query.locale)}`,
+      ),
+    trash: (document, action) => setTrash({ document, action }),
+    canRestore: access.can('documents.restoreTrash', scope),
+    canPurge: access.can('documents.purge', scope),
+  });
+  const table = managementListState(access.phase, result.phase);
+  return (
+    <>
       {selected.length > 0 ? (
         <div className="flex flex-wrap items-center gap-3">
           <p>

@@ -18,6 +18,7 @@ export const collectionSchema = z.object({
   mode: z.enum(['direct', 'drafts']),
   history: z.boolean(),
   singleton: z.boolean(),
+  defaultLocale: z.string(),
   locales: z.array(z.string()),
   dataSchema: z.record(z.string(), z.unknown()),
   fields: z.array(collectionFieldSchema),

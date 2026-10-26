@@ -60,7 +60,7 @@ it('shows the current block format and restores saved content through undo and r
   expect(redo).toBeDisabled();
 });
 
-it('toggles a bullet list back to a paragraph without losing its text', async () => {
+it('regression: list toggling restores paragraph content and its active toolbar state', async () => {
   render(<Harness layout={[node('Body', { type: 'richText' })]} initial={{ Body: paragraph }} />);
   await screen.findByRole('toolbar');
   const list = screen.getByRole('button', { name: 'List' });
@@ -71,7 +71,7 @@ it('toggles a bullet list back to a paragraph without losing its text', async ()
   await waitFor(() => expect(list).not.toBePressed());
   expect(data()).toEqual({ Body: paragraph });
   expect(screen.queryByRole('list')).not.toBeInTheDocument();
-  expect(screen.getByRole('button', { name: 'Paragraph' })).toBePressed();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Paragraph' })).toBePressed());
 });
 
 it('provides Chinese labels and a writing prompt for an empty editor', async () => {

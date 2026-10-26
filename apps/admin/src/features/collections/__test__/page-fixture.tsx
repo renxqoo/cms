@@ -60,7 +60,7 @@ vi.mock('@new-cms/ui/forms', async () => {
   };
 });
 vi.mock('../../assets/document-media', () => ({
-  DocumentMedia: () => null,
+  DocumentMedia: () => <aside aria-label="Document media" />,
   ReferenceMediaPreview: () => null,
   FixedMedia: () => null,
 }));
@@ -78,6 +78,7 @@ export const collection: Collection = {
   mode: 'drafts',
   history: true,
   singleton: false,
+  defaultLocale: 'en',
   locales: ['en', 'zh-CN'],
   dataSchema: {},
   behaviorHash: 'behavior',

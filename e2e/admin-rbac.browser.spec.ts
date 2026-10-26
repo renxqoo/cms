@@ -9,6 +9,7 @@ import {
   signOutManagement,
   test,
   waitForApi,
+  captureApiJson,
 } from '../test/support/admin-browser-management.ts';
 
 test('role metadata and grants share CAS, disabled grants require explicit removal, and referenced permissions cannot be deleted', async ({
@@ -27,11 +28,13 @@ test('role metadata and grants share CAS, disabled grants require explicit remov
   await create
     .getByRole('checkbox', { name: 'Browser first grant (browser:first)', exact: true })
     .check();
-  const created = waitForApi(page, 'POST', '/v1/roles');
+  const created = await captureApiJson(
+    page,
+    { method: 'POST', path: '/v1/roles', status: 201 },
+    z.object({ id: z.uuid(), version: z.number() }),
+  );
   await create.getByRole('button', { name: '创建角色', exact: true }).click();
-  const createdResponse = await created;
-  expect(createdResponse.status()).toBe(201);
-  const role = z.object({ id: z.uuid(), version: z.number() }).parse(await createdResponse.json());
+  const role = await created.read();
   await expect(create).toHaveCount(0);
   await page.getByRole('link', { name: 'Browser editor', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Browser editor', exact: true })).toBeVisible();

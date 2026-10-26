@@ -151,7 +151,7 @@ it('edits only changed name fields and keeps an existing disabled role untouched
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 });
 
-it('confirms role or status changes before sending them and explains session and link revocation', async () => {
+it('regression: role/status changes confirm revocation and expose reinvitation after the account refreshes', async () => {
   controls.request.mockImplementation((input) =>
     input.operation === 'admins.update'
       ? Promise.resolve(ok({ ...subject, roleId: roles[1]?.id, roleCode: 'reviewer', version: 8 }))
@@ -169,7 +169,7 @@ it('confirms role or status changes before sending them and explains session and
     await screen.findByText(/The role or status change revoked all sessions/),
   ).toBeInTheDocument();
   expect(mutations('admins.update')[0]?.body).toEqual({ version: 7, roleId: roles[1]?.id });
-  expect(screen.getByRole('button', { name: 'Resend invitation' })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: 'Resend invitation' })).toBeInTheDocument();
 });
 
 it('cancels destructive confirmation without discarding the role draft', async () => {

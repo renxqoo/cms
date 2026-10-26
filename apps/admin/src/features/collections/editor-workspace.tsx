@@ -35,16 +35,20 @@ export function ContentEditor(props: ContentEditorProps) {
         <>
           <EditorToolbar model={model} />
           <EditorFields model={model} />
-          <DocumentMedia
-            collection={snapshot.collection}
-            editor={snapshot.editor}
-            document={snapshot.document}
-            busy={state.busy || state.pending !== null}
-            onBusyChange={model.controller.setExternalBusy}
-            onUploadReady={model.controller.setUpload}
-            onDocumentChanged={() => model.controller.reload(true)}
-            {...(props.initialUploadId ? { initialUploadId: props.initialUploadId } : {})}
-          />
+          {snapshot.collection.upload ||
+          snapshot.document?.file ||
+          snapshot.document?.mediaBindings?.some((binding) => binding.sourcePath !== '$file') ? (
+            <DocumentMedia
+              collection={snapshot.collection}
+              editor={snapshot.editor}
+              document={snapshot.document}
+              busy={state.busy || state.pending !== null}
+              onBusyChange={model.controller.setExternalBusy}
+              onUploadReady={model.controller.setUpload}
+              onDocumentChanged={() => model.controller.reload(true)}
+              {...(props.initialUploadId ? { initialUploadId: props.initialUploadId } : {})}
+            />
+          ) : null}
         </>
       ) : null}
     </UnsavedChangesGuard>
@@ -73,7 +77,7 @@ function EditorFields({ model }: { model: ContentEditorModel }) {
           onValidityChange={controller.validity}
           locale={snapshot.editor.locale}
           services={services}
-          readOnly={props.intent === 'read' || state.phase !== 'ready'}
+          readOnly={snapshot.editor.intent === 'read' || state.phase !== 'ready'}
           errors={{ ...errors, ...state.errors }}
           richTextNodes={snapshot.editor.richTextNodes}
         />

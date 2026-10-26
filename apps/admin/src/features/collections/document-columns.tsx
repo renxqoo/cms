@@ -6,6 +6,7 @@ import type { Collection } from '../../contracts/content';
 import type { Document } from '../../contracts/documents';
 import type { ContentMessages } from './messages';
 import { displayField, documentTitle } from './query';
+import { documentStatus } from './document-status';
 
 interface ColumnOptions {
   collection: Collection;
@@ -19,6 +20,7 @@ interface ColumnOptions {
   trash: (document: Document, action: 'restore' | 'purge') => void;
   canRestore: boolean;
   canPurge: boolean;
+  mode?: string;
 }
 
 export function defaultVisibleFields(collection: Collection) {
@@ -33,11 +35,6 @@ export function defaultVisibleFields(collection: Collection) {
     )
     .slice(0, 3)
     .map((field) => field.path);
-}
-
-function rowStatus(document: Document, t: ContentMessages) {
-  if (document.trashedAt) return t.trash;
-  return document.publishedVersionId ? t.publishedStatus : t.draft;
 }
 
 function trashButtons(options: ColumnOptions, document: Document) {
@@ -126,11 +123,13 @@ export function documentColumns(options: ColumnOptions): DataTableColumn<Documen
     {
       key: 'status',
       header: t.status,
-      cell: (document) => (
-        <StatusCell tone={document.publishedVersionId ? 'success' : 'neutral'}>
-          {rowStatus(document, t)}
-        </StatusCell>
-      ),
+      cell: (document) => {
+        const status = documentStatus(document, collection, {
+          t,
+          ...(options.mode ? { mode: options.mode } : {}),
+        });
+        return <StatusCell tone={status.tone}>{status.label}</StatusCell>;
+      },
     },
     ...(options.trashed
       ? [

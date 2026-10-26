@@ -10,6 +10,12 @@ import {
 import { flattenFolders } from '../folders';
 import { catalog, document, documentId, folderId } from './support';
 
+it('regression: collection lists honor the configured default language rather than supported-language order', () => {
+  const configured = catalog({ locales: ['zh-CN', 'en'] });
+  expect(parseDocumentQuery(new URLSearchParams(), configured).locale).toBe('en');
+  expect(parseDocumentQuery(new URLSearchParams('locale=unknown'), configured).locale).toBe('en');
+});
+
 it('normalizes document pagination and rejects unregistered sort or locale values', () => {
   const parsed = parseDocumentQuery(
     new URLSearchParams(

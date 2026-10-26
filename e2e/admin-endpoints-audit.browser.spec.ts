@@ -7,6 +7,7 @@ import {
   loginManagement,
   test,
   waitForApi,
+  captureApiJson,
 } from '../test/support/admin-browser-management.ts';
 
 test('endpoint binding changes control the actual operation and audit details expose the complete safe projection and copy the real request ID', async ({
@@ -74,35 +75,33 @@ test('endpoint binding changes control the actual operation and audit details ex
   await page.goto('/dashboard/audit-logs');
   await page.getByLabel('操作', { exact: true }).fill('permissions.create');
   await page.getByLabel('目标 ID', { exact: true }).fill(permission.id);
-  const filtered = page.waitForResponse((candidate) => {
-    const url = new URL(candidate.url());
-    return (
-      candidate.request().method() === 'GET' &&
-      url.pathname === '/api/cms/v1/audit-logs' &&
-      url.searchParams.get('targetId') === permission.id &&
-      url.searchParams.get('operationId') === 'permissions.create'
-    );
+  const projectionSchema = z.object({
+    rows: z.array(
+      z.object({
+        id: z.uuid(),
+        actorKind: z.literal('admin'),
+        actorId: z.uuid(),
+        operationId: z.string(),
+        targetType: z.string(),
+        targetId: z.string(),
+        requestId: z.string(),
+        detail: z.record(z.string(), z.unknown()),
+        createdAt: z.iso.datetime(),
+      }),
+    ),
   });
+  const filtered = await captureApiJson(
+    page,
+    {
+      method: 'GET',
+      path: '/v1/audit-logs',
+      status: 200,
+      query: { targetId: permission.id, operationId: 'permissions.create' },
+    },
+    projectionSchema,
+  );
   await page.getByRole('button', { name: '应用筛选', exact: true }).click();
-  const response = await filtered;
-  expect(response.status()).toBe(200);
-  const projection = z
-    .object({
-      rows: z.array(
-        z.object({
-          id: z.uuid(),
-          actorKind: z.literal('admin'),
-          actorId: z.uuid(),
-          operationId: z.string(),
-          targetType: z.string(),
-          targetId: z.string(),
-          requestId: z.string(),
-          detail: z.record(z.string(), z.unknown()),
-          createdAt: z.iso.datetime(),
-        }),
-      ),
-    })
-    .parse(await response.json()).rows;
+  const projection = (await filtered.read()).rows;
   expect(projection).toHaveLength(1);
   const [record] = projection;
   if (!record) throw new Error('The real permission mutation must create its audit record.');

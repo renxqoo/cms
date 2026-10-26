@@ -7,7 +7,7 @@ import {
   loginManagement,
   test,
   waitForApi,
-  waitForApiJson,
+  captureApiJson,
 } from '../test/support/admin-browser-management.ts';
 
 const documentSchema = z.object({
@@ -86,13 +86,13 @@ async function createInUi(page: Page, slug: string) {
   await page.goto('/dashboard/collections/articles/new?locale=en');
   await page.getByRole('textbox', { name: /^title/ }).fill('Published story');
   await page.getByRole('textbox', { name: /^slug/ }).fill(slug);
-  const saving = waitForApiJson(
+  const saving = await captureApiJson(
     page,
     { method: 'POST', path: '/v1/collections/articles/documents', status: 201 },
     documentSchema,
   );
   await page.getByRole('button', { name: '保存', exact: true }).click();
-  const created = await saving;
+  const created = await saving.read();
   await expect(page).toHaveURL(
     new URL(`/dashboard/collections/articles/${created.id}?locale=en`, page.url()).href,
   );
@@ -204,13 +204,13 @@ test('regression: content creation captures its response before navigation and p
   );
   await exerciseRichText(page);
   for (const width of [1440, 390]) await verifyEditorLayout(page, width);
-  const saving = waitForApiJson(
+  const saving = await captureApiJson(
     page,
     { method: 'POST', path: '/v1/collections/articles/documents', status: 201 },
     documentSchema,
   );
   await page.getByRole('button', { name: '保存', exact: true }).click();
-  const created = await saving;
+  const created = await saving.read();
   expect(created.data['body']).toEqual({
     version: 1,
     children: [{ type: 'heading', children: [{ type: 'text', text: 'Lexical story' }] }],
@@ -235,11 +235,9 @@ test('real collection editing preserves published snapshots, compares history, a
   await confirmAction(page, { label: '发布', method: 'POST', path: `${path}/publications` });
   await expect(page.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
   await page.getByRole('textbox', { name: /^title/ }).fill('Private draft revision');
-  const saving = waitForApi(page, 'PATCH', path);
+  const saving = await captureApiJson(page, { method: 'PATCH', path, status: 200 }, documentSchema);
   await page.getByRole('button', { name: '保存', exact: true }).click();
-  const savedResponse = await saving;
-  expect(savedResponse.status()).toBe(200);
-  const saved = documentSchema.parse(await savedResponse.json());
+  const saved = await saving.read();
   await expect(page.getByText('已保存', { exact: true })).toBeVisible();
   const publishedResponse = await bffRequest(page, {
     method: 'GET',

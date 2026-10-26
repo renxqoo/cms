@@ -7,6 +7,7 @@ import {
   loginManagement,
   waitForApi,
   bffRequest,
+  captureApiJson,
 } from '../test/support/admin-browser-management.ts';
 import { applicationAccounts } from '../test/support/admin-application-data.ts';
 
@@ -134,20 +135,18 @@ test('retries a blocked cleanup ledger entry without claiming physical deletion 
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: '等待清理', exact: true }) });
   await expect(row).toHaveCount(1);
+  const objectId = z.uuid().parse(await row.getByRole('cell').first().innerText());
   await row.getByRole('button', { name: '详情', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '资源清理 · 详情', exact: true });
   await expect(dialog.getByText('temporarily_unavailable', { exact: true })).toBeVisible();
-  const retry = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'POST' &&
-      /\/api\/cms\/v1\/asset-cleanups\/[^/]+\/retries$/.test(new URL(response.url()).pathname),
+  const retry = await captureApiJson(
+    page,
+    { method: 'POST', path: `/v1/asset-cleanups/${objectId}/retries`, status: 202 },
+    z.object({ id: z.uuid(), accepted: z.literal(true) }),
   );
   await dialog.getByRole('button', { name: '请求清理重试', exact: true }).click();
-  const response = await retry;
-  expect(response.status()).toBe(202);
-  const receipt = z
-    .object({ id: z.uuid(), accepted: z.literal(true) })
-    .parse(await response.json());
+  const receipt = await retry.read();
+  expect(receipt.id).toBe(objectId);
   await expect(
     dialog.getByText('已受理重试，尚未确认物理删除，请读取最新账本状态。', { exact: true }),
   ).toBeVisible();

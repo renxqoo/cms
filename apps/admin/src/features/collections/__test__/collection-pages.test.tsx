@@ -184,7 +184,12 @@ it('shows only the returned safe structure and schema identifiers and allows ret
   pageApi.pathname = '/dashboard/collections/articles/structure';
   renderManagement(<CollectionStructurePage collectionKey="articles" />);
   await screen.findByText('mappingFingerprint');
-  expect(screen.getByText(/"layout"/)).toHaveTextContent('Metadata');
+  expect(screen.getByText('Title', { exact: true })).toBeInTheDocument();
+  expect(screen.getByText(/"fields"/)).toHaveTextContent('Title');
+  expect(screen.queryByText('Metadata', { exact: true })).not.toBeInTheDocument();
+  expect(
+    pageApi.request.mock.calls.some(([input]) => input.operation === 'collections.editor'),
+  ).toBe(false);
   await userEvent.click(screen.getByRole('button', { name: 'Back to list' }));
   expect(pageApi.push).toHaveBeenCalledWith('/dashboard/collections/articles', undefined);
 });

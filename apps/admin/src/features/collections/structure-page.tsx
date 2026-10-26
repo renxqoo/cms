@@ -1,12 +1,12 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { Button } from '@new-cms/ui/actions';
+import { Banner } from '@new-cms/ui/feedback';
 import { PageHeader, Card, CardContent } from '@new-cms/ui/layout';
 import { ClientInteractionBoundary } from '../../components/client-interaction-boundary';
 import { useAppNavigation } from '../../components/shell/navigation/provider';
 import { useShell } from '../../components/shell/shell-provider';
-import { collectionEditorSchema } from '../../contracts/editor';
+import { collectionSchema } from '../../contracts/content';
 import { useAccessControl } from '../access-control/provider';
 import { useApiQuery } from '../management-shared/query';
 import { ManagementFeedback } from '../management-shared/feedback';
@@ -18,13 +18,11 @@ export function CollectionStructurePage({ collectionKey }: { collectionKey: stri
   const t = contentMessages[locale];
   const access = useAccessControl();
   const navigation = useAppNavigation();
-  const params = useSearchParams();
   const result = useApiQuery({
-    operation: 'collections.editor',
+    operation: 'collections.get',
     params: { collection: collectionKey },
-    query: { intent: 'create', ...(params.get('locale') ? { locale: params.get('locale') } : {}) },
-    response: collectionEditorSchema,
-    enabled: access.can('collections.editor', { scopeKind: 'collection', collectionKey }),
+    response: collectionSchema,
+    enabled: access.can('collections.get', { scopeKind: 'collection', collectionKey }),
   });
   return (
     <ClientInteractionBoundary className="space-y-6">
@@ -38,28 +36,61 @@ export function CollectionStructurePage({ collectionKey }: { collectionKey: stri
         }
       />
       <ManagementFeedback error={result.error} onRetry={result.reload} />
+      {access.phase === 'ready' &&
+      !access.can('collections.get', { scopeKind: 'collection', collectionKey }) ? (
+        <Banner tone="warning">{t.denied}</Banner>
+      ) : null}
+      {result.phase === 'loading' ? <p role="status">{t.loading}</p> : null}
       {result.data ? (
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-2 text-sm">
-              <dt>schemaVersion</dt>
-              <dd>{result.data.schemaVersion}</dd>
-              <dt>behaviorHash</dt>
-              <dd className="break-all">{result.data.behaviorHash}</dd>
-              <dt>mappingFingerprint</dt>
-              <dd className="break-all">{result.data.mappingFingerprint}</dd>
+            <h2 className="font-semibold">{t.fields}</h2>
+            <dl className="divide-y divide-border">
+              {result.data.fields.map((field) => (
+                <div key={`${field.path}:${field.id}`} className="grid gap-1 py-3 sm:grid-cols-2">
+                  <dt className="break-words font-medium">
+                    {field.label}
+                    {field.path.includes('.') ? (
+                      <span className="mt-1 block break-all text-xs font-normal text-muted-foreground">
+                        {field.path}
+                      </span>
+                    ) : null}
+                  </dt>
+                  <dd className="text-sm text-muted-foreground">
+                    <span>{field.type}</span> · {field.required ? t.required : t.optional} ·{' '}
+                    {field.localized
+                      ? t.localized
+                      : field.path.includes('.')
+                        ? t.inheritedLocale
+                        : t.shared}
+                  </dd>
+                </div>
+              ))}
             </dl>
-            <pre className="max-h-[60vh] overflow-auto rounded-md bg-muted p-4 text-xs">
-              {JSON.stringify(
-                {
-                  layout: result.data.layout,
-                  schemas: result.data.schemas,
-                  locales: result.data.locales,
-                },
-                null,
-                2,
-              )}
-            </pre>
+            <details>
+              <summary className="cursor-pointer rounded-sm text-sm focus-visible:outline-2 focus-visible:outline-ring">
+                {t.technicalDetails}
+              </summary>
+              <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-2 text-sm">
+                <dt>schemaVersion</dt>
+                <dd>{result.data.schemaVersion}</dd>
+                <dt>behaviorHash</dt>
+                <dd className="break-all">{result.data.behaviorHash}</dd>
+                <dt>mappingFingerprint</dt>
+                <dd className="break-all">{result.data.mappingFingerprint}</dd>
+              </dl>
+              <pre className="max-h-[60vh] overflow-auto rounded-md bg-muted p-4 text-xs">
+                {JSON.stringify(
+                  {
+                    fields: result.data.fields,
+                    schema: result.data.dataSchema,
+                    locales: result.data.locales,
+                  },
+                  null,
+                  2,
+                )}
+              </pre>
+            </details>
           </CardContent>
         </Card>
       ) : null}

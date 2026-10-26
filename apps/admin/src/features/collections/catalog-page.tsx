@@ -42,9 +42,19 @@ export function CollectionCatalogPage() {
               <CardTitle>{collection.label}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="break-all text-sm text-muted-foreground">
-                {collection.key} · {collection.mode} · v{collection.schemaVersion}
+              <p className="text-sm text-muted-foreground">
+                {collection.mode === 'drafts' ? t.draftCollection : t.directCollection}
+                {collection.singleton ? ` · ${t.singletonCollection}` : ''}
+                {collection.upload ? ` · ${t.mediaCollection}` : ''}
               </p>
+              <details className="text-xs text-muted-foreground">
+                <summary className="cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-ring">
+                  {t.technicalDetails}
+                </summary>
+                <p className="mt-2 break-all">
+                  {collection.key} · v{collection.schemaVersion}
+                </p>
+              </details>
               <Button
                 variant="outline"
                 onClick={() => navigation.push(collectionHref(collection.key))}

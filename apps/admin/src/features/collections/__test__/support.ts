@@ -16,6 +16,7 @@ export function catalog(overrides: Partial<Collection> = {}): Collection {
     mode: 'drafts',
     history: true,
     singleton: false,
+    defaultLocale: 'en',
     locales: ['en', 'zh-CN'],
     dataSchema: { type: 'object' },
     fields: [

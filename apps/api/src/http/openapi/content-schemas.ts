@@ -105,6 +105,7 @@ function collectionSchemas(): Record<string, Schema> {
       mode: { enum: ['direct', 'drafts'] },
       history: { type: 'boolean' },
       singleton: { type: 'boolean' },
+      defaultLocale: text,
       locales: array(text),
       dataSchema: { type: 'object' },
       fields: array(field),

@@ -46,6 +46,7 @@ export function matchingEditor(snapshot: EditorSnapshot, target: EditorTarget): 
     editor.behaviorHash === collection.behaviorHash &&
     editor.mappingFingerprint === collection.mappingFingerprint &&
     editor.intent === target.intent &&
+    (editor.intent !== 'read' || editor.fallback.length === 0) &&
     editor.mode === 'editing' &&
     (target.locale === null || editor.locale === target.locale) &&
     matchingDocument(snapshot, target.id)
@@ -118,7 +119,7 @@ function documentRequest(
 async function readSnapshot(
   target: EditorTarget,
   signal: AbortSignal,
-): Promise<ApiResult<EditorSnapshot>> {
+): Promise<ApiResult<{ snapshot: EditorSnapshot; target: EditorTarget }>> {
   const catalog = await requestApi({
     operation: 'collections.get',
     params: { collection: target.collection },
@@ -128,7 +129,8 @@ async function readSnapshot(
   if (!catalog.ok) return catalog;
   const resolved = await singletonTarget(catalog.data, target, signal);
   if (!resolved.ok) return resolved;
-  const metadata = await metadataRequest(resolved.data, signal);
+  const loaded = await readMetadata(resolved.data, signal);
+  const { metadata } = loaded;
   if (!metadata.ok) return metadata;
   const document = await documentRequest(resolved.data, metadata.data.locale, signal);
   if (!document.ok) return document;
@@ -136,7 +138,10 @@ async function readSnapshot(
     ok: true,
     status: 200,
     requestId: metadata.requestId,
-    data: { collection: catalog.data, editor: metadata.data, document: document.data },
+    data: {
+      snapshot: { collection: catalog.data, editor: metadata.data, document: document.data },
+      target: loaded.target,
+    },
   };
 }
 
@@ -147,10 +152,36 @@ export async function readEditor(
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const result = await readSnapshot(target, signal);
     if (!result.ok) return result;
-    if (matchingEditor(result.data, target)) return result;
+    if (matchingEditor(result.data.snapshot, result.data.target))
+      return { ...result, data: result.data.snapshot };
     if (signal.aborted) return failure('request_cancelled', 0);
   }
   return failure('version_conflict', 409);
+}
+
+async function readMetadata(target: EditorTarget, signal: AbortSignal) {
+  const metadata = await metadataRequest(target, signal);
+  if (
+    metadata.ok ||
+    target.intent !== 'update' ||
+    target.id === null ||
+    signal.aborted ||
+    !(
+      (metadata.status === 403 && metadata.error.code === 'forbidden') ||
+      (metadata.status === 404 && metadata.error.code === 'not_found')
+    )
+  )
+    return { metadata, target };
+  const readTarget: EditorTarget = { ...target, intent: 'read' };
+  const read = await metadataRequest(readTarget, signal);
+  if (
+    read.ok &&
+    !read.data.actions.some(
+      (action) => action.operationId === 'documents.update' && action.state === 'denied',
+    )
+  )
+    return { metadata: failure('version_conflict', 409), target: readTarget };
+  return { metadata: read, target: readTarget };
 }
 
 export async function readArchivedDocument(

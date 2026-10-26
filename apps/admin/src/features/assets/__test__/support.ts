@@ -95,6 +95,7 @@ export const collection: Collection = {
   mode: 'direct',
   history: true,
   singleton: false,
+  defaultLocale: 'en',
   locales: ['en', 'zh-CN'],
   dataSchema: {},
   fields: [],

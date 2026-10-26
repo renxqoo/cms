@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { DataTable } from '@new-cms/ui/data';
 import { documentColumns } from '../document-columns';
 import { contentMessages } from '../messages';
-import { catalog, document } from './support';
+import { catalog, document, versionId, nextVersionId } from './support';
 
 it('regression: a content title field does not collide with the document title column during table reconciliation', () => {
   const errors = vi.spyOn(console, 'error');
@@ -37,6 +37,60 @@ it('regression: a content title field does not collide with the document title c
     errors.mockRestore();
   }
 });
+
+it.each([
+  { mode: 'editing', direct: false, published: null, trashed: null, expected: 'Draft' },
+  { mode: 'editing', direct: false, published: versionId, trashed: null, expected: 'Published' },
+  {
+    mode: 'editing',
+    direct: false,
+    published: nextVersionId,
+    trashed: null,
+    expected: 'Unpublished changes',
+  },
+  {
+    mode: 'published',
+    direct: false,
+    published: versionId,
+    trashed: null,
+    expected: 'Published snapshot',
+  },
+  { mode: 'editing', direct: true, published: versionId, trashed: null, expected: 'Active' },
+  {
+    mode: 'editing',
+    direct: true,
+    published: versionId,
+    trashed: '2026-10-27T00:00:00Z',
+    expected: 'Trash',
+  },
+])(
+  'shows $expected for the actual collection and snapshot mode',
+  ({ mode, direct, published, trashed, expected }) => {
+    render(
+      <DataTable
+        columns={documentColumns({
+          collection: catalog({ mode: direct ? 'direct' : 'drafts' }),
+          t: contentMessages.en,
+          locale: 'en',
+          selected: [],
+          select: () => {},
+          visible: [],
+          trashed: trashed !== null,
+          open: () => {},
+          trash: () => {},
+          canRestore: false,
+          canPurge: false,
+          mode,
+        })}
+        rows={[document({ publishedVersionId: published, trashedAt: trashed })]}
+        rowKey={(row) => row.id}
+        emptyLabel="Empty"
+        loadingLabel="Loading"
+      />,
+    );
+    expect(screen.getByText(expected, { exact: true })).toBeInTheDocument();
+  },
+);
 
 it('renders rich-text summaries without exposing the persisted JSON and formats the update time', () => {
   const configured = catalog();

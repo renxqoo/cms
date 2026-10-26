@@ -22,6 +22,7 @@
 - [本地 Payload 架构分析](docs/design/payload-architecture-analysis.md)：真实调用链、配置/权限/事务/文件边界及采纳取舍。
 - [审查记录](docs/design/review-log.md)、[Tillgate 参考审计](docs/design/reference-audit.md)。
 - [实施和验证计划](docs/design/implementation-plan.md)、[静态规则的实际边界](docs/design/lint-guardrails.md)。
+- [内容与资源生产交付基线](docs/design/cms-production-baseline.md)、[本批验收矩阵](docs/design/cms-production-verification.md)和[部署验收手册](docs/production-acceptance.md)：代码验证、部署配置、备份恢复、容量及目标环境放行口径。租户管理属于消费业务系统。
 
 ## OneAster UI 工作台
 
@@ -34,7 +35,7 @@ bun run dev:admin
 
 访问开发服务输出地址下的/ui，总览、七类组件页（/ui/actions、inputs、layout、feedback、data、overlays、documents）和/ui/lists组合列表均可直接访问或刷新。代码编辑引擎与worker在dev/build前从锁定的Monaco依赖生成到本地public目录，无需第三方CDN。工作台仅使用隔离合成示例，组件通过受控数据与事件验证，无需数据库或管理员凭据。构建后通过bun run start:admin启动Next服务。
 
-根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；开发默认API为127.0.0.1:3001、后台为localhost:3000。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
+根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；按根.env.example运行时，API为127.0.0.1:3001、后台为localhost:9092，与dev:admin的实际端口一致。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
 
 账户页面提供资料和密码管理；管理员、角色、权限、导航、端点绑定、审计以及访问恢复位于/dashboard对应入口。操作以当前主体的完整授权快照判断，实际HTTP再次鉴权。邀请与重置通过实际邮件链接完成；普通目录被误配拒绝后，有效超级管理员可使用访问恢复读取最新绑定并按原CAS协议修复。验收范围和当前进度见[应用实施与验收](docs/design/admin-application-implementation.md)。
 

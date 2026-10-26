@@ -31,7 +31,7 @@ export function parseDocumentQuery(params: URLSearchParams, collection: Collecti
     sort: allowedSort.includes(field) ? field : 'updatedAt',
     order: params.get('order') === 'asc' ? 'asc' : 'desc',
     locale:
-      locale && collection?.locales.includes(locale) ? locale : (collection?.locales[0] ?? ''),
+      locale && collection?.locales.includes(locale) ? locale : (collection?.defaultLocale ?? ''),
     folderId: folderQuery(params.get('folderId')),
     filterField: params.get('filterField') ?? '',
     filterValue: params.get('filterValue') ?? '',

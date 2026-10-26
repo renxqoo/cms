@@ -1,5 +1,5 @@
 import { expect, test as base } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Page, Route } from '@playwright/test';
 import { z } from 'zod';
 import { observeBrowserErrors } from './browser-errors.ts';
 import { extractFrontendUrl } from './smtp.ts';
@@ -26,15 +26,51 @@ export function waitForApi(page: Page, method: string, path: string) {
   );
 }
 
-export function waitForApiJson<Value>(
+export async function captureApiJson<Value>(
   page: Page,
-  request: { method: string; path: string; status: number },
+  request: {
+    method: string;
+    path: string;
+    status: number;
+    query?: Readonly<Record<string, string>>;
+  },
   schema: z.ZodType<Value>,
 ) {
-  return waitForApi(page, request.method, request.path).then(async (response) => {
-    expect(response.status()).toBe(request.status);
-    return schema.parse(await response.json());
-  });
+  const matches = (url: URL) =>
+    url.pathname === `/api/cms${request.path}` &&
+    Object.entries(request.query ?? {}).every(
+      ([key, value]) => url.searchParams.get(key) === value,
+    );
+  let projection: unknown;
+  async function capture(route: Route) {
+    if (route.request().method() !== request.method) {
+      await route.fallback();
+      return;
+    }
+    const upstream = await route.fetch({ maxRedirects: 0 });
+    try {
+      projection = await upstream.json();
+    } finally {
+      await route.fulfill({ response: upstream });
+      await upstream.dispose();
+    }
+  }
+  await page.route(matches, capture);
+  const response = page.waitForResponse(
+    (observed) =>
+      observed.request().method() === request.method && matches(new URL(observed.url())),
+  );
+  return {
+    async read(): Promise<Value> {
+      try {
+        const observed = await response;
+        expect(observed.status()).toBe(request.status);
+        return schema.parse(projection);
+      } finally {
+        await page.unroute(matches, capture);
+      }
+    },
+  };
 }
 
 export async function loginManagement(page: Page, account: { email: string; password: string }) {
@@ -155,14 +191,15 @@ export async function createPermissionInUi(page: Page, code: string, name: strin
   const dialog = page.getByRole('dialog', { name: '创建权限', exact: true });
   await dialog.getByLabel(/^权限编码/).fill(code);
   await dialog.getByLabel(/^名称/).fill(name);
-  const created = waitForApi(page, 'POST', '/v1/permissions');
+  const created = await captureApiJson(
+    page,
+    { method: 'POST', path: '/v1/permissions', status: 201 },
+    z.object({ id: z.uuid(), version: z.number().int().positive() }),
+  );
   await dialog.getByRole('button', { name: '保存', exact: true }).click();
-  const response = await created;
-  expect(response.status()).toBe(201);
+  const projection = await created.read();
   await expect(dialog).toHaveCount(0);
-  return z
-    .object({ id: z.uuid(), version: z.number().int().positive() })
-    .parse(await response.json());
+  return projection;
 }
 
 export async function createRoleInUi(page: Page, code: string, name: string) {
@@ -171,12 +208,13 @@ export async function createRoleInUi(page: Page, code: string, name: string) {
   const dialog = page.getByRole('dialog', { name: '创建角色', exact: true });
   await dialog.getByLabel(/^编码/).fill(code);
   await dialog.getByLabel(/^名称/).fill(name);
-  const created = waitForApi(page, 'POST', '/v1/roles');
+  const created = await captureApiJson(
+    page,
+    { method: 'POST', path: '/v1/roles', status: 201 },
+    z.object({ id: z.uuid(), version: z.number().int().positive() }),
+  );
   await dialog.getByRole('button', { name: '创建角色', exact: true }).click();
-  const response = await created;
-  expect(response.status()).toBe(201);
+  const projection = await created.read();
   await expect(dialog).toHaveCount(0);
-  return z
-    .object({ id: z.uuid(), version: z.number().int().positive() })
-    .parse(await response.json());
+  return projection;
 }

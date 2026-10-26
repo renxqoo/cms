@@ -15,6 +15,17 @@ afterEach(async () => {
   for (const kit of fixtures.splice(0)) await kit.close();
 });
 
+it('regression: collection metadata preserves the configured default locale independently of supported-language order', async () => {
+  const collections = workflowCollections();
+  const configured = contentCollection(collections, 'articles');
+  configured.locales = { ...configured.locales, supported: ['zh', 'en'], default: 'en' };
+  const kit = await createContentFixture({ collections });
+  fixtures.push(kit);
+  const view = await kit.content.api.getCollection(kit.owner(), { collection: 'articles' });
+  expect(view.defaultLocale).toBe('en');
+  expect(view.locales).toEqual(['zh', 'en']);
+});
+
 it.each(['constructor', 'toString'])(
   'rejects an unregistered after-commit handler named %s',
   async (name) => {

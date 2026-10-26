@@ -243,6 +243,7 @@ export function collectionMetadata(input: {
     mode: input.collection.mode,
     history: input.collection.history !== false,
     singleton: input.collection.singleton === true,
+    defaultLocale: input.collection.locales.default,
     locales: [...input.collection.locales.supported],
     dataSchema,
     fields: visible.map(({ path, field }) => ({

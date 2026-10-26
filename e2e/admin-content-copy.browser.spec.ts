@@ -6,7 +6,7 @@ import {
   loginManagement,
   test,
   waitForApi,
-  waitForApiJson,
+  captureApiJson,
 } from '../test/support/admin-browser-management.ts';
 
 const documentSchema = z.object({ id: z.uuid(), data: z.record(z.string(), z.unknown()) });
@@ -19,13 +19,13 @@ test('translated documents copy each unique locale slug into a new real document
   await page.goto('/dashboard/collections/articles/new?locale=en');
   await page.getByRole('textbox', { name: /^title/ }).fill('English source title');
   await page.getByRole('textbox', { name: /^slug/ }).fill('source-english-slug');
-  const creating = waitForApiJson(
+  const creating = await captureApiJson(
     page,
     { method: 'POST', path: '/v1/collections/articles/documents', status: 201 },
     documentSchema,
   );
   await page.getByRole('button', { name: '保存', exact: true }).click();
-  const source = await creating;
+  const source = await creating.read();
   await expect(page).toHaveURL(
     new URL(`/dashboard/collections/articles/${source.id}?locale=en`, page.url()).href,
   );
@@ -46,13 +46,13 @@ test('translated documents copy each unique locale slug into a new real document
   await dialog.getByRole('textbox', { name: /^slug/ }).fill('copy-chinese-slug');
   await dialog.getByLabel('副本语言', { exact: true }).selectOption('en');
   await dialog.getByRole('textbox', { name: /^slug/ }).fill('copy-english-slug');
-  const copying = waitForApiJson(
+  const copying = await captureApiJson(
     page,
     { method: 'POST', path: `/v1/collections/articles/documents/${source.id}/copies`, status: 201 },
     documentSchema,
   );
   await dialog.getByRole('button', { name: '复制文档', exact: true }).click();
-  const copied = await copying;
+  const copied = await copying.read();
   expect(copied.id).not.toBe(source.id);
   await expect(page).toHaveURL(
     new URL(`/dashboard/collections/articles/${copied.id}?locale=zh-CN`, page.url()).href,

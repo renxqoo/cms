@@ -111,6 +111,12 @@ it('rejects wrong locale, intent, collection, identity, trash, and missing docum
     false,
   );
   expect(matchingEditor(snapshot({ document: null }), target)).toBe(false);
+  expect(
+    matchingEditor(snapshot({ editor: editor({ intent: 'read', fallback: ['zh-CN'] }) }), {
+      ...target,
+      intent: 'read',
+    }),
+  ).toBe(false);
 });
 
 it('loads create metadata without an id and uses the catalog default locale', async () => {
@@ -204,6 +210,7 @@ it('does not continue reading after a real catalog, metadata, or document failur
   });
   request
     .mockResolvedValueOnce(success(catalog()))
+    .mockResolvedValueOnce(failure('forbidden', 403))
     .mockResolvedValueOnce(failure('forbidden', 403));
   expect(await readEditor(target, new AbortController().signal)).toMatchObject({
     ok: false,
@@ -217,6 +224,74 @@ it('does not continue reading after a real catalog, metadata, or document failur
     ok: false,
     status: 404,
   });
+});
+
+it.each([
+  ['unauthenticated', 401],
+  ['temporarily_unavailable', 503],
+  ['invalid_response', 200],
+  ['not_found', 503],
+] as const)(
+  'does not downgrade %s HTTP %s failures into read-only success',
+  async (code, status) => {
+    request.mockResolvedValueOnce(success(catalog())).mockResolvedValueOnce(failure(code, status));
+    expect(await readEditor(target, new AbortController().signal)).toMatchObject({
+      ok: false,
+      status,
+    });
+    expect(request).toHaveBeenCalledTimes(2);
+  },
+);
+
+it.each([403, 404])(
+  'reads a safe no-fallback projection after a genuine update denial HTTP %s',
+  async (status) => {
+    request
+      .mockResolvedValueOnce(success(catalog()))
+      .mockResolvedValueOnce(failure(status === 403 ? 'forbidden' : 'not_found', status))
+      .mockResolvedValueOnce(
+        success(
+          editor({
+            intent: 'read',
+            fallback: [],
+            actions: [{ operationId: 'documents.update', state: 'denied' }],
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(success(document()));
+    expect(await readEditor(target, new AbortController().signal)).toMatchObject({
+      ok: true,
+      data: { editor: { intent: 'read' } },
+    });
+    expect(request.mock.calls[2]?.[0].query).toMatchObject({
+      intent: 'read',
+      fallback: [],
+      id: documentId,
+    });
+    expect(request.mock.calls[3]?.[0].query).toMatchObject({ fallback: [], depth: 0 });
+  },
+);
+
+it('rejects a contradictory read-only fallback instead of presenting a stale editing authorization', async () => {
+  request
+    .mockResolvedValueOnce(success(catalog()))
+    .mockResolvedValueOnce(failure('not_found', 404))
+    .mockResolvedValueOnce(success(editor({ intent: 'read', fallback: [] })));
+  expect(await readEditor(target, new AbortController().signal)).toMatchObject({
+    ok: false,
+    status: 409,
+  });
+  expect(request).toHaveBeenCalledTimes(3);
+});
+
+it('cancels without starting a fallback read after the update request is aborted', async () => {
+  const controller = new AbortController();
+  request.mockResolvedValueOnce(success(catalog())).mockImplementationOnce(() => {
+    controller.abort();
+    return Promise.resolve(failure('forbidden', 403));
+  });
+  expect(await readEditor(target, controller.signal)).toMatchObject({ ok: false });
+  expect(request).toHaveBeenCalledTimes(2);
 });
 
 function write(action: EditorWrite['action'], changes: Partial<EditorWrite> = {}): EditorWrite {
