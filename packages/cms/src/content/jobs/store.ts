@@ -30,7 +30,7 @@ export interface JobRow {
 }
 
 export interface JobPayload {
-  action: 'update' | 'copy' | 'archive' | 'restoreTrash';
+  action: 'update' | 'copy' | 'archive' | 'restoreTrash' | 'publish' | 'unpublish';
   locale: string;
   data?: DocumentData;
   dataByLocale?: Record<string, DocumentData>;

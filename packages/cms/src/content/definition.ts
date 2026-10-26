@@ -151,6 +151,7 @@ export interface CollectionDefinition {
   label: string;
   fields: readonly FieldDefinition[];
   mode: 'direct' | 'drafts';
+  localizeStatus?: boolean;
   history: false | { maxVersions: number; retentionMs: number };
   singleton?: boolean;
   locales: {

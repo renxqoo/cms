@@ -96,8 +96,8 @@ function documentSchemas(limits: ContentInputLimits) {
       z.strictObject({ ...mutation, ...localized, data, ...file }),
       z.strictObject({ ...mutation, dataByLocale: localeData(limits), ...file }),
     ]),
-    'documents.publish': z.strictObject(mutation),
-    'documents.unpublish': z.strictObject(mutation),
+    'documents.publish': z.strictObject({ ...mutation, ...localized }),
+    'documents.unpublish': z.strictObject({ ...mutation, ...localized }),
   };
 }
 
@@ -158,7 +158,9 @@ function taskSchemas(limits: ContentInputLimits) {
   return {
     'content.schedulePublication': z.strictObject({
       ...mutation,
+      ...localized,
       versionId: id,
+      action: z.enum(['publish', 'unpublish']).default('publish'),
       executeAt: z.iso.datetime(),
     }),
     'content.cancelPublicationSchedule': z.strictObject({ ...target, scheduleId: id }),

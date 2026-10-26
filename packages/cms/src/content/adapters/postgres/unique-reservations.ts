@@ -60,21 +60,18 @@ export async function syncActiveUnique(
   const collection = input.mapping.get(input.collection);
   const document = await readDocument(tx, input);
   await clearReservations(tx, input);
-  const active = [
-    ...new Set(
-      [document.currentVersionId, document.publishedVersionId].filter(
-        (value): value is string => value !== null,
-      ),
-    ),
-  ];
-  const items = active.flatMap((versionId) =>
-    collection.definition.locales.supported.map((locale) => ({
+  const items = [...new Map([
+    ...collection.definition.locales.supported.map((locale) => ({
       documentId: input.id,
-      versionId,
+      versionId: document.currentVersionId,
       locale,
       fallback: [],
     })),
-  );
+    ...Object.entries(document.publications ?? {}).flatMap(([key, versionId]) =>
+      (key === '*' ? collection.definition.locales.supported : [key]).map((locale) => ({
+        documentId: input.id, versionId, locale, fallback: [],
+      }))),
+  ].map((item) => [`${item.versionId}:${item.locale}`, item])).values()];
   const datasets = await readRevisionDataBatch(tx, { ...input, items });
   const statements = reservationDefinitions(collection)
     .map((reservation) =>

@@ -69,7 +69,7 @@ it('rolls back publication and audit when the lease is invalidated before the it
   const kit = await fixture();
   const { doc, job } = await schedule(kit);
   await kit.database.query(
-    `CREATE FUNCTION expire_publication_lease() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN UPDATE content_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE document_id=NEW.id AND status='running'; RETURN NEW; END; $$; CREATE TRIGGER expire_publication_lease BEFORE UPDATE OF published_version_id ON content_documents FOR EACH ROW WHEN(NEW.published_version_id IS NOT NULL AND OLD.published_version_id IS NULL) EXECUTE FUNCTION expire_publication_lease()`,
+    `CREATE FUNCTION expire_publication_lease() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN UPDATE content_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE document_id=NEW.document_id AND status='running'; RETURN NEW; END; $$; CREATE TRIGGER expire_publication_lease BEFORE INSERT OR UPDATE ON content_publications FOR EACH ROW EXECUTE FUNCTION expire_publication_lease()`,
   );
   await kit.content.maintenance();
   expect(

@@ -5,7 +5,7 @@ import {
   queryDefaults,
   policyUsesRelations,
 } from '../runtime.ts';
-import { relationScopes } from '../documents/relation-scopes.ts';
+import { relationScopes, denied } from '../documents/relation-scopes.ts';
 import { parseQuery } from '../queries/parse-query.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
 import type { DocumentData } from '../definition.ts';
@@ -116,6 +116,7 @@ async function existingContext(
         });
   const document = await runtime.store.readDocument(context.state.tx, {
     collection: context.state.collection.key,
+    locale: context.state.locale,
     id: values.id,
   });
   for (const state of [context.state, reader, context.selected])
@@ -196,7 +197,6 @@ function requiredOperations(
   context: EditorContext,
   operation: EditorAction['operationId'],
 ): string[] {
-  if (operation === 'content.schedulePublication') return ['documents.publish'];
   if (operation !== 'versions.restore') return [];
   return context.state.collection.mode === 'direct'
     ? ['versions.get', 'documents.update']
@@ -213,6 +213,19 @@ async function checkActionPrerequisites(
   if (input.operationId === 'documents.copy')
     return requireCopyPrerequisites(context, input.runtime);
   const { fallbackOverride: _fallback, ...base } = context.state;
+  if (input.operationId === 'content.schedulePublication') {
+    const operations = context.document?.publishedVersionId ? ['documents.publish', 'documents.unpublish'] : ['documents.publish'];
+    for (const operationId of operations) {
+      try {
+        const state = await operationState(base, { runtime: input.runtime, operationId, mode: 'editing' });
+        if (context.document) await requireEditorDocument(state, { runtime: input.runtime, document: context.document, context });
+        return;
+      } catch (error) {
+        if (!denied(error)) throw error;
+      }
+    }
+    fail('forbidden');
+  }
   for (const operationId of requiredOperations(context, input.operationId)) {
     const state = await operationState(base, {
       runtime: input.runtime,

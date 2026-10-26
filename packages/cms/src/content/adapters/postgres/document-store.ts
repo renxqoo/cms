@@ -1,6 +1,7 @@
 import type { SqlExecutor } from '@new-cms/database/client';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { ContentMapping, DocumentRow } from '../../model.ts';
+import type { CollectionDefinition } from '../../definition.ts';
 import type {
   InsertDocumentInput,
   ReadDocumentInput,
@@ -8,19 +9,28 @@ import type {
 } from './store-contract.ts';
 
 export const documentProjection =
-  'd.id,d.collection_id AS "collectionId",d.revision,d.current_version_id AS "currentVersionId",d.published_version_id AS "publishedVersionId",d.trashed_at AS "trashedAt",d.folder_id AS "folderId",d.created_at AS "createdAt",d.updated_at AS "updatedAt"';
+  `d.id,d.collection_id AS "collectionId",d.revision,d.current_version_id AS "currentVersionId",(SELECT p.version_id FROM content_publications p WHERE p.document_id=d.id AND p.locale='*') AS "publishedVersionId",(SELECT COALESCE(jsonb_object_agg(p.locale,p.version_id),'{}'::jsonb) FROM content_publications p WHERE p.document_id=d.id) AS publications,d.trashed_at AS "trashedAt",d.folder_id AS "folderId",d.created_at AS "createdAt",d.updated_at AS "updatedAt"`;
+
+export function publicationLocale(collection: CollectionDefinition, locale?: string): string {
+  return collection.localizeStatus ? locale ?? collection.locales.default : '*';
+}
+
+export function publicationExpression(documentAlias: string, localeParameter: string): string {
+  return `(SELECT p.version_id FROM content_publications p WHERE p.document_id=${documentAlias}.id AND p.locale=${localeParameter})`;
+}
 export interface RawDocumentRow extends Omit<DocumentRow, 'createdAt' | 'updatedAt' | 'trashedAt'> {
   createdAt: Date | string;
   updatedAt: Date | string;
   trashedAt: Date | string | null;
 }
-export function documentRow(row: RawDocumentRow): DocumentRow {
+export function documentRow(row: RawDocumentRow, locale = '*'): DocumentRow {
   return {
     id: row.id,
     collectionId: row.collectionId,
     revision: row.revision,
     currentVersionId: row.currentVersionId,
-    publishedVersionId: row.publishedVersionId,
+    publishedVersionId: row.publications?.[locale] ?? null,
+    publications: row.publications ?? {},
     trashedAt: row.trashedAt ? new Date(row.trashedAt).toISOString() : null,
     folderId: row.folderId,
     createdAt: new Date(row.createdAt).toISOString(),
@@ -37,7 +47,7 @@ export async function readDocument(
   );
   const [row] = result.rows;
   if (!row) fail('not_found');
-  return documentRow(row);
+  return documentRow(row, publicationLocale(input.mapping.get(input.collection).definition, input.locale));
 }
 export async function lockDocuments(
   tx: SqlExecutor,
@@ -75,7 +85,6 @@ export async function updateDocumentPointers(
   const assignments = [
     'revision=$3',
     'current_version_id=$4',
-    'published_version_id=$5',
     'updated_at=clock_timestamp()',
   ];
   const values: unknown[] = [
@@ -83,7 +92,6 @@ export async function updateDocumentPointers(
     input.mapping.get(input.collection).definition.id,
     input.revision,
     input.currentVersionId,
-    input.publishedVersionId,
     input.expectedRevision,
   ];
   if (input.trashedAt !== undefined) {
@@ -95,10 +103,25 @@ export async function updateDocumentPointers(
     assignments.push(`folder_id=$${values.length}`);
   }
   const result = await tx.query<RawDocumentRow>(
-    `UPDATE content_documents d SET ${assignments.join(',')} WHERE d.id=$1 AND d.collection_id=$2 AND d.revision=$6 RETURNING ${documentProjection}`,
+    `UPDATE content_documents d SET ${assignments.join(',')} WHERE d.id=$1 AND d.collection_id=$2 AND d.revision=$5 RETURNING ${documentProjection}`,
     values,
   );
   const [row] = result.rows;
   if (!row) fail('version_conflict');
-  return documentRow(row);
+  const key = publicationLocale(input.mapping.get(input.collection).definition, input.locale);
+  const publications = { ...row.publications };
+  if (input.clearPublications) {
+    await tx.query('DELETE FROM content_publications WHERE document_id=$1', [input.id]);
+    for (const locale of Object.keys(publications)) delete publications[locale];
+  } else if (input.publishedVersionId) {
+    await tx.query(
+      'INSERT INTO content_publications(document_id,collection_id,locale,version_id) VALUES($1,$2,$3,$4) ON CONFLICT(document_id,locale) DO UPDATE SET version_id=excluded.version_id',
+      [input.id, row.collectionId, key, input.publishedVersionId],
+    );
+    publications[key] = input.publishedVersionId;
+  } else {
+    await tx.query('DELETE FROM content_publications WHERE document_id=$1 AND locale=$2', [input.id, key]);
+    delete publications[key];
+  }
+  return documentRow({ ...row, publications }, key);
 }

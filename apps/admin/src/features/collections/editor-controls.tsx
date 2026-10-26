@@ -97,6 +97,9 @@ export function EditorActions({ model }: { model: ContentEditorModel }) {
       {schedule && snapshot?.document ? (
         <PublicationSchedule
           document={snapshot.document}
+          locale={snapshot.editor.locale}
+          canPublish={model.allowed('documents.publish')}
+          canUnpublish={model.allowed('documents.unpublish')}
           t={t}
           onClose={() => setSchedule(false)}
           onBusyChange={controller.setExternalBusy}

@@ -136,6 +136,7 @@ export async function ensureVisible(
 ): Promise<DocumentRow> {
   const document = await input.runtime.store.readDocument(state.tx, {
     collection: state.collection.key,
+    locale: state.locale,
     id: input.id,
     ...(input.lock ? { lock: true } : {}),
   });

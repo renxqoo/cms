@@ -130,6 +130,7 @@ async function downloadSource(
   if (!input.request.documentId || !input.runtime.assets) fail('not_found');
   const document = await input.runtime.store.readDocument(state.tx, {
     collection: state.collection.key,
+    locale: state.locale,
     id: input.request.documentId,
   });
   const versionId =

@@ -29,6 +29,7 @@ function writeBody(input: EditorWrite, document: Document): Record<string, unkno
   const body = { revision: document.revision };
   if (input.action === 'copy') return { ...body, dataByLocale: input.dataByLocale };
   if (input.action === 'restore') return { ...body, versionId: input.versionId };
+  if (input.action === 'publish' || input.action === 'unpublish') return { ...body, locale };
   if (input.action !== 'save' && input.action !== 'autosave') return body;
   const data = Object.keys(input.data).length > 0 ? { data: input.data } : {};
   return {
@@ -57,7 +58,7 @@ export async function writeEditor(
     operation,
     params: { collection: collection.key, id: document.id },
     ...(definition.method === 'DELETE'
-      ? { query: { revision: document.revision } }
+      ? { query: { revision: document.revision, ...(input.action === 'unpublish' ? { locale: input.snapshot.editor.locale } : {}) } }
       : { body: writeBody(input, document) }),
     response: documentSchema,
     signal,

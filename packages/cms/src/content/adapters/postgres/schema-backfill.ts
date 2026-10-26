@@ -11,7 +11,7 @@ import {
   lockPreparedSchemas,
 } from './schema-state.ts';
 import { readRevisionData, writeData, revisionProjection, revisionRow } from './revision-data.ts';
-import { readDocument, lockDocuments } from './document-store.ts';
+import { readDocument, lockDocuments, publicationLocale } from './document-store.ts';
 import { writeIndexProjections } from './index-projections.ts';
 import { syncActiveUnique } from './unique-reservations.ts';
 import { writeReferences } from './history-store.ts';
@@ -125,10 +125,10 @@ async function validateActiveData(
 ): Promise<void> {
   const { definition } = input.mapping.get(input.collection);
   const document = await readDocument(tx, { ...input, id });
-  const versionId =
-    definition.mode === 'direct' ? document.currentVersionId : document.publishedVersionId;
-  if (!versionId) return;
   for (const locale of definition.locales.supported) {
+    const versionId = definition.mode === 'direct' ? document.currentVersionId
+      : document.publications?.[publicationLocale(definition, locale)];
+    if (!versionId) continue;
     const fallback = Object.hasOwn(definition.locales.fallback, locale)
       ? (definition.locales.fallback[locale] ?? [])
       : [];

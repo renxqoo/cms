@@ -10,7 +10,8 @@ export async function validatePublicationRevision(
   input: { runtime: ContentRuntime; documentId: string; versionId: string },
 ): Promise<void> {
   const references: ReferenceValue[] = [];
-  for (const locale of state.collection.locales.supported) {
+  const locales = state.collection.localizeStatus ? [state.locale] : state.collection.locales.supported;
+  for (const locale of locales) {
     const data = await input.runtime.store.readRevisionData(state.tx, {
       collection: state.collection.key,
       documentId: input.documentId,

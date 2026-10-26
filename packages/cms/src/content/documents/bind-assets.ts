@@ -101,6 +101,7 @@ async function bindMediaReference(
   if (!manifest) {
     const target = await input.runtime.store.readDocument(state.tx, {
       collection: reference.collection,
+      locale: state.locale,
       id: reference.id,
     });
     const revisionId =

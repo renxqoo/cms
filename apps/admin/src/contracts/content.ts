@@ -27,6 +27,7 @@ export const collectionSchema = z.object({
   capabilities: z.object({
     autosave: z.boolean(),
     publication: z.boolean(),
+    localizedPublication: z.boolean().optional(),
     schedules: z.boolean(),
     history: z.boolean(),
     trash: z.literal(true),

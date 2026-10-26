@@ -45,7 +45,7 @@ export async function assetEligibility(input: AssetEligibility): Promise<string>
       ON av.id=COALESCE(${revision},ad.current_version_id) AND av.document_id=ad.id AND av.collection_id=${collection}
     WHERE ad.id=${document} AND ad.collection_id=${collection} AND ad.id IN (${documents})
       AND EXISTS(SELECT 1 FROM discovery_file_bindings fb WHERE fb."documentId"=ad.id AND fb."revisionId"=av.id)
-      AND (${revision} IS NULL OR av.id=ad.current_version_id OR av.id=ad.published_version_id OR ad.id IN (${versions}))
+      AND (${revision} IS NULL OR av.id=ad.current_version_id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=ad.id AND p.version_id=av.id) OR ad.id IN (${versions}))
   )))`;
 }
 

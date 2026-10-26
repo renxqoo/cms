@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@new-cms/ui/actions';
-import { Field, Input } from '@new-cms/ui/forms';
+import { Field, Input, NativeSelect } from '@new-cms/ui/forms';
 import { useAppNavigation } from '../../components/shell/navigation/provider';
 import { jobAcceptedSchema } from '../../contracts/jobs';
 import type { Document } from '../../contracts/documents';
@@ -13,16 +13,23 @@ import type { ContentMessages } from './messages';
 
 export function PublicationSchedule({
   document,
+  locale,
+  canPublish = true,
+  canUnpublish = true,
   t,
   onClose,
   onBusyChange,
 }: {
   document: Document;
+  locale?: string;
+  canPublish?: boolean;
+  canUnpublish?: boolean;
   t: ContentMessages;
   onClose: () => void;
   onBusyChange: (busy: boolean) => void;
 }) {
   const [time, setTime] = useState('');
+  const [action, setAction] = useState<'publish' | 'unpublish'>(canPublish ? 'publish' : 'unpublish');
   const [valid, setValid] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
   const [jobId, setJobId] = useState<string | null>(null);
@@ -42,7 +49,7 @@ export function PublicationSchedule({
       dirty={jobId === null && time.length > 0}
       pending={mutation.pending}
       locked={mutation.locked}
-      disabled={jobId !== null || !valid || mutation.locked}
+      disabled={jobId !== null || !valid || mutation.locked || (action === 'unpublish' && !document.publishedVersionId)}
       feedback={
         <ManagementFeedback
           error={mutation.error}
@@ -62,7 +69,9 @@ export function PublicationSchedule({
               params: { collection: document.collection, id: document.id },
               body: {
                 revision: document.revision,
-                versionId: document.versionId,
+                versionId: action === 'unpublish' ? document.publishedVersionId : document.versionId,
+                action,
+                ...(locale ? { locale } : {}),
                 executeAt: new Date(timestamp).toISOString(),
               },
               response: jobAcceptedSchema,
@@ -79,9 +88,20 @@ export function PublicationSchedule({
           });
       }}
     >
+      <Field id="publication-action" label={t.scheduleAction}>
+        <NativeSelect
+          value={action}
+          disabled={mutation.pending || mutation.locked || jobId !== null}
+          onChange={(event) => setAction(event.currentTarget.value === 'unpublish' ? 'unpublish' : 'publish')}
+        >
+          <option value="publish" disabled={!canPublish}>{t.publish}</option>
+          <option value="unpublish" disabled={!canUnpublish || !document.publishedVersionId}>{t.unpublish}</option>
+        </NativeSelect>
+      </Field>
       <Field id="publication-time" label={t.executeAt}>
         <Input
           type="datetime-local"
+          disabled={mutation.pending || mutation.locked || jobId !== null}
           value={time}
           onChange={(event) => {
             const { value } = event.currentTarget;

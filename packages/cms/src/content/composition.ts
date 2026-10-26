@@ -156,4 +156,5 @@ export type {
 } from './types.ts';
 
 export { createContentSchemaMigrator } from './schema-migrator.ts';
+export { createPublicationMigrator } from './publication-migrator.ts';
 export type { ContentSchemaMigratorOptions } from './schema-migrator.ts';

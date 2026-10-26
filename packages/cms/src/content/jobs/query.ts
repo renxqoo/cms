@@ -110,8 +110,7 @@ async function visibleItems(
     try {
       const authorized = await operationState(original, {
         runtime: input.runtime,
-        operationId:
-          input.job.action === 'publication' ? 'documents.publish' : itemOperation(action),
+        operationId: itemOperation(action),
         locale,
       });
       const ids = await visibleIds(authorized, {

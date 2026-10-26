@@ -64,6 +64,7 @@ export const contentMessages = {
     removeFolder: '删除文件夹',
     removeFolderWarning: '仅空文件夹可以删除。关联文档和子文件夹不会被自动移动。',
     schedule: '计划发布',
+    scheduleAction: '计划动作',
     executeAt: '发布时间',
     utc: '按当前时区输入，提交为 UTC。',
     scheduled: '发布计划已受理',
@@ -178,6 +179,7 @@ export const contentMessages = {
     removeFolderWarning:
       'Only empty folders can be deleted. Documents and child folders are not moved automatically.',
     schedule: 'Schedule publication',
+    scheduleAction: 'Scheduled action',
     executeAt: 'Publish at',
     utc: 'Enter local time; submitted as UTC.',
     scheduled: 'Publication schedule accepted',

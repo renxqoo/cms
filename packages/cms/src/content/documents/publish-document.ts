@@ -37,6 +37,7 @@ export async function publishInTransaction(
     revision: input.revision + 1,
     currentVersionId: document.currentVersionId,
     publishedVersionId: document.currentVersionId,
+    locale: state.locale,
   });
   await input.runtime.store.syncActiveUnique(state.tx, {
     collection: state.collection.key,
@@ -53,7 +54,7 @@ export async function publishInTransaction(
 async function publishDocument(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['documents.publish'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'documents.publish', collection: input.collection },
+    { ctx, operationId: 'documents.publish', collection: input.collection, ...(input.locale ? { locale: input.locale } : {}) },
     async (state) => {
       const result = await idempotentReference(state, { runtime, input }, () =>
         publishInTransaction(state, { runtime, id: input.id, revision: input.revision }),
@@ -69,28 +70,37 @@ async function publishDocument(runtime: ContentRuntime, ctx: RequestContext, raw
 async function unpublishDocument(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['documents.unpublish'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'documents.unpublish', collection: input.collection },
+    { ctx, operationId: 'documents.unpublish', collection: input.collection, ...(input.locale ? { locale: input.locale } : {}) },
     async (state) => {
-      if (state.collection.mode !== 'drafts') fail('invalid_input');
-      const document = await ensureVisible(state, { runtime, id: input.id, lock: true });
-      requireRevision(document, input.revision);
-      if (!document.publishedVersionId) return projectDocument(state, { runtime, document });
-      const changed = await runtime.store.updateDocumentPointers(state.tx, {
-        collection: input.collection,
-        id: input.id,
-        expectedRevision: input.revision,
-        revision: input.revision + 1,
-        currentVersionId: document.currentVersionId,
-        publishedVersionId: null,
+      await unpublishInTransaction(state, { runtime, id: input.id, revision: input.revision });
+      return projectDocument(state, {
+        runtime, document: await ensureVisible(state, { runtime, id: input.id }),
       });
-      await runtime.store.syncActiveUnique(state.tx, {
-        collection: input.collection,
-        id: input.id,
-      });
-      await auditContent(state, { runtime, id: input.id, detail: { kind: 'unpublished' } });
-      return projectDocument(state, { runtime, document: changed });
     },
   );
+}
+
+export async function unpublishInTransaction(
+  state: ContentState,
+  input: { runtime: ContentRuntime; id: string; revision: number; versionId?: string },
+): Promise<{ id: string; versionId: string }> {
+  if (state.collection.mode !== 'drafts') fail('invalid_input');
+  const document = await ensureVisible(state, { runtime: input.runtime, id: input.id, lock: true });
+  requireRevision(document, input.revision);
+  if (input.versionId && document.publishedVersionId !== input.versionId) fail('version_conflict');
+  if (!document.publishedVersionId) return { id: document.id, versionId: document.currentVersionId };
+  await input.runtime.store.updateDocumentPointers(state.tx, {
+    collection: state.collection.key,
+    id: input.id,
+    expectedRevision: input.revision,
+    revision: input.revision + 1,
+    currentVersionId: document.currentVersionId,
+    publishedVersionId: null,
+    locale: state.locale,
+  });
+  await input.runtime.store.syncActiveUnique(state.tx, { collection: state.collection.key, id: input.id });
+  await auditContent(state, { runtime: input.runtime, id: input.id, detail: { kind: 'unpublished' } });
+  return { id: document.id, versionId: document.currentVersionId };
 }
 
 export function createPublicationApi(runtime: ContentRuntime) {

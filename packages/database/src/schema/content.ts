@@ -51,7 +51,6 @@ export const contentDocuments = pgTable(
     collectionId: text('collection_id').notNull(),
     revision: integer('revision').notNull().default(0),
     currentVersionId: uuid('current_version_id'),
-    publishedVersionId: uuid('published_version_id'),
     trashedAt: timestamp('trashed_at', { withTimezone: true }),
     folderId: uuid('folder_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -67,15 +66,6 @@ export const contentDocuments = pgTable(
     foreignKey({
       name: 'content_current_version_fk',
       columns: [t.currentVersionId, t.id, t.collectionId],
-      foreignColumns: [
-        contentRevisions.id,
-        contentRevisions.documentId,
-        contentRevisions.collectionId,
-      ],
-    }),
-    foreignKey({
-      name: 'content_published_version_fk',
-      columns: [t.publishedVersionId, t.id, t.collectionId],
       foreignColumns: [
         contentRevisions.id,
         contentRevisions.documentId,
@@ -111,6 +101,22 @@ export const contentRevisions = pgTable(
     index('content_revisions_document_idx').on(t.documentId, t.createdAt, t.id),
     index('content_revisions_schema_idx').on(t.collectionId, t.schemaVersion, t.id),
     check('content_revisions_positive', sql`${t.revision}>0 AND ${t.schemaVersion}>0`),
+  ],
+);
+export const contentPublications = pgTable(
+  'content_publications',
+  {
+    documentId: uuid('document_id').notNull(),
+    collectionId: text('collection_id').notNull(),
+    locale: text('locale').notNull(),
+    versionId: uuid('version_id').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.documentId, t.locale] }),
+    check('content_publication_locale_check', sql`${t.locale}='*' OR ${t.locale}~'^[a-zA-Z][a-zA-Z0-9-]{0,31}$'`),
+    foreignKey({ name: 'content_publication_document_fk', columns: [t.documentId, t.collectionId], foreignColumns: [contentDocuments.id, contentDocuments.collectionId] }).onDelete('cascade'),
+    foreignKey({ name: 'content_publication_revision_fk', columns: [t.versionId, t.documentId, t.collectionId], foreignColumns: [contentRevisions.id, contentRevisions.documentId, contentRevisions.collectionId] }).onDelete('restrict'),
+    index('content_publications_version_idx').on(t.versionId),
   ],
 );
 export const contentReferences = pgTable(
