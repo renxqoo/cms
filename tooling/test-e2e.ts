@@ -15,6 +15,7 @@ const contentFeatures = [
   'admin-article-media',
   'admin-jobs',
   'admin-credentials',
+  'admin-credential-logins',
   'admin-content-presentation',
   'admin-content-presentation-en',
   'admin-content-folders',

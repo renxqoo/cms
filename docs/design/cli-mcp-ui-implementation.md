@@ -20,6 +20,6 @@
 
 集成候选完整 lint/typecheck/build/test 通过，281 文件、2531 单元测试及开发/生产共 122 浏览器用例通过。管理端匹配范围覆盖率 statements / branches / functions / lines 为 95.42% / 90.96% / 95.50% / 97.42%，配置内门槛通过；全仓实际数字与独立范围见[总验收记录](cli-mcp-implementation.md)。
 
-`e2e/admin-credentials.browser.spec.ts` 四条旅程在两个模式共 8 例通过：窄屏创建与撤销 Key、未登录 OAuth 回跳与 PKCE 兑换及两种吊销、拒绝授权、英文与键盘。长标签回归包含在英文窄屏旅程中；授权页面真实响应及同源 iframe 阻断均验证，预期 CSP 错误只在独立攻击测试页上精确断言。保持普通应用页面零意外浏览器错误。
+`e2e/admin-credentials.browser.spec.ts` 和 `e2e/admin-credential-logins.browser.spec.ts` 合计四条旅程在两个模式共 8 例通过：窄屏创建与撤销 Key、未登录 OAuth 回跳与 PKCE 兑换及两种吊销、拒绝授权、英文与键盘。长标签回归包含在英文窄屏旅程中；授权页面真实响应及同源 iframe 阻断均验证，预期 CSP 错误只在独立攻击测试页上精确断言。保持普通应用页面零意外浏览器错误。
 
 独立真实 PG/HTTP 探针确认元数据不可见时仍可选合法 tuple、规范化默认端口回调可授权；独立生产 Next/Chromium 探针确认三类 HTML 页面禁止嵌入且 BFF 原有 CSP 保持。未执行部署及真实公网客户端认证。

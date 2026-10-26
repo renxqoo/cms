@@ -29,7 +29,7 @@
 | `bun run lint` | 架构、生成物漂移、类型感知 oxlint 和 oxfmt 通过，0 错误、0 警告 |
 | `bun run typecheck` | 根项目、UI 包、Next 路由类型与管理端通过 |
 | `bun run build` | API、CLI、MCP 的 Node 产物及 Next 生产构建通过 |
-| `bun run test` | 281 文件、2531 单元用例；5 个进程 spec、14 用例；25 个浏览器 spec、开发/生产共 122 用例通过 |
+| `bun run test` | 281 文件、2531 单元用例；5 个进程 spec、14 用例；26 个浏览器 spec、开发/生产共 122 用例通过 |
 
 全仓实际覆盖率按 statements / branches / functions / lines 为 **93.82% / 89.01% / 96.21% / 96.45%**；全局门槛仍为 90% / 85% / 90% / 90%。配置内独立匹配范围均通过：管理端 95.42% / 90.96% / 95.50% / 97.42%，共享 UI 97.64% / 93.96% / 99.32% / 99.70%，lint 插件 96.81% / 92.97% / 100.00% / 98.11%。匹配范围是 vitest.config.ts 定义的运行时代码，不把此数字外推为未执行的部署测试。
 
@@ -39,7 +39,7 @@
 
 - `cli-mcp-api.spec.ts`：真实 Node API/CLI/MCP 与 PostgreSQL，CLI PKCE 经本人 HTTP 会话同意、loopback 回调、文档写入、API 重启、角色即时收权与单次登录撤销。两个 API、两个 MCP 进程共用授权事实，Key/OAuth 各自访问，跨副本无粘性、作用域过滤及撤销立即生效。
 - `cli-mcp-transport.spec.ts`：真实 Node 客户端进程、受控上游协议，验证 stdin/文件/错误出口、官方新旧 MCP 协议、多账号隔离与两个 CLI 进程只刷新一次。此装置不替代上一条真实业务链。
-- `admin-credentials.browser.spec.ts`：开发、生产各四条旅程，覆盖 Key 创建的一次性秘密及精确授权、单次/同应用登录吊销、拒绝授权、英文、窄屏、长标签、键盘焦点。真实 HTML 的 CSP/XFO 和 iframe 阻断均验证；测试攻击页独立记录且必须出现预期 CSP 错误，普通页面仍维持零意外错误。
+- `admin-credentials.browser.spec.ts` 与 `admin-credential-logins.browser.spec.ts`：开发、生产合计各四条旅程，覆盖 Key 创建的一次性秘密及精确授权、单次/同应用登录吊销、拒绝授权、英文、窄屏、长标签、键盘焦点。真实 HTML 的 CSP/XFO 和 iframe 阻断均验证；测试攻击页独立记录且必须出现预期 CSP 错误，普通页面仍维持零意外错误。
 - `admin-private-media.browser.spec.ts`：历史媒体字节与运行时下载权限撤销使用独立应用及数据库，保留完整下载对照、403 和私有预览移除断言。复用按文件隔离装置，避免前序图片处理和 PDF 旅程消耗同一 IP 的一分钟限流预算；生产限流和测试断言均不放宽。
 - PostgreSQL 安全回归覆盖父链、自身/后代管理、其他 owner/兄弟/祖先拒绝、创建超界及重复 tuple、即时 RBAC、深度/活跃/保留预算、并发码/refresh 单次消费、token 到期不阻断有效委托任务、清理后来源 UUID 不置空且缺失即拒绝，以及 DCR 有限到期与名额回收。
 
@@ -59,7 +59,7 @@
 | 浏览器启动器阻塞回调期限/取消 | SDK BrowserOpener 接口的有界可取消进程适配，回调与启动器独立，完成后终止未退出启动器 |
 | UI 隐藏有权 tuple、规范化回调误拒绝、长标签溢出 | 以有效操作为权威，元数据只作标签；规范化后仍核对目标；可换行并保留完整可访问标签和点击区域 |
 | 授权及登录 HTML 可被嵌入 | 实际 HTML 设置 frame-ancestors none 与 XFO DENY，生产独立 Chromium 探针复核通过 |
-| 图片浏览器旅程共用限流窗口，文档读取偶发返回 429 | pre-push 失败 trace 确认 rate_limited 与 Retry-After 45；历史媒体安全旅程拆分到独立 spec，保留安全断言并明确读取 200 契约 |
+| 浏览器旅程共用限流窗口，目录或文档读取偶发返回 429 | 两次 pre-push 失败 trace 确认 rate_limited 与 Retry-After 45/44；历史媒体独立隔离，凭据按 Key/布局与 OAuth 两组隔离，保留安全断言并明确读取 200 契约 |
 
 独立后端、CLI/MCP、前端/BFF 审查均无剩余已证实问题。假绿抽查未发现新增 skip/todo/only、coverage ignore、门槛下降或有效旧断言弱化。旧固定断言仅按新增 6 个操作更新数量；ActorReference/BindAssetInput 调用迁移、真实新增迁移和生产必需配置同步更新。资源权限模型的旧元数据交集期望依据已复现缺陷改为有效授权 tuple 交集。
 
