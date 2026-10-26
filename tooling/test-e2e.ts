@@ -4,6 +4,19 @@ import { availablePort } from '../test/support/tcp-port.ts';
 import { createAdminApplicationProcess } from '../test/support/admin-application-process.ts';
 import { basename, resolve } from 'node:path';
 
+const contentFeatures = [
+  'admin-content',
+  'admin-assets',
+  'admin-images',
+  'admin-article-media',
+  'admin-jobs',
+  'admin-content-presentation',
+  'admin-content-presentation-en',
+  'admin-content-folders',
+  'admin-content-copy',
+  'admin-upload-recovery',
+];
+
 const interruption = new AbortController();
 let activeChild: ReturnType<typeof Bun.spawn> | undefined;
 function interrupt(signal: NodeJS.Signals) {
@@ -45,17 +58,9 @@ async function browserJourneys(args: string[]) {
       open: (mode) =>
         createAdminApplicationProcess(mode, mode === 'development' ? devPort : productionPort, {
           signal: interruption.signal,
-          content: [
-            'admin-content',
-            'admin-assets',
-            'admin-images',
-            'admin-jobs',
-            'admin-content-presentation',
-            'admin-content-presentation-en',
-            'admin-content-folders',
-            'admin-content-copy',
-            'admin-upload-recovery',
-          ].some((feature) => basename(group[0] ?? '') === `${feature}.browser.spec.ts`),
+          content: contentFeatures.some(
+            (feature) => basename(group[0] ?? '') === `${feature}.browser.spec.ts`,
+          ),
         }),
       run: (applications) =>
         run(

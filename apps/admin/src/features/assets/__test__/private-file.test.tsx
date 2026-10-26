@@ -109,6 +109,22 @@ it('does not inject executable file formats and offers authenticated downloaded 
   expect(document.querySelector('iframe,object,embed')).toBeNull();
 });
 
+it('regression: denied reference downloads explain preview permission without requesting upload access', () => {
+  mocks.can.mockReturnValue(false);
+  render(
+    <PrivateFile
+      target={{ collection: 'articles', id: documentId, versionId, bindingId: documentId }}
+      manifest={manifest}
+    />,
+  );
+  expect(
+    screen.getByText('You do not have permission to preview or download this file.'),
+  ).toBeVisible();
+  expect(screen.queryByText('Upload and result-reading permissions are required.')).toBeNull();
+  expect(screen.queryByRole('link', { name: 'Download original' })).toBeNull();
+  expect(mocks.request).not.toHaveBeenCalled();
+});
+
 it('revokes stale preview bytes immediately after local authorization is withdrawn', async () => {
   const target = { collection: 'media', id: documentId };
   const view = render(<PrivateFile target={target} manifest={manifest} />);

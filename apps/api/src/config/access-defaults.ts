@@ -8,7 +8,12 @@ export function initialCollectionPermissions(): InitialCollectionPermission[] {
     collectionKey: collection.key,
     code: `content:${collection.key}:manage`,
     name: `Manage ${collection.label}`,
-    operationIds: [...contentOperations, ...(collection.upload ? assetsOperations : [])]
+    operationIds: [
+      ...contentOperations,
+      ...assetsOperations.filter(
+        (operation) => Boolean(collection.upload) || operation.id === 'assets.downloadBinding',
+      ),
+    ]
       .filter((operation) => operation.bindingConfigurable && operation.scopeKind === 'collection')
       .map((operation) => operation.id),
   }));

@@ -35,6 +35,19 @@ const sample: RichTextValue = {
 };
 
 describe('rich text AST safety and lossless conversion', () => {
+  it('regression: persisted JSON key order keeps rich text available in visual editing', () => {
+    const value: RichTextValue = {
+      version: 1,
+      children: [{ children: [{ text: 'Saved text', type: 'text' }], type: 'paragraph' }],
+    };
+    const prepared = prepareRichText(value);
+    expect(prepared).not.toBeNull();
+    if (!prepared) throw new Error('Expected persisted AST to remain editable');
+    const editor = createEditor({ nodes: richTextLexicalNodes });
+    editor.setEditorState(editor.parseEditorState(prepared));
+    expect(editor.getEditorState().read($exportRichText)).toEqual(value);
+  });
+
   it('roundtrips all built-in rich nodes and preserves references and literal HTML as text', () => {
     const prepared = prepareRichText(sample);
     expect(prepared).not.toBeNull();

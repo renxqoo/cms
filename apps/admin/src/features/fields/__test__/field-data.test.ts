@@ -188,6 +188,24 @@ describe('field paths and structural operations', () => {
 });
 
 describe('write projections', () => {
+  it('regression: JSON key order produces no patch while changed values, field removal and array order still do', () => {
+    const layout = [field('settings', { type: 'json' })];
+    const before = { settings: { label: 'Saved', options: [{ id: first, enabled: true }, null] } };
+    expect(
+      writablePatch(layout, before, {
+        settings: { options: [{ enabled: true, id: first }, null], label: 'Saved' },
+      }),
+    ).toEqual({});
+    for (const settings of [
+      { label: 'Changed', options: [{ id: first, enabled: true }, null] },
+      { label: 'Saved', options: [null, { id: first, enabled: true }] },
+      { label: 'Saved', options: [{ id: first, enabled: false }, null] },
+      { label: 'Saved' },
+      null,
+    ])
+      expect(writablePatch(layout, before, { settings })).toEqual({ settings });
+  });
+
   it('emits changed visible writable paths and preserves false and explicit null', () => {
     const layout = [
       field('flag', { type: 'boolean' }),

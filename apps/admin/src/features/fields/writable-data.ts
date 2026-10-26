@@ -1,10 +1,6 @@
 import type { EditorNode } from '../../contracts/editor';
-import { isFieldData } from './data';
+import { equalFieldValue, isFieldData } from './data';
 import type { FieldData, JsonValue } from './types';
-
-function changed(before: JsonValue | undefined, after: JsonValue | undefined) {
-  return JSON.stringify(before) !== JSON.stringify(after);
-}
 
 export function writablePatch(
   layout: readonly EditorNode[],
@@ -19,7 +15,7 @@ export function writablePatch(
         ...writablePatch(node.children ?? [], before, after),
         ...tabPatch(node, before, after),
       };
-    if (!Object.hasOwn(after, node.name) || !changed(before[node.name], after[node.name]))
+    if (!Object.hasOwn(after, node.name) || equalFieldValue(before[node.name], after[node.name]))
       return patch;
     const next = after[node.name];
     const previous = before[node.name];

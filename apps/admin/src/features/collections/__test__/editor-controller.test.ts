@@ -42,6 +42,48 @@ function setup(overrides: Partial<Options> = {}) {
 }
 
 describe('content editor write channel', () => {
+  it('regression: unchanged rich text with reordered JSON keys does not block publishing', async () => {
+    const body = {
+      children: [{ children: [{ text: 'Saved', type: 'text' }], type: 'paragraph' }],
+      version: 1,
+    };
+    const bodyField = {
+      id: 'body',
+      name: 'body',
+      type: 'richText',
+      label: 'Body',
+      write: 'allowed',
+      required: false,
+      localized: true,
+      constraints: {},
+    } as const;
+    const { controller, write } = setup({
+      load: () =>
+        Promise.resolve(
+          success(
+            snapshot({
+              document: document({ data: { body } }),
+              editor: editor({ layout: [bodyField] }),
+            }),
+          ),
+        ),
+    });
+    await controller.start();
+    controller.change({
+      body: {
+        version: 1,
+        children: [{ type: 'paragraph', children: [{ type: 'text', text: 'Saved' }] }],
+      },
+    });
+    expect(editorDirty(controller.store.getState())).toBe(false);
+    expect(await controller.submit('publish')).toBe(true);
+    expect(write).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'publish' }),
+      expect.any(AbortSignal),
+    );
+    controller.dispose();
+  });
+
   it('verifies an unknown archive through the real trash view before returning to the trash list', async () => {
     const readArchived = vi
       .fn<Options['readArchived']>()

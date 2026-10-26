@@ -135,7 +135,7 @@ export function PrivateFile(props: {
           </NativeSelect>
         </Field>
       ) : null}
-      {!allowed ? <Banner tone="warning">{t.dependencies}</Banner> : null}
+      {!allowed ? <Banner tone="warning">{t.downloadDenied}</Banner> : null}
       <ManagementFeedback error={state?.error ?? null} onRetry={reload} />
       {allowed && state === null ? <p role="status">{t.pending}</p> : null}
       {state?.url ? (

@@ -20,6 +20,7 @@ import { mergeRegister } from '@lexical/utils';
 import { $exportRichText, prepareRichText } from './rich-text-mapping';
 import { parseRichText, richTextData } from './rich-text-value';
 import { useFields } from './field-context';
+import { equalFieldValue } from './data';
 import type { FieldData } from './types';
 import type { RichTextValue } from './rich-text-value';
 
@@ -48,15 +49,17 @@ function plainBreak() {
 export function RichTextBridge(props: RichBridgeProps) {
   const [editor] = useLexicalComposerContext();
   const field = useFields();
-  const last = useRef(JSON.stringify(props.value));
+  const last = useRef(richTextData(props.value));
   const change = useEffectEvent((value: RichTextValue) => {
     const valid = parseRichText(value, field.richTextNodes);
     const invalid = valid === null;
     props.onInvalidChange(invalid);
     field.onValidityChange(props.identity, invalid ? field.t.invalidRich : null);
     if (valid) {
-      last.current = JSON.stringify(valid);
-      props.onChange(richTextData(valid));
+      const next = richTextData(valid);
+      if (equalFieldValue(last.current, next)) return;
+      last.current = next;
+      props.onChange(next);
     }
   });
   const invalid = useEffectEvent(() => {
@@ -66,8 +69,8 @@ export function RichTextBridge(props: RichBridgeProps) {
   const cleanup = useEffectEvent((identity: string) => field.onValidityChange(identity, null));
   useEffect(() => editor.setEditable(!props.readOnly), [editor, props.readOnly]);
   useEffect(() => {
-    const next = JSON.stringify(props.value);
-    if (next === last.current) return;
+    const next = richTextData(props.value);
+    if (equalFieldValue(next, last.current)) return;
     const prepared = prepareRichText(props.value);
     if (prepared) {
       last.current = next;
