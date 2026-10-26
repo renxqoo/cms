@@ -84,6 +84,21 @@ it('rejects oversized public downloads under the file budget without retrying', 
   expect(fetcher).toHaveBeenCalledOnce();
 });
 
+it('aborts a public download when its request deadline expires without retrying', async () => {
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(
+    (_url, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(init.signal?.reason), { once: true });
+      }),
+  );
+  const client = createApiClient({ ...configuration, timeoutMs: 5, fetch: fetcher });
+  await expect(client.call('publicContent.media', { bindingId })).rejects.toThrow(
+    'API request timed out',
+  );
+  expect(fetcher.mock.calls[0]?.[1]?.signal?.aborted).toBe(true);
+  expect(fetcher).toHaveBeenCalledOnce();
+});
+
 it('reads the public interface without a credential and validates required input before network access', async () => {
   const value = { contractVersion: 'oneaster-public.v1', data: { initialized: true } };
   const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(value));
