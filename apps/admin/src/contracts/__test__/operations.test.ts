@@ -38,6 +38,37 @@ describe('operation manifest HTTP contract', () => {
     }
   });
 
+  it('routes recovery reads through the protected backend manifest with exact filters', () => {
+    const matched = matchOperation('GET', '/v1/security/recovery');
+    expect(matched).toMatchObject({
+      operation: {
+        id: 'access.readRecovery',
+        access: 'protected',
+        bodyKind: 'none',
+        idempotency: 'none',
+        responseKind: 'json',
+      },
+    });
+    if (!matched) throw new Error('Recovery operation is not registered');
+    expect(
+      operationPath(
+        matched.operation,
+        {},
+        {
+          resource: 'permissions',
+          page: 2,
+          pageSize: 5,
+          code: 'permissions:read',
+          status: 'disabled',
+          scopeKind: 'global',
+        },
+      ),
+    ).toBe(
+      '/v1/security/recovery?resource=permissions&page=2&pageSize=5&code=permissions%3Aread&status=disabled&scopeKind=global',
+    );
+    expect(() => operationPath(matched.operation, {}, { token: 'secret' })).toThrow('Invalid');
+  });
+
   it('matches encoded safe params and grants HEAD only for private streams', () => {
     const operation = getOperation('documents.get');
     const path = operationPath(

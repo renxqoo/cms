@@ -43,11 +43,20 @@ async function browserJourneys(args: string[]) {
     await isolatedBrowserGroup({
       signal: interruption.signal,
       open: (mode) =>
-        createAdminApplicationProcess(
-          mode,
-          mode === 'development' ? devPort : productionPort,
-          interruption.signal,
-        ),
+        createAdminApplicationProcess(mode, mode === 'development' ? devPort : productionPort, {
+          signal: interruption.signal,
+          content: [
+            'admin-content',
+            'admin-assets',
+            'admin-images',
+            'admin-jobs',
+            'admin-content-presentation',
+            'admin-content-presentation-en',
+            'admin-content-folders',
+            'admin-content-copy',
+            'admin-upload-recovery',
+          ].some((feature) => basename(group[0] ?? '') === `${feature}.browser.spec.ts`),
+        }),
       run: (applications) =>
         run(
           [

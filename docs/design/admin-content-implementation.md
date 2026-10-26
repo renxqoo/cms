@@ -1,6 +1,6 @@
 # 内容、字段与资源界面实施契约
 
-状态：消费者方案定稿，2026-10-26；独立审查四项已落实，后端补面以最终核销契约集成后开始真实联调。关联[应用设计](admin-application-design.md)、[界面矩阵](admin-application-contracts.md)及后端collections-ui-api三件套。本批不改变存储、业务权限或发布协议，不执行DDL和部署。
+状态：真实消费者已实现，2026-10-26；关联[应用设计](admin-application-design.md)、[界面矩阵](admin-application-contracts.md)及后端collections-ui-api三件套。当前验收以[应用记录](admin-application-implementation.md)为准；不改变业务权限或发布协议，不执行DDL和部署。
 
 ## 1. 入口与归属
 
@@ -28,7 +28,7 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 
 编辑器按collection/id/locale实例化，区分服务端已确认快照、当前草稿、待确认写入及冲突。切换locale、离开页面及历史导航沿用真实未保存更改保护；取消离开保留字段和光标。创建成功使用返回id进入详情；单例以真实list结果决定打开或创建，409后核实，不猜固定id。
 
-同一navigation adapter下的页面与嵌套弹窗聚合dirty：最外层只保留一个导航订阅、一个原生离站监听和一份确认；内层登记自身dirty并在卸载时移除，不关闭保护或建立第二套导航器。聚合scope按React树实例创建，不跨请求共享，跨adapter互相隔离。ManagementDialog接受可选受控dirty，传入时使用调用方完整派生草稿状态，未传保留原表单变化追踪；pending和未确认locked始终受保护。图片拖拽、裁剪和变体按钮等无原生change事件的编辑由该受控dirty覆盖。
+同一navigation adapter下的页面与嵌套弹窗聚合dirty：最外层只保留一个导航订阅、一个原生离站监听和一份确认；内层在layout阶段登记自身dirty并在卸载时移除，不关闭保护或建立第二套导航器。导航和原生离站发生时直接读取scope的当前嵌套状态，自己的dirty在layout阶段同步，避免同次提交中成功关闭弹窗后仍被旧缓存拦截。聚合scope按React树实例创建，不跨请求共享，跨adapter互相隔离。ManagementDialog接受可选受控dirty，传入时使用调用方完整派生草稿状态，未传保留原表单变化追踪；pending和未确认locked始终受保护。图片拖拽、裁剪和变体按钮等无原生change事件的编辑由该受控dirty覆盖。
 
 所有写动作共用单个通道：手动保存、自动保存、发布/撤回、归档/恢复、历史恢复、复制、移动和图片替换不能并发复用revision。自动保存仅drafts且具备真实许可，用户启用后在一次编辑静默窗口排一个定时器，未保存变化才提交；正在写时只保留最新待保存草稿，不重叠发请求，卸载/关闭自动保存清理。返回revision来自服务端，不自行递增。请求发出后的继续编辑通过草稿代次保留，不用旧响应覆盖新输入。
 

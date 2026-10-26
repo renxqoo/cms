@@ -41,6 +41,15 @@ it('regression: closes the mailbox server before a paused client consumes the re
       socket.once('connect', resolve);
       socket.once('error', reject);
     });
+    const received = new Promise<Buffer>((resolve, reject) => {
+      socket.once('data', resolve);
+      socket.once('error', reject);
+    });
+    socket.write(
+      `GET /messages HTTP/1.1\r\nHost: ${address.host}\r\nAuthorization: Bearer ${mailbox.connection.capability}\r\nConnection: keep-alive\r\n\r\n`,
+    );
+    expect((await received).toString()).toMatch(/^HTTP\/1\.1 200 /);
+    expect(socket.destroyed).toBe(false);
     socket.pause();
     closing = mailbox.close();
     await closing;

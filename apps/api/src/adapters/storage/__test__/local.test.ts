@@ -2,6 +2,8 @@ import { mkdtemp, rm, symlink, mkdir, chmod, rename } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { getEventListeners } from 'node:events';
+import { setImmediate as turn } from 'node:timers/promises';
 import { afterEach, expect, it } from 'vitest';
 import { createLocalStorage } from '../local.ts';
 
@@ -77,6 +79,56 @@ it('cancels streams and closes idempotently', async () => {
   await storage.close();
   await expect(storage.read({ key, signal: controller.signal })).rejects.toThrow('closed');
 });
+
+it('regression: closing storage releases prefetched stream readers and shared abort listeners without consumer cancellation', async () => {
+  const { root, storage } = await fixture();
+  const key = `objects/${randomUUID()}`;
+  const controller = new AbortController();
+  await storage.put({
+    key,
+    bytes: new Uint8Array(1024),
+    mimeType: 'application/pdf',
+    signal: controller.signal,
+  });
+  for (let index = 0; index < 4; index++) {
+    const instance = createLocalStorage({ root });
+    const stream = await instance.read({ key, signal: controller.signal });
+    try {
+      for (let count = 0; count < 5; count++) await turn();
+      await instance.close();
+      expect(getEventListeners(controller.signal, 'abort')).toHaveLength(0);
+      const reader = stream.getReader();
+      await expect(reader.closed).rejects.toThrow('Storage is closed');
+      reader.releaseLock();
+    } finally {
+      await instance.close();
+      await stream.cancel().catch(() => {});
+    }
+  }
+});
+
+it.each(['opening', 'started'])(
+  'regression: rejects cancelled storage reads and releases stream ownership while %s',
+  async (phase) => {
+    const { storage } = await fixture();
+    const key = `objects/${randomUUID()}`;
+    await storage.put({
+      key,
+      bytes: new Uint8Array([1, 2, 3]),
+      mimeType: 'application/pdf',
+      signal: new AbortController().signal,
+    });
+    const controller = new AbortController();
+    const reading = storage.read({ key, signal: controller.signal });
+    if (phase === 'opening') controller.abort(new Error('Expected storage cancellation'));
+    const stream = await reading;
+    if (phase === 'started') controller.abort(new Error('Expected storage cancellation'));
+    await expect(new Response(stream).arrayBuffer()).rejects.toThrow(
+      'Expected storage cancellation',
+    );
+    await storage.close();
+  },
+);
 
 it('rejects shared roots, writable ancestors and nonprivate restored objects', async () => {
   const { root, storage } = await fixture();
