@@ -27,8 +27,22 @@ const key = (row: { id: string }) => row.id;
 function ok(data: unknown): ApiResult<unknown> {
   return { ok: true, status: 200, requestId: '', data };
 }
-function Item({ id = 'first', enabled = true }: { id?: string; enabled?: boolean }) {
-  const query = useApiQuery({ operation: 'roles.get', params: { id }, response, enabled });
+function Item({
+  id = 'first',
+  enabled = true,
+  contextKey,
+}: {
+  id?: string;
+  enabled?: boolean;
+  contextKey?: string;
+}) {
+  const query = useApiQuery({
+    operation: 'roles.get',
+    params: { id },
+    response,
+    enabled,
+    ...(contextKey === undefined ? {} : { contextKey }),
+  });
   return (
     <>
       <output data-testid="phase">{query.phase}</output>
@@ -101,6 +115,33 @@ it('clears data immediately across resource keys and ignores an aborted late ear
   expect(screen.getByTestId('data')).toHaveTextContent('second');
 });
 
+it('regression: a new permission context clears same-resource data and cancels earlier work', async () => {
+  let finish: ((result: ApiResult<unknown>) => void) | undefined;
+  mock.request
+    .mockResolvedValueOnce(ok({ id: 'old-context' }))
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    )
+    .mockResolvedValueOnce(ok({ id: 'current-context' }));
+  const view = render(<Item contextKey="old-grants" />);
+  await waitFor(() => expect(screen.getByTestId('data')).toHaveTextContent('old-context'));
+  view.rerender(<Item contextKey="pending-grants" />);
+  expect(screen.getByTestId('data')).toHaveTextContent('none');
+  const signal = mock.request.mock.calls.at(-1)?.[0].signal;
+  view.rerender(<Item contextKey="current-grants" />);
+  await waitFor(() => expect(screen.getByTestId('data')).toHaveTextContent('current-context'));
+  expect(signal?.aborted).toBe(true);
+  await act(async () => {
+    finish?.(ok({ id: 'late-context' }));
+    await Promise.resolve();
+  });
+  expect(screen.getByTestId('data')).toHaveTextContent('current-context');
+  expect(mock.request.mock.calls.at(-1)?.[0].query).toEqual({});
+});
+
 it('does not repeatedly retry a forbidden key when access refresh pauses and reenables the query', async () => {
   mock.request
     .mockResolvedValueOnce(failure('forbidden', 403))
@@ -114,6 +155,19 @@ it('does not repeatedly retry a forbidden key when access refresh pauses and ree
   fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
   await waitFor(() => expect(screen.getByTestId('data')).toHaveTextContent('current'));
   expect(mock.request).toHaveBeenCalledTimes(2);
+});
+
+it('regression: a temporary disabled permission context cannot restart forbidden requests', async () => {
+  mock.request.mockResolvedValue(failure('forbidden', 403));
+  const view = render(<Item contextKey="grants" />);
+  await waitFor(() => expect(screen.getByTestId('phase')).toHaveTextContent('failed'));
+  view.rerender(<Item enabled={false} contextKey="checking" />);
+  view.rerender(<Item contextKey="grants" />);
+  await waitFor(() => expect(screen.getByTestId('phase')).toHaveTextContent('failed'));
+  expect(mock.request).toHaveBeenCalledOnce();
+  mock.request.mockResolvedValue(ok({ id: 'newly-allowed' }));
+  view.rerender(<Item contextKey="new-grants" />);
+  await waitFor(() => expect(screen.getByTestId('data')).toHaveTextContent('newly-allowed'));
 });
 
 it('does not send a disabled query and aborts pending work on unmount', async () => {

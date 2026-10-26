@@ -1,6 +1,7 @@
 export const contentMessages = {
   zh: {
     title: '内容集合',
+    overview: '集合总览',
     description: '管理结构化内容、发布版本和文件夹。',
     open: '打开',
     create: '新建文档',
@@ -111,6 +112,7 @@ export const contentMessages = {
   },
   en: {
     title: 'Collections',
+    overview: 'Collections overview',
     description: 'Manage structured content, published versions, and folders.',
     open: 'Open',
     create: 'New document',

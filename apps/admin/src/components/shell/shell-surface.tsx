@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react';
 export interface ShellGroup {
   id: string;
   label: string;
+  feedback?: ReactNode;
   items: readonly { href: string; label: string; icon: LucideIcon; disabled?: boolean }[];
 }
 

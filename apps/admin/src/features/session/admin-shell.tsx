@@ -18,6 +18,7 @@ import { AccountMenu } from './account-menu';
 import { sessionMessages } from './session-messages';
 import { SessionActionsProvider } from './session-actions';
 import { useSignOut } from './use-sign-out';
+import { useCollectionNavigation } from '../collections/use-collection-navigation';
 
 function AuthorizedShell({
   principal,
@@ -34,17 +35,24 @@ function AuthorizedShell({
   const pathname = usePathname();
   const access = useAccessControl();
   const navigation = shellNavigation({ navigation: access.navigation, locale, can: access.can });
+  const collectionNavigation = useCollectionNavigation({
+    groups: navigation.groups,
+    pathname,
+    locale,
+  });
   const route = matchAdminRoute(pathname);
   const breadcrumbs: { id: string; label: string; href?: string }[] = [
     { id: 'home', label: appConfig.name, href: '/dashboard' },
   ];
-  if (route)
+  if (collectionNavigation.breadcrumbs) breadcrumbs.push(...collectionNavigation.breadcrumbs);
+  else if (route) {
     breadcrumbs.push({
       id: route.id,
       label: route.label[locale],
       ...(pathname !== route.path ? { href: route.path } : {}),
     });
-  if (route && pathname !== route.path) breadcrumbs.push({ id: 'detail', label: copy.details });
+    if (route && pathname !== route.path) breadcrumbs.push({ id: 'detail', label: copy.details });
+  }
   const footer = (
     <div className="min-w-0 overflow-hidden p-2">
       <p className="truncate text-sm font-medium">{principal.displayName ?? principal.email}</p>
@@ -58,10 +66,10 @@ function AuthorizedShell({
           homeHref: '/dashboard',
           activeHref: activeAdminHref(
             pathname,
-            navigation.groups.flatMap((group) => group.items.map((item) => item.href)),
+            collectionNavigation.groups.flatMap((group) => group.items.map((item) => item.href)),
           ),
           subtitle: t.subtitle,
-          groups: navigation.groups,
+          groups: collectionNavigation.groups,
           footer,
           account: (
             <AccountMenu

@@ -175,10 +175,14 @@ test('a revoked cookie on a protected deep link is verified before a fresh login
   const navigationReady = page.waitForResponse(
     (response) => new URL(response.url()).pathname === '/api/cms/v1/me/navigation',
   );
+  const collectionsReady = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === '/api/cms/v1/collections',
+  );
   expect((await login(page, applicationAccounts.owner)).status()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/);
   expect((await operationsReady).status()).toBe(200);
   expect((await navigationReady).status()).toBe(200);
+  expect((await collectionsReady).status()).toBe(200);
   const session = (await context.cookies()).find((cookie) => cookie.name === 'oneaster-session');
   if (!session) throw new Error('The real backend must establish the session being revoked.');
   const revoked = await fetch(`${apiOrigin()}/v1/auth/logout`, {

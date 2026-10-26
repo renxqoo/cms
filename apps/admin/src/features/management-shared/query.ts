@@ -19,6 +19,7 @@ export interface ApiQuery<T> {
   query?: Readonly<Record<string, unknown>>;
   response: z.ZodType<T>;
   enabled?: boolean;
+  contextKey?: string;
 }
 
 interface QueryState<T> {
@@ -40,7 +41,7 @@ function readQuery(value: string) {
 function queryKeys<T>(input: ApiQuery<T>) {
   const params = JSON.stringify(input.params ?? {});
   const query = JSON.stringify(input.query ?? {});
-  return { params, query, key: JSON.stringify([input.operation, params, query]) };
+  return { params, query, key: JSON.stringify([input.operation, params, query, input.contextKey]) };
 }
 
 async function safeLoad<T>(
@@ -103,7 +104,7 @@ function useQuery<T>(
   const currentKey = JSON.stringify([key, revision]);
   const reload = useCallback(() => setRevision((value) => value + 1), []);
   useEffect(() => {
-    if (denied.current !== currentKey) denied.current = null;
+    if (enabled && denied.current !== currentKey) denied.current = null;
     if (!enabled || denied.current === currentKey) return () => {};
     const controller = new AbortController();
     setState((current) => ({

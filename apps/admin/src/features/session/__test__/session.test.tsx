@@ -1,21 +1,27 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it, vi } from 'vitest';
 import { ShellProvider } from '../../../components/shell/shell-provider';
 import { parsePreferences } from '../../../config/preferences';
-import type { Me } from '../../../contracts/auth';
+import type { AllowedOperation, Me, VisibleNavigation } from '../../../contracts/auth';
+import type { Collection } from '../../../contracts/content';
 import type { ApiResult } from '../../../api/client';
 import { failure } from '../../../api/result';
 import { AdminShell } from '../admin-shell';
 import { Dashboard } from '../dashboard';
 import { useSessionActions } from '../session-actions';
 import { sessionMessages } from '../session-messages';
+import { useAccessControl } from '../../access-control/provider';
 
 const mocks = vi.hoisted(() => ({
   request: vi.fn<(input: { signal: AbortSignal }) => Promise<ApiResult<undefined>>>(),
   replace: vi.fn<() => void>(),
   recovery: false,
   configured: false,
+  operations: [] as AllowedOperation[],
+  navigation: [] as VisibleNavigation[],
+  pathname: '/dashboard',
+  catalog: vi.fn<(input: { signal: AbortSignal }) => Promise<ApiResult<{ rows: Collection[] }>>>(),
 }));
 vi.mock('../../../api/client', () => ({
   requestApi: (input: { operation: string; signal: AbortSignal }) => {
@@ -27,8 +33,8 @@ vi.mock('../../../api/client', () => ({
         data: {
           rows: mocks.recovery
             ? [{ operationId: 'access.readRecovery', scopeKind: 'global', collectionKey: null }]
-            : [],
-          total: mocks.recovery ? 1 : 0,
+            : mocks.operations,
+          total: mocks.recovery ? 1 : mocks.operations.length,
           page: 1,
           pageSize: 100,
         },
@@ -59,15 +65,16 @@ vi.mock('../../../api/client', () => ({
                   ],
                 },
               ]
-            : [],
+            : mocks.navigation,
         },
       });
+    if (input.operation === 'collections.list') return mocks.catalog(input);
     return mocks.request(input);
   },
 }));
 vi.mock('../session-navigation', () => ({ replaceAfterSignOut: mocks.replace }));
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/dashboard',
+  usePathname: () => mocks.pathname,
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn<() => void>(), replace: vi.fn<() => void>() }),
 }));
@@ -111,8 +118,12 @@ async function signOut() {
 
 afterEach(() => {
   vi.resetAllMocks();
+  vi.restoreAllMocks();
   mocks.recovery = false;
   mocks.configured = false;
+  mocks.operations = [];
+  mocks.navigation = [];
+  mocks.pathname = '/dashboard';
 });
 
 it('regression: a configured menu still leaves security recovery reachable from the account menu', async () => {
@@ -141,6 +152,275 @@ it.each([false, true])(
     expect(screen.queryByRole('menuitem', { name: 'Access recovery' })).not.toBeInTheDocument();
   },
 );
+
+function collection(key: string, label: string): Collection {
+  return {
+    key,
+    label,
+    schemaVersion: 1,
+    mode: 'direct',
+    history: false,
+    singleton: key === 'settings',
+    locales: ['en'],
+    dataSchema: {},
+    fields: [],
+    behaviorHash: 'behavior',
+    mappingFingerprint: 'mapping',
+    upload: false,
+    capabilities: {
+      autosave: false,
+      publication: false,
+      schedules: false,
+      history: false,
+      trash: true,
+      purge: true,
+    },
+  };
+}
+
+function allowCollections() {
+  const rows = [
+    collection('articles', 'Editorial articles'),
+    collection('settings', 'Site settings'),
+  ];
+  mocks.operations = [
+    { operationId: 'collections.list', scopeKind: 'global', collectionKey: null },
+    ...rows.map((row) => ({
+      operationId: 'collections.get',
+      scopeKind: 'collection' as const,
+      collectionKey: row.key,
+    })),
+  ];
+  mocks.catalog.mockResolvedValue({ ok: true, status: 200, requestId: '', data: { rows } });
+  return rows;
+}
+
+function configuredCollections() {
+  mocks.navigation = [
+    {
+      id: 'content',
+      type: 'group',
+      name: 'Content management',
+      path: null,
+      icon: null,
+      children: [
+        {
+          id: 'catalog',
+          type: 'page',
+          name: 'Content collections',
+          path: '/dashboard/collections',
+          icon: 'collections',
+          children: [],
+        },
+        {
+          id: 'resources',
+          type: 'page',
+          name: 'Shared resources',
+          path: '/dashboard/resources',
+          icon: 'resources',
+          children: [],
+        },
+        {
+          id: 'article',
+          type: 'page',
+          name: 'Duplicate articles',
+          path: '/dashboard/collections/articles',
+          icon: null,
+          children: [],
+        },
+      ],
+    },
+  ];
+}
+
+it('shows an independent collection menu with real labels and direct singleton and list destinations', async () => {
+  const media = window.matchMedia('(min-width: 768px)');
+  vi.spyOn(window, 'matchMedia').mockReturnValue(Object.assign(media, { matches: true }));
+  allowCollections();
+  configuredCollections();
+  view();
+  const articles = await screen.findByRole('link', { name: 'Editorial articles' });
+  expect(articles).toHaveAttribute('href', '/dashboard/collections/articles');
+  expect(screen.getByRole('link', { name: 'Site settings' })).toHaveAttribute(
+    'href',
+    '/dashboard/collections/settings',
+  );
+  expect(articles.closest('section')).not.toBe(
+    screen.getByRole('link', { name: 'Shared resources' }).closest('section'),
+  );
+  expect(screen.queryByRole('link', { name: 'Duplicate articles' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Content collections' })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Collapse Content collections' }));
+  expect(screen.queryByRole('link', { name: 'Editorial articles' })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Expand Content collections' }));
+  expect(screen.getByRole('link', { name: 'Editorial articles' })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle sidebar' }));
+  expect(screen.getByRole('link', { name: 'Editorial articles' })).toHaveAttribute(
+    'title',
+    'Editorial articles',
+  );
+});
+
+it('regression: promoting collections preserves every other application menu', async () => {
+  allowCollections();
+  mocks.operations.push(
+    ...[
+      'admins.list',
+      'roles.list',
+      'permissions.list',
+      'navigation.list',
+      'endpoints.list',
+      'access.readRecovery',
+      'audit.list',
+      'resources.list',
+      'assets.listCleanup',
+    ].map((operationId) => ({ operationId, scopeKind: 'global' as const, collectionKey: null })),
+  );
+  view();
+  const sidebar = within(screen.getByRole('complementary', { name: 'Navigation menu' }));
+  await sidebar.findByRole('link', { name: 'Editorial articles' });
+  for (const [label, href] of [
+    ['Users', '/dashboard/admins'],
+    ['Roles', '/dashboard/roles'],
+    ['Permissions', '/dashboard/permissions'],
+    ['Navigation', '/dashboard/navigation'],
+    ['Endpoints', '/dashboard/endpoints'],
+    ['Access recovery', '/dashboard/access-recovery'],
+    ['Audit logs', '/dashboard/audit-logs'],
+    ['Resources', '/dashboard/resources'],
+    ['Jobs', '/dashboard/jobs'],
+    ['Asset cleanups', '/dashboard/asset-cleanups'],
+  ] as const)
+    expect(sidebar.getByRole('link', { name: label })).toHaveAttribute('href', href);
+  expect(sidebar.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard');
+  expect(sidebar.getByRole('link', { name: 'Account settings' })).toHaveAttribute(
+    'href',
+    '/dashboard/account',
+  );
+});
+
+it.each(['', '/new', '/structure', '/11111111-1111-4111-8111-111111111111'])(
+  'keeps the collection highlighted and provides collection breadcrumbs at %s',
+  async (suffix) => {
+    allowCollections();
+    mocks.pathname = `/dashboard/collections/articles${suffix}`;
+    view();
+    const sidebar = within(screen.getByRole('complementary', { name: 'Navigation menu' }));
+    expect(await sidebar.findByRole('link', { name: 'Editorial articles' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(sidebar.getByRole('link', { name: 'Site settings' })).not.toHaveAttribute(
+      'aria-current',
+    );
+    const breadcrumbs = within(screen.getByRole('navigation', { name: 'Page path' }));
+    expect(breadcrumbs.getByRole('link', { name: 'Collections' })).toHaveAttribute(
+      'href',
+      '/dashboard/collections',
+    );
+    expect(await breadcrumbs.findByText('Editorial articles')).toBeInTheDocument();
+    expect(
+      breadcrumbs.queryByRole('link', { name: 'Editorial articles' })?.getAttribute('href') ?? null,
+    ).toBe(suffix ? '/dashboard/collections/articles' : null);
+  },
+);
+
+it('does not add a collection menu when a configured navigation omits its catalog entry', async () => {
+  allowCollections();
+  configuredCollections();
+  const [group] = mocks.navigation;
+  if (!group) throw new Error('Expected configured navigation.');
+  group.children = group.children.filter((page) => page.id === 'resources');
+  view();
+  await screen.findByRole('link', { name: 'Shared resources' });
+  expect(mocks.catalog).not.toHaveBeenCalled();
+  expect(screen.queryByRole('link', { name: 'Editorial articles' })).not.toBeInTheDocument();
+});
+
+it('does not show catalog rows whose collection read permission is absent', async () => {
+  allowCollections();
+  mocks.operations = mocks.operations.filter((operation) => operation.collectionKey !== 'settings');
+  view();
+  await screen.findByRole('link', { name: 'Editorial articles' });
+  expect(screen.queryByRole('link', { name: 'Site settings' })).not.toBeInTheDocument();
+});
+
+it('keeps a configured catalog recovery entry without requesting a denied catalog', async () => {
+  configuredCollections();
+  view();
+  await screen.findByText('Your account lacks the required read permission.');
+  expect(screen.getByRole('link', { name: 'Collections overview' })).toHaveAttribute(
+    'href',
+    '/dashboard/collections',
+  );
+  expect(mocks.catalog).not.toHaveBeenCalled();
+});
+
+it.each([
+  ['loading', 'Loading content…'],
+  ['empty', 'No accessible collections'],
+  ['failed', 'Could not load content'],
+])('keeps a real overview recovery link for a %s collection catalog', async (phase, message) => {
+  allowCollections();
+  if (phase === 'loading') mocks.catalog.mockImplementation(() => new Promise(() => {}));
+  if (phase === 'empty')
+    mocks.catalog.mockResolvedValue({ ok: true, status: 200, requestId: '', data: { rows: [] } });
+  if (phase === 'failed') mocks.catalog.mockResolvedValue(failure('temporarily_unavailable', 503));
+  view();
+  await screen.findByText(message);
+  expect(screen.getByRole('link', { name: 'Collections overview' })).toHaveAttribute(
+    'href',
+    '/dashboard/collections',
+  );
+  expect(screen.queryByRole('link', { name: 'Editorial articles' })).not.toBeInTheDocument();
+  expect(screen.queryAllByText('No accessible collections')).toHaveLength(
+    phase === 'empty' ? 1 : 0,
+  );
+});
+
+function RefreshAccess() {
+  const access = useAccessControl();
+  return <button onClick={access.refresh}>Refresh access</button>;
+}
+
+it('regression: permission refresh removes stale collection links and rejects a cancelled late catalog', async () => {
+  allowCollections();
+  const component = render(
+    <ShellProvider initial={parsePreferences({ locale: 'en' })}>
+      <AdminShell principal={principal}>
+        <RefreshAccess />
+      </AdminShell>
+    </ShellProvider>,
+  );
+  await screen.findByRole('link', { name: 'Editorial articles' });
+  let finish: ((value: ApiResult<{ rows: Collection[] }>) => void) | undefined;
+  mocks.catalog.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  mocks.operations = mocks.operations.filter((operation) => operation.collectionKey !== 'settings');
+  await userEvent.click(screen.getByRole('button', { name: 'Refresh access' }));
+  await screen.findByText('Loading content…');
+  expect(screen.queryByRole('link', { name: 'Editorial articles' })).not.toBeInTheDocument();
+  const signal = mocks.catalog.mock.calls.at(-1)?.[0].signal;
+  mocks.operations = [];
+  await userEvent.click(screen.getByRole('button', { name: 'Refresh access' }));
+  await waitFor(() => expect(signal?.aborted).toBe(true));
+  await act(async () => {
+    finish?.({
+      ok: true,
+      status: 200,
+      requestId: '',
+      data: { rows: [collection('articles', 'Late private collection')] },
+    });
+    await Promise.resolve();
+  });
+  expect(screen.queryByRole('link', { name: 'Late private collection' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Collapse Collections' })).not.toBeInTheDocument();
+  component.unmount();
+});
 
 it.each(['zh', 'en'] as const)(
   'shows only the verified principal in the shared %s production shell',

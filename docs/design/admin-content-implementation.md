@@ -8,6 +8,8 @@
 
 /dashboard/collections展示当前主体可发现集合；/[collection]为文档列表与回收站，/new及/[id]为配置驱动编辑器，/structure展示安全结构。/dashboard/resources提供上传型集合资源与私有预览；/dashboard/jobs按集合发现持久化任务及上传会话；/dashboard/asset-cleanups只向具备security许可的主体提供受控清理账本与重试。所有页面服务端验证身份，实际数据通过封闭BFF读取并由后端再次授权。
 
+侧栏将可见的内容集合入口展示为独立可折叠分组，子项按真实集合目录及当前集合读取许可生成并直达列表。总览 URL 保留为面包屑和异常恢复入口。新建、编辑及结构页高亮所属集合，菜单装配与查询上下文隔离见[内容集合侧栏菜单](collection-sidebar-menu.md)。
+
 contracts/content.ts与assets.ts定义浏览器安全DTO，不从后端实现导入。features/fields拥有字段渲染与纯数据转换；features/collections拥有列表/编辑/版本/发布流程；features/assets拥有上传/私有预览/图片；features/jobs与asset-cleanups拥有真实查询和受控操作。复用access-control、management-shared、共享query导航、现有CMS组合及七组UI出口，不再建client、store或第二套表格弹窗。
 
 ## 2. 安全元数据与字段

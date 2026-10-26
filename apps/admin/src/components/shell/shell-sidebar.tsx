@@ -8,6 +8,7 @@ import { Button } from '@new-cms/ui/actions';
 import { appConfig } from '../../config/app';
 import { navigationGroups, isComponentRouteId } from '../../config/navigation';
 import { useShellSurface } from './shell-surface';
+import type { ShellGroup } from './shell-surface';
 import { useShell } from './shell-provider';
 
 export function ShellSidebar({
@@ -23,7 +24,7 @@ export function ShellSidebar({
     return isComponentRouteId(label) ? categoryCopy(`${label}Title`) : t(label);
   }
   const surface = useShellSurface();
-  const groups =
+  const groups: readonly ShellGroup[] =
     surface?.groups ??
     navigationGroups.map((group) => ({
       ...group,
@@ -130,6 +131,7 @@ export function ShellSidebar({
                     })}
                   </ul>
                 )}
+                {!collapsed && groupOpen ? group.feedback : null}
               </section>
             );
           })}
