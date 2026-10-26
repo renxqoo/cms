@@ -62,7 +62,7 @@ db:migrate统一执行表结构迁移和操作目录核对；空目录的首次�
 
 邮件配置使用SMTP_HOST、SMTP_PORT、SMTP_SECURE、SMTP_USER、SMTP_PASSWORD、SMTP_FROM及CMS_FRONTEND_URL；未配置SMTP时投递明确失败，账户创建仍返回实际状态。生产非直连TLS使用强制STARTTLS且验证证书。邀请/重置链接只在前端URL fragment携带令牌；令牌只存摘要，不保存可恢复邮件正文或自动重投，失败后需显式重新发起。
 
-未配置 S3 时自动使用私有本地存储，production 同样适用；CMS_STORAGE_ROOT 默认 .data/assets，目录权限为0700。设置 CMS_S3_BUCKET 和 CMS_S3_REGION 后自动选择 S3，可用 CMS_STORAGE_DRIVER 显式选择 local 或 s3；部分或非法 S3 配置明确报错。可选 HTTPS CMS_S3_ENDPOINT 及 CMS_S3_FORCE_PATH_STYLE。多实例本地存储须共用同一持久化共享卷。切换 driver 前须完成已有对象的同键搬迁和摘要核对，配置切换不会自动搬迁字节。凭据沿用 AWS SDK 标准链，不写入集合或文档。CMS_MAINTENANCE_INTERVAL_MS 控制同一有界维护循环，默认60000毫秒。上传经授权 API 代理，媒体下载逐次检查来源文档、字段与目标权限，无公开静态目录。
+未配置 S3 时自动使用私有本地存储，production 同样适用；CMS_STORAGE_ROOT 默认 .data/assets，目录权限为0700。设置 CMS_S3_BUCKET 和 CMS_S3_REGION 后自动选择 S3，可用 CMS_STORAGE_DRIVER 显式选择 local 或 s3；部分或非法 S3 配置明确报错。可选 HTTPS CMS_S3_ENDPOINT 及 CMS_S3_FORCE_PATH_STYLE。多实例本地存储须共用同一持久化共享卷。切换 driver 前须完成已有对象的同键搬迁和摘要核对，配置切换不会自动搬迁字节。凭据沿用 AWS SDK 标准链，不写入集合或文档。CMS_MAINTENANCE_INTERVAL_MS 控制有界维护与清理循环，默认60000毫秒；CMS_ASSET_PROCESSING_INTERVAL_MS 控制独立文件处理循环，默认1000毫秒，文件处理不等待清理周期。上传经授权 API 代理，媒体下载逐次检查来源文档、字段与目标权限，无公开静态目录。
 
 修改 apps/api/src/config/collections 后运行 bun run content:generate；物理或 schema 注册变化必须指定新的 --migration 迁移文件名。SQL 与同名 .plan.json 快照一同审查提交，已有迁移不能覆盖；API 不执行 DDL。需要显式转换时，保留 previousSchemas 与版本化 migrations，按[演进协议](docs/design/collections-design.md#10-后续-schema-演进与发布完整性)先应用准备迁移，再有界回填：
 
@@ -114,6 +114,8 @@ GET/HEAD /livez只表示进程存活，不依赖数据库或共享限流；/read
 ## 验证和提交门禁
 
 使用 Bun 1.4.4 安装并运行：
+
+运行测试前，在本机 `.env` 中配置 `CMS_TEST_DATABASE_URL`，连接独立测试数据库。`.env.example` 使用 `/tmp` 下的 PostgreSQL Unix socket；通过 Docker 或 TCP 运行 PostgreSQL 时，需将此变量改为实际映射的主机、端口和测试库名。测试连接不从 `DATABASE_URL` 回退，不要复用业务数据库或部署凭据。出现 `connect ENOENT /tmp/.s.PGSQL.5432` 表示默认 socket 不存在，应检查测试连接和数据库服务。
 
 ```sh
 bun install --frozen-lockfile

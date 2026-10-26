@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderManagement } from '../../../../../../test/support/admin-management';
-import { FolderManager } from '../folders';
+import { FolderManager } from '../folder-manager';
 import { contentMessages } from '../messages';
 import { folderId } from './support';
 
@@ -57,6 +57,7 @@ it('regression: real request client sends folder collection in query and JSON ra
   renderManagement(
     <FolderManager collection="articles" t={contentMessages.en} onChanged={() => {}} />,
   );
+  await user.click(screen.getByRole('button', { name: 'Manage folders' }));
   await waitFor(() =>
     expect(calls[0]).toMatchObject({
       method: 'GET',

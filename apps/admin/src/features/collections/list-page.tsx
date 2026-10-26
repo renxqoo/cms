@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FileTextIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
@@ -20,12 +21,12 @@ import { useAccessControl } from '../access-control/provider';
 import { useApiQuery } from '../management-shared/query';
 import { ManagementList, managementListState } from '../management-shared/management-list';
 import { ManagementFeedback } from '../management-shared/feedback';
-import { FolderManager } from './folders';
+import { FolderManager } from './folder-manager';
 import { contentMessages } from './messages';
 import type { ContentMessages } from './messages';
 import { collectionHref, documentQueryHref, parseDocumentQuery, queryFilter } from './query';
 import type { DocumentQuery } from './query';
-import { documentColumns, selectedDocuments } from './document-columns';
+import { defaultVisibleFields, documentColumns, selectedDocuments } from './document-columns';
 import { DocumentListControls } from './list-controls';
 import { TrashAction } from './trash-action';
 import { BulkDocuments } from './bulk-documents';
@@ -87,7 +88,7 @@ function DocumentList({ collection }: { collection: Collection }) {
   const [trash, setTrash] = useState<{ document: Document; action: 'restore' | 'purge' } | null>(
     null,
   );
-  const [visible, setVisible] = useState(collection.fields.slice(0, 4).map((field) => field.path));
+  const [visible, setVisible] = useState(() => defaultVisibleFields(collection));
   const result = useApiQuery({
     operation: 'documents.list',
     params: { collection: collection.key },
@@ -116,6 +117,7 @@ function DocumentList({ collection }: { collection: Collection }) {
   const columns = documentColumns({
     collection,
     t,
+    locale,
     selected,
     visible,
     trashed: query.trashed,
@@ -137,6 +139,16 @@ function DocumentList({ collection }: { collection: Collection }) {
         query={query}
         t={t}
         canCreate={access.can('documents.create', scope)}
+        folderAction={
+          <FolderManager
+            collection={collection.key}
+            t={t}
+            onChanged={() => {
+              folders.reload();
+              result.reload();
+            }}
+          />
+        }
       />
       <DocumentListControls
         collection={collection}
@@ -176,7 +188,6 @@ function DocumentList({ collection }: { collection: Collection }) {
         loading={table.loading}
         failed={table.failed}
       />
-      <FolderManager collection={collection.key} t={t} onChanged={result.reload} />
       {trash ? (
         <TrashAction
           {...trash}
@@ -212,11 +223,13 @@ function DocumentListHeader({
   query,
   t,
   canCreate,
+  folderAction,
 }: {
   collection: Collection;
   query: DocumentQuery;
   t: ContentMessages;
   canCreate: boolean;
+  folderAction: ReactNode;
 }) {
   const router = useAppNavigation();
   return (
@@ -226,6 +239,7 @@ function DocumentListHeader({
       icon={<FileTextIcon />}
       actions={
         <div className="flex flex-wrap gap-2">
+          {folderAction}
           <Button
             variant="outline"
             onClick={() => router.push(collectionHref(collection.key, 'structure'))}

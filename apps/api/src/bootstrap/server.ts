@@ -30,7 +30,7 @@ export async function startServer(runtime: ApplicationRuntime, config: Applicati
       resolve();
     });
   });
-  const stopMaintenance = startMaintenance(runtime, runtime.maintenanceIntervalMs);
+  const stopMaintenance = startMaintenance(runtime);
   async function close(): Promise<void> {
     runtime.stop();
     await stopMaintenance();

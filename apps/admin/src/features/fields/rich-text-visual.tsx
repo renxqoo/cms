@@ -49,24 +49,37 @@ export default function RichTextVisual(props: VisualProps) {
             props.onInvalidChange(true);
           },
           theme: {
-            paragraph: 'mb-2',
+            paragraph: 'mb-3 last:mb-0',
             heading: { h2: 'mb-3 text-xl font-semibold' },
             link: 'text-primary underline underline-offset-4',
             list: { ul: 'ml-6 list-disc', listitem: 'mb-1' },
           },
         }}
       >
-        <div className="overflow-hidden rounded-xl border border-border bg-card focus-within:ring-2 focus-within:ring-ring/50">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-input bg-card focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
           <RichTextToolbar readOnly={props.readOnly} />
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable
-                aria-label={props.label}
-                className="min-h-40 max-h-[30rem] overflow-auto p-4 outline-none"
-              />
-            }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
+          <div className="relative">
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  aria-label={props.label}
+                  aria-multiline="true"
+                  aria-placeholder={field.t.richTextPlaceholder}
+                  placeholder={
+                    props.readOnly ? (
+                      () => null
+                    ) : (
+                      <p className="pointer-events-none absolute top-4 left-4 text-sm leading-7 text-muted-foreground sm:left-5">
+                        {field.t.richTextPlaceholder}
+                      </p>
+                    )
+                  }
+                  className="min-h-56 max-h-[32rem] overflow-auto px-4 py-4 text-sm leading-7 break-words outline-none sm:px-5"
+                />
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+          </div>
           <HistoryPlugin />
           <ListPlugin />
           <LinkPlugin validateUrl={safeRichTextLink} />

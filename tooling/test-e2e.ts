@@ -47,7 +47,7 @@ async function run(args: string[], env: NodeJS.ProcessEnv = process.env): Promis
 
 async function browserJourneys(args: string[]) {
   await run(['tooling/build-api.ts']);
-  await run(['run', '--cwd', 'apps/admin', 'build']);
+  await run(['run', '--cwd', 'apps/admin', 'build'], { ...process.env, CMS_ADMIN_E2E: '1' });
   const available = Array.from(new Bun.Glob('e2e/*.browser.spec.ts').scanSync('.'));
   for (const group of browserGroups(args, available)) {
     const devPort = await availablePort();

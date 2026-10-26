@@ -178,6 +178,31 @@ it('composes dialog primitives with explicit dismissal and description', async (
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });
 
+it('preserves a kept dialog draft while closed and restores focus on keyboard dismissal', async () => {
+  const user = userEvent.setup();
+  render(
+    <Dialog>
+      <DialogTrigger render={<Button>Open draft</Button>} />
+      <DialogContent keepMounted closeLabel="Close draft">
+        <DialogTitle>Draft</DialogTitle>
+        <Input aria-label="Draft text" />
+      </DialogContent>
+    </Dialog>,
+  );
+  const trigger = screen.getByRole('button', { name: 'Open draft' });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  await user.click(trigger);
+  const input = screen.getByRole('textbox', { name: 'Draft text' });
+  await user.type(input, 'Keep this draft');
+  await user.keyboard('{Escape}');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(input).not.toBeVisible();
+  expect(trigger).toHaveFocus();
+  await user.click(trigger);
+  expect(screen.getByRole('textbox', { name: 'Draft text' })).toBe(input);
+  expect(input).toHaveValue('Keep this draft');
+});
+
 function actionCell(row: { name: string }) {
   return <Button aria-label={`Edit ${row.name}`}>Edit</Button>;
 }

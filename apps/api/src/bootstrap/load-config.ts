@@ -26,9 +26,11 @@ const environmentSchema = z.object({
   CMS_NAVIGATION_PATHS: z.string().default('').transform(commaList).pipe(navigationPathsSchema),
   CMS_NAVIGATION_ICONS: z.string().default('').transform(commaList).pipe(navigationIconsSchema),
   CMS_MAINTENANCE_INTERVAL_MS: z.coerce.number().int().min(25).max(3_600_000).default(60_000),
+  CMS_ASSET_PROCESSING_INTERVAL_MS: z.coerce.number().int().min(25).max(60_000).default(1000),
 });
 
 export interface ApplicationConfig {
+  assetProcessingIntervalMs: number;
   mode: 'development' | 'test' | 'production';
   storage: StorageConfig;
   database: { connectionString: string; schema: string; maxConnections: number };
@@ -180,6 +182,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
   validateProduction(env);
   return {
     storage: loadStorageConfig(source, env.NODE_ENV === 'production'),
+    assetProcessingIntervalMs: env.CMS_ASSET_PROCESSING_INTERVAL_MS,
     mode: env.NODE_ENV,
     navigation: { paths: env.CMS_NAVIGATION_PATHS, icons: env.CMS_NAVIGATION_ICONS },
     database: {

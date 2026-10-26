@@ -13,6 +13,7 @@ export const DialogClose = BaseDialog.Close;
 export interface DialogContentProps extends BaseDialog.Popup.Props {
   closeLabel: string;
   showCloseButton?: boolean;
+  keepMounted?: boolean;
 }
 
 export function DialogContent({
@@ -20,10 +21,11 @@ export function DialogContent({
   children,
   closeLabel,
   showCloseButton = true,
+  keepMounted = false,
   ...props
 }: DialogContentProps) {
   return (
-    <BaseDialog.Portal>
+    <BaseDialog.Portal keepMounted={keepMounted}>
       <BaseDialog.Backdrop
         data-slot="dialog-overlay"
         className="fixed inset-0 z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none"

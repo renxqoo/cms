@@ -1,42 +1,65 @@
 'use client';
-import { useId } from 'react';
+import { useId, useState } from 'react';
+import { UploadIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import { Field, NativeSelect } from '@new-cms/ui/forms';
-import { Card, CardHeader, CardTitle, CardContent } from '@new-cms/ui/layout';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@new-cms/ui/overlays';
 import { collectionListSchema } from '../../contracts/content';
 import { collectionEditorSchema } from '../../contracts/editor';
+import type { Collection } from '../../contracts/content';
+import type { CollectionEditor } from '../../contracts/editor';
 import { useShell } from '../../components/shell/shell-provider';
-import { useAppNavigation } from '../../components/shell/navigation/provider';
 import { useAccessControl } from '../access-control/provider';
 import { useApiQuery } from '../management-shared/query';
 import { ManagementFeedback } from '../management-shared/feedback';
 import { assetMessages } from './asset-messages';
 import { UploadQueue } from './upload-queue';
+import { createResourceSaver } from './resource-ingestion';
 
 export function ResourceUploads({
   search,
+  busy,
   onBusyChange,
   change,
+  onCreated,
 }: {
   search: string;
+  busy: boolean;
   onBusyChange: (busy: boolean) => void;
   change: (values: Readonly<Record<string, string | number | boolean | undefined>>) => void;
+  onCreated: () => void;
 }) {
   const id = useId();
   const locale = useShell((state) => state.locale);
   const t = assetMessages[locale];
   const access = useAccessControl();
-  const navigation = useAppNavigation();
   const current = new URLSearchParams(search);
+  const [open, setOpen] = useState(() => current.has('uploadId'));
   const { catalog, metadata, uploadCollections, selected } = useUploadCatalog(
     current.get('collection'),
   );
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.upload}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button>
+            <UploadIcon aria-hidden="true" />
+            {t.upload}
+          </Button>
+        }
+      />
+      <DialogContent keepMounted closeLabel={t.close} className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{t.upload}</DialogTitle>
+          <DialogDescription>{t.uploadDescription}</DialogDescription>
+        </DialogHeader>
         <ManagementFeedback
           error={catalog.error ?? metadata.error}
           onRetry={() => {
@@ -48,6 +71,7 @@ export function ResourceUploads({
           <Field id={`${id}-collection`} label={t.collection}>
             <NativeSelect
               value={selected?.key ?? ''}
+              disabled={busy}
               onChange={(event) =>
                 change({ collection: event.currentTarget.value, uploadId: undefined })
               }
@@ -63,11 +87,11 @@ export function ResourceUploads({
           <p>{t.empty}</p>
         )}
         {selected && metadata.data?.upload && metadata.data.collection === selected.key ? (
-          <UploadQueue
+          <ResourceUploadQueue
             key={selected.key}
-            collection={selected.key}
-            limits={metadata.data.upload}
-            purpose="create"
+            collection={selected}
+            editor={metadata.data}
+            onCreated={onCreated}
             disabled={
               !access.can('documents.create', {
                 scopeKind: 'collection',
@@ -79,23 +103,10 @@ export function ResourceUploads({
             }
             {...(current.get('uploadId') ? { initialUploadId: current.get('uploadId') ?? '' } : {})}
             onBusyChange={onBusyChange}
-            onReady={(session) =>
-              navigation.push(`/dashboard/collections/${selected.key}/new?uploadId=${session.id}`)
-            }
           />
         ) : null}
-        <Button
-          variant="outline"
-          onClick={() =>
-            navigation.push(
-              `/dashboard/jobs${selected ? `?collection=${selected.key}&tab=uploads` : ''}`,
-            )
-          }
-        >
-          {t.uploadSessions}
-        </Button>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -119,4 +130,30 @@ function useUploadCatalog(selectedKey: string | null) {
       access.can('collections.editor', { scopeKind: 'collection', collectionKey: selected.key }),
   });
   return { catalog, metadata, uploadCollections, selected };
+}
+
+function ResourceUploadQueue(props: {
+  collection: Collection;
+  editor: CollectionEditor;
+  disabled: boolean;
+  initialUploadId?: string;
+  onBusyChange: (busy: boolean) => void;
+  onCreated: () => void;
+}) {
+  const [save] = useState(() => createResourceSaver(props));
+  const language = useShell((state) => state.locale);
+  const t = assetMessages[language];
+  if (!props.editor.upload) return null;
+  return (
+    <UploadQueue
+      collection={props.collection.key}
+      limits={props.editor.upload}
+      purpose="create"
+      disabled={props.disabled}
+      onBusyChange={props.onBusyChange}
+      onProcessed={save}
+      consumedMessage={t.savedToLibrary}
+      {...(props.initialUploadId ? { initialUploadId: props.initialUploadId } : {})}
+    />
+  );
 }

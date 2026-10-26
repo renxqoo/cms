@@ -1,7 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { ListFilter } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
-import { Checkbox, Field, Input, NativeSelect } from '@new-cms/ui/forms';
+import { Field, Input, NativeSelect } from '@new-cms/ui/forms';
+import { ColumnSelector } from '@new-cms/ui/data';
+import { Popover, PopoverTrigger, PopoverContent } from '@new-cms/ui/overlays';
 import type { Collection } from '../../contracts/content';
 import type { FolderTree } from '../../contracts/folders';
 import type { DocumentQuery } from './query';
@@ -75,33 +78,33 @@ export function DocumentListControls({
             </NativeSelect>
           </Field>
         ) : null}
-        <DocumentFilter
-          key={`${query.filterField}:${query.filterValue}`}
-          query={query}
-          collection={collection}
-          t={t}
-          change={change}
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button variant="outline">
+                <ListFilter aria-hidden="true" />
+                {t.filters}
+                {query.filterField ? ' · 1' : ''}
+              </Button>
+            }
+          />
+          <PopoverContent className="w-80">
+            <DocumentFilter
+              key={`${query.filterField}:${query.filterValue}`}
+              query={query}
+              collection={collection}
+              t={t}
+              change={change}
+            />
+          </PopoverContent>
+        </Popover>
+        <ColumnSelector
+          columns={collection.fields.map((field) => ({ key: field.path, label: field.label }))}
+          selectedKeys={visible}
+          onChange={(keys) => setVisible(() => keys)}
+          label={t.columns}
         />
       </div>
-      <details className="rounded-md border border-border p-3">
-        <summary className="cursor-pointer text-sm">{t.columns}</summary>
-        <div className="mt-3 flex flex-wrap gap-3">
-          {collection.fields.map((field) => (
-            <Checkbox
-              key={field.path}
-              label={field.label}
-              checked={visible.includes(field.path)}
-              onCheckedChange={(checked) =>
-                setVisible((current) =>
-                  checked
-                    ? [...current, field.path]
-                    : current.filter((path) => path !== field.path),
-                )
-              }
-            />
-          ))}
-        </div>
-      </details>
     </>
   );
 }
@@ -120,7 +123,7 @@ function DocumentFilter({
   const [value, setValue] = useState(query.filterValue);
   return (
     <form
-      className="flex flex-wrap items-end gap-2"
+      className="grid gap-3"
       onSubmit={(event) => {
         event.preventDefault();
         change({ filterField: field, filterValue: value });
@@ -146,6 +149,11 @@ function DocumentFilter({
       <Button variant="outline" type="submit">
         {t.apply}
       </Button>
+      {query.filterField ? (
+        <Button variant="ghost" onClick={() => change({ filterField: '', filterValue: '' })}>
+          {t.clearFilter}
+        </Button>
+      ) : null}
     </form>
   );
 }

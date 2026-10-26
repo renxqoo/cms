@@ -18,7 +18,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { renderManagement } from '../../../../../../test/support/admin-management';
 import { DocumentHistory } from '../history';
 import { PublicationSchedule } from '../schedule';
-import { FolderManager } from '../folders';
+import { FolderManager } from '../folder-manager';
 import { TrashAction } from '../trash-action';
 import { BulkDocuments } from '../bulk-documents';
 import { contentMessages } from '../messages';
@@ -389,6 +389,7 @@ it('verifies an unknown folder update from a real tree read without resending th
     return defaultPageRequest(input);
   });
   renderManagement(<FolderManager collection="articles" t={t} onChanged={changed} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Manage folders' }));
   await screen.findByText('Original folder');
   await userEvent.click(screen.getByRole('button', { name: 'Edit folder' }));
   const dialog = await screen.findByRole('dialog', { name: 'Edit folder' });
@@ -402,9 +403,8 @@ it('verifies an unknown folder update from a real tree read without resending th
   expect(
     pageApi.request.mock.calls.filter(([input]) => input.operation === 'folders.update'),
   ).toHaveLength(1);
-  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('dialog', { name: 'Manage folders' })).toBeInTheDocument();
 });
-
 it('regression: a folder CAS conflict can read and adopt the new version without discarding its draft', async () => {
   let folder = {
     id: oldVersion,
@@ -430,6 +430,7 @@ it('regression: a folder CAS conflict can read and adopt the new version without
     return defaultPageRequest(input);
   });
   renderManagement(<FolderManager collection="articles" t={t} onChanged={vi.fn<() => void>()} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Manage folders' }));
   await screen.findByText('Original folder');
   await userEvent.click(screen.getByRole('button', { name: 'Edit folder' }));
   const dialog = await screen.findByRole('dialog', { name: 'Edit folder' });
@@ -445,13 +446,12 @@ it('regression: a folder CAS conflict can read and adopt the new version without
     within(dialog).getByRole('button', { name: 'Keep draft and continue from latest' }),
   );
   await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
-  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await waitFor(() => expect(dialog).not.toBeInTheDocument());
   expect(
     pageApi.request.mock.calls.filter(([input]) => input.operation === 'folders.update').at(-1)?.[0]
       .body,
   ).toMatchObject({ version: 7, name: 'My folder draft', collection: 'articles' });
 });
-
 it('verifies an unknown folder deletion and only closes after the latest tree confirms absence', async () => {
   let present = true;
   pageApi.request.mockImplementation((input) => {
@@ -480,19 +480,19 @@ it('verifies an unknown folder deletion and only closes after the latest tree co
     return defaultPageRequest(input);
   });
   renderManagement(<FolderManager collection="articles" t={t} onChanged={vi.fn<() => void>()} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Manage folders' }));
   await screen.findByText('Delete this folder');
   await userEvent.click(screen.getByRole('button', { name: 'Delete folder' }));
   const dialog = await screen.findByRole('dialog', { name: 'Delete folder' });
   await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
   await within(dialog).findByRole('alert');
   await userEvent.click(within(dialog).getByRole('button', { name: 'Try again' }));
-  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await waitFor(() => expect(dialog).not.toBeInTheDocument());
   expect(
     pageApi.request.mock.calls.filter(([input]) => input.operation === 'folders.delete'),
   ).toHaveLength(1);
   expect(screen.queryByText('Delete this folder')).not.toBeInTheDocument();
 });
-
 it('keeps an unknown folder creation on one idempotent intent until the server confirms it', async () => {
   let created = false;
   let writes = 0;
@@ -517,6 +517,7 @@ it('keeps an unknown folder creation on one idempotent intent until the server c
     return defaultPageRequest(input);
   });
   renderManagement(<FolderManager collection="articles" t={t} onChanged={vi.fn<() => void>()} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Manage folders' }));
   await userEvent.click(await screen.findByRole('button', { name: 'New folder' }));
   const dialog = await screen.findByRole('dialog', { name: 'New folder' });
   fireEvent.change(within(dialog).getByRole('textbox', { name: 'Name' }), {
@@ -525,7 +526,7 @@ it('keeps an unknown folder creation on one idempotent intent until the server c
   await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
   await within(dialog).findByRole('alert');
   await userEvent.click(within(dialog).getByRole('button', { name: 'Try again' }));
-  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await waitFor(() => expect(dialog).not.toBeInTheDocument());
   expect(await screen.findByText(folder.name)).toBeInTheDocument();
   const calls = pageApi.request.mock.calls.filter(
     ([input]) => input.operation === 'folders.create',
@@ -533,7 +534,6 @@ it('keeps an unknown folder creation on one idempotent intent until the server c
   expect(calls).toHaveLength(2);
   expect(calls[0]?.[0].idempotencyKey).toBe(calls[1]?.[0].idempotencyKey);
 });
-
 it('requires a reviewed current folder version before retrying an unconfirmed deletion still present in the tree', async () => {
   let version = 2;
   let present = true;
@@ -569,6 +569,7 @@ it('requires a reviewed current folder version before retrying an unconfirmed de
     return defaultPageRequest(input);
   });
   renderManagement(<FolderManager collection="articles" t={t} onChanged={vi.fn<() => void>()} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Manage folders' }));
   await screen.findByText('Reviewed delete');
   await userEvent.click(screen.getByRole('button', { name: 'Delete folder' }));
   const dialog = await screen.findByRole('dialog', { name: 'Delete folder' });
@@ -582,13 +583,12 @@ it('requires a reviewed current folder version before retrying an unconfirmed de
     pageApi.request.mock.calls.filter(([input]) => input.operation === 'folders.delete'),
   ).toHaveLength(1);
   await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
-  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await waitFor(() => expect(dialog).not.toBeInTheDocument());
   expect(
     pageApi.request.mock.calls.filter(([input]) => input.operation === 'folders.delete').at(-1)?.[0]
       .query,
   ).toEqual({ collection: 'articles', version: 7 });
 });
-
 it('reports accepted bulk copy work through its durable job without inventing successful item results', async () => {
   pageApi.request.mockImplementation((input) =>
     input.operation === 'content.batch'

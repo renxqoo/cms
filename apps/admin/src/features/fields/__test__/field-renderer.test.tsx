@@ -31,6 +31,31 @@ function invalid() {
   return JSON.parse(screen.getByLabelText('Invalid').textContent ?? '{}') as unknown;
 }
 
+it('does not show separate clear buttons below populated inputs', () => {
+  render(
+    <Harness
+      layout={[
+        node('Title'),
+        node('Summary', { type: 'textarea' }),
+        node('Email', { type: 'email' }),
+        node('Number', { type: 'number' }),
+        node('Date', { type: 'date' }),
+      ]}
+      initial={{
+        Title: 'Article',
+        Summary: 'Summary',
+        Email: 'dev@example.com',
+        Number: 12,
+        Date: '2026-10-26T01:02:03.456Z',
+      }}
+    />,
+  );
+  expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Title'), { target: { value: '' } });
+  fireEvent.change(screen.getByLabelText('Summary'), { target: { value: '' } });
+  expect(data()).toMatchObject({ Title: null, Summary: null });
+});
+
 describe('scalar field editing', () => {
   it('edits text, textarea, email, decimal, boolean, date, select and code without enforcing draft completeness', () => {
     render(
@@ -79,7 +104,7 @@ describe('scalar field editing', () => {
     fireEvent.change(screen.getByLabelText('Number'), { target: { value: '--' } });
     expect(invalid()).toEqual({ 'fields/Number': 'Check the format or range of this value.' });
     expect(data()).toEqual({ Number: 12 });
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    fireEvent.change(screen.getByLabelText('Number'), { target: { value: '' } });
     expect(screen.getByLabelText('Number')).toHaveValue('');
     expect(data()).toEqual({ Number: null });
     expect(invalid()).toEqual({});

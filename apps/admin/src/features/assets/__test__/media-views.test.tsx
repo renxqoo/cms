@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { ApiResult } from '../../../api/result';
 import { failure } from '../../../api/result';
@@ -16,6 +17,7 @@ import {
   session,
   success,
   uploadId,
+  deferred,
 } from './support';
 
 interface Request {
@@ -94,6 +96,8 @@ function defaultResponse(input: Request): Promise<ApiResult<unknown>> {
       return Promise.resolve(success({ jobId: job().id, uploadId }));
     case 'content.getJob':
       return Promise.resolve(success(job({ status: 'succeeded' })));
+    case 'documents.create':
+      return Promise.resolve(success(document));
     case 'documents.update':
     case 'documents.get':
       return Promise.resolve(success({ ...document, revision: 8 }));
@@ -308,14 +312,16 @@ it('renders real resource rows, server query search, preview references and uplo
   expect(mocks.push).toHaveBeenCalledWith(`/dashboard/collections/media/${documentId}`);
   fireEvent.click(within(preview).getByRole('button', { name: 'Close' }));
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-  fireEvent.click(screen.getByRole('button', { name: 'Find upload sessions' }));
-  expect(mocks.push).toHaveBeenCalledWith('/dashboard/jobs?collection=media&tab=uploads');
+  fireEvent.click(screen.getByRole('button', { name: 'Upload files' }));
+  expect(screen.queryByRole('button', { name: 'Find upload sessions' })).not.toBeInTheDocument();
+  expect(screen.getAllByRole('button', { name: 'Close' })).toHaveLength(1);
 });
 
 it('shows denied resource reads and an empty upload catalog without inventing resource rows', () => {
   mocks.can.mockReturnValue(false);
   render(<ResourcesPage />);
   expect(screen.getByText('You do not have permission to read resources.')).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Upload files' }));
   expect(screen.getByText('No upload collections are available.')).toBeVisible();
   expect(mocks.request).not.toHaveBeenCalled();
 });
@@ -339,18 +345,123 @@ it('requests server pages and page sizes and opens the selected resource documen
   });
 });
 
-it('starts an upload from resources and transfers only the actual ready session identity to new-document navigation', async () => {
+it('automatically saves a processed upload and refreshes the resource list without any manual action', async () => {
+  let stored = false;
+  mocks.request.mockImplementation((input) => {
+    if (input.operation === 'documents.create') {
+      stored = true;
+      return Promise.resolve(success(document));
+    }
+    if (input.operation === 'resources.list')
+      return Promise.resolve(
+        success({ rows: stored ? [document] : [], total: stored ? 1 : 0, page: 1, pageSize: 20 }),
+      );
+    if (input.operation === 'collections.get') return Promise.resolve(success(collection));
+    if (input.operation === 'documents.get') return Promise.resolve(success(document));
+    return defaultResponse(input);
+  });
   render(<ResourcesPage />);
-  const input = await screen.findByLabelText('Choose files');
-  fireEvent.change(input, {
+  fireEvent.click(screen.getByRole('button', { name: 'Upload files' }));
+  fireEvent.change(await screen.findByLabelText('Choose files'), {
     target: { files: [new File(['contents'], 'source.png', { type: 'image/png' })] },
   });
-  fireEvent.click(await screen.findByRole('button', { name: 'Attach to document' }));
-  expect(mocks.push).toHaveBeenCalledWith(`/dashboard/collections/media/new?uploadId=${uploadId}`);
-  fireEvent.change(screen.getByLabelText('Upload collection'), { target: { value: 'media' } });
-  expect(mocks.push).toHaveBeenCalledWith('/dashboard/resources?collection=media&page=1', {
-    scroll: false,
+  await screen.findByText('Saved to resource library');
+  expect(screen.getByText('Saved to resource library')).toBeVisible();
+  expect(
+    mocks.request.mock.calls.find(([input]) => input.operation === 'documents.create')?.[0].body,
+  ).toEqual({ locale: 'en', data: {}, folderId: null, uploadId });
+  expect(mocks.push).not.toHaveBeenCalled();
+  fireEvent.keyDown(screen.getByRole('dialog', { name: 'Upload files' }), { key: 'Escape' });
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(within(screen.getByRole('table')).getByText('source.png')).toBeVisible();
+});
+
+it('opens the upload dialog from the header and restores focus after Escape', async () => {
+  const user = userEvent.setup();
+  render(<ResourcesPage />);
+  const trigger = screen.getByRole('button', { name: 'Upload files' });
+  expect(trigger.closest('header')).not.toBeNull();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  await user.click(trigger);
+  const dialog = await screen.findByRole('dialog', { name: 'Upload files' });
+  expect(within(dialog).getByLabelText('Upload collection')).toBeVisible();
+  expect(within(dialog).getByLabelText('Choose files')).toBeEnabled();
+  await user.keyboard('{Escape}');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(trigger).toHaveFocus();
+});
+
+it('regression: a failed automatic save shows a retry without repeating the upload or cancelling an uncertain save', async () => {
+  let attempts = 0;
+  mocks.request.mockImplementation((input) => {
+    if (input.operation === 'documents.create') {
+      attempts += 1;
+      return Promise.resolve(
+        attempts === 1 ? failure('request_failed', 0, { uncertain: true }) : success(document),
+      );
+    }
+    return defaultResponse(input);
   });
+  render(<ResourcesPage />);
+  fireEvent.click(screen.getByRole('button', { name: 'Upload files' }));
+  fireEvent.change(await screen.findByLabelText('Choose files'), {
+    target: { files: [new File(['contents'], 'source.png', { type: 'image/png' })] },
+  });
+  const retry = await screen.findByRole('button', { name: 'Retry saving' });
+  expect(screen.queryByText('Saved to resource library')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Cancel upload' })).not.toBeInTheDocument();
+  fireEvent.click(retry);
+  await screen.findByText('Saved to resource library');
+  expect(attempts).toBe(2);
+  expect(
+    mocks.request.mock.calls.filter(([input]) => input.operation === 'assets.createUpload'),
+  ).toHaveLength(1);
+  expect(
+    mocks.request.mock.calls.filter(([input]) => input.operation === 'assets.cancelUpload'),
+  ).toHaveLength(0);
+});
+
+it('keeps an active upload alive when its dialog closes and restores the queue when reopened', async () => {
+  const user = userEvent.setup();
+  const pending = deferred<ApiResult<unknown>>();
+  mocks.request.mockImplementation((input) =>
+    input.operation === 'assets.createUpload' ? pending.promise : defaultResponse(input),
+  );
+  const view = render(<ResourcesPage />);
+  const trigger = screen.getByRole('button', { name: 'Upload files' });
+  await user.click(trigger);
+  fireEvent.change(await screen.findByLabelText('Choose files'), {
+    target: { files: [new File(['contents'], 'background.png', { type: 'image/png' })] },
+  });
+  await waitFor(() => expect(screen.getByLabelText('Upload collection')).toBeDisabled());
+  const transfer = mocks.request.mock.calls.find(
+    ([input]) => input.operation === 'assets.createUpload',
+  )?.[0];
+  expect(transfer).toBeDefined();
+  await user.keyboard('{Escape}');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(transfer?.signal.aborted).toBe(false);
+  await act(async () => {
+    pending.resolve(success(session({ status: 'ready', manifest })));
+    await pending.promise;
+  });
+  await user.click(trigger);
+  const dialog = screen.getByRole('dialog', { name: 'Upload files' });
+  expect(within(dialog).getByText('background.png')).toBeVisible();
+  await within(dialog).findByText('Saved to resource library');
+  expect(within(dialog).getByLabelText('Upload collection')).toBeEnabled();
+  expect(
+    mocks.request.mock.calls.filter(([input]) => input.operation === 'assets.createUpload'),
+  ).toHaveLength(1);
+  view.unmount();
+  expect(transfer?.signal.aborted).toBe(true);
+});
+
+it('opens a linked upload session directly in the upload dialog', async () => {
+  mocks.search = `collection=media&uploadId=${uploadId}`;
+  render(<ResourcesPage />);
+  const dialog = await screen.findByRole('dialog', { name: 'Upload files' });
+  expect(await within(dialog).findByText('Saved to resource library')).toBeVisible();
 });
 
 it('preserves reference pagination on the server and handles files with no visible references', async () => {

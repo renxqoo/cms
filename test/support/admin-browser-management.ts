@@ -26,6 +26,17 @@ export function waitForApi(page: Page, method: string, path: string) {
   );
 }
 
+export function waitForApiJson<Value>(
+  page: Page,
+  request: { method: string; path: string; status: number },
+  schema: z.ZodType<Value>,
+) {
+  return waitForApi(page, request.method, request.path).then(async (response) => {
+    expect(response.status()).toBe(request.status);
+    return schema.parse(await response.json());
+  });
+}
+
 export async function loginManagement(page: Page, account: { email: string; password: string }) {
   await page.goto('/login');
   await page.getByRole('textbox', { name: '邮箱', exact: true }).fill(account.email);

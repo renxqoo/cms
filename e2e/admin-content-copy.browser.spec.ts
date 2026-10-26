@@ -6,6 +6,7 @@ import {
   loginManagement,
   test,
   waitForApi,
+  waitForApiJson,
 } from '../test/support/admin-browser-management.ts';
 
 const documentSchema = z.object({ id: z.uuid(), data: z.record(z.string(), z.unknown()) });
@@ -18,11 +19,13 @@ test('translated documents copy each unique locale slug into a new real document
   await page.goto('/dashboard/collections/articles/new?locale=en');
   await page.getByRole('textbox', { name: /^title/ }).fill('English source title');
   await page.getByRole('textbox', { name: /^slug/ }).fill('source-english-slug');
-  const creating = waitForApi(page, 'POST', '/v1/collections/articles/documents');
+  const creating = waitForApiJson(
+    page,
+    { method: 'POST', path: '/v1/collections/articles/documents', status: 201 },
+    documentSchema,
+  );
   await page.getByRole('button', { name: '保存', exact: true }).click();
-  const createdResponse = await creating;
-  expect(createdResponse.status()).toBe(201);
-  const source = documentSchema.parse(await createdResponse.json());
+  const source = await creating;
   await expect(page).toHaveURL(
     new URL(`/dashboard/collections/articles/${source.id}?locale=en`, page.url()).href,
   );
@@ -42,15 +45,13 @@ test('translated documents copy each unique locale slug into a new real document
   await dialog.getByRole('textbox', { name: /^slug/ }).fill('copy-chinese-slug');
   await dialog.getByLabel('副本语言', { exact: true }).selectOption('en');
   await dialog.getByRole('textbox', { name: /^slug/ }).fill('copy-english-slug');
-  const copying = waitForApi(
+  const copying = waitForApiJson(
     page,
-    'POST',
-    `/v1/collections/articles/documents/${source.id}/copies`,
+    { method: 'POST', path: `/v1/collections/articles/documents/${source.id}/copies`, status: 201 },
+    documentSchema,
   );
   await dialog.getByRole('button', { name: '复制文档', exact: true }).click();
-  const copiedResponse = await copying;
-  expect(copiedResponse.status()).toBe(201);
-  const copied = documentSchema.parse(await copiedResponse.json());
+  const copied = await copying;
   expect(copied.id).not.toBe(source.id);
   await expect(page).toHaveURL(
     new URL(`/dashboard/collections/articles/${copied.id}?locale=zh-CN`, page.url()).href,

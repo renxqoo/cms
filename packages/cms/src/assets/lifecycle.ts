@@ -24,20 +24,29 @@ export function createAssetLifecycle(input: {
 }) {
   const { runtime, capacity, controller } = input;
   let running: Promise<{ processed: number; cleaned: number }> | undefined;
+  let processing: Promise<number> | undefined;
   let reconciling: Promise<{ retried: number; cleaned: number }> | undefined;
   let closing: Promise<void> | undefined;
+  function process() {
+    processing ??= processJobs(runtime, controller.signal).finally(() => {
+      processing = undefined;
+    });
+    return processing;
+  }
   async function closeResources(): Promise<void> {
     controller.abort();
     await capacity.close();
     await running?.catch(() => {});
+    await processing?.catch(() => {});
     await reconciling?.catch(() => {});
     await runtime.images.close();
     await runtime.storage.close();
   }
   return {
+    process,
     maintenance() {
       running ??= (async () => ({
-        processed: await processJobs(runtime, controller.signal),
+        processed: await process(),
         cleaned: await cleanupAssets(runtime, controller.signal),
       }))().finally(() => {
         running = undefined;
