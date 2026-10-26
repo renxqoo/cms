@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from '@new-cms/ui/actions';
 import { Field, Input, NativeSelect } from '@new-cms/ui/forms';
-import { Card, CardContent, CardHeader, CardTitle } from '@new-cms/ui/layout';
 import { folderListSchema, folderSchema } from '../../contracts/folders';
 import type { Folder, FolderTree } from '../../contracts/folders';
 import { useAccessControl } from '../access-control/provider';
@@ -72,91 +71,7 @@ export function FolderSelect({
   );
 }
 
-export function FolderManager({
-  collection,
-  t,
-  onChanged,
-}: {
-  collection: string;
-  t: ContentMessages;
-  onChanged: () => void;
-}) {
-  const access = useAccessControl();
-  const scope = { scopeKind: 'collection', collectionKey: collection } as const;
-  const result = useApiQuery({
-    operation: 'folders.list',
-    query: { collection },
-    response: folderListSchema,
-    enabled: access.can('folders.list', scope),
-  });
-  const [editing, setEditing] = useState<Folder | 'new' | null>(null);
-  const [deleting, setDeleting] = useState<Folder | null>(null);
-  if (!access.can('folders.list', scope)) return null;
-  function changed() {
-    setEditing(null);
-    setDeleting(null);
-    result.reload();
-    onChanged();
-  }
-  return (
-    <Card>
-      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle>{t.folders}</CardTitle>
-        {access.can('folders.create', scope) ? (
-          <Button variant="outline" onClick={() => setEditing('new')}>
-            {t.newFolder}
-          </Button>
-        ) : null}
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <ManagementFeedback error={result.error} onRetry={result.reload} />
-        {flattenFolders(result.data?.rows ?? []).map((folder) => (
-          <div
-            key={folder.id}
-            className="flex flex-wrap items-center gap-2 border-b border-border py-2"
-          >
-            <span className="min-w-0 flex-1 break-words">
-              {'— '.repeat(folder.depth)}
-              {folder.name}
-            </span>
-            {access.can('folders.update', scope) ? (
-              <Button variant="ghost" size="sm" onClick={() => setEditing(folder)}>
-                {t.rename}
-              </Button>
-            ) : null}
-            {access.can('folders.delete', scope) ? (
-              <Button variant="ghost" size="sm" onClick={() => setDeleting(folder)}>
-                {t.removeFolder}
-              </Button>
-            ) : null}
-          </div>
-        ))}
-      </CardContent>
-      {editing ? (
-        <FolderEditor
-          key={editing === 'new' ? 'new' : editing.id}
-          collection={collection}
-          folder={editing === 'new' ? null : editing}
-          folders={flattenFolders(result.data?.rows ?? [])}
-          t={t}
-          onClose={() => setEditing(null)}
-          onSaved={changed}
-        />
-      ) : null}
-      {deleting ? (
-        <FolderDelete
-          collection={collection}
-          folder={deleting}
-          t={t}
-          onClose={() => setDeleting(null)}
-          onDeleted={changed}
-        />
-      ) : null}
-    </Card>
-  );
-}
-
-function FolderEditor({
+export function FolderEditor({
   collection,
   folder,
   folders,
@@ -268,7 +183,7 @@ function FolderEditor({
   );
 }
 
-function FolderDelete({
+export function FolderDelete({
   collection,
   folder,
   t,

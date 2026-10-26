@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@new-cms/ui/actions';
 import { Field } from '@new-cms/ui/forms';
 import type { EditorNode } from '../../contracts/editor';
 import { ArrayField } from './array-field';
@@ -53,14 +51,8 @@ function FieldNote({ node, location }: ScalarProps) {
 }
 
 function ScalarField(props: ScalarProps) {
-  const { node, location, readOnly } = props;
+  const { node, location } = props;
   const field = useFieldValue(location);
-  const [clearEpoch, setClearEpoch] = useState(0);
-  function clear() {
-    field.onValidityChange(location.identity, null);
-    field.change(null);
-    setClearEpoch((before) => before + 1);
-  }
   return (
     <Field
       id={`${field.idPrefix}-${location.path.map(String).join('-')}`}
@@ -77,12 +69,7 @@ function ScalarField(props: ScalarProps) {
       description={<FieldNote {...props} />}
       error={field.error}
     >
-      <ScalarControl key={clearEpoch} {...props} />
-      {!readOnly && field.value !== null && field.value !== undefined ? (
-        <Button variant="ghost" size="xs" className="w-fit" onClick={clear}>
-          {field.t.clear}
-        </Button>
-      ) : null}
+      <ScalarControl {...props} />
     </Field>
   );
 }

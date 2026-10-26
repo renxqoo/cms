@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import type { Collection } from '../../contracts/content';
 import type { Document } from '../../contracts/documents';
-import { fieldValue } from '../fields/data';
+import { fieldValue, isFieldData } from '../fields/data';
+import type { JsonValue } from '../fields/types';
 
 const positive = (value: string | null, fallback: number, maximum: number) => {
   const number = Number(value);
@@ -82,10 +83,21 @@ export function documentTitle(document: Document, collection?: Collection) {
   return document.id;
 }
 
-export function displayField(document: Document, path: string): string {
+export function displayField(document: Document, path: string, type?: string): string {
   const value = fieldValue(document.data, path.split('.'));
   if (value === undefined || value === null) return '—';
+  if (type === 'richText') return richTextSummary(value).trim() || '—';
   return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
+
+function richTextSummary(value: JsonValue): string {
+  if (!isFieldData(value)) return '';
+  if (value['type'] === 'text' && typeof value['text'] === 'string') return value['text'];
+  const { children } = value;
+  if (!Array.isArray(children)) return '';
+  return children
+    .map(richTextSummary)
+    .join(value['version'] === 1 || value['type'] === 'list' ? '\n' : '');
 }
 
 function folderQuery(value: string | null) {

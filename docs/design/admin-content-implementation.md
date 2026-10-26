@@ -20,11 +20,13 @@ create/update/autosave/copy的editor请求严格不传fallback或depth；其响�
 
 renderer穷举当前元数据的20类节点：text、textarea、number、boolean、date、email、select、code、json、point、group、array、blocks、tabs、row、collapsible、richText、relationship、upload、join。标量、结构和扩展组件分层；同一受控value/事件用于新建、详情及批量编辑。布局节点不生成存储字段；命名tabs/group增加数据路径，非命名tabs/row/collapsible沿用父路径。join始终只读。只提交已修改且可写的字段，不把读取展开关系、join、隐藏或静态denied字段回传。
 
-空值按候选schema表示为null或省略，不把空number转成0或把false当缺值。数字、point经独立有限数转换，point顺序为longitude/latitude；日期使用真实ISO时间并保留时区语义。JSON及code使用既有本地Monaco，JSON错误保留文本草稿并阻止提交，不假成功。min/max/length/options等用于及时反馈，draft/commit完整候选schema不能当PATCH所有字段必填；唯一性、关系及动态策略仍由后端裁决。
+空值按候选schema表示为null或省略，不把空number转成0或把false当缺值。普通字段下方不显示独立清空按钮，文本、数字和日期通过删除输入内容恢复空值，同时清除无效草稿反馈。数字、point经独立有限数转换，point顺序为longitude/latitude；日期使用真实ISO时间并保留时区语义。JSON及code使用既有本地Monaco，JSON错误保留文本草稿并阻止提交，不假成功。min/max/length/options等用于及时反馈，draft/commit完整候选schema不能当PATCH所有字段必填；唯一性、关系及动态策略仍由后端裁决。
 
 array/blocks新增稳定UUID，编辑/排序保留已有id，blocks保留blockType；add/remove/move是同一数据树的纯操作，取消排序不改value。多语言结构共享，不在切换locale时生成新id或复制fallback文字。关系按{collection,id}唯一身份且保留顺序，跨集合相同id不混同；选项从实际允许集合分页读取，搜索/翻页不丢已选，名称不可读时保留安全身份说明，不伪造标题。
 
-richText保留后端v1 AST，提供段落、固定标题、列表、链接、关系和媒体节点；不暴露无法持久化的marks、标题级别或有序列表语义。拟采用已核对稳定版Lexical0.52.0及同版React/list/link/rich-text/selection/utils包，只在字段出现时按Next客户端边界懒加载，保持Tillgate主题和基础组件。它是本批完整富文本能力所需编辑内核，不替换UI体系。单一AST转换器显式验证并输出受支持节点；不能无损表示的合法树须保留原节点，并提供受控结构编辑，不能静默丢节点、引用或转换成纯文本。自定义受信任节点按type/version分发，未知适配保留数据并安全展示。URL只允许后端相同协议，渲染不执行HTML；粘贴和导入不绕过净化。注册监听/命令和编辑实例卸载时释放。
+richText保留后端v1 AST，提供段落、固定标题、列表、链接、关系和媒体节点；不暴露无法持久化的marks、标题级别或有序列表语义。采用Lexical0.52.0及同版React/list/link/rich-text/selection/utils包，只在字段出现时按Next客户端边界懒加载，保持Tillgate主题和基础组件。工具栏按历史、段落格式和插入内容分组，使用图标与可访问名称；当前段落、标题及列表状态跟随选区，列表按钮可切回段落，撤销和重做由Lexical历史状态控制是否可用。空编辑区提供输入提示，结构编辑入口与字段标题同排，窄屏工具栏自动换行。单一AST转换器显式验证并输出受支持节点；不能无损表示的合法树须保留原节点，并提供受控结构编辑，不能静默丢节点、引用或转换成纯文本。自定义受信任节点按type/version分发，未知适配保留数据并安全展示。URL只允许后端相同协议，渲染不执行HTML；粘贴和导入不绕过净化。注册监听/命令和编辑实例卸载时释放。
+
+富文本无损比较按对象成员、节点类型、属性和有序子节点执行，不把JSON对象键顺序作为内容语义；持久化返回的键重排不触发结构编辑回退。真实节点合并、丢失及无法表示的扩展仍保留原树并进入结构编辑。
 
 ## 3. 文档编辑状态与并发
 
@@ -46,7 +48,15 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 
 文件夹为真实树及version CAS，新建/改名/移动/删除受API约束；移动文档使用document PATCH folderId与revision，不能修改客户端行后声称成功。结构视图只读当前安全布局/schema及版本标识，不生成配置保存接口。
 
+集合列表的文件夹管理由标题区按钮打开独立弹窗，目录支持层级展示、名称搜索、空状态和按权限提供新建、编辑父级及删除。目录编辑及删除使用嵌套确认表单；成功后保留管理弹窗并同时刷新文档列表和文件夹筛选，Escape按层级关闭并恢复焦点。文件夹选择继续留在列表工具区，字段筛选及显示字段通过既有Popover和ColumnSelector展开，不常驻大块设置面板。表格选择保留可访问名称并隐藏重复文字，默认隐藏与名称重复的标题列和复杂结构列；显式显示富文本时提供纯文本摘要，时间按界面语言格式化并保留原始datetime，状态复用StatusCell。
+
+features/collections/folder-manager.tsx拥有管理弹窗，folders.tsx复用目录选择及变更表单。资源自动入库复用collections/editor-write.ts的文档写入契约，不另建文档创建接口。
+
 ## 4. 字节客户端与上传
+
+资源页的上传入口位于页面标题操作区，点击后打开上传弹窗，列表下方不常驻上传面板。弹窗包含集合选择、拖拽与文件选择和上传队列，只保留右上角关闭，不显示底部会话入口或关闭按钮；关闭后队列保留并继续当前上传，再次打开可查看进度及重试。处理完成后自动使用documents.create消费实际uploadId并创建资源文档，以文件名初始化元数据中可写的title文本字段，其他值沿用配置默认值；成功后才标记已保存并重新读取资源列表，不要求手动入库或跳转新建页。每个会话持有固定创建意图和候选数据，未知结果重试复用相同幂等键和请求体，不重复上传字节或创建新资源意图。保存失败显示真实错误并提供重试保存；保存进行中不提供取消上传，避免误判已提交的创建结果。上传及保存期间禁止切换集合，离开页面仍按在途状态提示，页面卸载释放请求与监听。带uploadId的资源链接直接打开弹窗并恢复自动入库。弹窗支持Escape关闭、焦点约束与返回上传按钮，窄屏使用视口内可滚动布局。
+
+文件处理由独立的有界循环领取持久化任务，CMS_ASSET_PROCESSING_INTERVAL_MS默认1000毫秒；维护清理仍使用CMS_MAINTENANCE_INTERVAL_MS。两种入口共用资产生命周期内的同一处理执行状态，避免重叠消费；关闭时停止两个调度器并等待在途处理退出。前端前10秒每1000毫秒读取上传会话，持续处理改为每3000毫秒读取，两个并行会话合计不超过每分钟60次读取预算；继续沿用有界等待、暂停核实及取消语义，不把202或字节发送完成显示为处理成功。
 
 扩展唯一requestApi，按operation.responseKind处理JSON/204或私有流，不增加第二套身份传输。流成功投影为{blob,filename,contentType,etag,bytes}，错误继续使用同一ApiResult。响应按实际字节上限32MiB、90秒、64KiB读取并取消超限流，文件名净化且无存储key。可选onUploadProgress只对bytes操作生效：浏览器用原生XHR报告真实已发送字节，不以定时器模拟；无进度消费者仍沿用既有fetch路径。abort/timeout/网络/非JSON错误统一处理，移除所有XHR监听和定时器，不透传Bearer。
 
@@ -64,6 +74,6 @@ richText保留后端v1 AST，提供段落、固定标题、列表、链接、关
 
 ## 6. 任务、轮询与验证
 
-jobs/uploads列表按新后端契约的固定顺序和严格filters，在权限过滤后的rows/total上分页，不前端分页后伪造总数。轮询预算在feature配置层：可见页最多两个轮询器，列表最短10秒、选中详情最短5秒；上传队列最多两个活动会话且各最短10秒，不同时启动逐行列表轮询。整段自动等待最多5分钟，超时暂停并提供显式继续核实，远端任务不宣称取消。hidden、terminal、429和离页停止计时器和请求；恢复可见仍受原截止时间约束。失败显示真实Retry-After，不在后台自动重试429；考虑BFF出口IP120/min和逐operation60/min预算，不为每行启动定时器。切换collection、页或身份清理旧请求，拒绝迟到结果。详情按kind使用安全DTO，不输出原始provider错误或其他actor的私有会话。
+jobs/uploads列表按新后端契约的固定顺序和严格filters，在权限过滤后的rows/total上分页，不前端分页后伪造总数。轮询预算在feature配置层：可见页最多两个轮询器，列表最短10秒、选中详情最短5秒；上传队列最多两个活动会话，前10秒每秒读取、持续处理每3秒读取，不同时启动逐行列表轮询。整段自动等待最多5分钟，超时暂停并提供显式继续核实，远端任务不宣称取消。hidden、terminal、429和离页停止计时器和请求；恢复可见仍受原截止时间约束。失败显示真实Retry-After，不在后台自动重试429；考虑BFF出口IP120/min和逐operation60/min预算，不为每行启动定时器。切换collection、页或身份清理旧请求，拒绝迟到结果。详情按kind使用安全DTO，不输出原始provider错误或其他actor的私有会话。
 
 先行验收覆盖20节点和结构操作、空值/数字/日期、关系身份/分页、多语言共享ID及fallback=[]；富文本节点无损和危险URL/粘贴；保存/自动保存串行与晚响应/409/未知结果；发布/版本全locale恢复/回收站/计划与批量逐项终态；真实PNG/PDF字节经Chrome→Next→API→存储、上传取消及新会话重试、像素crop与reprocess revision、私有当前/历史binding下载及撤权、Blob/定时器/监听释放；jobs重新发现、cleanup受理而非假完成。所有默认组件冒烟继续，新增旅程连接Bun API/Next dev和Node API/Next prod，覆盖率及四门不放宽。

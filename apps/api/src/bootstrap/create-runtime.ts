@@ -165,6 +165,7 @@ export function createRuntime(config: ApplicationConfig) {
     close,
     maintenance: () => maintainServices(services),
     maintenanceIntervalMs: config.policy.cleanupIntervalMs,
+    assetProcessingIntervalMs: config.assetProcessingIntervalMs,
     stop: () => {
       accepting = false;
       services.content.stop();

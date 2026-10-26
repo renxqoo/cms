@@ -6,6 +6,7 @@ const ignoredDirectories = new Set([
   'node_modules',
   '.git',
   '.next',
+  '.next-e2e',
   'dist',
   'coverage',
   'migrations',
