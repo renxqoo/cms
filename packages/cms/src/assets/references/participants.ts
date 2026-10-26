@@ -9,6 +9,7 @@ import type {
   BindAssetInput,
   UploadRow,
 } from '../types.ts';
+import { createBindingDownloader } from '../manifests/binding-download.ts';
 import { lockManifest, readManifest, readManifests } from '../manifests/read-manifest.ts';
 
 interface BindingRow {
@@ -36,12 +37,31 @@ function validateUpload(
   if (input.sourcePath !== '$file') fail('invalid_input');
 }
 
+async function describeBinding(tx: SqlExecutor, input: { bindingId: string }) {
+  const result = await tx.query<BindingRow & { document_id: string; collection_key: string }>(
+    'SELECT * FROM asset_references WHERE id=$1',
+    [input.bindingId],
+  );
+  const [row] = result.rows;
+  if (!row) fail('not_found');
+  return {
+    revisionId: row.revision_id,
+    documentId: row.document_id,
+    collectionKey: row.collection_key,
+    sourcePath: row.source_path,
+    mediaDocumentId: row.media_document_id,
+    mediaCollectionKey: row.media_collection_key,
+  };
+}
+
 export function createParticipants(
-  runtime: Pick<AssetsOptions, 'limits' | 'authorizeActor'>,
+  runtime: AssetsOptions & { signal: AbortSignal },
 ): AssetsParticipants {
   const { retentionMs } = runtime.limits;
   const grants = new WeakMap<AuthorizedManifest, SqlExecutor>();
   return {
+    openBinding: createBindingDownloader(runtime),
+    describeBinding,
     readManifest,
     listRevisionBindings,
     async listBindings(tx, input) {

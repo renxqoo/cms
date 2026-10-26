@@ -113,6 +113,11 @@ const collectionObject = z.strictObject({
   fields: z.array(fieldSchema),
   mode: z.enum(['direct', 'drafts']),
   localizeStatus: z.boolean().optional(),
+  localeSource: z.string().min(1).max(128).optional(),
+  publicationLocalesField: z
+    .string()
+    .regex(/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/)
+    .optional(),
   history: z.union([
     z.literal(false),
     z.strictObject({

@@ -8,12 +8,14 @@ import { assetsInputSchemas } from '@new-cms/cms/assets';
 import { applicationOperations } from '../apps/api/src/config/operations.ts';
 import { defaultPolicy } from '../apps/api/src/bootstrap/load-config.ts';
 import { contentLimits, contentWorkPolicy } from '../apps/api/src/config/content-policy.ts';
+import { publicContentInputSchemas } from '../apps/api/src/config/public-content-operations.ts';
 
 const schemas: Record<string, z.ZodType> = {
   ...identityInputSchemas,
   ...accessInputSchemas(defaultPolicy('build-time-schema-only')),
   ...contentInputSchemas({ ...contentLimits(), ...contentWorkPolicy() }),
   ...assetsInputSchemas(defaultPolicy('build-time-schema-only')),
+  ...publicContentInputSchemas,
 };
 const rows = applicationOperations.map((operation) => {
   const schema = schemas[operation.id];
@@ -43,6 +45,16 @@ if (process.argv.includes('--check')) {
 
 function transport(id: string): string {
   if (id === 'assets.writeUpload') return 'upload';
-  if (['assets.download', 'assets.downloadBinding'].includes(id)) return 'download';
+  if (
+    [
+      'assets.download',
+      'assets.downloadBinding',
+      'publicContent.media',
+      'previewContent.media',
+      'publicContent.index',
+      'publicContent.sitemap',
+    ].includes(id)
+  )
+    return 'download';
   return 'json';
 }

@@ -1,6 +1,7 @@
 import type { Principal, AccessAuthorization, AccessActorAuthorization } from '@new-cms/cms/access';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
+import type { AssetDownload } from './manifests/download.ts';
 
 export interface AssetLimits {
   maxUploadBytes: number;
@@ -250,6 +251,21 @@ export interface BindAssetInput {
 }
 
 export interface AssetsParticipants {
+  describeBinding(
+    tx: SqlExecutor,
+    input: { bindingId: string },
+  ): Promise<{
+    revisionId: string;
+    documentId: string;
+    collectionKey: string;
+    sourcePath: string;
+    mediaDocumentId: string;
+    mediaCollectionKey: string;
+  }>;
+  openBinding(
+    tx: SqlExecutor,
+    input: { bindingId: string; signal?: AbortSignal },
+  ): Promise<AssetDownload>;
   listRevisionBindings(
     tx: SqlExecutor,
     input: { revisionIds: readonly string[] },

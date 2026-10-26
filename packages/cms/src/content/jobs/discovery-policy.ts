@@ -56,7 +56,7 @@ export function createDiscoveryPolicy(state: ContentState, runtime: ContentRunti
     return result;
   }
   function relations(): Promise<RelationScope[]> {
-    scopes ??= relationPolicies(runtime, { policy });
+    scopes ??= relationPolicies(state, runtime, { policy });
     return scopes;
   }
   return {
@@ -100,7 +100,7 @@ async function evaluatePolicy(
 ): Promise<Where | true | false> {
   const actor = await input.actor(input.operationId, input.collection);
   if (!actor) return false;
-  const collection = input.runtime.registry.get(input.collection);
+  const collection = await input.runtime.resolveCollection(state.tx, input.collection);
   if (!collection.locales.supported.includes(input.locale)) fail('invalid_input');
   try {
     const predicate = collectionPredicate({
@@ -120,11 +120,13 @@ async function evaluatePolicy(
 }
 
 async function relationPolicies(
+  state: ContentState,
   runtime: ContentRuntime,
   input: { policy: PolicyReader },
 ): Promise<RelationScope[]> {
   const result: RelationScope[] = [];
-  for (const collection of runtime.registry.list) {
+  for (const definition of runtime.registry.list) {
+    const collection = await runtime.resolveCollection(state.tx, definition.key);
     for (const locale of collection.locales.supported) {
       const read = targetReadContext({ collection, locale });
       result.push({

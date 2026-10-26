@@ -18,6 +18,8 @@ import { createAdmission } from './admission.ts';
 import { contentConfiguration, createContentServices } from './create-content.ts';
 import { contentLimits, contentWorkPolicy } from '../config/content-policy.ts';
 import { contentOpenApiSchemas } from './openapi-schemas.ts';
+import { publicContentHandlers, previewTicketHandlers } from '../http/public-content-handlers.ts';
+import { publicContentInputSchemas } from '../config/public-content-operations.ts';
 import { applicationOperations } from '../config/operations.ts';
 
 function mailer(config: ApplicationConfig) {
@@ -66,6 +68,7 @@ function createServices(config: ApplicationConfig) {
     authorize: core.access.authorize,
     authorizeActor: core.access.authorizeActor,
     storage: config.storage,
+    clientOrigin: config.delivery.clientOrigin,
     configuration,
   });
   return { ...core, ...content, runtimeProfile: applicationRuntimeProfile(configuration.mapping) };
@@ -107,10 +110,18 @@ function httpServices(services: Services, config: ApplicationConfig) {
     check: services.access.check,
     operations: services.operations,
     openApiSchemas: (ctx: RequestContext) => contentOpenApiSchemas(services.content.api, ctx),
-    handlers: new Map([...contentHandlers(services.content.api), ...assetHandlers(uploads)]),
-    streamingHandlers: assetStreamHandlers(uploads, config.http.bodyLimitBytes),
+    handlers: new Map([
+      ...contentHandlers(services.content.api),
+      ...assetHandlers(uploads),
+      ...previewTicketHandlers(services.delivery),
+    ]),
+    streamingHandlers: new Map([
+      ...assetStreamHandlers(uploads, config.http.bodyLimitBytes),
+      ...publicContentHandlers(services.delivery),
+    ]),
     inputSchemas: {
       ...identityInputSchemas,
+      ...publicContentInputSchemas,
       ...accessInputSchemas(config.policy),
       ...contentInputSchemas({ ...contentLimits(), ...contentWorkPolicy() }),
       ...assetsInputSchemas(config.policy),
@@ -130,6 +141,7 @@ function readiness(services: Services, config: ApplicationConfig, accepting: () 
     {
       database: services.database,
       policy: config.policy,
+      publicReadIpRateLimit: config.delivery.publicReadIpRateLimit,
       async verifyReady(signal?: AbortSignal) {
         const deadline = AbortSignal.any([
           AbortSignal.timeout(config.policy.requestTimeoutMs),

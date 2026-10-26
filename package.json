@@ -27,6 +27,7 @@
     "content:check": "bun apps/api/src/commands/generate-content.ts --check",
     "assets:reconcile": "bun apps/api/src/commands/reconcile-assets.ts",
     "content:backfill": "bun apps/api/src/commands/backfill-content.ts",
+    "content:initialize": "bun run --cwd apps/api initialize-content",
     "dev:admin": "bun run --cwd apps/admin dev",
     "start:admin": "bun run --cwd apps/admin start",
     "client:generate": "bun tooling/generate-api-client.ts",

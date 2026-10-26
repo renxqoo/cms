@@ -100,8 +100,9 @@ function businessCommand(operation: ApiOperation, maximum: number) {
 export function businessCommands(maximum: number): Record<string, CommandGroup<CliState>> {
   const namespaces: Record<string, CommandGroup<CliState>> = {};
   for (const operation of operations) {
-    const [namespace] = operation.id.split('.');
-    if (!namespace) throw new Error('Invalid operation identity');
+    const [identity] = operation.id.split('.');
+    if (!identity) throw new Error('Invalid operation identity');
+    const namespace = kebab(identity);
     namespaces[namespace] ??= {};
     const command = businessCommand(operation, maximum);
     namespaces[namespace][command.name] = command;

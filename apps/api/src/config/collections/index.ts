@@ -1,4 +1,5 @@
 import type { CollectionDefinition } from '@new-cms/cms/content/generate';
+import { oneasterCollections } from './oneaster.ts';
 
 const locales = {
   default: 'en',
@@ -7,7 +8,7 @@ const locales = {
 } as const;
 const history = { maxVersions: 100, retentionMs: 604_800_000 };
 
-export const collections: readonly CollectionDefinition[] = [
+const originalCollections: readonly CollectionDefinition[] = [
   {
     id: 'articles',
     key: 'articles',
@@ -91,7 +92,15 @@ export const collections: readonly CollectionDefinition[] = [
     history,
     locales,
     upload: {
-      mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+      mimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'application/pdf',
+        'audio/mpeg',
+        'audio/wav',
+        'video/mp4',
+      ],
       variants: [{ name: 'thumbnail', width: 320, height: 240, fit: 'inside' }],
     },
     fields: [
@@ -130,4 +139,9 @@ export const collections: readonly CollectionDefinition[] = [
       { id: 'contact_email', name: 'contactEmail', type: 'email' },
     ],
   },
+];
+
+export const collections: readonly CollectionDefinition[] = [
+  ...originalCollections,
+  ...oneasterCollections,
 ];

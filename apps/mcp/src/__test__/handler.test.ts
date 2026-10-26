@@ -3,6 +3,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createMcpApplication } from '../handler.ts';
 import { loadMcpConfig } from '../config.ts';
 import { decodeBase64 } from '../tools.ts';
+import { operations } from '@new-cms/api-client/operations';
 
 const config = loadMcpConfig({
   CMS_API_ORIGIN: 'https://api.example',
@@ -178,6 +179,25 @@ it('supports modern per-request metadata through the same factory', async () => 
   const payload = await json(response);
   expect({ status: response.status, payload }).toMatchObject({ status: 200 });
   expect(names(payload)).toContain('documents_list');
+});
+
+it('never exposes public content or preview endpoints as tools even when discovery grants list them', async () => {
+  const publicOperations = operations.filter(
+    (operation) =>
+      operation.access === 'public' &&
+      (operation.id.startsWith('publicContent.') || operation.id.startsWith('previewContent.')),
+  );
+  expect(publicOperations).toHaveLength(14);
+  apiFixture(['documents.list', ...publicOperations.map((operation) => operation.id)]);
+  const response = await message(application(), {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/list',
+    params: {},
+  });
+  const listed = names(await json(response));
+  expect(listed).toContain('documents_list');
+  for (const operation of publicOperations) expect(listed).not.toContain(operation.tool);
 });
 
 it('turns API permission failures into structured tool errors and puts downloaded bytes only in structuredContent', async () => {

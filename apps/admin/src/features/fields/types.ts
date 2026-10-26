@@ -51,6 +51,11 @@ export interface FieldRendererProps {
   enforceRequired?: boolean;
   errors?: Readonly<Record<string, string>>;
   richTextNodes?: readonly { type: string; version: string }[];
+  renderControl?: (input: {
+    node: EditorNode;
+    location: FieldLocation;
+    readOnly: boolean;
+  }) => ReactNode | undefined;
 }
 
 export type FieldPath = readonly (string | number)[];

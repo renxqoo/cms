@@ -17,7 +17,8 @@
     "./assets": "./src/assets/index.ts",
     "./assets/composition": "./src/assets/composition.ts",
     "./content": "./src/content/index.ts",
-    "./content/composition": "./src/content/composition.ts"
+    "./content/composition": "./src/content/composition.ts",
+    "./content/delivery": "./src/content/delivery/index.ts"
   },
   "dependencies": {
     "@new-cms/database": "workspace:*",

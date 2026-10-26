@@ -6,6 +6,7 @@ import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 interface Dependencies {
   database: Database;
   policy: CmsPolicy;
+  publicReadIpRateLimit: number;
   verifyReady(signal?: AbortSignal): Promise<void>;
 }
 
@@ -18,12 +19,18 @@ export function createAdmission(deps: Dependencies, accepting: () => boolean) {
       throw new CmsError('temporarily_unavailable');
     }
   }
-  async function admitIp(ip: string): Promise<void> {
+  async function admitIp(
+    ip: string,
+    traffic: 'administration' | 'public-content' = 'administration',
+  ): Promise<void> {
     if (!accepting()) throw new CmsError('temporarily_unavailable');
     try {
       await requireRateLimit(deps.database, {
-        key: rateLimitKey(deps.policy.rateLimitSecret, ['http', ip]),
-        limit: deps.policy.ipRateLimit,
+        key: rateLimitKey(
+          deps.policy.rateLimitSecret,
+          traffic === 'public-content' ? ['http', 'public-content', ip] : ['http', ip],
+        ),
+        limit: traffic === 'public-content' ? deps.publicReadIpRateLimit : deps.policy.ipRateLimit,
         windowMs: deps.policy.rateWindowMs,
       });
     } catch (error) {

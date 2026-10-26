@@ -1373,6 +1373,35 @@
     }
   },
   {
+    "id": "languages.setDefault",
+    "method": "POST",
+    "path": "/v1/collections/:collection/documents/:id/default-language",
+    "idempotency": "required",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "languages set-default",
+    "tool": "languages_setDefault",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "const": "languages" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "expectedDefaultCode": { "type": "string", "minLength": 1, "maxLength": 32 }
+      },
+      "required": ["collection", "id", "revision", "expectedDefaultCode"],
+      "additionalProperties": false
+    }
+  },
+  {
     "id": "collections.get",
     "method": "GET",
     "path": "/v1/collections/:collection",
@@ -1668,6 +1697,66 @@
         "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
       },
       "required": ["collection", "id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.createPreviewTicket",
+    "method": "POST",
+    "path": "/v1/collections/:collection/documents/:id/preview-tickets",
+    "successStatus": 201,
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents create-preview-ticket",
+    "tool": "documents_createPreviewTicket",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "const": "models" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "expectedRevision": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "expectedRevision"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.revokePreviewTicket",
+    "method": "DELETE",
+    "path": "/v1/collections/:collection/documents/:id/preview-tickets/:ticketId",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents revoke-preview-ticket",
+    "tool": "documents_revokePreviewTicket",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "const": "models" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "ticketId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "id", "ticketId"],
       "additionalProperties": false
     }
   },
@@ -3016,6 +3105,321 @@
         }
       },
       "required": ["id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.interface",
+    "path": "/v1/public/interface",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content interface",
+    "tool": "publicContent_interface",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "locale": { "type": "string", "maxLength": 80 },
+        "messageContractVersion": { "type": "string", "maxLength": 80 }
+      },
+      "required": ["messageContractVersion"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.home",
+    "path": "/v1/public/home",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content home",
+    "tool": "publicContent_home",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "locale": { "type": "string", "maxLength": 80 } },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.models",
+    "path": "/v1/public/models",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content models",
+    "tool": "publicContent_models",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "locale": { "type": "string", "maxLength": 80 },
+        "page": { "type": "string" },
+        "pageSize": { "type": "string" },
+        "q": { "type": "string", "maxLength": 120 },
+        "category": { "type": "string" },
+        "task": { "type": "string" },
+        "developer": { "type": "string" },
+        "input": { "type": "string" },
+        "output": { "type": "string" },
+        "capability": { "type": "string" },
+        "featured": { "type": "string", "enum": ["true", "false"] },
+        "callable": { "type": "string", "enum": ["true", "false"] },
+        "ids": { "type": "string" },
+        "sort": { "type": "string", "enum": ["order", "title", "updated"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.integrations",
+    "path": "/v1/public/models/:slug/integrations",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content integrations",
+    "tool": "publicContent_integrations",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "locale": { "type": "string", "maxLength": 80 },
+        "bindingKey": { "type": "string", "maxLength": 120 },
+        "scenarioKey": { "type": "string", "maxLength": 120 },
+        "recipeKey": { "type": "string", "maxLength": 120 }
+      },
+      "required": ["slug"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.model",
+    "path": "/v1/public/models/:slug",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content model",
+    "tool": "publicContent_model",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "locale": { "type": "string", "maxLength": 80 }
+      },
+      "required": ["slug"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.documents",
+    "path": "/v1/public/docs",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content documents",
+    "tool": "publicContent_documents",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "locale": { "type": "string", "maxLength": 80 } },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.document",
+    "path": "/v1/public/docs/:slug",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content document",
+    "tool": "publicContent_document",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "locale": { "type": "string", "maxLength": 80 }
+      },
+      "required": ["slug"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.index",
+    "path": "/v1/public/index",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content index",
+    "tool": "publicContent_index",
+    "transport": "download",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string", "enum": ["documents", "model-guides"] },
+        "locale": { "type": "string", "maxLength": 80 }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.sitemap",
+    "path": "/v1/public/sitemap",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content sitemap",
+    "tool": "publicContent_sitemap",
+    "transport": "download",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "bucket": { "type": "string" } },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "publicContent.media",
+    "path": "/v1/public/media/:bindingId",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "public-content media",
+    "tool": "publicContent_media",
+    "transport": "download",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "bindingId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["bindingId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "previewContent.integrations",
+    "path": "/v1/preview/models/:slug/integrations",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "preview-content integrations",
+    "tool": "previewContent_integrations",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "locale": { "type": "string", "maxLength": 80 },
+        "bindingKey": { "type": "string", "maxLength": 120 },
+        "scenarioKey": { "type": "string", "maxLength": 120 },
+        "recipeKey": { "type": "string", "maxLength": 120 }
+      },
+      "required": ["slug", "locale"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "previewContent.model",
+    "path": "/v1/preview/models/:slug",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "preview-content model",
+    "tool": "previewContent_model",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "locale": { "type": "string", "maxLength": 80 }
+      },
+      "required": ["slug", "locale"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "previewContent.media",
+    "path": "/v1/preview/media/:bindingId",
+    "method": "GET",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "preview-content media",
+    "tool": "previewContent_media",
+    "transport": "download",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "bindingId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["bindingId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "previewContent.revoke",
+    "path": "/v1/preview/revoke",
+    "method": "POST",
+    "module": "content",
+    "access": "public",
+    "scopeKind": "global",
+    "bindingConfigurable": false,
+    "command": "preview-content revoke",
+    "tool": "previewContent_revoke",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
       "additionalProperties": false
     }
   }

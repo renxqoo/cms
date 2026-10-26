@@ -143,6 +143,15 @@ export function useContentEditor(props: ContentEditorProps) {
     navigation,
     canReadJob: access.can('content.getJob', scope),
     canReadList: access.can('documents.list', scope),
+    canSetDefaultLanguage:
+      collectionKey === 'languages' &&
+      access.can('languages.setDefault', scope) &&
+      access.can('documents.list', scope) &&
+      allowed('documents.update'),
+    canPreview:
+      access.can('documents.createPreviewTicket', scope) && access.can('documents.get', scope),
+    canRevokePreview: access.can('documents.revokePreviewTicket', scope),
+    reportResult: access.reportResult,
   };
 }
 

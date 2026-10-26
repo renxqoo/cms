@@ -99,7 +99,7 @@ export const limits: AssetLimits = {
 export async function createFixture(
   input: { storage?: StorageDriver; images?: ImageProcessor; limits?: Partial<AssetLimits> } = {},
 ) {
-  const store = await createTestDatabase();
+  const store = await createTestDatabase({ migrationScope: 'library' });
   const policy = createTestPolicy({ securityLockKey: randomInt(1, 2000000000) });
   const messages: MailMessage[] = [];
   const identity = createIdentity({

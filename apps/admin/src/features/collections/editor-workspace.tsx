@@ -9,6 +9,7 @@ import { useContentEditor } from './use-content-editor';
 import type { ContentEditorModel, ContentEditorProps } from './use-content-editor';
 import { EditorFeedback } from './editor-feedback';
 import { EditorActions, EditorToolbar } from './editor-controls';
+import { PublicationLocalesField } from './publication-locales';
 
 export function ContentEditor(props: ContentEditorProps) {
   const model = useContentEditor(props);
@@ -80,6 +81,16 @@ function EditorFields({ model }: { model: ContentEditorModel }) {
           readOnly={snapshot.editor.intent === 'read' || state.phase !== 'ready'}
           errors={{ ...errors, ...state.errors }}
           richTextNodes={snapshot.editor.richTextNodes}
+          renderControl={(input) =>
+            snapshot.editor.publicationLocalesField &&
+            input.node.path === snapshot.editor.publicationLocalesField ? (
+              <PublicationLocalesField
+                {...input}
+                locales={snapshot.editor.locales.supported}
+                t={model.t}
+              />
+            ) : undefined
+          }
         />
       </CardContent>
     </Card>

@@ -1,5 +1,16 @@
 export const contentMessages = {
   zh: {
+    setDefaultLanguage: '设为默认语言',
+    publicationLocales: '发布语言',
+    publicationLocalesHint: '发布时会一起校验所选语言的完整内容；未选择的翻译不会公开。',
+    draftPreview: '草稿预览',
+    generatePreview: '生成预览链接',
+    openPreview: '打开草稿预览',
+    revokePreview: '撤销预览链接',
+    previewExpires: '有效期截至',
+    previewExpired: '预览链接已过期。',
+    previewRevision: '已保存的草稿版本',
+    previewHint: '仅预览已保存的草稿，链接最多有效十分钟。预览不会自动调用模型。',
     title: '内容集合',
     overview: '集合总览',
     description: '管理结构化内容、发布版本和文件夹。',
@@ -127,6 +138,19 @@ export const contentMessages = {
     noChanges: '没有可提交的字段修改',
   },
   en: {
+    setDefaultLanguage: 'Set as default language',
+    publicationLocales: 'Publication languages',
+    publicationLocalesHint:
+      'Publishing validates every selected translation together. Unselected translations stay private.',
+    draftPreview: 'Draft preview',
+    generatePreview: 'Generate preview link',
+    openPreview: 'Open draft preview',
+    revokePreview: 'Revoke preview link',
+    previewExpires: 'Expires at',
+    previewExpired: 'The preview link has expired.',
+    previewRevision: 'Saved draft revision',
+    previewHint:
+      'Preview the saved draft with a link valid for up to ten minutes. Previewing never calls a model automatically.',
     title: 'Collections',
     overview: 'Collections overview',
     description: 'Manage structured content, published versions, and folders.',

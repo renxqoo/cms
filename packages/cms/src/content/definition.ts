@@ -144,6 +144,15 @@ export interface ContentLimits {
   maxResponseBytes: number;
   maxSqlQueries: number;
 }
+export interface CollectionLocales {
+  default: string;
+  supported: readonly string[];
+  fallback: Readonly<Record<string, readonly string[]>>;
+  enabled?: readonly string[];
+}
+export interface ContentLocaleSource extends CollectionLocales {
+  enabled: readonly string[];
+}
 export interface CollectionDefinition {
   id: string;
   key: string;
@@ -152,13 +161,11 @@ export interface CollectionDefinition {
   fields: readonly FieldDefinition[];
   mode: 'direct' | 'drafts';
   localizeStatus?: boolean;
+  localeSource?: string;
+  publicationLocalesField?: string;
   history: false | { maxVersions: number; retentionMs: number };
   singleton?: boolean;
-  locales: {
-    default: string;
-    supported: readonly string[];
-    fallback: Readonly<Record<string, readonly string[]>>;
-  };
+  locales: CollectionLocales;
   indexes?: readonly { id: string; fields: readonly string[]; unique?: boolean }[];
   search?: readonly string[];
   defaultSort?: readonly SortField[];

@@ -13,12 +13,12 @@ async function runRequest(
   admission: Admission,
   next: () => Promise<void>,
 ) {
-  await admission.admitIp(c.get('ip'));
+  await admission.admitIp(c.get('ip'), c.get('traffic'));
   await next();
 }
 
 export interface Admission {
-  admitIp(ip: string): Promise<void>;
+  admitIp(ip: string, traffic?: 'administration' | 'public-content'): Promise<void>;
 }
 
 function binaryUpload(c: Context<HttpEnvironment>): boolean {
@@ -112,11 +112,10 @@ export function requestLifecycle(
   const operationIds = new Map(
     operations.map((operation) => [`${operation.method}:${operation.path}`, operation.id]),
   );
+  const publicRoutes = publicOperationRoutes(operations);
   let active = 0;
   return async (c, next) => {
-    const startedAt = Date.now();
-    c.set('requestId', randomUUID());
-    c.set('ip', c.env?.incoming?.socket.remoteAddress ?? '127.0.0.1');
+    const startedAt = initializeRequest(c, publicRoutes);
     let cleanup: (() => void) | undefined;
     let streaming = false;
     try {
@@ -153,12 +152,51 @@ export function requestLifecycle(
 
 function finalizeResponse(c: Context<HttpEnvironment>, config: ApplicationConfig['http']): void {
   const recovery = c.req.path === '/v1/security/recovery' && ['GET', 'HEAD'].includes(c.req.method);
-  c.res.headers.set('cache-control', recovery ? 'private, no-store' : 'no-store');
+  const preview = c.req.path.startsWith('/v1/preview/');
+  const publicRead = c.get('traffic') === 'public-content' && c.res.status < 400;
+  if (preview) {
+    c.res.headers.set('cache-control', 'private, no-store');
+    c.res.headers.set('x-robots-tag', 'noindex, nofollow');
+    c.res.headers.set('referrer-policy', 'no-referrer');
+  } else if (!publicRead)
+    c.res.headers.set('cache-control', recovery ? 'private, no-store' : 'no-store');
   c.res.headers.set('x-request-id', c.get('requestId'));
   const origin = c.req.header('origin');
   if (origin && config.allowedOrigins.includes(origin)) {
     c.res.headers.set('access-control-allow-origin', origin);
-    c.res.headers.set('access-control-expose-headers', 'X-Request-Id,Retry-After');
-    c.res.headers.set('vary', 'Origin');
+    c.res.headers.set(
+      'access-control-expose-headers',
+      'X-Request-Id,Retry-After,ETag,Content-Length,Content-Range,Accept-Ranges,X-Preview-Expires-At',
+    );
+    const vary = new Set(
+      (c.res.headers.get('vary') ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    );
+    vary.add('Origin');
+    c.res.headers.set('vary', [...vary].join(', '));
   }
+}
+
+function publicOperationRoutes(operations: readonly OperationDefinition[]): Set<string> {
+  return new Set(
+    operations
+      .filter(
+        (operation) => operation.id.startsWith('publicContent.') && operation.access === 'public',
+      )
+      .map((operation) => `${operation.method}:${operation.path}`),
+  );
+}
+function initializeRequest(c: Context<HttpEnvironment>, publicRoutes: ReadonlySet<string>): number {
+  const startedAt = Date.now();
+  c.set('requestId', randomUUID());
+  c.set('ip', c.env?.incoming?.socket.remoteAddress ?? '127.0.0.1');
+  c.set(
+    'traffic',
+    matchedRoutes(c).some((route) => publicRoutes.has(`${route.method}:${route.path}`))
+      ? 'public-content'
+      : 'administration',
+  );
+  return startedAt;
 }

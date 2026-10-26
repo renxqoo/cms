@@ -1,3 +1,4 @@
+import { publicContentResponseSchemas, publicContentResponses } from './public-content-schemas.ts';
 import { contentResponseSchemas } from './content-schemas.ts';
 import { assetResponseSchemas } from './assets-schemas.ts';
 import { managementResponseSchemas } from './management-schemas.ts';
@@ -133,6 +134,7 @@ export function responseSchemas(): Record<string, Schema> {
     ...roleSchemas(),
     ...navigationSchemas(),
     ...contentResponseSchemas(),
+    ...publicContentResponseSchemas(),
     ...assetResponseSchemas(),
     ...managementResponseSchemas(),
     ...editorResponseSchemas(),
@@ -215,6 +217,7 @@ const responses: Record<string, string> = {
   'documents.create': 'ContentDocument',
   'documents.get': 'ContentDocument',
   'documents.update': 'ContentDocument',
+  'languages.setDefault': 'ContentDocument',
   'documents.archive': 'ContentDocument',
   'documents.copy': 'ContentDocument',
   'documents.purge': 'ContentPurge',
@@ -249,14 +252,16 @@ const responses: Record<string, string> = {
 export function operationResponses(operation: OperationDefinition) {
   const name = responses[operation.id];
   const status = String(operation.successStatus ?? 200);
-  const result: Record<string, unknown> = name
-    ? {
-        [status]: {
-          description: 'Completed',
-          content: { 'application/json': { schema: reference(name) } },
-        },
-      }
-    : { '204': { description: 'Completed without a response body' } };
+  const result: Record<string, unknown> =
+    publicContentResponses(operation.id, status) ??
+    (name
+      ? {
+          [status]: {
+            description: 'Completed',
+            content: { 'application/json': { schema: reference(name) } },
+          },
+        }
+      : { '204': { description: 'Completed without a response body' } });
   if (operation.id === 'content.batch') result['202'] = result[status];
   if (operation.id === 'assets.download' || operation.id === 'assets.downloadBinding') {
     delete result['204'];

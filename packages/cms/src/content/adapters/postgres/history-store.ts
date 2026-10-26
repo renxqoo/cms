@@ -107,6 +107,7 @@ async function verifyReady(tx: SqlExecutor, mapping: ContentMapping): Promise<vo
 export function createHistoryStore(options: {
   mapping: ContentMapping;
   limits: ContentLimits;
+  mappingFor?(tx: SqlExecutor): Promise<ContentMapping>;
 }): Pick<
   ContentStore,
   | 'listPrunableVersions'
@@ -117,14 +118,20 @@ export function createHistoryStore(options: {
   | 'purgeDocument'
   | 'verifyReady'
 > {
+  async function scoped(tx: SqlExecutor) {
+    return {
+      ...options,
+      mapping: options.mappingFor ? await options.mappingFor(tx) : options.mapping,
+    };
+  }
   return {
-    listPrunableVersions: (tx, input) => listPrunableVersions(tx, input, options),
-    listVersions: (tx, input) => listVersions(tx, { ...options, ...input }),
-    inboundReferences: (tx, input) => inboundReferences(tx, input, options),
-    writeReferences: (tx, input) => writeReferences(tx, input, options),
-    removeRevision: (tx, input) => removeRevision(tx, input, options),
-    purgeDocument: (tx, input) => purgeDocument(tx, input, options),
-    verifyReady: (tx) => verifyReady(tx, options.mapping),
+    listPrunableVersions: async (tx, input) => listPrunableVersions(tx, input, await scoped(tx)),
+    listVersions: async (tx, input) => listVersions(tx, { ...(await scoped(tx)), ...input }),
+    inboundReferences: async (tx, input) => inboundReferences(tx, input, await scoped(tx)),
+    writeReferences: async (tx, input) => writeReferences(tx, input, await scoped(tx)),
+    removeRevision: async (tx, input) => removeRevision(tx, input, await scoped(tx)),
+    purgeDocument: async (tx, input) => purgeDocument(tx, input, await scoped(tx)),
+    verifyReady: async (tx) => verifyReady(tx, (await scoped(tx)).mapping),
   };
 }
 async function purge(

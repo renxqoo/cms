@@ -6,6 +6,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createRegistry } from '@new-cms/cms/content/generate';
 import { collections } from '../../config/collections/index.ts';
 import { contentLimits } from '../../config/content-policy.ts';
+import { applicationOperations } from '../../config/operations.ts';
 import { contentArtifacts, writeContentArtifacts } from '../content-artifacts.ts';
 
 const fault = vi.hoisted(() => ({ prefix: '' }));
@@ -51,6 +52,7 @@ it.each(['plan.json', 'sql', 'generated'])(
     await writeContentArtifacts({ root, check: false, migration: '0003_collections.sql' });
     const original = await readFile(join(root, snapshot), 'utf8');
     const next = createRegistry({
+      operations: applicationOperations,
       collections: collections.map((collection) =>
         collection.key === 'settings'
           ? {

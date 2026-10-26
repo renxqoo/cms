@@ -3,6 +3,7 @@ import type { BusinessHandler } from './handlers.ts';
 
 export function contentHandlers(api: ContentApi): Map<string, BusinessHandler> {
   return new Map<string, BusinessHandler>([
+    ['languages.setDefault', api.setDefaultLanguage],
     ['collections.list', api.listCollections],
     ['collections.get', api.getCollection],
     ['collections.editor', api.getEditor],

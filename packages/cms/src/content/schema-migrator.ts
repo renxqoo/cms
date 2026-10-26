@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { createLocaleMapping } from './locale-source.ts';
+import type { ContentOptions } from './types.ts';
 import { z } from 'zod';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
 import { appendAudit } from '@new-cms/cms/audit/composition';
@@ -18,6 +20,7 @@ export interface ContentSchemaMigratorOptions {
   limits: ContentLimits;
   policy: CmsPolicy;
   resourceLockKey: number;
+  resolveLocaleSource?: NonNullable<ContentOptions['resolveLocaleSource']>;
 }
 interface BackfillInput {
   collection: string;
@@ -115,12 +118,17 @@ function audit(
 export function createContentSchemaMigrator(options: ContentSchemaMigratorOptions) {
   assertConfiguration(options);
   const store = createContentStore({ mapping: options.mapping, limits: options.limits });
+  const mappingFor = createLocaleMapping(options);
   return {
     async backfill(input: BackfillInput) {
       const { signal, ...raw } = input;
       const args = backfillArguments(options, raw);
       return transaction(options, { mode: 'shared', ...(signal ? { signal } : {}) }, async (tx) => {
-        const result = await store.backfillSchema(tx, args);
+        const scoped = createContentStore({
+          mapping: await mappingFor(tx),
+          limits: options.limits,
+        });
+        const result = await scoped.backfillSchema(tx, args);
         await audit(tx, options, {
           operationId: 'content.backfillSchema',
           targetId: options.registry.get(args.collection).id,

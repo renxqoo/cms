@@ -120,6 +120,7 @@ it('does not let a stale copy claim create duplicate documents after a newer gen
   const runtime: ContentRuntime = {
     ...kit.contentOptions,
     resolveRelationScopes: (state) => relationScopes(state, runtime),
+    resolveCollection: (_tx, key) => Promise.resolve(kit.registry.get(key)),
     store: createContentStore({ mapping: kit.artifacts.mapping, limits: kit.limits }),
     schemas: contentInputSchemas({
       ...kit.limits,

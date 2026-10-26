@@ -54,6 +54,18 @@ it('uses SDK JSON arguments and stdout envelopes for business data through the H
   );
 });
 
+it('registers camel-case content namespaces as valid CLI routes and reads public content without forwarding an account token', async () => {
+  const { app, stdout, stderr } = await setup();
+  const value = { contractVersion: 'oneaster-public.v1', data: { home: null, featuredModels: [] } };
+  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(value));
+  vi.stubGlobal('fetch', fetcher);
+  await app.run(['public-content', 'home', '--input', '{"input":{"locale":"en"}}']);
+  expect(JSON.parse(stdout.join('')) as unknown).toMatchObject({ ok: true, data: value });
+  expect(stderr).toEqual([]);
+  expect(fetcher.mock.calls[0]?.[0]).toBe('https://api.example/v1/public/home?locale=en');
+  expect(new Headers(fetcher.mock.calls[0]?.[1]?.headers).has('authorization')).toBe(false);
+});
+
 it('keeps API code and requestId on stderr, uses SDK exit codes and emits no success for errors', async () => {
   const { app, stdout, stderr } = await setup();
   vi.stubGlobal(

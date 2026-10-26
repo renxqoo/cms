@@ -1,0 +1,407 @@
+{
+  "hero": {
+    "title": {
+      "label": "One API. Access leading AI models.",
+      "lead": "One API",
+      "separator": ". ",
+      "tail": "Access leading AI models."
+    },
+    "subtitle": "Switch models, manage API keys, and track costs in one place.",
+    "apiExample": {
+      "method": "POST"
+    },
+    "primaryLink": {
+      "kind": "internal",
+      "label": "Start building",
+      "path": "/docs"
+    },
+    "capabilities": [
+      {
+        "kind": "routing",
+        "accessibleLabel": "1 of 3: Unified model access",
+        "eyebrow": "MODEL ROUTING",
+        "titleLines": ["One API.", "More model choices."],
+        "descriptionLines": [
+          "A familiar API for leading models.",
+          "Find the right fit for your next task."
+        ],
+        "link": {
+          "kind": "internal",
+          "label": "Try unified access",
+          "path": "/models"
+        },
+        "id": "b83653a5-8360-41ec-8585-53d1776ed245"
+      },
+      {
+        "kind": "keys",
+        "accessibleLabel": "2 of 3: API key management",
+        "eyebrow": "API KEY MANAGEMENT",
+        "titleLines": ["Your API keys.", "Under your control."],
+        "descriptionLines": [
+          "Separate keys and budgets by project.",
+          "From experiments to production."
+        ],
+        "link": {
+          "kind": "action",
+          "label": "Explore API keys",
+          "action": "console",
+          "section": "keys"
+        },
+        "id": "56298218-8841-4050-b4bb-895b71e87692"
+      },
+      {
+        "kind": "usage",
+        "accessibleLabel": "3 of 3: Usage and spending",
+        "eyebrow": "USAGE & INSIGHTS",
+        "titleLines": ["See your usage.", "Know your costs."],
+        "descriptionLines": [
+          "Requests, usage and spending.",
+          "A clearer view of what drives your costs."
+        ],
+        "link": {
+          "kind": "action",
+          "label": "Explore usage",
+          "action": "console",
+          "section": "usage"
+        },
+        "id": "d9ff8b8e-d618-46d0-a6a6-b62348b4d682"
+      }
+    ],
+    "providers": [
+      {
+        "id": "5aadcea9-5be0-47c9-9927-517dad682d9d",
+        "name": "OpenAI",
+        "logo": null
+      },
+      {
+        "id": "771f5d90-bcbe-4bc1-908c-b3a2826d3c3a",
+        "name": "ANTHROPIC",
+        "logo": null
+      },
+      {
+        "id": "69390e2b-cf88-4460-8a1f-087acc3fa20b",
+        "name": "Gemini",
+        "logo": null
+      },
+      {
+        "id": "4a85a130-e200-4161-98bc-871a74fdedbc",
+        "name": "deepseek",
+        "logo": null
+      },
+      {
+        "id": "f46c351d-6d20-434c-86a4-4c0b55caf2dc",
+        "name": "Qwen",
+        "logo": null
+      }
+    ],
+    "routingProviders": [
+      {
+        "id": "6aead197-1098-4323-97de-092c0fd463a5",
+        "name": "OpenAI",
+        "series": "GPT series",
+        "logo": null
+      },
+      {
+        "id": "080fe7e2-fa94-4a8d-9516-e9671c88059d",
+        "name": "Anthropic",
+        "series": "Claude series",
+        "logo": null
+      },
+      {
+        "id": "de650e54-635f-49f9-8489-34a59dc3498d",
+        "name": "Google",
+        "series": "Gemini series",
+        "logo": null
+      }
+    ],
+    "ui": {
+      "copyEndpoint": "Copy example API base URL",
+      "carousel": {
+        "label": "Platform capabilities",
+        "previous": "Previous capability",
+        "next": "Next capability"
+      },
+      "keysPreview": {
+        "apiKeys": "API keys",
+        "newKey": "＋ New key",
+        "monthlyBudget": "Monthly budget"
+      },
+      "usagePreview": {
+        "monthlyRequests": "Monthly requests",
+        "monthlySpend": "Monthly spend",
+        "sampleData": "Sample data"
+      }
+    }
+  },
+  "featuredModels": {
+    "heading": {
+      "title": "Popular models",
+      "description": "Choose a model for the task. Keep the same API."
+    },
+    "catalogLink": {
+      "kind": "internal",
+      "label": "Explore all models",
+      "path": "/models"
+    },
+    "models": [],
+    "ui": {
+      "uses": {
+        "general": "General purpose",
+        "coding": "Coding & analysis",
+        "long": "Long-context tasks",
+        "everyday": "Everyday coding",
+        "writing": "Writing & reasoning",
+        "light": "Lightweight tasks"
+      },
+      "input": "Input",
+      "output": "Output",
+      "viewModel": "View model",
+      "viewDetails": "View {model} details"
+    }
+  },
+  "workspace": {
+    "heading": {
+      "accessibleLabel": "Explore the OneAster workspace",
+      "titleLines": ["From the first call", "to the full picture."],
+      "description": "Build with a clear view of your API keys, requests, and spend."
+    },
+    "consoleLink": {
+      "kind": "action",
+      "label": "Open console",
+      "action": "console"
+    },
+    "views": [
+      {
+        "kind": "overview",
+        "title": "Know where you stand.",
+        "description": "See requests and spend together, then compare activity across your projects.",
+        "navigationLabel": "Workspace overview",
+        "previewTitle": "Dashboard",
+        "id": "78113e26-9c3f-4993-8db0-34c2f49d51f0"
+      },
+      {
+        "kind": "keys",
+        "title": "A key for every project.",
+        "description": "Keep experiments separate from Production with named keys and sample budgets.",
+        "navigationLabel": "Project API keys",
+        "previewTitle": "API keys",
+        "id": "4c45d5da-6a54-43b3-9706-c9fa63149544"
+      },
+      {
+        "kind": "usage",
+        "title": "See what each call costs.",
+        "description": "Trace a request to its model, token count, and sample cost.",
+        "navigationLabel": "Request details",
+        "previewTitle": "Usage details",
+        "id": "7629314f-3d27-421a-816b-9543139edb05"
+      }
+    ],
+    "quickstart": {
+      "title": "Your first call starts with three things.",
+      "steps": [
+        {
+          "id": "ed03c8b9-286a-44d1-a801-f24b4da41744",
+          "numberLabel": "1",
+          "title": "Create an API key"
+        },
+        {
+          "id": "eddb3627-001b-46ec-8345-57393353cd79",
+          "numberLabel": "2",
+          "title": "Choose a model"
+        },
+        {
+          "id": "c36b3ee9-5bbc-45e4-9902-a41e301a3e7d",
+          "numberLabel": "3",
+          "title": "Make your first request"
+        }
+      ],
+      "link": {
+        "kind": "internal",
+        "label": "Read quickstart",
+        "path": "/docs",
+        "anchor": "quickstart"
+      },
+      "ui": {
+        "symbol": "↗"
+      }
+    },
+    "ui": {
+      "navigation": "Workspace views",
+      "sampleData": "Sample data",
+      "sampleLabel": "Sample {title} for the Production project",
+      "demoWorkspace": "Demo workspace",
+      "overview": "Overview",
+      "apiKeys": "API keys",
+      "usage": "Usage",
+      "date": "Oct 1–20, 2026",
+      "illustrative": "Illustrative activity · USD",
+      "totalRequests": "Total requests",
+      "acrossKeys": "Across {count} project keys",
+      "totalSpend": "Total spend",
+      "sampleActivity": "USD · Sample activity",
+      "requestsOverTime": "Requests over time",
+      "shortDate": "Oct 1–20",
+      "oct1": "Oct 1",
+      "oct10": "Oct 10",
+      "oct20": "Oct 20",
+      "spendByProject": "Spend by project",
+      "projectKeys": "Project keys",
+      "activeKeys": "{count} active keys",
+      "active": "Active",
+      "monthlyBudget": "Sample monthly budget",
+      "ofBudget": "of ${budget} USD",
+      "budgetNote": "One key for this project. One place to see its spend.",
+      "latestRequests": "Latest requests",
+      "time": "Time",
+      "model": "Model",
+      "tokens": "Tokens",
+      "cost": "Cost",
+      "recentRequests": "{count} recent requests · {key}",
+      "requestNote": "Input and output tokens shown together. Costs use the catalog’s sample rates."
+    },
+    "emptyState": {
+      "title": "Account activity",
+      "description": "Sign in to view private account activity."
+    }
+  },
+  "useCases": {
+    "heading": {
+      "eyebrow": "Put it to work",
+      "title": "Made for the way you build.",
+      "description": "From a personal experiment to a shared project."
+    },
+    "items": [
+      {
+        "kind": "api",
+        "title": "Build an AI feature.",
+        "description": "Bring model calls into your application with a familiar request format and a model ID for each task.",
+        "link": {
+          "kind": "internal",
+          "label": "Start with the API",
+          "path": "/docs",
+          "anchor": "quickstart"
+        },
+        "ui": {
+          "symbol": "↗"
+        },
+        "id": "e3c2a56a-28bf-4321-9c78-528284663f40"
+      },
+      {
+        "kind": "client",
+        "title": "Connect your AI tools.",
+        "description": "Learn how a custom base URL, API key, and model ID fit into a compatible client’s connection settings.",
+        "link": {
+          "kind": "internal",
+          "label": "See the connection format",
+          "path": "/docs",
+          "anchor": "request-format"
+        },
+        "ui": {
+          "symbol": "↗"
+        },
+        "id": "9cfa57bd-f409-4360-9418-ad74f0c54218"
+      },
+      {
+        "kind": "projects",
+        "title": "Keep projects organized.",
+        "description": "Separate your experiments from Production with named keys, then review the activity behind each one.",
+        "link": {
+          "kind": "action",
+          "label": "Explore project keys",
+          "action": "console",
+          "section": "keys"
+        },
+        "ui": {
+          "symbol": "↗"
+        },
+        "id": "3d9e8ae5-938b-4208-b7a9-8cda2bf14b92"
+      }
+    ]
+  },
+  "faq": {
+    "heading": {
+      "eyebrow": "A few useful answers",
+      "title": "Before you begin.",
+      "description": "Model access, connection settings, and what this preview includes."
+    },
+    "documentationLink": {
+      "kind": "internal",
+      "label": "Read the documentation",
+      "path": "/docs"
+    },
+    "items": [
+      {
+        "key": "prices",
+        "question": "How do model prices work?",
+        "answer": "The catalog lists separate input and output rates per million tokens, in USD. Each model’s detail view includes a token-cost calculator. The rates on this site are illustrative sample data, rather than live quotes. ",
+        "link": {
+          "kind": "internal",
+          "label": "Explore the catalog",
+          "path": "/models"
+        },
+        "afterLink": ".",
+        "id": "cddbd962-06d8-4ca8-ac03-69e547ddb645"
+      },
+      {
+        "key": "clients",
+        "question": "Can I use an existing application or SDK?",
+        "answer": "The examples use a chat-completions request with a base URL, Bearer API key, model ID, and messages. Check whether your client supports those settings and the request features you need. ",
+        "link": {
+          "kind": "internal",
+          "label": "View the request format",
+          "path": "/docs",
+          "anchor": "request-format"
+        },
+        "afterLink": ".",
+        "id": "70c85746-c0f5-4d51-9148-2fde65d30400"
+      },
+      {
+        "key": "keys",
+        "question": "How can I manage my API keys?",
+        "answer": "The console lets you name and create sample keys for this browser session. The workspace walkthrough shows how project keys and usage fit together. Sample keys cannot authorize live requests.",
+        "link": null,
+        "afterLink": null,
+        "id": "e261d085-59b0-49cd-a724-2633f1d06e7f"
+      },
+      {
+        "key": "errors",
+        "question": "What should I check when a request fails?",
+        "answer": "Start with the endpoint, environment variable, model ID, and request body. The documentation includes a configuration checklist and shows how to inspect an HTTP response. ",
+        "link": {
+          "kind": "internal",
+          "label": "Read the troubleshooting guide",
+          "path": "/docs",
+          "anchor": "troubleshooting"
+        },
+        "afterLink": ".",
+        "id": "b269bde9-607e-4563-9ca3-7e2b733abb08"
+      },
+      {
+        "key": "privacy",
+        "question": "Does this preview send prompts to a provider?",
+        "answer": "No. The interactive examples run locally in your browser. No live model API, sign-in, or payment service is connected. Production data handling and billing depend on the deployed service and provider policies.",
+        "link": null,
+        "afterLink": null,
+        "id": "52e12717-6a67-48fd-bd9a-39c11c036ac2"
+      }
+    ]
+  },
+  "closing": {
+    "title": "One API. Your next project.",
+    "description": "Find your model. Make your first call. Keep the full picture.",
+    "primaryLink": {
+      "kind": "action",
+      "label": "Start building",
+      "action": "console"
+    },
+    "secondaryLink": {
+      "kind": "internal",
+      "label": "Explore models",
+      "path": "/models"
+    },
+    "ui": {
+      "symbol": "↗"
+    }
+  },
+  "contentLocales": ["en"]
+}

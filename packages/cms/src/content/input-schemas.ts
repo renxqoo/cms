@@ -81,9 +81,25 @@ function updateSchema(limits: ContentInputLimits) {
 
 function documentSchemas(limits: ContentInputLimits) {
   return {
+    'languages.setDefault': z.strictObject({
+      ...mutation,
+      collection: z.literal('languages'),
+      expectedDefaultCode: z.string().min(1).max(32),
+    }),
     'documents.list': z.strictObject({ ...scope, ...readShape(limits), ...listShape(limits) }),
     'documents.create': createSchema(limits),
     'documents.get': z.strictObject({ ...target, ...readShape(limits) }),
+    'documents.createPreviewTicket': z.strictObject({
+      collection: z.literal('models'),
+      id,
+      ...localized,
+      expectedRevision: revision,
+    }),
+    'documents.revokePreviewTicket': z.strictObject({
+      collection: z.literal('models'),
+      id,
+      ticketId: id,
+    }),
     'documents.update': updateSchema(limits),
     'documents.archive': z.strictObject(mutation),
     'documents.copy': z.union([

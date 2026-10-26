@@ -45,7 +45,7 @@ async function resourceScope(
     collection: ContentState['collection'];
   },
 ) {
-  const { collection } = input;
+  const collection = await runtime.resolveCollection(input.tx, input.collection.key);
   const actor = await runtime.authorize(input.tx, input.ctx, 'documents.list', {
     scopeKind: 'collection',
     collectionKey: collection.key,

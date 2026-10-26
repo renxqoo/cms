@@ -121,3 +121,63 @@ it('does not silently collapse independently published languages when the config
     }),
   ).toMatchObject({ versionId: draft.versionId });
 });
+
+it('migrates global publications using registered and disabled languages without relying on configured bootstrap locales', async () => {
+  const kit = await createContentFixture();
+  fixtures.push(kit);
+  const draft = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    data: { title: 'Existing global publication' },
+  });
+  await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: draft.id,
+    revision: draft.revision,
+  });
+  const collections = workflowCollections();
+  const [articles] = collections;
+  if (!articles) throw new Error('Missing articles');
+  articles.localeSource = 'siteLanguages';
+  articles.localizeStatus = true;
+  const registry = createRegistry({ collections, limits: kit.limits });
+  const options = {
+    database: kit.database,
+    registry,
+    policy: kit.policy,
+    resourceLockKey: kit.contentOptions.workPolicy.resourceLockKey,
+    maxPageSize: kit.limits.maxPageSize,
+  };
+  await expect(
+    createPublicationMigrator(options).migratePage({ collection: 'articles', pageSize: 10 }),
+  ).rejects.toMatchObject({ code: 'invalid_input' });
+  const migration = createPublicationMigrator({
+    ...options,
+    limits: kit.limits,
+    resolveLocaleSource: () =>
+      Promise.resolve({
+        default: 'en',
+        supported: ['en', 'zh', 'fr'],
+        fallback: {},
+        enabled: ['en', 'zh'],
+      }),
+  });
+  await expect(migration.migratePage({ collection: 'articles', pageSize: 10 })).resolves.toEqual({
+    processed: 1,
+    complete: true,
+  });
+  expect(
+    (
+      await kit.database.query(
+        'SELECT locale,version_id FROM content_publications WHERE document_id=$1 ORDER BY locale',
+        [draft.id],
+      )
+    ).rows,
+  ).toEqual([
+    { locale: 'en', version_id: draft.versionId },
+    { locale: 'fr', version_id: draft.versionId },
+    { locale: 'zh', version_id: draft.versionId },
+  ]);
+  await expect(
+    createPublicationMigrator(options).migratePage({ collection: 'articles', pageSize: 10 }),
+  ).resolves.toEqual({ processed: 0, complete: true });
+});

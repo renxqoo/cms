@@ -33,6 +33,9 @@ async function describeEditor(
     schemaVersion: state.collection.schemaVersion,
     behaviorHash: runtime.registry.behaviorHash,
     mappingFingerprint: runtime.mapping.get(state.collection.key).fingerprint,
+    ...(state.collection.publicationLocalesField
+      ? { publicationLocalesField: state.collection.publicationLocalesField }
+      : {}),
     intent: context.input.intent,
     mode: state.mode,
     locale: state.locale,

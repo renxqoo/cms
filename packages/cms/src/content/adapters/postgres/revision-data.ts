@@ -1,3 +1,4 @@
+import { projectionFields } from './read-projection.ts';
 import { historicalReadContext } from '../../fields/remap-locale.ts';
 import { ownValue } from '../../fields/json-value.ts';
 const parameterLimit = 2 ** 16 - 1;
@@ -33,14 +34,16 @@ export async function loadValueRows(
   tx: SqlExecutor,
   input: {
     collection: CompiledCollection;
+    projection?: readonly string[];
     versionIds: readonly string[];
     limits: ContentLimits;
     locales?: readonly string[];
   },
 ): Promise<Map<string, ValueRow[]>> {
   const result = new Map<string, ValueRow[]>();
-  if (input.collection.flat.length === 0 || input.versionIds.length === 0) return result;
-  const statements = input.collection.flat.map(
+  const fields = projectionFields(input.collection, input.projection);
+  if (fields.length === 0 || input.versionIds.length === 0) return result;
+  const statements = fields.map(
     (field) =>
       `SELECT '${field.table}'::text AS table_name,(to_jsonb(f)-'search_vector') AS data FROM ${identifier(field.table)} f WHERE revision_id=ANY($1::uuid[]) AND ($3::text[] IS NULL OR locale=ANY($3::text[]))`,
   );

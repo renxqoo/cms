@@ -61,7 +61,7 @@ export async function mediaState(
     operationId: input.operationId,
     scope: { scopeKind: 'collection', collectionKey: input.collectionKey },
   });
-  const collection = input.runtime.registry.get(input.collectionKey);
+  const collection = await input.runtime.resolveCollection(tx, input.collectionKey);
   const state = {
     tx,
     actor,

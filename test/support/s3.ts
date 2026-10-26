@@ -18,14 +18,15 @@ export async function createTestS3(input: { timeoutMs: number }) {
   });
   const address = server.address();
   if (!address || typeof address === 'string') throw new Error('Expected S3 fixture TCP address');
-  const driver = createS3Storage({
+  const configuration = {
     bucket: 'private-assets',
     region: 'us-east-1',
     forcePathStyle: true,
     endpoint: `http://127.0.0.1:${address.port}`,
     timeoutMs: input.timeoutMs,
     credentials: { accessKeyId: 'fixture-access-key', secretAccessKey: 'fixture-secret-key' },
-  });
+  };
+  const driver = createS3Storage(configuration);
   let closing: Promise<void> | undefined;
   async function closeServer(): Promise<void> {
     await driver.close();
@@ -39,6 +40,7 @@ export async function createTestS3(input: { timeoutMs: number }) {
   }
   return {
     driver,
+    configuration,
     objects: state.objects,
     setDeleteStalled(value: boolean) {
       state.stallDeletes = value;

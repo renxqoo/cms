@@ -52,7 +52,7 @@ export async function jobState(
     operationId: input.job.source_operation,
     scope,
   });
-  const collection = input.runtime.registry.get(input.job.collection_key);
+  const collection = await input.runtime.resolveCollection(tx, input.job.collection_key);
   const base = {
     tx,
     actor,
@@ -144,6 +144,10 @@ async function executeFenced(
         input.item.payload.action === 'restoreTrash' || input.item.payload.action === 'archive',
     });
     const reference = await performItem(state, input);
+    await input.runtime.validateAfterMutation?.(tx, {
+      collection: state.collection.key,
+      operationId,
+    });
     await fenceJob(tx, input.job);
     await tx.query(
       "UPDATE content_job_items SET status='succeeded',result_document_id=$3,result_revision_id=$4 WHERE job_id=$1 AND position=$2 AND status='queued'",

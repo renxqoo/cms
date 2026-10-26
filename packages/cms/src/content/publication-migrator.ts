@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { createLocaleMapping } from './locale-source.ts';
+import { compileContent } from './adapters/postgres/compile-schema.ts';
+import type { ContentOptions } from './types.ts';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
 import { appendAudit } from '@new-cms/cms/audit/composition';
 import { fail } from '@new-cms/cms/platform/contracts';
@@ -35,13 +38,17 @@ async function migrateLocalizedPage(
   return { processed: ids.length, complete: ids.length < input.pageSize };
 }
 
-export function createPublicationMigrator(options: {
+interface PublicationMigrationOptions {
   database: Database;
   registry: ContentRegistry;
   policy: CmsPolicy;
   resourceLockKey: number;
   maxPageSize: number;
-}) {
+  limits?: Pick<ContentOptions['limits'], 'maxLocales'>;
+  resolveLocaleSource?: NonNullable<ContentOptions['resolveLocaleSource']>;
+}
+
+export function createPublicationMigrator(options: PublicationMigrationOptions) {
   if (
     !Number.isSafeInteger(options.resourceLockKey) ||
     options.resourceLockKey === options.policy.securityLockKey ||
@@ -49,6 +56,15 @@ export function createPublicationMigrator(options: {
     options.maxPageSize < 1
   )
     fail('invalid_input');
+  const mappingFor = options.limits
+    ? createLocaleMapping({
+        mapping: compileContent(options.registry),
+        limits: options.limits,
+        ...(options.resolveLocaleSource
+          ? { resolveLocaleSource: options.resolveLocaleSource }
+          : {}),
+      })
+    : undefined;
   return {
     migratePage(input: { collection: string; pageSize: number; signal?: AbortSignal }) {
       const collection = options.registry.get(input.collection);
@@ -65,23 +81,50 @@ export function createPublicationMigrator(options: {
       return securityTransaction(options.database, options.policy, {
         mode: 'exclusive',
         signal,
-        async work(tx) {
-          await tx.query('SELECT pg_advisory_xact_lock($1::bigint)', [options.resourceLockKey]);
-          if (!collection.localizeStatus) {
-            const incompatible = await tx.query(
-              "SELECT 1 FROM content_publications WHERE collection_id=$1 AND locale<>'*' LIMIT 1",
-              [collection.id],
-            );
-            if (incompatible.rowCount !== 0) fail('invalid_input');
-            return { processed: 0, complete: true };
-          }
-          return migrateLocalizedPage(tx, {
+        work: (tx) =>
+          migratePageInTransaction(tx, {
+            options,
             collection,
             pageSize: input.pageSize,
-            policy: options.policy,
-          });
-        },
+            ...(mappingFor ? { mappingFor } : {}),
+          }),
       });
     },
   };
+}
+
+async function migratePageInTransaction(
+  tx: SqlExecutor,
+  input: {
+    options: PublicationMigrationOptions;
+    collection: CollectionDefinition;
+    pageSize: number;
+    mappingFor?: ReturnType<typeof createLocaleMapping>;
+  },
+) {
+  await tx.query('SELECT pg_advisory_xact_lock($1::bigint)', [input.options.resourceLockKey]);
+  if (!input.collection.localizeStatus) {
+    const incompatible = await tx.query(
+      "SELECT 1 FROM content_publications WHERE collection_id=$1 AND locale<>'*' LIMIT 1",
+      [input.collection.id],
+    );
+    if (incompatible.rowCount !== 0) fail('invalid_input');
+    return { processed: 0, complete: true };
+  }
+  if (input.collection.localeSource) {
+    const pending = await tx.query(
+      "SELECT 1 FROM content_publications WHERE collection_id=$1 AND locale='*' LIMIT 1",
+      [input.collection.id],
+    );
+    if (pending.rowCount === 0) return { processed: 0, complete: true };
+    if (!input.mappingFor || !input.options.resolveLocaleSource) fail('invalid_input');
+  }
+  const effective = input.mappingFor
+    ? (await input.mappingFor(tx)).get(input.collection.key).definition
+    : input.collection;
+  return migrateLocalizedPage(tx, {
+    collection: effective,
+    pageSize: input.pageSize,
+    policy: input.options.policy,
+  });
 }

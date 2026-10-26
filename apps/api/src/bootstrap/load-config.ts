@@ -27,6 +27,8 @@ const environmentSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM: z.email().default('cms@localhost.invalid'),
   CMS_FRONTEND_URL: z.url().default('http://localhost:3000'),
+  ONEASTER_CLIENT_ORIGIN: z.string().optional(),
+  ONEASTER_PUBLIC_READ_IP_LIMIT: z.coerce.number().int().min(1).max(1_000_000).default(6000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CMS_NAVIGATION_PATHS: z.string().default('').transform(commaList).pipe(navigationPathsSchema),
   CMS_NAVIGATION_ICONS: z.string().default('').transform(commaList).pipe(navigationIconsSchema),
@@ -39,6 +41,7 @@ export interface ApplicationConfig {
   assetProcessingIntervalMs: number;
   mode: 'development' | 'test' | 'production';
   storage: StorageConfig;
+  delivery: { clientOrigin: string; publicReadIpRateLimit: number };
   database: { connectionString: string; schema: string; maxConnections: number };
   navigation: { paths: readonly string[]; icons: readonly string[] };
   policy: CmsPolicy;
@@ -218,10 +221,37 @@ export function loadMigrationDatabaseConfig(
   return { connectionString, schema: env.DATABASE_SCHEMA, maxConnections: 2 };
 }
 
+function clientOrigin(env: z.infer<typeof environmentSchema>): string {
+  const value =
+    env.ONEASTER_CLIENT_ORIGIN ??
+    (env.NODE_ENV === 'production' ? undefined : 'http://localhost:9090');
+  return z
+    .object({
+      ONEASTER_CLIENT_ORIGIN: z.url().refine((candidate) => {
+        const url = new URL(candidate);
+        return (
+          url.origin === candidate &&
+          !url.username &&
+          !url.password &&
+          (url.protocol === 'https:' ||
+            (env.NODE_ENV !== 'production' &&
+              url.protocol === 'http:' &&
+              ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))
+        );
+      }),
+    })
+    .parse({ ONEASTER_CLIENT_ORIGIN: value }).ONEASTER_CLIENT_ORIGIN;
+}
+
 export function loadConfig(source: NodeJS.ProcessEnv = process.env): ApplicationConfig {
   const env = environmentSchema.parse(source);
   validateProduction(env);
+  const contentOrigin = clientOrigin(env);
   return {
+    delivery: {
+      clientOrigin: contentOrigin,
+      publicReadIpRateLimit: env.ONEASTER_PUBLIC_READ_IP_LIMIT,
+    },
     oauth: oauthConfiguration(env),
     storage: loadStorageConfig(source, env.NODE_ENV === 'production'),
     assetProcessingIntervalMs: env.CMS_ASSET_PROCESSING_INTERVAL_MS,
@@ -241,7 +271,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Application
       host: env.API_HOST,
       port: env.API_PORT,
       allowedHosts: commaList(env.API_ALLOWED_HOSTS),
-      allowedOrigins: commaList(env.API_ALLOWED_ORIGINS),
+      allowedOrigins: [...new Set([...commaList(env.API_ALLOWED_ORIGINS), contentOrigin])],
       bodyLimitBytes: 1_048_576,
       oauthBodyLimitBytes: 65_536,
       uploadBodyLimitBytes: 20_971_520,

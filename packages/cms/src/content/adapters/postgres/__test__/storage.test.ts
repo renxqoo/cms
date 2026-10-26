@@ -17,7 +17,7 @@ afterEach(async () => {
   for (const resource of fixtures.splice(0)) await resource.close();
 });
 async function fixture(definitions = contentDefinitions()) {
-  const kit = await createTestDatabase();
+  const kit = await createTestDatabase({ migrationScope: 'library' });
   fixtures.push(kit);
   const limits = contentLimits();
   const registry = createRegistry({ collections: definitions, limits });
