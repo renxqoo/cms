@@ -41,17 +41,30 @@ async function listVersions(
     pageSize: input.pageSize,
   };
 }
-async function verifyReady(tx: SqlExecutor, mapping: ContentMapping): Promise<void> {
-  const publicationMigration = await tx.query("SELECT 1 FROM cms_migrations WHERE name='0014_localized_publications.sql'");
+async function verifyPublications(tx: SqlExecutor, mapping: ContentMapping): Promise<void> {
+  const publicationMigration = await tx.query(
+    "SELECT 1 FROM cms_migrations WHERE name='0014_localized_publications.sql'",
+  );
   if (publicationMigration.rowCount !== 1) fail('temporarily_unavailable');
-  const publicationLocales = mapping.collections.filter((collection) =>
-    collection === mapping.collections.findLast((item) => item.definition.id === collection.definition.id))
-    .map(({ definition }) => ({ collection_id: definition.id, locales: definition.localizeStatus ? definition.locales.supported : ['*'] }));
+  const publicationLocales = mapping.collections
+    .filter(
+      (collection) =>
+        collection ===
+        mapping.collections.findLast((item) => item.definition.id === collection.definition.id),
+    )
+    .map(({ definition }) => ({
+      collection_id: definition.id,
+      locales: definition.localizeStatus ? definition.locales.supported : ['*'],
+    }));
   const validPublications = await tx.query(
     `SELECT 1 FROM content_publications p JOIN jsonb_to_recordset($1::jsonb) c(collection_id text,locales jsonb) USING(collection_id) WHERE NOT c.locales ? p.locale LIMIT 1`,
     [JSON.stringify(publicationLocales)],
   );
   if (validPublications.rowCount !== 0) fail('temporarily_unavailable');
+}
+
+async function verifyReady(tx: SqlExecutor, mapping: ContentMapping): Promise<void> {
+  await verifyPublications(tx, mapping);
   const installed = await tx.query(
     "SELECT fingerprint FROM content_schema_manifests WHERE fingerprint=$1 AND status='ready'",
     [mapping.fingerprint],
@@ -124,10 +137,7 @@ async function purge(
     [input.id],
   );
   if (incoming.rowCount !== 0) fail('resource_in_use');
-  await tx.query(
-    'DELETE FROM content_publications WHERE document_id=$1',
-    [input.id],
-  );
+  await tx.query('DELETE FROM content_publications WHERE document_id=$1', [input.id]);
   await tx.query('UPDATE content_documents SET current_version_id=NULL WHERE id=$1', [input.id]);
   await tx.query('DELETE FROM content_references WHERE source_document_id=$1', [input.id]);
   await tx.query('DELETE FROM content_revisions WHERE document_id=$1', [input.id]);

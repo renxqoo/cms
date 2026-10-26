@@ -116,8 +116,8 @@ async function validateSchedule(
     lock: true,
   });
   requireRevision(document, input.values.revision);
-  const versionId = input.values.action === 'unpublish'
-    ? document.publishedVersionId : document.currentVersionId;
+  const versionId =
+    input.values.action === 'unpublish' ? document.publishedVersionId : document.currentVersionId;
   if (!versionId || versionId !== input.values.versionId) fail('version_conflict');
   await requireAdditionalOperation(state, {
     runtime: input.runtime,
@@ -165,7 +165,12 @@ async function acceptSchedule(
 async function schedulePublication(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['content.schedulePublication'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'content.schedulePublication', collection: input.collection, ...(input.locale ? { locale: input.locale } : {}) },
+    {
+      ctx,
+      operationId: 'content.schedulePublication',
+      collection: input.collection,
+      ...(input.locale ? { locale: input.locale } : {}),
+    },
     async (state) => {
       const reference = await idempotentReference(state, { runtime, input }, () =>
         acceptSchedule(state, { runtime, values: input }),

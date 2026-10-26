@@ -113,9 +113,13 @@ function relationFieldCondition(input: {
     ];
     const condition = compilePathCondition({ ...node, field: nestedPath }, child);
     if (typeof policy !== 'boolean') predicates.push(compileWhere(policy, trustedContext(child)));
-    const pointer = context.query.mode === 'published'
-      ? publicationExpression(documentAlias, parameter(context, publicationLocale(collection.definition, scope.locale)))
-      : `${documentAlias}.current_version_id`;
+    const pointer =
+      context.query.mode === 'published'
+        ? publicationExpression(
+            documentAlias,
+            parameter(context, publicationLocale(collection.definition, scope.locale)),
+          )
+        : `${documentAlias}.current_version_id`;
     const from = `FROM content_documents ${documentAlias} JOIN content_revisions ${revisionAlias} ON ${revisionAlias}.id=${pointer} WHERE ${predicates.join(' AND ')}`;
     conditions.push({
       match: `EXISTS (SELECT 1 ${from} AND ${condition.match})`,

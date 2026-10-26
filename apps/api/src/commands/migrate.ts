@@ -21,15 +21,20 @@ async function main(): Promise<void> {
     await migrate(database);
     const content = contentConfiguration();
     const publicationMigrator = createPublicationMigrator({
-      database, registry: content.registry, policy: config.policy,
+      database,
+      registry: content.registry,
+      policy: config.policy,
       resourceLockKey: contentWorkPolicy().resourceLockKey,
       maxPageSize: content.limits.maxPageSize,
     });
     for (const collection of content.registry.list) {
       let complete = false;
       while (!complete) {
-        const page = await publicationMigrator.migratePage({ collection: collection.key, pageSize: content.limits.maxPageSize });
-        complete = page.complete;
+        const { complete: pageComplete } = await publicationMigrator.migratePage({
+          collection: collection.key,
+          pageSize: content.limits.maxPageSize,
+        });
+        complete = pageComplete;
       }
     }
     const catalog = createAccessCatalog({

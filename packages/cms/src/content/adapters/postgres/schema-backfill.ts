@@ -126,8 +126,10 @@ async function validateActiveData(
   const { definition } = input.mapping.get(input.collection);
   const document = await readDocument(tx, { ...input, id });
   for (const locale of definition.locales.supported) {
-    const versionId = definition.mode === 'direct' ? document.currentVersionId
-      : document.publications?.[publicationLocale(definition, locale)];
+    const versionId =
+      definition.mode === 'direct'
+        ? document.currentVersionId
+        : document.publications?.[publicationLocale(definition, locale)];
     if (!versionId) continue;
     const fallback = Object.hasOwn(definition.locales.fallback, locale)
       ? (definition.locales.fallback[locale] ?? [])

@@ -58,7 +58,12 @@ export async function writeEditor(
     operation,
     params: { collection: collection.key, id: document.id },
     ...(definition.method === 'DELETE'
-      ? { query: { revision: document.revision, ...(input.action === 'unpublish' ? { locale: input.snapshot.editor.locale } : {}) } }
+      ? {
+          query: {
+            revision: document.revision,
+            ...(input.action === 'unpublish' ? { locale: input.snapshot.editor.locale } : {}),
+          },
+        }
       : { body: writeBody(input, document) }),
     response: documentSchema,
     signal,

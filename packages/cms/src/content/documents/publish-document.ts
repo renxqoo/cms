@@ -54,7 +54,12 @@ export async function publishInTransaction(
 async function publishDocument(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['documents.publish'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'documents.publish', collection: input.collection, ...(input.locale ? { locale: input.locale } : {}) },
+    {
+      ctx,
+      operationId: 'documents.publish',
+      collection: input.collection,
+      ...(input.locale ? { locale: input.locale } : {}),
+    },
     async (state) => {
       const result = await idempotentReference(state, { runtime, input }, () =>
         publishInTransaction(state, { runtime, id: input.id, revision: input.revision }),
@@ -70,11 +75,17 @@ async function publishDocument(runtime: ContentRuntime, ctx: RequestContext, raw
 async function unpublishDocument(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['documents.unpublish'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'documents.unpublish', collection: input.collection, ...(input.locale ? { locale: input.locale } : {}) },
+    {
+      ctx,
+      operationId: 'documents.unpublish',
+      collection: input.collection,
+      ...(input.locale ? { locale: input.locale } : {}),
+    },
     async (state) => {
       await unpublishInTransaction(state, { runtime, id: input.id, revision: input.revision });
       return projectDocument(state, {
-        runtime, document: await ensureVisible(state, { runtime, id: input.id }),
+        runtime,
+        document: await ensureVisible(state, { runtime, id: input.id }),
       });
     },
   );
@@ -88,7 +99,8 @@ export async function unpublishInTransaction(
   const document = await ensureVisible(state, { runtime: input.runtime, id: input.id, lock: true });
   requireRevision(document, input.revision);
   if (input.versionId && document.publishedVersionId !== input.versionId) fail('version_conflict');
-  if (!document.publishedVersionId) return { id: document.id, versionId: document.currentVersionId };
+  if (!document.publishedVersionId)
+    return { id: document.id, versionId: document.currentVersionId };
   await input.runtime.store.updateDocumentPointers(state.tx, {
     collection: state.collection.key,
     id: input.id,
@@ -98,8 +110,15 @@ export async function unpublishInTransaction(
     publishedVersionId: null,
     locale: state.locale,
   });
-  await input.runtime.store.syncActiveUnique(state.tx, { collection: state.collection.key, id: input.id });
-  await auditContent(state, { runtime: input.runtime, id: input.id, detail: { kind: 'unpublished' } });
+  await input.runtime.store.syncActiveUnique(state.tx, {
+    collection: state.collection.key,
+    id: input.id,
+  });
+  await auditContent(state, {
+    runtime: input.runtime,
+    id: input.id,
+    detail: { kind: 'unpublished' },
+  });
   return { id: document.id, versionId: document.currentVersionId };
 }
 

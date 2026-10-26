@@ -2,6 +2,12 @@
   "name": "@new-cms/api",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/main.ts",
+    "migrate": "bun src/commands/migrate.ts",
+    "grant-runtime": "bun src/commands/grant-runtime-role.ts",
+    "initialize-admin": "bun src/commands/initialize-admin.ts"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1156.0",
     "@hono/node-server": "2.1.5",

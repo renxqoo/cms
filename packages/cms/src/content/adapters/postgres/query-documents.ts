@@ -7,7 +7,12 @@ import type { ContentMapping, QueryInput, RevisionRow, StoredPage } from '../../
 import type { QueryContext } from './query-context.ts';
 import { parameter, trustedContext } from './query-context.ts';
 import { compileOrder, compileSearch, compileWhere } from './compile-query.ts';
-import { documentProjection, documentRow, publicationLocale, publicationExpression } from './document-store.ts';
+import {
+  documentProjection,
+  documentRow,
+  publicationLocale,
+  publicationExpression,
+} from './document-store.ts';
 import type { RawDocumentRow } from './document-store.ts';
 import { loadValueRows, revisionRow, migrateData, dataSchemaSql } from './revision-data.ts';
 import { decodeFields } from './value-codec.ts';
@@ -77,9 +82,16 @@ export function querySql(
   const search = compileSearch(context);
   if (search) filters.push(search);
   const order = compileOrder(context);
-  const pointer = context.query.mode === 'published'
-    ? publicationExpression('d', parameter(context, publicationLocale(context.collection.definition, context.query.locale)))
-    : 'd.current_version_id';
+  const pointer =
+    context.query.mode === 'published'
+      ? publicationExpression(
+          'd',
+          parameter(
+            context,
+            publicationLocale(context.collection.definition, context.query.locale),
+          ),
+        )
+      : 'd.current_version_id';
   const limit = parameter(context, context.query.pageSize);
   const offset = parameter(context, (context.query.page - 1) * context.query.pageSize);
   const from = `FROM content_documents d JOIN content_revisions r ON r.id=${pointer} ${[...context.joins.values()].join(' ')} WHERE ${filters.join(' AND ')}`;
@@ -113,7 +125,10 @@ export async function queryDocuments(tx: SqlExecutor, input: QueryOptions): Prom
 }
 
 export async function decodeRows(tx: SqlExecutor, input: QueryOptions, rawRows: RawQueryRow[]) {
-  const locale = publicationLocale(input.mapping.get(input.collection).definition, input.query.locale);
+  const locale = publicationLocale(
+    input.mapping.get(input.collection).definition,
+    input.query.locale,
+  );
   if (input.query.select?.length === 0) return rawRows.map((row) => storedRow(row, {}, locale));
   const grouped = new Map<number, RawQueryRow[]>();
   for (const row of rawRows) {

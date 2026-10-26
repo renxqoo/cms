@@ -113,9 +113,24 @@ export const contentPublications = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.documentId, t.locale] }),
-    check('content_publication_locale_check', sql`${t.locale}='*' OR ${t.locale}~'^[a-zA-Z][a-zA-Z0-9-]{0,31}$'`),
-    foreignKey({ name: 'content_publication_document_fk', columns: [t.documentId, t.collectionId], foreignColumns: [contentDocuments.id, contentDocuments.collectionId] }).onDelete('cascade'),
-    foreignKey({ name: 'content_publication_revision_fk', columns: [t.versionId, t.documentId, t.collectionId], foreignColumns: [contentRevisions.id, contentRevisions.documentId, contentRevisions.collectionId] }).onDelete('restrict'),
+    check(
+      'content_publication_locale_check',
+      sql`${t.locale}='*' OR ${t.locale}~'^[a-zA-Z][a-zA-Z0-9-]{0,31}$'`,
+    ),
+    foreignKey({
+      name: 'content_publication_document_fk',
+      columns: [t.documentId, t.collectionId],
+      foreignColumns: [contentDocuments.id, contentDocuments.collectionId],
+    }).onDelete('cascade'),
+    foreignKey({
+      name: 'content_publication_revision_fk',
+      columns: [t.versionId, t.documentId, t.collectionId],
+      foreignColumns: [
+        contentRevisions.id,
+        contentRevisions.documentId,
+        contentRevisions.collectionId,
+      ],
+    }).onDelete('restrict'),
     index('content_publications_version_idx').on(t.versionId),
   ],
 );

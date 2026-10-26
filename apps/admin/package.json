@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run prepare:editor && NODE_ENV=development bun --bun next dev",
+    "dev": "bun run prepare:editor && NODE_ENV=development bun --bun next dev --port 9092",
     "build": "bun run prepare:editor && NODE_ENV=production bun --bun next build",
     "start": "NODE_ENV=production next start",
     "prepare:editor": "bun ../../tooling/prepare-editor.ts",

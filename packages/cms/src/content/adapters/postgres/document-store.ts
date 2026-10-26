@@ -8,11 +8,10 @@ import type {
   UpdatePointersInput,
 } from './store-contract.ts';
 
-export const documentProjection =
-  `d.id,d.collection_id AS "collectionId",d.revision,d.current_version_id AS "currentVersionId",(SELECT p.version_id FROM content_publications p WHERE p.document_id=d.id AND p.locale='*') AS "publishedVersionId",(SELECT COALESCE(jsonb_object_agg(p.locale,p.version_id),'{}'::jsonb) FROM content_publications p WHERE p.document_id=d.id) AS publications,d.trashed_at AS "trashedAt",d.folder_id AS "folderId",d.created_at AS "createdAt",d.updated_at AS "updatedAt"`;
+export const documentProjection = `d.id,d.collection_id AS "collectionId",d.revision,d.current_version_id AS "currentVersionId",(SELECT p.version_id FROM content_publications p WHERE p.document_id=d.id AND p.locale='*') AS "publishedVersionId",(SELECT COALESCE(jsonb_object_agg(p.locale,p.version_id),'{}'::jsonb) FROM content_publications p WHERE p.document_id=d.id) AS publications,d.trashed_at AS "trashedAt",d.folder_id AS "folderId",d.created_at AS "createdAt",d.updated_at AS "updatedAt"`;
 
 export function publicationLocale(collection: CollectionDefinition, locale?: string): string {
-  return collection.localizeStatus ? locale ?? collection.locales.default : '*';
+  return collection.localizeStatus ? (locale ?? collection.locales.default) : '*';
 }
 
 export function publicationExpression(documentAlias: string, localeParameter: string): string {
@@ -47,7 +46,10 @@ export async function readDocument(
   );
   const [row] = result.rows;
   if (!row) fail('not_found');
-  return documentRow(row, publicationLocale(input.mapping.get(input.collection).definition, input.locale));
+  return documentRow(
+    row,
+    publicationLocale(input.mapping.get(input.collection).definition, input.locale),
+  );
 }
 export async function lockDocuments(
   tx: SqlExecutor,
@@ -82,11 +84,7 @@ export async function updateDocumentPointers(
   tx: SqlExecutor,
   input: UpdatePointersInput & { mapping: ContentMapping },
 ): Promise<DocumentRow> {
-  const assignments = [
-    'revision=$3',
-    'current_version_id=$4',
-    'updated_at=clock_timestamp()',
-  ];
+  const assignments = ['revision=$3', 'current_version_id=$4', 'updated_at=clock_timestamp()'];
   const values: unknown[] = [
     input.id,
     input.mapping.get(input.collection).definition.id,
@@ -109,19 +107,22 @@ export async function updateDocumentPointers(
   const [row] = result.rows;
   if (!row) fail('version_conflict');
   const key = publicationLocale(input.mapping.get(input.collection).definition, input.locale);
-  const publications = { ...row.publications };
+  const publications = new Map(Object.entries(row.publications ?? {}));
   if (input.clearPublications) {
     await tx.query('DELETE FROM content_publications WHERE document_id=$1', [input.id]);
-    for (const locale of Object.keys(publications)) delete publications[locale];
+    publications.clear();
   } else if (input.publishedVersionId) {
     await tx.query(
       'INSERT INTO content_publications(document_id,collection_id,locale,version_id) VALUES($1,$2,$3,$4) ON CONFLICT(document_id,locale) DO UPDATE SET version_id=excluded.version_id',
       [input.id, row.collectionId, key, input.publishedVersionId],
     );
-    publications[key] = input.publishedVersionId;
+    publications.set(key, input.publishedVersionId);
   } else {
-    await tx.query('DELETE FROM content_publications WHERE document_id=$1 AND locale=$2', [input.id, key]);
-    delete publications[key];
+    await tx.query('DELETE FROM content_publications WHERE document_id=$1 AND locale=$2', [
+      input.id,
+      key,
+    ]);
+    publications.delete(key);
   }
-  return documentRow({ ...row, publications }, key);
+  return documentRow({ ...row, publications: Object.fromEntries(publications) }, key);
 }

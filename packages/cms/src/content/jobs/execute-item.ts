@@ -87,19 +87,15 @@ async function performItem(
   };
   if (input.job.action === 'publication') {
     if (!input.job.version_id) fail('invalid_input');
-    if (input.item.payload.action === 'unpublish')
-      return unpublishInTransaction(state, {
-        runtime: input.runtime,
-        id: values.id,
-        revision: values.revision,
-        versionId: input.job.version_id,
-      });
-    return publishInTransaction(state, {
+    const publication = {
       runtime: input.runtime,
       id: values.id,
       revision: values.revision,
       versionId: input.job.version_id,
-    });
+    };
+    return input.item.payload.action === 'unpublish'
+      ? unpublishInTransaction(state, publication)
+      : publishInTransaction(state, publication);
   }
   switch (input.item.payload.action) {
     case 'update':
@@ -119,6 +115,9 @@ async function performItem(
         id: values.id,
         revision: values.revision,
       });
+    case 'publish':
+    case 'unpublish':
+      break;
   }
   return fail('invalid_input');
 }

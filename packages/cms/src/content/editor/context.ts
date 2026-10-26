@@ -214,11 +214,22 @@ async function checkActionPrerequisites(
     return requireCopyPrerequisites(context, input.runtime);
   const { fallbackOverride: _fallback, ...base } = context.state;
   if (input.operationId === 'content.schedulePublication') {
-    const operations = context.document?.publishedVersionId ? ['documents.publish', 'documents.unpublish'] : ['documents.publish'];
+    const operations = context.document?.publishedVersionId
+      ? ['documents.publish', 'documents.unpublish']
+      : ['documents.publish'];
     for (const operationId of operations) {
       try {
-        const state = await operationState(base, { runtime: input.runtime, operationId, mode: 'editing' });
-        if (context.document) await requireEditorDocument(state, { runtime: input.runtime, document: context.document, context });
+        const state = await operationState(base, {
+          runtime: input.runtime,
+          operationId,
+          mode: 'editing',
+        });
+        if (context.document)
+          await requireEditorDocument(state, {
+            runtime: input.runtime,
+            document: context.document,
+            context,
+          });
         return;
       } catch (error) {
         if (!denied(error)) throw error;
