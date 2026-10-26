@@ -92,7 +92,7 @@ test('independent security reads recover both denied ordinary catalogs with real
   await expect(page.getByRole('link', { name: '访问恢复', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '账户菜单', exact: true }).click();
   await page.getByRole('menuitem', { name: '访问恢复', exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard\/access-recovery$/);
+  await page.waitForURL(/\/dashboard\/access-recovery$/);
   await page.getByRole('button', { name: '创建权限', exact: true }).click();
   const permission = page.getByRole('dialog', { name: '创建权限', exact: true });
   await permission.getByLabel(/^权限编码/).fill('browser:recovery');
