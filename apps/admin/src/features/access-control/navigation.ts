@@ -60,10 +60,8 @@ export function shellNavigation(input: {
     const items = adminRoutes
       .filter((route) => route.operation !== null && input.can(route.operation))
       .map((route) => routeItem(route, locale));
-    if (items.length > 0) {
-      groups.push({ id: 'application-entries', label: t.entries, items });
-      pages += items.length;
-    }
+    if (items.length > 0) groups.push({ id: 'application-entries', label: t.entries, items });
+    pages += items.length;
   }
   return { groups, invalid, empty: pages === 0 };
 }

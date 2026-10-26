@@ -8,8 +8,49 @@ import {
   eligiblePermissions,
   permissionChanges,
   permissionValuesSchema,
+  permissionCollections,
 } from '../permission-model';
 import { parsePermissionQuery, permissionQueryHref } from '../permission-query';
+
+it('keeps readable labels and deduplicates registered collection scopes without inventing choices for other operations', () => {
+  const article = managementEndpoint({
+    operationId: 'collections.get',
+    scopeKind: 'collection',
+    collectionKey: 'articles',
+    binding: null,
+  });
+  expect(
+    permissionCollections({
+      collections: [{ key: 'articles', label: 'Editorial articles' }],
+      endpoints: [
+        article,
+        article,
+        { ...article, collectionKey: 'pages' },
+        { ...article, operationId: 'documents.get', collectionKey: 'unregistered' },
+        { ...article, scopeKind: 'global', collectionKey: null },
+      ],
+    }),
+  ).toEqual([
+    { key: 'articles', label: 'Editorial articles' },
+    { key: 'pages', label: 'pages' },
+  ]);
+});
+
+it('permits initial collection configuration from the real endpoint catalog when collection metadata is unavailable', () => {
+  const endpoints = [
+    managementEndpoint({
+      operationId: 'collections.get',
+      scopeKind: 'collection',
+      collectionKey: 'media',
+      binding: null,
+    }),
+  ];
+  expect(permissionCollections({ collections: null, endpoints })).toEqual([
+    { key: 'media', label: 'media' },
+  ]);
+  expect(permissionCollections({ collections: null, endpoints: null })).toBeNull();
+  expect(permissionCollections({ collections: null, endpoints: [] })).toBeNull();
+});
 
 it('offers only active permissions matching both scope kind and collection key', () => {
   const rows = [

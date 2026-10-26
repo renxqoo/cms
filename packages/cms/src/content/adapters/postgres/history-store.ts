@@ -42,6 +42,16 @@ async function listVersions(
   };
 }
 async function verifyReady(tx: SqlExecutor, mapping: ContentMapping): Promise<void> {
+  const publicationMigration = await tx.query("SELECT 1 FROM cms_migrations WHERE name='0014_localized_publications.sql'");
+  if (publicationMigration.rowCount !== 1) fail('temporarily_unavailable');
+  const publicationLocales = mapping.collections.filter((collection) =>
+    collection === mapping.collections.findLast((item) => item.definition.id === collection.definition.id))
+    .map(({ definition }) => ({ collection_id: definition.id, locales: definition.localizeStatus ? definition.locales.supported : ['*'] }));
+  const validPublications = await tx.query(
+    `SELECT 1 FROM content_publications p JOIN jsonb_to_recordset($1::jsonb) c(collection_id text,locales jsonb) USING(collection_id) WHERE NOT c.locales ? p.locale LIMIT 1`,
+    [JSON.stringify(publicationLocales)],
+  );
+  if (validPublications.rowCount !== 0) fail('temporarily_unavailable');
   const installed = await tx.query(
     "SELECT fingerprint FROM content_schema_manifests WHERE fingerprint=$1 AND status='ready'",
     [mapping.fingerprint],
@@ -115,9 +125,10 @@ async function purge(
   );
   if (incoming.rowCount !== 0) fail('resource_in_use');
   await tx.query(
-    'UPDATE content_documents SET current_version_id=NULL,published_version_id=NULL WHERE id=$1',
+    'DELETE FROM content_publications WHERE document_id=$1',
     [input.id],
   );
+  await tx.query('UPDATE content_documents SET current_version_id=NULL WHERE id=$1', [input.id]);
   await tx.query('DELETE FROM content_references WHERE source_document_id=$1', [input.id]);
   await tx.query('DELETE FROM content_revisions WHERE document_id=$1', [input.id]);
   await tx.query('DELETE FROM content_documents WHERE id=$1', [input.id]);
@@ -136,7 +147,7 @@ async function inboundReferences(
   const values: unknown[] = [input.id];
   if (input.active)
     filters.push(
-      '(d.current_version_id=x.source_revision_id OR d.published_version_id=x.source_revision_id)',
+      '(d.current_version_id=x.source_revision_id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=d.id AND p.version_id=x.source_revision_id))',
     );
   if (input.excludeDocumentId) {
     values.push(input.excludeDocumentId);
@@ -160,7 +171,7 @@ async function inboundReferences(
     onDelete: 'restrict' | 'nullify' | 'cascade';
     active: boolean;
   }>(
-    `SELECT x.source_document_id AS "sourceDocumentId",x.source_revision_id AS "sourceRevisionId",x.source_collection_id AS "sourceCollectionId",x.projection_schema_version AS "schemaVersion",x.source_path AS path,x.field_id AS "fieldId",x.on_delete AS "onDelete",(d.current_version_id=x.source_revision_id OR d.published_version_id=x.source_revision_id) AS active FROM content_references x JOIN content_documents d ON d.id=x.source_document_id JOIN content_schema_control c ON c.collection_id=x.source_collection_id JOIN content_revisions r ON r.id=x.source_revision_id WHERE ${filters.join(' AND ')} ORDER BY x.source_document_id,x.source_revision_id,x.source_path LIMIT $${values.length}`,
+    `SELECT x.source_document_id AS "sourceDocumentId",x.source_revision_id AS "sourceRevisionId",x.source_collection_id AS "sourceCollectionId",x.projection_schema_version AS "schemaVersion",x.source_path AS path,x.field_id AS "fieldId",x.on_delete AS "onDelete",(d.current_version_id=x.source_revision_id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=d.id AND p.version_id=x.source_revision_id)) AS active FROM content_references x JOIN content_documents d ON d.id=x.source_document_id JOIN content_schema_control c ON c.collection_id=x.source_collection_id JOIN content_revisions r ON r.id=x.source_revision_id WHERE ${filters.join(' AND ')} ORDER BY x.source_document_id,x.source_revision_id,x.source_path LIMIT $${values.length}`,
     values,
   );
   return result.rows.map((row) => ({
@@ -220,7 +231,7 @@ async function removeRevision(
   await requireWritableSchema(tx, { ...options, ...input });
   await readDocument(tx, { ...options, ...input, id: input.documentId });
   const result = await tx.query(
-    'DELETE FROM content_revisions r WHERE r.id=$1 AND r.document_id=$2 AND r.collection_id=$3 AND NOT EXISTS(SELECT 1 FROM content_documents d WHERE d.current_version_id=r.id OR d.published_version_id=r.id)',
+    'DELETE FROM content_revisions r WHERE r.id=$1 AND r.document_id=$2 AND r.collection_id=$3 AND NOT EXISTS(SELECT 1 FROM content_documents d WHERE d.current_version_id=r.id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=d.id AND p.version_id=r.id))',
     [input.versionId, input.documentId, options.mapping.get(input.collection).definition.id],
   );
   if (result.rowCount !== 1) fail('resource_in_use');

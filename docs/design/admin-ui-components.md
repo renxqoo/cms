@@ -16,7 +16,7 @@
 | 8 | DatePicker | default/dayAndTime/dayOnly/monthOnly/timeOnly、min/max、清空null、格式 | [date-picker.tsx](../../packages/ui/src/forms/date-picker.tsx) · `/ui/inputs` |
 | 9 | Field Labels and Messages | 标签、必填、描述、字段/表单错误 | [field.tsx](../../packages/ui/src/forms/field.tsx) · `/ui/inputs` |
 | 10 | Text Inputs | 文本/多行/密码、多值文本增删排序及状态 | [multi-text-input.tsx](../../packages/ui/src/forms/multi-text-input.tsx) · `/ui/inputs` |
-| 11 | Checkbox and Select Inputs | checkbox/radio/switch/原生select及多选 | [choices.tsx](../../packages/ui/src/forms/choices.tsx) · `/ui/inputs` |
+| 11 | Checkbox and Select Inputs | checkbox/radio/switch/原生select及多选；Checkbox的hideLabel隐藏可见标签并保留可访问名称 | [choices.tsx](../../packages/ui/src/forms/choices.tsx) · `/ui/inputs` |
 | 12 | PillSelector | 单/多项pill选择、拖拽排序与禁用 | [pill-selector.tsx](../../packages/ui/src/forms/pill-selector.tsx) · `/ui/inputs` |
 | 13 | ReactSelect and Select | 分组/搜索、单多选及排序、清空、creatable、异步/空状态 | [select.tsx](../../packages/ui/src/forms/select.tsx) · `/ui/inputs` |
 | 14 | Relationship and Upload Inputs | 关联内联/抽屉单多选、权限/创建编辑/上传选择 | [relationship-input.tsx](../../apps/admin/src/components/cms/relationship-input.tsx) · `/ui/documents` |
@@ -37,7 +37,7 @@
 | 29 | Table Cells | 文本/布尔/数字/日期/状态/关联/操作等值展示 | [cells.tsx](../../packages/ui/src/data/cells.tsx) · `/ui/data` |
 | 30 | Thumbnail | 图片/文件类型/缺失/失败fallback及替代文本 | [thumbnail.tsx](../../packages/ui/src/data/thumbnail.tsx) · `/ui/data` |
 | 31 | Draggable Sortable | 指针/触摸/键盘、把手、排序/取消 | [sortable-list.tsx](../../packages/ui/src/data/sortable-list.tsx) · `/ui/data` |
-| 32 | Modals and Drawers | 模态/确认/表单弹窗、抽屉、焦点及异步错误 | [form-dialog.tsx](../../packages/ui/src/feedback/form-dialog.tsx) · `/ui/overlays` |
+| 32 | Modals and Drawers | 模态/确认/表单弹窗、抽屉、焦点及异步错误；DialogContent可选keepMounted以保留关闭后的任务与草稿，关闭内容隐藏且不可交互 | [form-dialog.tsx](../../packages/ui/src/feedback/form-dialog.tsx) · `/ui/overlays` |
 | 33 | Popup and PopupList | 菜单/分组/禁用/危险动作与浮层 | [menu.tsx](../../packages/ui/src/primitives/menu.tsx) · `/ui/overlays` |
 | 34 | Tooltip | 鼠标/焦点说明、触发器可访问性 | [tooltip.tsx](../../packages/ui/src/primitives/tooltip.tsx) · `/ui/overlays` |
 | 35 | Document Actions | 保存/草稿/发布/撤回/预览/批量及部分失败 | [document-actions.tsx](../../apps/admin/src/components/cms/document-actions.tsx) · `/ui/documents` |
@@ -58,7 +58,7 @@
 
 工作台按七类展示全部条目，每项提供实际可操作示例和状态切换；样例事件显示其值/状态变化，说明本地示例，不以Toast冒充实际发布或存储成功。业务组件的网络数据由受控props/函数注入，本期装置演示失败、取消及部分结果，不建立假API端点。
 
-列表场景组合PageHeader、ListToolbar、SearchBar、筛选、DataTable、行菜单、FormDialog与Pagination，检验组件协作与真实URL状态；文档/媒体场景组合状态、权限矩阵、关系抽屉和上传控件，检验关闭、替换和失败恢复。登录表单示例只有输入和提交校验，页面明确不是已接入认证的入口。
+列表场景组合PageHeader、ListToolbar、SearchBar、筛选、DataTable、行菜单、FormDialog与Pagination，检验组件协作与真实URL状态；PageHeader允许通过className调整所属页面的响应式布局，文档编辑页在较宽视口并排标题与操作，中等和窄屏分行。文档/媒体场景组合状态、权限矩阵、关系抽屉和上传控件，检验关闭、替换和失败恢复。登录表单示例只有输入和提交校验，页面明确不是已接入认证的入口。
 
 UI文案集中维护zh/en目录，通用ui组件只接收调用方文案；测试同时验证可访问名称和界面文案，不靠源码字符串判断。所有完成记录必须指向真实实现与运行场景；没有实际能力的行保持未验收，不能因为有一个同名导出而标记完成。
 

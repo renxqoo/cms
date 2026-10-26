@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { FileSearch, Heading2, Image, Link2, List, Pilcrow, Redo2, Undo2 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $createParagraphNode,
@@ -8,6 +10,8 @@ import {
   $getSelection,
   $isRangeSelection,
   $setSelection,
+  REDO_COMMAND,
+  UNDO_COMMAND,
 } from 'lexical';
 import type { RangeSelection } from 'lexical';
 import { $createHeadingNode } from '@lexical/rich-text';
@@ -21,6 +25,7 @@ import { useFields } from './field-context';
 import { ReferenceControl } from './reference-control';
 import { $createCmsReference } from './rich-text-reference';
 import { safeRichTextLink } from './rich-text-value';
+import { useRichTextToolbar } from './use-rich-text-toolbar';
 import type { ReferenceValue } from './types';
 
 interface Picker {
@@ -28,8 +33,63 @@ interface Picker {
   selection: RangeSelection | null;
 }
 
+function ToolbarAction({
+  label,
+  icon: Icon,
+  active,
+  disabled,
+  iconOnly,
+  onClick,
+}: {
+  label: string;
+  icon: LucideIcon;
+  active?: boolean;
+  disabled?: boolean;
+  iconOnly?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      size={iconOnly ? 'icon' : 'default'}
+      variant={active ? 'secondary' : 'ghost'}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      disabled={disabled}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={onClick}
+    >
+      <Icon aria-hidden="true" />
+      {iconOnly ? null : label}
+    </Button>
+  );
+}
+
+function ToolbarHistory({ canUndo, canRedo }: { canUndo: boolean; canRedo: boolean }) {
+  const [editor] = useLexicalComposerContext();
+  const { t } = useFields();
+  return (
+    <div className="flex gap-0.5 border-r border-border pr-1">
+      {[
+        { label: t.undo, icon: Undo2, enabled: canUndo, command: UNDO_COMMAND },
+        { label: t.redo, icon: Redo2, enabled: canRedo, command: REDO_COMMAND },
+      ].map(({ label, icon, enabled, command }) => (
+        <ToolbarAction
+          key={label}
+          label={label}
+          icon={icon}
+          iconOnly
+          disabled={!enabled}
+          onClick={() => editor.dispatchCommand(command)}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function RichTextToolbar({ readOnly }: { readOnly: boolean }) {
   const [editor] = useLexicalComposerContext();
+  const state = useRichTextToolbar();
   const field = useFields();
   const [picker, setPicker] = useState<Picker | null>(null);
   const [selection, setSelection] = useState<ReferenceValue[]>([]);
@@ -74,7 +134,9 @@ export function RichTextToolbar({ readOnly }: { readOnly: boolean }) {
   function list() {
     editor.update(() => {
       if (!$isRangeSelection($getSelection())) $getRoot().selectEnd();
-      editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND);
+      editor.dispatchCommand(
+        state.block === 'list' ? REMOVE_LIST_COMMAND : INSERT_UNORDERED_LIST_COMMAND,
+      );
     });
   }
   if (readOnly) return null;
@@ -83,43 +145,45 @@ export function RichTextToolbar({ readOnly }: { readOnly: boolean }) {
       <div
         role="toolbar"
         aria-label={field.t.richText}
-        className="flex flex-wrap gap-1 border-b p-2"
+        className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/30 p-2"
       >
-        <Button
-          size="sm"
-          variant="ghost"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => block(false)}
-        >
-          {field.t.paragraph}
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => block(true)}
-        >
-          {field.t.heading}
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={list}
-        >
-          {field.t.list}
-        </Button>
-        {(['link', 'relationship', 'media'] as const).map((kind) => (
-          <Button
-            key={kind}
-            size="sm"
-            variant="ghost"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => open(kind)}
-          >
-            {field.t[kind]}
-          </Button>
-        ))}
+        <ToolbarHistory canUndo={state.canUndo} canRedo={state.canRedo} />
+        <div className="flex gap-0.5 border-r border-border pr-1">
+          <ToolbarAction
+            label={field.t.paragraph}
+            icon={Pilcrow}
+            active={state.block === 'paragraph'}
+            onClick={() => block(false)}
+          />
+          <ToolbarAction
+            label={field.t.heading}
+            icon={Heading2}
+            active={state.block === 'heading'}
+            onClick={() => block(true)}
+          />
+          <ToolbarAction
+            label={field.t.list}
+            icon={List}
+            active={state.block === 'list'}
+            onClick={list}
+          />
+        </div>
+        <div className="flex flex-wrap gap-0.5">
+          {(
+            [
+              { kind: 'link', icon: Link2 },
+              { kind: 'relationship', icon: FileSearch },
+              { kind: 'media', icon: Image },
+            ] as const
+          ).map(({ kind, icon }) => (
+            <ToolbarAction
+              key={kind}
+              label={field.t[kind]}
+              icon={icon}
+              onClick={() => open(kind)}
+            />
+          ))}
+        </div>
       </div>
       <Dialog
         open={picker !== null}

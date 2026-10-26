@@ -1,41 +1,30 @@
 'use client';
-
 import { Button } from '@new-cms/ui/actions';
 import { Banner } from '@new-cms/ui/feedback';
 import { useShell } from '../../components/shell/shell-provider';
-import { assetMessages } from '../assets/messages';
-import type { PollingState } from './polling-types';
+import { workMessages } from './messages';
 
 export function PollingFeedback({
-  paused,
-  retryAt,
-  onResume,
+  expired,
+  observing,
+  resume,
 }: {
-  paused: PollingState<unknown>['paused'];
-  retryAt: number | null;
-  onResume: () => void;
+  expired: boolean;
+  observing: boolean;
+  resume: () => void;
 }) {
   const locale = useShell((state) => state.locale);
-  const t = assetMessages[locale];
-  if (!paused || paused === 'failure') return null;
-  const text = paused === 'deadline' ? t.deadline : paused === 'hidden' ? t.hidden : t.limited;
-  const retryTime =
-    retryAt === null
-      ? null
-      : new Intl.DateTimeFormat(locale, { timeStyle: 'medium' }).format(new Date(retryAt));
+  const t = workMessages[locale];
   return (
-    <Banner tone="warning" className="space-y-2">
-      <p>{text}</p>
-      {retryTime !== null ? (
-        <p>
-          {t.retryTime}: {retryTime}
-        </p>
-      ) : null}
-      {paused !== 'hidden' ? (
-        <Button variant="outline" onClick={onResume}>
-          {t.verify}
-        </Button>
-      ) : null}
-    </Banner>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      {expired ? (
+        <Banner tone="warning">{t.expired}</Banner>
+      ) : (
+        <p className="text-xs text-muted-foreground">{observing ? t.polling : t.paused}</p>
+      )}
+      <Button variant="outline" onClick={resume}>
+        {expired ? t.continue : t.refresh}
+      </Button>
+    </div>
   );
 }

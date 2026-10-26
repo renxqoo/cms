@@ -186,6 +186,7 @@ async function archiveNode(node: ArchiveNode, runtime: ContentRuntime): Promise<
     revision: current.revision + 1,
     currentVersionId: current.currentVersionId,
     publishedVersionId: null,
+    clearPublications: true,
     trashedAt: now.toISOString(),
   });
   await runtime.store.syncActiveUnique(node.state.tx, {

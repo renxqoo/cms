@@ -4,6 +4,19 @@ import { availablePort } from '../test/support/tcp-port.ts';
 import { createAdminApplicationProcess } from '../test/support/admin-application-process.ts';
 import { basename, resolve } from 'node:path';
 
+const contentFeatures = [
+  'admin-content',
+  'admin-assets',
+  'admin-images',
+  'admin-article-media',
+  'admin-jobs',
+  'admin-content-presentation',
+  'admin-content-presentation-en',
+  'admin-content-folders',
+  'admin-content-copy',
+  'admin-upload-recovery',
+];
+
 const interruption = new AbortController();
 let activeChild: ReturnType<typeof Bun.spawn> | undefined;
 function interrupt(signal: NodeJS.Signals) {
@@ -34,7 +47,7 @@ async function run(args: string[], env: NodeJS.ProcessEnv = process.env): Promis
 
 async function browserJourneys(args: string[]) {
   await run(['tooling/build-api.ts']);
-  await run(['run', '--cwd', 'apps/admin', 'build']);
+  await run(['run', '--cwd', 'apps/admin', 'build'], { ...process.env, CMS_ADMIN_E2E: '1' });
   const available = Array.from(new Bun.Glob('e2e/*.browser.spec.ts').scanSync('.'));
   for (const group of browserGroups(args, available)) {
     const devPort = await availablePort();
@@ -43,11 +56,12 @@ async function browserJourneys(args: string[]) {
     await isolatedBrowserGroup({
       signal: interruption.signal,
       open: (mode) =>
-        createAdminApplicationProcess(
-          mode,
-          mode === 'development' ? devPort : productionPort,
-          interruption.signal,
-        ),
+        createAdminApplicationProcess(mode, mode === 'development' ? devPort : productionPort, {
+          signal: interruption.signal,
+          content: contentFeatures.some(
+            (feature) => basename(group[0] ?? '') === `${feature}.browser.spec.ts`,
+          ),
+        }),
       run: (applications) =>
         run(
           [
@@ -66,9 +80,6 @@ async function browserJourneys(args: string[]) {
               .join(','),
             CMS_ADMIN_E2E_MAILBOXES: JSON.stringify(
               applications.map((application) => application.mailbox),
-            ),
-            CMS_ADMIN_E2E_DATABASES: JSON.stringify(
-              applications.map((application) => application.fixtureDatabase),
             ),
             CMS_ADMIN_E2E_OUTPUT_DIR: resolve('test-results', basename(group[0] ?? 'browser')),
           },

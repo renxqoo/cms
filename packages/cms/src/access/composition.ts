@@ -13,7 +13,18 @@ import { createCatalog, operationRegistry } from './catalog.ts';
 import { accessInputSchemas } from './input-schemas.ts';
 import { createInitializer } from './initialize.ts';
 import { createRecoveryApi } from './recovery/api.ts';
-import type { AccessOptions, AccessRuntime } from './types.ts';
+import type { AccessOptions, AccessRuntime, InitialCollectionPermission } from './types.ts';
+
+export function createAccessCatalog(
+  options: Pick<AccessOptions, 'database' | 'policy' | 'operations' | 'collectionKeys'> & {
+    initialCollectionPermissions: readonly InitialCollectionPermission[];
+  },
+) {
+  return createCatalog(
+    { ...options, operationMap: operationRegistry(options.operations) },
+    options.initialCollectionPermissions,
+  );
+}
 
 function createCheck(runtime: AccessRuntime) {
   const authorize = createAuthorization(runtime);
@@ -66,5 +77,6 @@ export function createAccess(options: AccessOptions) {
 export type AccessApi = ReturnType<typeof createAccess>['api'];
 export type AccessCheck = ReturnType<typeof createAccess>['check'];
 export type { AccessOptions } from './types.ts';
+export type { InitialCollectionPermission } from './types.ts';
 
 export type { AccessActorAuthorization } from './authorization.ts';

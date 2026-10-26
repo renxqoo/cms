@@ -114,6 +114,7 @@ function collectionSchemas(): Record<string, Schema> {
       capabilities: object({
         autosave: { type: 'boolean' },
         publication: { type: 'boolean' },
+        localizedPublication: { type: 'boolean' },
         schedules: { type: 'boolean' },
         history: { type: 'boolean' },
         trash: { const: true },

@@ -116,10 +116,12 @@ async function validateSchedule(
     lock: true,
   });
   requireRevision(document, input.values.revision);
-  if (document.currentVersionId !== input.values.versionId) fail('version_conflict');
+  const versionId = input.values.action === 'unpublish'
+    ? document.publishedVersionId : document.currentVersionId;
+  if (!versionId || versionId !== input.values.versionId) fail('version_conflict');
   await requireAdditionalOperation(state, {
     runtime: input.runtime,
-    operationId: 'documents.publish',
+    operationId: input.values.action === 'unpublish' ? 'documents.unpublish' : 'documents.publish',
     id: input.values.id,
   });
   const time = await state.tx.query(
@@ -149,7 +151,7 @@ async function acceptSchedule(
       id,
       input.values.id,
       input.values.revision,
-      JSON.stringify({ action: 'update', locale: state.locale }),
+      JSON.stringify({ action: input.values.action, locale: state.locale }),
     ],
   );
   await auditContent(state, {
@@ -163,7 +165,7 @@ async function acceptSchedule(
 async function schedulePublication(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['content.schedulePublication'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'content.schedulePublication', collection: input.collection },
+    { ctx, operationId: 'content.schedulePublication', collection: input.collection, ...(input.locale ? { locale: input.locale } : {}) },
     async (state) => {
       const reference = await idempotentReference(state, { runtime, input }, () =>
         acceptSchedule(state, { runtime, values: input }),

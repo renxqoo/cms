@@ -1,129 +1,58 @@
 import { imageRecipeSchema } from '../../contracts/assets';
-import type { ImageRecipe, AssetManifest } from '../../contracts/assets';
+import type { ImageRecipe, Manifest } from '../../contracts/assets';
+import type { CollectionEditor } from '../../contracts/editor';
 import type { ImageEdits } from '../../components/cms/image-adjustments';
-import type { AssetBudget } from './document-asset-types';
 
-export interface VariantDraft {
-  id: string;
-  name: string;
-  width: string;
-  height: string;
-  fit: string;
-  format: string;
-  quality: string;
-}
-
-export function recipeEdits(
-  recipe: ImageRecipe,
-  dimensions: { width: number; height: number },
-): ImageEdits {
-  const crop = recipe.crop ?? { left: 0, top: 0, ...dimensions };
+export function manifestEdits(manifest: Manifest): ImageEdits {
+  const width = manifest.width ?? 1;
+  const height = manifest.height ?? 1;
+  const { crop } = manifest.recipe;
   return {
-    crop: {
-      x: crop.left / dimensions.width,
-      y: crop.top / dimensions.height,
-      width: crop.width / dimensions.width,
-      height: crop.height / dimensions.height,
-    },
-    focalPoint: recipe.focalPoint ?? { x: 0.5, y: 0.5 },
+    crop: crop
+      ? {
+          x: crop.left / width,
+          y: crop.top / height,
+          width: crop.width / width,
+          height: crop.height / height,
+        }
+      : { x: 0, y: 0, width: 1, height: 1 },
+    focalPoint: manifest.recipe.focalPoint ?? { x: 0.5, y: 0.5 },
   };
 }
 
-export function editsRecipe(
+export function pixelRecipe(
+  manifest: Manifest,
   edits: ImageEdits,
-  dimensions: { width: number; height: number },
-): Pick<ImageRecipe, 'crop' | 'focalPoint'> | null {
-  if (
-    ![dimensions.width, dimensions.height].every(
-      (value) => Number.isSafeInteger(value) && value > 0,
-    )
-  )
-    return null;
-  const values = [...Object.values(edits.crop), ...Object.values(edits.focalPoint)];
-  if (
-    !values.every(Number.isFinite) ||
-    values.some((value) => value < 0 || value > 1) ||
-    edits.crop.width <= 0 ||
-    edits.crop.height <= 0 ||
-    edits.crop.x + edits.crop.width > 1 ||
-    edits.crop.y + edits.crop.height > 1
-  )
-    return null;
-  const left = Math.min(dimensions.width - 1, Math.round(edits.crop.x * dimensions.width));
-  const top = Math.min(dimensions.height - 1, Math.round(edits.crop.y * dimensions.height));
-  const right = Math.min(
-    dimensions.width,
-    Math.max(left + 1, Math.round((edits.crop.x + edits.crop.width) * dimensions.width)),
-  );
-  const bottom = Math.min(
-    dimensions.height,
-    Math.max(top + 1, Math.round((edits.crop.y + edits.crop.height) * dimensions.height)),
-  );
-  return {
-    crop: { left, top, width: right - left, height: bottom - top },
-    focalPoint: { ...edits.focalPoint },
-  };
-}
-
-export function variantDrafts(recipe: ImageRecipe, createId: () => string): VariantDraft[] {
-  return recipe.variants.map((variant) => ({
-    id: createId(),
-    name: variant.name,
-    width: String(variant.width),
-    height: String(variant.height),
-    fit: variant.fit,
-    format: variant.format,
-    quality: String(variant.quality),
-  }));
-}
-
-export function parsedVariants(rows: readonly VariantDraft[]) {
-  if (
-    rows.some((row) => [row.width, row.height, row.quality].some((value) => !/^\d+$/.test(value)))
-  )
-    return null;
-  return rows.map(({ name, width, height, fit, format, quality }) => ({
-    name,
-    width: Number(width),
-    height: Number(height),
-    fit,
-    format,
-    quality: Number(quality),
-  }));
-}
-
-export function validRecipe(
-  input: unknown,
-  manifest: AssetManifest,
-  budget: AssetBudget,
+  variants: ImageRecipe['variants'],
 ): ImageRecipe | null {
-  const parsed = imageRecipeSchema.safeParse(input);
-  if (!parsed.success) return null;
-  const recipe = parsed.data;
-  const names = new Set(recipe.variants.map((variant) => variant.name));
-  if (
-    names.size !== recipe.variants.length ||
-    names.has('original') ||
-    recipe.variants.length > budget.maxVariants
-  )
-    return null;
-  if (
-    recipe.variants.some(
-      (variant) =>
-        variant.width > budget.maxWidth ||
-        variant.height > budget.maxHeight ||
-        variant.width * variant.height > budget.maxPixels,
-    )
-  )
-    return null;
-  const { crop } = recipe;
-  if (
-    crop &&
-    (!manifest.width ||
-      !manifest.height ||
-      crop.left + crop.width > manifest.width ||
-      crop.top + crop.height > manifest.height)
-  )
-    return null;
-  return recipe;
+  const { width, height } = manifest;
+  if (!width || !height) return null;
+  const left = Math.round(edits.crop.x * width);
+  const top = Math.round(edits.crop.y * height);
+  const cropWidth = Math.min(width - left, Math.round(edits.crop.width * width));
+  const cropHeight = Math.min(height - top, Math.round(edits.crop.height * height));
+  const parsed = imageRecipeSchema.safeParse({
+    variants,
+    crop: { left, top, width: cropWidth, height: cropHeight },
+    focalPoint: edits.focalPoint,
+  });
+  if (!parsed.success || left >= width || top >= height) return null;
+  return parsed.data;
+}
+
+export function recipeWithinBudget(
+  recipe: ImageRecipe,
+  limits: NonNullable<CollectionEditor['upload']>,
+): boolean {
+  const parsed = imageRecipeSchema.safeParse(recipe);
+  if (!parsed.success || recipe.variants.length > limits.maxVariants) return false;
+  if (new Set(recipe.variants.map((variant) => variant.name)).size !== recipe.variants.length)
+    return false;
+  return recipe.variants.every(
+    (variant) =>
+      variant.name !== 'original' &&
+      variant.width <= limits.maxWidth &&
+      variant.height <= limits.maxHeight &&
+      variant.width * variant.height <= limits.maxPixels,
+  );
 }

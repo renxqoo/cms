@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import { Code2, FileText } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import { useFieldValue } from './field-context';
 import type { richTextData } from './rich-text-value';
@@ -20,17 +21,18 @@ export function RichTextField({ node, location, readOnly }: ScalarProps) {
   }
   return (
     <fieldset className="min-w-0 space-y-3">
-      <legend className="mb-2 text-sm font-medium">{node.label}</legend>
-      <div className="flex justify-end">
+      <legend className="mb-2 flex w-full items-center justify-between gap-3 text-sm font-medium">
+        <span>{node.label}</span>
         <Button
           variant="ghost"
           size="sm"
           disabled={invalid}
           onClick={() => setStructure(!structure)}
         >
+          {structure ? <FileText aria-hidden="true" /> : <Code2 aria-hidden="true" />}
           {structure ? field.t.visual : field.t.structure}
         </Button>
-      </div>
+      </legend>
       {structure ? (
         <RichTextStructure
           value={value}

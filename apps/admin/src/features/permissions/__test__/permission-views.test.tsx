@@ -92,6 +92,48 @@ beforeEach(() => {
 });
 afterEach(() => vi.resetAllMocks());
 
+it('regression: a new collection permission can be created before collection read endpoints are bound', async () => {
+  const saved = vi.fn<() => void>();
+  api.request.mockResolvedValue(
+    managementSuccess(managementPermission({ scopeKind: 'collection', collectionKey: 'articles' })),
+  );
+  renderManagement(
+    <PermissionDialog
+      permission={null}
+      endpoints={[
+        managementEndpoint({
+          operationId: 'collections.get',
+          scopeKind: 'collection',
+          collectionKey: 'articles',
+          binding: null,
+        }),
+      ]}
+      collections={[]}
+      onClose={vi.fn<() => void>()}
+      onSaved={saved}
+    />,
+  );
+  fireEvent.change(screen.getByRole('textbox', { name: 'Permission code' }), {
+    target: { value: 'articles:manage' },
+  });
+  fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+    target: { value: 'Manage articles' },
+  });
+  fireEvent.change(screen.getByRole('combobox', { name: 'Scope' }), {
+    target: { value: 'collection' },
+  });
+  expect(screen.getByRole('option', { name: 'articles (articles)' })).toBeInTheDocument();
+  fireEvent.change(screen.getByRole('combobox', { name: 'Collection' }), {
+    target: { value: 'articles' },
+  });
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+  await waitFor(() => expect(saved).toHaveBeenCalledOnce());
+  expect(api.request.mock.calls[0]?.[0].body).toMatchObject({
+    scopeKind: 'collection',
+    collectionKey: 'articles',
+  });
+});
+
 it('creates a collection-scoped permission from real catalog choices and preserves code/scope after creation', async () => {
   const saved = vi.fn<() => void>();
   api.request.mockResolvedValue(

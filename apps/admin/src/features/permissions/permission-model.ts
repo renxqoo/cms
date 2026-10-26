@@ -1,5 +1,24 @@
 import { z } from 'zod';
 import type { Endpoint, Permission } from '../../contracts/access';
+import type { Collection } from '../../contracts/content';
+
+export function permissionCollections(input: {
+  endpoints: readonly Endpoint[] | null;
+  collections: readonly Pick<Collection, 'key' | 'label'>[] | null;
+}): Pick<Collection, 'key' | 'label'>[] | null {
+  const choices = new Map(input.collections?.map((collection) => [collection.key, collection]));
+  for (const endpoint of input.endpoints ?? []) {
+    const key = endpoint.collectionKey;
+    if (
+      endpoint.operationId === 'collections.get' &&
+      endpoint.scopeKind === 'collection' &&
+      key !== null &&
+      !choices.has(key)
+    )
+      choices.set(key, { key, label: key });
+  }
+  return input.collections === null && choices.size === 0 ? null : [...choices.values()];
+}
 
 export const permissionValuesSchema = z.object({
   name: z.string().trim().min(1).max(128),

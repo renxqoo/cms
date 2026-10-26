@@ -24,6 +24,7 @@ export interface DocumentRow {
   revision: number;
   currentVersionId: string;
   publishedVersionId: string | null;
+  publications?: Readonly<Record<string, string>>;
   trashedAt: string | null;
   folderId: string | null;
   createdAt: string;

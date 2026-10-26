@@ -1,9 +1,15 @@
-export const assetWorkPolicy = {
-  uploadConcurrency: 2,
-  uploadQueueLimit: 20,
-  uploadPollMs: 10_000,
-  listPollMs: 10_000,
-  detailPollMs: 5_000,
-  automaticWaitMs: 5 * 60_000,
-  pageSize: 20,
+export const discoveryPolicy = {
+  listIntervalMs: 10_000,
+  detailIntervalMs: 5_000,
+  maximumWaitMs: 5 * 60_000,
+  defaultPageSize: 20,
+  maximumPageSize: 100,
 } as const;
+
+export function activeJob(status: string) {
+  return status === 'queued' || status === 'running';
+}
+
+export function activeUpload(status: string) {
+  return status === 'pending' || status === 'uploading' || status === 'processing';
+}

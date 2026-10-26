@@ -1,8 +1,16 @@
 'use client';
 
-import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { ReactNode } from 'react';
-import { useStore } from 'zustand';
 import { Button } from '@new-cms/ui/actions';
 import {
   Dialog,
@@ -37,42 +45,53 @@ const LeaveScopes = createContext<ReadonlyMap<NavigationAdapter, LeaveScope> | n
 export function useUnsavedChanges({
   dirty,
   navigation,
+  hasNestedChanges,
 }: {
   dirty: boolean;
   navigation: NavigationAdapter;
+  hasNestedChanges?: () => boolean;
 }) {
   const active = useRef<ReturnType<typeof createLeaveGuard> | null>(null);
-  const currentDirty = useRef(dirty);
+  const currentDirty = useRef({ dirty, hasNestedChanges });
   const [state, setState] = useState<{
     navigation: NavigationAdapter;
     pending: NavigationAttempt | null;
   }>({ navigation, pending: null });
-  useEffect(() => {
-    currentDirty.current = dirty;
-    active.current?.setDirty(dirty);
-  }, [dirty]);
-  useEffect(() => {
+  useLayoutEffect(() => {
+    currentDirty.current = { dirty, hasNestedChanges };
+  }, [dirty, hasNestedChanges]);
+  useLayoutEffect(() => {
     const guard = createLeaveGuard({
-      dirty: currentDirty.current,
+      dirty: false,
       navigation,
       onPendingChange: (pending) => setState({ navigation, pending }),
     });
-    active.current = guard;
-    const unsubscribe = navigation.subscribe(guard.request);
+    const handle = {
+      ...guard,
+      request(this: void, attempt: NavigationAttempt) {
+        const { dirty: ownDirty, hasNestedChanges: nested } = currentDirty.current;
+        guard.setDirty(ownDirty || nested?.() === true);
+        guard.request(attempt);
+      },
+    };
+    active.current = handle;
+    const unsubscribe = navigation.subscribe(handle.request);
     return () => {
       unsubscribe();
       guard.dispose();
-      if (active.current === guard) active.current = null;
+      if (active.current === handle) active.current = null;
     };
   }, [navigation]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     function unload(event: BeforeUnloadEvent) {
+      const { dirty: ownDirty, hasNestedChanges: nested } = currentDirty.current;
+      if (!ownDirty && !nested?.()) return;
       event.preventDefault();
       event.returnValue = '';
     }
-    if (dirty) window.addEventListener('beforeunload', unload);
+    window.addEventListener('beforeunload', unload);
     return () => window.removeEventListener('beforeunload', unload);
-  }, [dirty]);
+  }, []);
   return {
     pending: state.navigation === navigation ? state.pending : null,
     requestNavigation: (attempt: NavigationAttempt) => active.current?.request(attempt),
@@ -103,8 +122,8 @@ function NestedLeaveScope({
   children: ReactNode;
 }) {
   const token = useId();
-  useEffect(() => () => scope.remove(token), [scope, token]);
-  useEffect(() => scope.update(token, dirty), [scope, token, dirty]);
+  useLayoutEffect(() => () => scope.remove(token), [scope, token]);
+  useLayoutEffect(() => scope.update(token, dirty), [scope, token, dirty]);
   return children;
 }
 
@@ -113,10 +132,11 @@ function OwnLeaveScope({
   ...props
 }: GuardProps & { parents: ReadonlyMap<NavigationAdapter, LeaveScope> | null }) {
   const [scope] = useState(createLeaveScope);
-  const nestedDirty = useStore(scope.store, (state) => state.dirty);
+  const hasNestedChanges = useCallback(() => scope.store.getState().dirty, [scope]);
   const guard = useUnsavedChanges({
-    dirty: props.dirty || nestedDirty,
+    dirty: props.dirty,
     navigation: props.navigation,
+    hasNestedChanges,
   });
   const scopes = useMemo(() => {
     const current = new Map(parents);

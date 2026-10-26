@@ -112,6 +112,7 @@ const collectionObject = z.strictObject({
   label: z.string().min(1).max(128),
   fields: z.array(fieldSchema),
   mode: z.enum(['direct', 'drafts']),
+  localizeStatus: z.boolean().optional(),
   history: z.union([
     z.literal(false),
     z.strictObject({

@@ -140,7 +140,7 @@ it('keeps a read-only editor unchanged while applying theme and external values'
   expect(input).toHaveValue('external update');
 });
 
-it('bounds content height, responds to new budgets and releases its content listener', async () => {
+it('waits for mounted content height, responds to new budgets and releases its content listener', async () => {
   const settings = editorProps();
   const { rerender, unmount } = render(<CodeEditor {...settings} />);
   const input = await screen.findByRole('textbox', { name: 'JSON editor' });

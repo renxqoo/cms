@@ -1,278 +1,155 @@
 'use client';
+
 import { useState } from 'react';
+import { FolderCog, FolderIcon, Plus } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
-import { Banner } from '@new-cms/ui/feedback';
-import { Field, Input, NativeSelect } from '@new-cms/ui/forms';
-import { folderListSchema } from '../../contracts/content';
-import type { FolderTree } from '../../contracts/content';
+import { Input } from '@new-cms/ui/forms';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@new-cms/ui/overlays';
+import { folderListSchema } from '../../contracts/folders';
+import type { Folder } from '../../contracts/folders';
 import { useAccessControl } from '../access-control/provider';
 import { useApiQuery } from '../management-shared/query';
 import { ManagementFeedback } from '../management-shared/feedback';
-import { ManagementDialog } from '../management-shared/management-dialog';
-import { collectionScope } from './content-policy';
-import { useFolderRecovery } from './use-folder-recovery';
-import { folderOperation, folderWrite } from './folder-intent';
-import { FolderRecoveryFeedback } from './folder-recovery-feedback';
-import { flattenFolders, folderParentOptions } from './folder-directory';
-import type { FolderOption } from './folder-directory';
-import type { ContentMessages } from './content-messages';
-import type { DocumentChannel, DocumentChannelState } from './channel-types';
+import { flattenFolders, FolderEditor, FolderDelete } from './folders';
+import type { ContentMessages } from './messages';
+
 export function FolderManager({
   collection,
-  channel,
-  state,
-  messages: t,
+  t,
+  onChanged,
 }: {
   collection: string;
-  channel?: DocumentChannel;
-  state?: DocumentChannelState;
-  messages: ContentMessages;
+  t: ContentMessages;
+  onChanged: () => void;
 }) {
   const access = useAccessControl();
-  const can = (operation: string) => access.can(operation, collectionScope(collection));
+  const scope = { scopeKind: 'collection', collectionKey: collection } as const;
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [editing, setEditing] = useState<Folder | 'new' | null>(null);
+  const [deleting, setDeleting] = useState<Folder | null>(null);
   const result = useApiQuery({
     operation: 'folders.list',
     query: { collection },
     response: folderListSchema,
-    enabled: can('folders.list'),
+    enabled: open && access.can('folders.list', scope),
   });
-  const [target, setTarget] = useState<FolderOption | 'create' | null>(null);
-  const rows = result.data?.rows ?? [];
-  const ready = result.phase === 'ready' && can('folders.list');
-  return (
-    <div className="space-y-3">
-      <ManagementFeedback error={result.error} onRetry={result.reload} />
-      {!ready ? <p className="text-xs text-muted-foreground">{t.failedDependency}</p> : null}
-      <div className="flex flex-wrap items-end gap-2">
-        {channel && state?.snapshot.document ? (
-          <FolderMove
-            channel={channel}
-            state={state}
-            rows={rows}
-            ready={ready}
-            allowed={can('documents.update')}
-            messages={t}
-          />
-        ) : null}
-        {can('folders.create') ? (
-          <Button variant="outline" disabled={!ready} onClick={() => setTarget('create')}>
-            {t.createFolder}
-          </Button>
-        ) : null}
-      </div>
-      <FolderDirectory
-        rows={rows}
-        ready={ready}
-        editable={can('folders.update') || can('folders.delete')}
-        onEdit={setTarget}
-        messages={t}
-      />
-      {target ? (
-        <FolderEdit
-          key={target === 'create' ? 'create' : target.id}
-          collection={collection}
-          target={target}
-          rows={rows}
-          ready={ready}
-          onClose={() => setTarget(null)}
-          onChanged={result.reload}
-          messages={t}
-        />
-      ) : null}
-    </div>
+  const folders = flattenFolders(result.data?.rows ?? []);
+  const rows = folders.filter((folder) =>
+    folder.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
   );
-}
-function FolderDirectory({
-  rows,
-  ready,
-  editable,
-  onEdit,
-  messages: t,
-}: {
-  rows: readonly FolderTree[];
-  ready: boolean;
-  editable: boolean;
-  onEdit: (row: FolderOption) => void;
-  messages: ContentMessages;
-}) {
+  function changed() {
+    setEditing(null);
+    setDeleting(null);
+    result.reload();
+    onChanged();
+  }
+  if (!access.can('folders.list', scope)) return null;
   return (
-    <div className="max-h-52 space-y-1 overflow-auto">
-      {flattenFolders(rows).map((row) => (
-        <div key={row.id} className="flex items-center justify-between gap-3 text-sm">
-          <span>
-            {'—'.repeat(row.depth)} {row.name}
-          </span>
-          {editable ? (
-            <Button size="xs" variant="ghost" disabled={!ready} onClick={() => onEdit(row)}>
-              {t.editFolder}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button variant="outline">
+            <FolderCog aria-hidden="true" />
+            {t.folders}
+          </Button>
+        }
+      />
+      <DialogContent closeLabel={t.close} className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{t.folders}</DialogTitle>
+          <DialogDescription>{t.foldersDescription}</DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-wrap gap-2">
+          <Input
+            aria-label={t.searchFolders}
+            placeholder={t.searchFolders}
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            className="min-w-40 flex-1"
+          />
+          {access.can('folders.create', scope) ? (
+            <Button onClick={() => setEditing('new')}>
+              <Plus aria-hidden="true" />
+              {t.newFolder}
             </Button>
           ) : null}
         </div>
-      ))}
-    </div>
-  );
-}
-function FolderMove({
-  channel,
-  state,
-  rows,
-  ready,
-  allowed,
-  messages: t,
-}: {
-  channel: DocumentChannel;
-  state: DocumentChannelState;
-  rows: readonly FolderTree[];
-  ready: boolean;
-  allowed: boolean;
-  messages: ContentMessages;
-}) {
-  const [value, setValue] = useState(state.snapshot.document?.folderId ?? '');
-  return (
-    <>
-      <Field id="document-folder" label={t.folder}>
-        <NativeSelect
-          value={value}
-          disabled={!ready || state.phase !== 'idle'}
-          onChange={(event) => setValue(event.target.value)}
-        >
-          <option value="">{t.rootFolder}</option>
-          {flattenFolders(rows).map((row) => (
-            <option key={row.id} value={row.id}>
-              {'—'.repeat(row.depth)} {row.name}
-            </option>
-          ))}
-        </NativeSelect>
-      </Field>
-      <Button
-        variant="outline"
-        disabled={!ready || state.phase !== 'idle' || !allowed}
-        onClick={() => void channel.execute({ kind: 'move', folderId: value || null })}
-      >
-        {t.move}
-      </Button>
-    </>
-  );
-}
-interface FolderEditProps {
-  collection: string;
-  target: FolderOption | 'create';
-  rows: readonly FolderTree[];
-  ready: boolean;
-  onClose: () => void;
-  onChanged: () => void;
-  messages: ContentMessages;
-}
-function FolderEdit({
-  collection,
-  target,
-  rows,
-  ready,
-  onClose,
-  onChanged,
-  messages: t,
-}: FolderEditProps) {
-  const access = useAccessControl();
-  const can = (operation: string) => access.can(operation, collectionScope(collection));
-  const flow = useFolderRecovery({
-    collection,
-    canRead: ready && can('folders.list'),
-    report: access.reportResult,
-  });
-  const { mutation, recovery } = flow;
-  const [version, setVersion] = useState(target === 'create' ? null : target.version);
-  const [deleting, setDeleting] = useState(false);
-  const operation = folderOperation(target, deleting);
-  const allowed = ready && can('folders.list') && can(operation);
-  function completed() {
-    onChanged();
-    onClose();
-  }
-  async function submit(data: FormData) {
-    if (!allowed) return;
-    const write = folderWrite({ target, collection, version, deleting, data });
-    if (!write) return;
-    const result = await flow.run(write);
-    if (result?.ok) completed();
-  }
-  return (
-    <ManagementDialog
-      open
-      onClose={onClose}
-      title={target === 'create' ? t.createFolder : t.editFolder}
-      description={deleting ? t.purgeHint : t.conditional}
-      onSubmit={(data) => void submit(data)}
-      submitLabel={deleting ? t.deleteFolder : t.save}
-      pending={mutation.phase === 'writing' || recovery.phase === 'reading'}
-      locked={mutation.phase === 'blocked'}
-      disabled={!allowed}
-      destructive={deleting}
-      feedback={
-        <FolderRecoveryFeedback
-          flow={flow}
-          allowed={allowed}
-          readAllowed={ready && can('folders.list')}
-          create={target === 'create'}
-          version={version}
-          onAdopt={(value) => {
-            if (flow.adopt(value, allowed)) setVersion(value);
-          }}
-          onCompleted={completed}
-          onLeave={() => {
-            onChanged();
-            onClose();
-          }}
-          messages={t}
-        />
-      }
-      actions={
-        target !== 'create' && can('folders.delete') ? (
-          <Button
-            variant="destructive"
-            disabled={!ready || mutation.phase !== 'idle'}
-            onClick={() => setDeleting(!deleting)}
+        <ManagementFeedback error={result.error} onRetry={result.reload} />
+        {result.phase === 'loading' ? (
+          <p role="status" className="text-sm text-muted-foreground">
+            {t.loading}
+          </p>
+        ) : null}
+        {result.phase === 'ready' && rows.length === 0 ? (
+          <p
+            role="status"
+            className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground"
           >
-            {t.deleteFolder}
-          </Button>
-        ) : null
-      }
-    >
-      <FolderFields target={target} rows={rows} deleting={deleting} messages={t} />
-      {!ready ? <Banner>{t.failedDependency}</Banner> : null}
-    </ManagementDialog>
-  );
-}
-
-function FolderFields({
-  target,
-  rows,
-  deleting,
-  messages: t,
-}: Pick<FolderEditProps, 'target' | 'rows' | 'messages'> & { deleting: boolean }) {
-  return (
-    <>
-      {' '}
-      <Field id="folder-name" name="name" label={t.name} required>
-        <Input
-          defaultValue={target === 'create' ? '' : target.name}
-          maxLength={128}
-          required
-          disabled={deleting}
-        />
-      </Field>
-      <Field id="folder-parent" name="parentId" label={t.parent}>
-        <NativeSelect
-          defaultValue={target === 'create' ? '' : (target.parentId ?? '')}
-          disabled={deleting}
-        >
-          <option value="">{t.rootFolder}</option>
-          {folderParentOptions(rows, target === 'create' ? undefined : target.id).map((row) => (
-            <option key={row.id} value={row.id}>
-              {'—'.repeat(row.depth)} {row.name}
-            </option>
+            {search.trim() ? t.noMatchingFolders : t.noFolders}
+          </p>
+        ) : null}
+        <ul className="max-h-96 space-y-1 overflow-y-auto">
+          {rows.map((folder) => (
+            <li
+              key={folder.id}
+              className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 px-3 py-2"
+            >
+              <span className="flex min-w-0 flex-1 items-center gap-2 break-words">
+                <FolderIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                <span>
+                  {'— '.repeat(folder.depth)}
+                  {folder.name}
+                </span>
+              </span>
+              <div className="flex shrink-0 gap-1">
+                {access.can('folders.update', scope) ? (
+                  <Button variant="ghost" size="sm" onClick={() => setEditing(folder)}>
+                    {t.rename}
+                  </Button>
+                ) : null}
+                {access.can('folders.delete', scope) ? (
+                  <Button variant="ghost" size="sm" onClick={() => setDeleting(folder)}>
+                    {t.removeFolder}
+                  </Button>
+                ) : null}
+              </div>
+            </li>
           ))}
-        </NativeSelect>
-      </Field>
-    </>
+        </ul>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline">{t.close}</Button>} />
+        </DialogFooter>
+        {editing ? (
+          <FolderEditor
+            key={editing === 'new' ? 'new' : editing.id}
+            collection={collection}
+            folder={editing === 'new' ? null : editing}
+            folders={folders}
+            t={t}
+            onClose={() => setEditing(null)}
+            onSaved={changed}
+          />
+        ) : null}
+        {deleting ? (
+          <FolderDelete
+            collection={collection}
+            folder={deleting}
+            t={t}
+            onClose={() => setDeleting(null)}
+            onDeleted={changed}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
   );
 }

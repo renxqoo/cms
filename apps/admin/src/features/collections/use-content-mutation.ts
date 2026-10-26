@@ -1,87 +1,102 @@
 'use client';
+
 import { useEffect, useRef, useState } from 'react';
-import type { Dispatch, RefObject, SetStateAction } from 'react';
-import type { z } from 'zod';
+import type { RefObject } from 'react';
 import { requestApi } from '../../api/client';
 import type { ApiResult } from '../../api/result';
-import type { OperationId } from '../../contracts/operations';
-import type { ContentFailure } from './channel-types';
+import { getOperation } from '../../contracts/operations';
+import { useAccessControl } from '../access-control/provider';
+import type { EditorFailure } from './editor-controller';
 
-export interface ContentMutationIntent {
-  operation: OperationId;
-  params?: Readonly<Record<string, string>>;
-  query?: Readonly<Record<string, unknown>>;
-  body?: unknown;
-  response: z.ZodType;
-  key?: string;
+type MutationRequest<T> = Omit<Parameters<typeof requestApi<T>>[0], 'signal'>;
+interface MutationRuntime {
+  active: RefObject<AbortController | null>;
+  retry: RefObject<(() => Promise<unknown>) | null>;
+  setPending: (value: boolean) => void;
+  setError: (error: EditorFailure | null) => void;
+  setLocked: (value: boolean) => void;
+  setReplayable: (value: boolean) => void;
+  report: (result: ApiResult<unknown>) => void;
 }
-export function useContentMutation(report: (result: ApiResult<unknown>) => void) {
-  const [state, setState] = useState<{
-    phase: 'idle' | 'writing' | 'blocked';
-    error: ContentFailure | null;
-    receipt: unknown;
-  }>({ phase: 'idle', error: null, receipt: null });
-  const active = useRef<AbortController | null>(null);
-  const intent = useRef<ContentMutationIntent | null>(null);
-  useEffect(() => () => active.current?.abort(), []);
-  const context = { active, report, setState };
 
+async function runMutation<T>(
+  runtime: MutationRuntime,
+  input: MutationRequest<T>,
+  onSuccess: (data: T) => void,
+) {
+  if (runtime.active.current) return null;
+  const controller = new AbortController();
+  runtime.active.current = controller;
+  runtime.setPending(true);
+  runtime.setError(null);
+  const result = await requestApi({ ...input, signal: controller.signal });
+  if (controller.signal.aborted) return null;
+  runtime.active.current = null;
+  runtime.setPending(false);
+  runtime.report(result);
+  const replayable =
+    !result.ok && result.uncertain && getOperation(input.operation).idempotency === 'required';
+  runtime.setReplayable(replayable);
+  runtime.retry.current = replayable ? () => runMutation(runtime, input, onSuccess) : null;
+  runtime.setLocked(!result.ok && (result.uncertain || result.error.code === 'version_conflict'));
+  if (result.ok) onSuccess(result.data);
+  else runtime.setError(result);
+  return result;
+}
+
+async function verifyMutation<T>(
+  runtime: MutationRuntime,
+  input: MutationRequest<T>,
+  onCurrent: (data: T) => void,
+) {
+  if (runtime.active.current || getOperation(input.operation).method !== 'GET') return;
+  const controller = new AbortController();
+  runtime.active.current = controller;
+  runtime.setPending(true);
+  const result = await requestApi({ ...input, signal: controller.signal });
+  if (controller.signal.aborted) return;
+  runtime.active.current = null;
+  runtime.setPending(false);
+  runtime.report(result);
+  if (result.ok) onCurrent(result.data);
+  else runtime.setError(result);
+}
+
+export function useContentMutation() {
+  const { reportResult } = useAccessControl();
+  const active = useRef<AbortController | null>(null);
+  const retry = useRef<(() => Promise<unknown>) | null>(null);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<EditorFailure | null>(null);
+  const [locked, setLocked] = useState(false);
+  const [replayable, setReplayable] = useState(false);
+  useEffect(() => () => active.current?.abort(), []);
+  const runtime = {
+    active,
+    retry,
+    setPending,
+    setError,
+    setLocked,
+    setReplayable,
+    report: reportResult,
+  };
   return {
-    ...state,
-    async run(next: ContentMutationIntent) {
-      if (state.phase === 'blocked' || active.current) return null;
-      if (
-        !intent.current ||
-        JSON.stringify({ ...intent.current, response: undefined, key: undefined }) !==
-          JSON.stringify({ ...next, response: undefined, key: undefined })
-      )
-        intent.current = { ...next, ...(next.key ? { key: crypto.randomUUID() } : {}) };
-      return sendContentMutation(context, intent.current);
+    pending,
+    error,
+    locked,
+    replayable,
+    run: <T>(input: MutationRequest<T>, onSuccess: (data: T) => void) =>
+      runMutation(runtime, input, onSuccess),
+    verify: <T>(input: MutationRequest<T>, onCurrent: (data: T) => void) =>
+      verifyMutation(runtime, input, onCurrent),
+    retry: () => {
+      void retry.current?.();
     },
-    retry(allowed: boolean) {
-      return allowed && state.phase === 'blocked' && intent.current?.key
-        ? sendContentMutation(context, intent.current)
-        : Promise.resolve(null);
-    },
-    clear() {
-      if (!active.current) {
-        intent.current = null;
-        setState({ phase: 'idle', error: null, receipt: null });
-      }
+    resolve: () => {
+      setLocked(false);
+      setError(null);
+      setReplayable(false);
+      retry.current = null;
     },
   };
-}
-
-interface MutationContext {
-  active: RefObject<AbortController | null>;
-  report: (result: ApiResult<unknown>) => void;
-  setState: Dispatch<
-    SetStateAction<{
-      phase: 'idle' | 'writing' | 'blocked';
-      error: ContentFailure | null;
-      receipt: unknown;
-    }>
-  >;
-}
-async function sendContentMutation(context: MutationContext, next: ContentMutationIntent) {
-  const { active, report, setState } = context;
-
-  if (active.current) return null;
-  const controller = new AbortController();
-  active.current = controller;
-  setState({ phase: 'writing', error: null, receipt: null });
-  const result = await requestApi({
-    ...next,
-    ...(next.key ? { idempotencyKey: next.key } : {}),
-    signal: controller.signal,
-  });
-  if (controller.signal.aborted || active.current !== controller) return null;
-  active.current = null;
-  report(result);
-  setState({
-    phase: !result.ok && result.uncertain ? 'blocked' : 'idle',
-    error: result.ok ? null : result,
-    receipt: result.ok ? result.data : null,
-  });
-  return result;
 }

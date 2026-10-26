@@ -1,9 +1,8 @@
+import { DocumentListPage } from '../../../../../features/collections/list-page';
 import { requireSession } from '../../../../../server/require-session';
-import { CollectionListPage } from '../../../../../features/collections/collection-list-page';
-import { notFound } from 'next/navigation';
+
 export default async function Page({ params }: { params: Promise<{ collection: string }> }) {
   await requireSession();
-  const values = await params;
-  if (!/^[a-z][a-z0-9_-]{0,63}$/.test(values.collection)) notFound();
-  return <CollectionListPage collection={values.collection} />;
+  const { collection } = await params;
+  return <DocumentListPage collectionKey={collection} />;
 }

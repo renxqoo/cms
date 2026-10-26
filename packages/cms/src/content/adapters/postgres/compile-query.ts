@@ -16,6 +16,7 @@ import {
   trustedContext,
 } from './query-context.ts';
 import { comparison, metadataComparison } from './query-comparison.ts';
+import { publicationLocale, publicationExpression } from './document-store.ts';
 
 interface PathCondition {
   match: string;
@@ -112,9 +113,10 @@ function relationFieldCondition(input: {
     ];
     const condition = compilePathCondition({ ...node, field: nestedPath }, child);
     if (typeof policy !== 'boolean') predicates.push(compileWhere(policy, trustedContext(child)));
-    const pointer =
-      context.query.mode === 'published' ? 'published_version_id' : 'current_version_id';
-    const from = `FROM content_documents ${documentAlias} JOIN content_revisions ${revisionAlias} ON ${revisionAlias}.id=${documentAlias}.${pointer} WHERE ${predicates.join(' AND ')}`;
+    const pointer = context.query.mode === 'published'
+      ? publicationExpression(documentAlias, parameter(context, publicationLocale(collection.definition, scope.locale)))
+      : `${documentAlias}.current_version_id`;
+    const from = `FROM content_documents ${documentAlias} JOIN content_revisions ${revisionAlias} ON ${revisionAlias}.id=${pointer} WHERE ${predicates.join(' AND ')}`;
     conditions.push({
       match: `EXISTS (SELECT 1 ${from} AND ${condition.match})`,
       domain: `EXISTS (SELECT 1 ${from} AND ${condition.domain})`,

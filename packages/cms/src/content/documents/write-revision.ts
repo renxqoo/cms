@@ -108,6 +108,7 @@ async function commitRevision(
     expectedRevision: input.previous?.revision ?? 0,
     revision: (input.previous?.revision ?? 0) + 1,
     currentVersionId: input.revisionId,
+    locale: state.locale,
     publishedVersionId:
       state.collection.mode === 'direct'
         ? input.revisionId

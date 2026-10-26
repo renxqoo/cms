@@ -9,11 +9,12 @@ import {
   isMissing,
 } from './local-directory.ts';
 import type { LocalDirectory } from './local-directory.ts';
+import { createLocalStream } from './local-stream.ts';
 import type { StorageDriver } from '@new-cms/cms/assets/composition';
 
 interface LocalRuntime {
   root: string;
-  handles: Set<FileHandle>;
+  handles: Map<FileHandle, () => Promise<void>>;
   initialized?: Promise<LocalDirectory>;
   closed: boolean;
 }
@@ -46,14 +47,14 @@ async function write(
     await file.close();
     throw new Error('Storage is closed');
   }
-  runtime.handles.add(file);
+  trackHandle(runtime, file);
   try {
     await verifyFile(runtime, file, path);
     await file.writeFile(data.bytes, { signal: data.signal });
     await file.sync();
   } finally {
-    runtime.handles.delete(file);
     await file.close();
+    runtime.handles.delete(file);
   }
 }
 async function read(runtime: LocalRuntime, data: Parameters<StorageDriver['read']>[0]) {
@@ -64,24 +65,26 @@ async function read(runtime: LocalRuntime, data: Parameters<StorageDriver['read'
     await file.close();
     throw new Error('Storage is closed');
   }
-  runtime.handles.add(file);
+  trackHandle(runtime, file);
   try {
     await verifyFile(runtime, file, path);
     if (runtime.closed) throw new Error('Storage is closed');
+    const owned = createLocalStream(file, {
+      signal: data.signal,
+      done: () => {
+        runtime.handles.delete(file);
+      },
+    });
+    runtime.handles.set(file, owned.close);
+    return owned.stream;
   } catch (error) {
-    runtime.handles.delete(file);
     await file.close();
+    runtime.handles.delete(file);
     throw error;
   }
-  return fileStream(file, {
-    signal: data.signal,
-    done: () => {
-      runtime.handles.delete(file);
-    },
-  });
 }
 export function createLocalStorage(input: { root: string }): StorageDriver {
-  const runtime: LocalRuntime = { root: resolve(input.root), handles: new Set(), closed: false };
+  const runtime: LocalRuntime = { root: resolve(input.root), handles: new Map(), closed: false };
   return {
     capabilities: { shared: false, directUpload: false, multipart: false, writeSettleMs: 0 },
     put: (data) => write(runtime, data),
@@ -100,51 +103,28 @@ export function createLocalStorage(input: { root: string }): StorageDriver {
       await assertStorageDirectory(await runtime.initialized, runtime.root);
       signal?.throwIfAborted();
     },
-    async close() {
-      runtime.closed = true;
-      await runtime.initialized?.catch(() => {});
-      await Promise.allSettled([...runtime.handles].map((file) => file.close()));
-      runtime.handles.clear();
-    },
+    close: () => closeStorage(runtime),
   };
 }
-function fileStream(
-  file: FileHandle,
-  input: { signal: AbortSignal; done(): void },
-): ReadableStream<Uint8Array> {
-  const reader = file.readableWebStream({ autoClose: true }).getReader();
-  const abort = () => {
-    void reader.cancel(input.signal.reason).catch(() => {});
-  };
-  function cleanup(): void {
-    input.signal.removeEventListener('abort', abort);
-    input.done();
-  }
-  input.signal.addEventListener('abort', abort, { once: true });
-  return new ReadableStream<Uint8Array>({
-    async pull(controller) {
-      try {
-        input.signal.throwIfAborted();
-        const next = await reader.read();
-        const value: unknown = next.value;
-        if (next.done) {
-          cleanup();
-          controller.close();
-        } else if (value instanceof Uint8Array) controller.enqueue(value);
-        else if (value instanceof ArrayBuffer) controller.enqueue(new Uint8Array(value));
-        else throw new Error('Invalid storage stream');
-      } catch (error) {
-        cleanup();
-        controller.error(error);
-      }
-    },
-    async cancel(reason) {
-      cleanup();
-      await reader.cancel(reason);
-    },
+
+function trackHandle(runtime: LocalRuntime, file: FileHandle) {
+  runtime.handles.set(file, async () => {
+    await file.close();
+    runtime.handles.delete(file);
   });
 }
 
+async function closeStorage(runtime: LocalRuntime) {
+  runtime.closed = true;
+  await runtime.initialized?.catch(() => {});
+  const results = await Promise.allSettled(
+    [...runtime.handles.values()].map((release) => release()),
+  );
+  const errors: unknown[] = [];
+  for (const result of results) if (result.status === 'rejected') errors.push(result.reason);
+  if (errors.length > 0)
+    throw new AggregateError(errors, 'Local storage could not close all resources');
+}
 async function verifyFile(runtime: LocalRuntime, file: FileHandle, path: string): Promise<void> {
   runtime.initialized ??= initializeDirectory(runtime.root);
   await assertOpenedFile({ file, path, root: runtime.root, directory: await runtime.initialized });

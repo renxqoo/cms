@@ -17,7 +17,7 @@ export async function protectedVersions(
   );
   const protectedIds = new Set([
     document.currentVersionId,
-    ...(document.publishedVersionId ? [document.publishedVersionId] : []),
+    ...Object.values(document.publications ?? {}),
     ...jobs.rows.map((row) => row.version_id),
   ]);
   return protectedIds.size > input.runtime.limits.maxArrayItems ? undefined : protectedIds;

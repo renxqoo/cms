@@ -156,6 +156,7 @@
   "ignorePatterns": [
     "**/dist/**",
     "**/.next/**",
+    "**/.next-e2e/**",
     "**/node_modules/**",
     "**/coverage/**",
     "**/migrations/**",

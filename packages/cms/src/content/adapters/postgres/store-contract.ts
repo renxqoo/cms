@@ -19,6 +19,7 @@ export interface StoreDocument extends StoreCollection {
 }
 export interface ReadDocumentInput extends StoreDocument {
   lock?: boolean;
+  locale?: string;
 }
 export interface InsertDocumentInput extends StoreDocument {
   actorId: string;
@@ -47,6 +48,8 @@ export interface UpdatePointersInput extends StoreDocument {
   revision: number;
   currentVersionId: string;
   publishedVersionId: string | null;
+  locale?: string;
+  clearPublications?: boolean;
   trashedAt?: string | null;
   folderId?: string | null;
 }

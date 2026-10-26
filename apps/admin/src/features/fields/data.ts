@@ -5,17 +5,22 @@ export function isFieldData(value: unknown): value is FieldData {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function sameJson(left: unknown, right: unknown): boolean {
+export function equalFieldValue(
+  left: JsonValue | undefined,
+  right: JsonValue | undefined,
+): boolean {
   if (left === right) return true;
-  if (Array.isArray(left) && Array.isArray(right))
+  if (Array.isArray(left))
     return (
-      left.length === right.length && left.every((value, index) => sameJson(value, right[index]))
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => equalFieldValue(value, right[index]))
     );
   if (!isFieldData(left) || !isFieldData(right)) return false;
   const keys = Object.keys(left);
   return (
     keys.length === Object.keys(right).length &&
-    keys.every((key) => Object.hasOwn(right, key) && sameJson(left[key], right[key]))
+    keys.every((key) => Object.hasOwn(right, key) && equalFieldValue(left[key], right[key]))
   );
 }
 

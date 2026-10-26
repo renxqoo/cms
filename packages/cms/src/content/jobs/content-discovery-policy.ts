@@ -55,12 +55,12 @@ async function itemEligibility(
 ): Promise<string[]> {
   const result: string[] = [];
   const { state, policy, sql } = input;
-  for (const action of ['update', 'copy', 'archive', 'restoreTrash'] as const) {
+  const actions = source.source === 'content.schedulePublication'
+    ? ['publish', 'unpublish'] as const
+    : ['update', 'copy', 'archive', 'restoreTrash'] as const;
+  for (const action of actions) {
     for (const locale of state.collection.locales.supported) {
-      const operation =
-        source.source === 'content.schedulePublication'
-          ? 'documents.publish'
-          : itemOperation(action);
+      const operation = itemOperation(action);
       const visibility = await visibleFor(state, {
         policy,
         operations: [

@@ -1,91 +1,90 @@
 import { expect } from '@playwright/test';
-import { z } from 'zod';
-import { createHash } from 'node:crypto';
-import { applicationAccounts } from '../test/support/admin-application-data.ts';
-import { loginManagement, test } from '../test/support/admin-browser-management.ts';
-import { grantContentOperations, waitForContent } from '../test/support/admin-content-browser.ts';
-import {
-  browserMediaDocument,
-  downloadBytes,
-  expectReleasedBlobs,
-  mediaBrowserOperations,
-  observeBlobUrls,
-  waitForReadyUpload,
-} from '../test/support/admin-asset-browser.ts';
+import type { Page } from '@playwright/test';
 import { png } from '../test/support/png.ts';
+import { applicationAccounts } from '../test/support/admin-application-data.ts';
+import { test, loginManagement, waitForApi } from '../test/support/admin-browser-management.ts';
+import { privateDownload, seedMedia } from '../test/support/admin-assets-browser.ts';
 
-test('Chrome uploads real PNG bytes, cancels a session after sending bytes, retries with a new session and rediscovers the actual sessions in Jobs', async ({
+test('automatically saves uploaded PNG bytes to resources without a manual save or footer actions', async ({
   page,
 }) => {
-  await observeBlobUrls(page);
   expect((await loginManagement(page, applicationAccounts.owner)).status()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/);
-  await grantContentOperations(page, { collection: 'media', operations: mediaBrowserOperations });
-  await page.goto('/dashboard/resources?collection=media');
-  await page.getByRole('button', { name: '上传文件', exact: true }).click();
+  await page.goto('/dashboard/resources');
+  await expect(page.getByRole('dialog', { name: '上传文件', exact: true })).toHaveCount(0);
+  const upload = page.getByRole('button', { name: '上传文件', exact: true });
+  await upload.click();
   const dialog = page.getByRole('dialog', { name: '上传文件', exact: true });
-  const bytes = png([255, 0, 0]);
-  let preparing = waitForContent(page, { method: 'POST', path: '/v1/collections/media/uploads' });
-  const firstWrite = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'PUT' &&
-      /^\/api\/cms\/v1\/collections\/media\/uploads\/[0-9a-f-]+\/content$/.test(
-        new URL(response.url()).pathname,
-      ),
-  );
-  await dialog
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '查找上传会话', exact: true })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: '关闭', exact: true })).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(upload).toBeFocused();
+  await upload.click();
+  const bytes = png([201, 33, 44]);
+  const ready = readyUpload(page);
+  const created = waitForApi(page, 'POST', '/v1/collections/media/documents');
+  await page
     .getByLabel('选择文件', { exact: true })
-    .setInputFiles({ name: '浏览器 red.png', mimeType: 'image/png', buffer: bytes });
-  let prepared = await preparing;
-  expect(prepared.status()).toBe(201);
-  const first = z.object({ id: z.uuid() }).parse(await prepared.json());
-  const written = await firstWrite;
-  expect(written.status()).toBe(200);
-  expect(new URL(written.url()).pathname).toBe(
-    `/api/cms/v1/collections/media/uploads/${first.id}/content`,
-  );
-  const cancelling = waitForContent(page, {
-    method: 'DELETE',
-    path: `/v1/collections/media/uploads/${first.id}`,
-  });
-  await dialog.getByRole('button', { name: '取消上传', exact: true }).click();
-  expect((await cancelling).status()).toBe(204);
-  await expect(dialog.getByText('已取消', { exact: true })).toBeVisible();
-  preparing = waitForContent(page, { method: 'POST', path: '/v1/collections/media/uploads' });
-  const ready = waitForReadyUpload(page);
-  await dialog.getByRole('button', { name: '创建新会话重试', exact: true }).click();
-  prepared = await preparing;
-  expect(prepared.status()).toBe(201);
-  const second = z.object({ id: z.uuid() }).parse(await prepared.json());
-  expect(second.id).not.toBe(first.id);
-  expect(z.object({ id: z.uuid() }).parse(await (await ready).json()).id).toBe(second.id);
-  await dialog.getByRole('button', { name: '创建资源文档', exact: true }).click();
-  await expect(page).toHaveURL(
-    new RegExp(`/dashboard/collections/media/new\\?uploadId=${second.id}$`),
-  );
-  await page.getByLabel(/^title/).fill('PNG from the browser');
-  const creating = waitForContent(page, {
-    method: 'POST',
-    path: '/v1/collections/media/documents',
-  });
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  const created = await creating;
-  expect(created.status()).toBe(201);
-  const document = browserMediaDocument.parse(await created.json());
-  expect(document.file.digest).toBe(createHash('sha256').update(bytes).digest('hex'));
-  expect(document.file).toMatchObject({ mimeType: 'image/png', width: 2, height: 1 });
-  await expect(page).toHaveURL(
-    new RegExp(`/dashboard/collections/media/${document.id}\\?locale=en$`),
-  );
-  await page.goto('/dashboard/resources?collection=media');
-  await page.getByRole('button', { name: '浏览器 red.png', exact: true }).click();
-  const details = page.getByRole('dialog', { name: '查看详情', exact: true });
-  const download = page.waitForEvent('download');
-  await details.getByRole('link', { name: '下载文件', exact: true }).click();
-  expect(await downloadBytes(await download)).toEqual(bytes);
-  await details.getByRole('button', { name: '关闭', exact: true }).last().click();
-  await expectReleasedBlobs(page);
-  await page.goto('/dashboard/jobs?view=uploads&collection=media');
-  await expect(page.getByRole('row').filter({ hasText: first.id })).toContainText('已取消');
-  await expect(page.getByRole('row').filter({ hasText: second.id })).toContainText('已附加');
+    .setInputFiles({ name: 'browser-source.png', mimeType: 'image/png', buffer: bytes });
+  await ready;
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await upload.click();
+  expect((await created).status()).toBe(201);
+  await expect(page.getByText('已保存到资源库', { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  const row = page.getByRole('row').filter({ hasText: 'browser-source.png' });
+  await expect(row).toBeVisible();
+  await row.getByRole('button', { name: '打开文档', exact: true }).click();
+  await expect(page).toHaveURL(/\/dashboard\/collections\/media\/[0-9a-f-]+$/);
+  await privateDownload(page, bytes);
+  await page.reload();
+  await expect(page.getByLabel(/^title/)).toHaveValue('browser-source.png');
 });
+
+test('replaces a file against its revision and keeps the original historical bytes downloadable', async ({
+  page,
+}) => {
+  expect((await loginManagement(page, applicationAccounts.owner)).status()).toBe(200);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  const original = png([12, 34, 56]);
+  const next = png([99, 87, 65]);
+  const target = await seedMedia(page, 'before-replace.png', original);
+  await page.goto(`/dashboard/collections/media/${target.id}`);
+  await page.getByRole('button', { name: '替换文件', exact: true }).click();
+  const ready = readyUpload(page);
+  await page
+    .getByLabel('选择文件', { exact: true })
+    .setInputFiles({ name: 'after-replace.png', mimeType: 'image/png', buffer: next });
+  await ready;
+  await page.getByRole('button', { name: '附加到文档', exact: true }).click({ trial: true });
+  await expect(
+    page.getByText('文件处理完成，保存文档后才会附加此文件。', { exact: true }),
+  ).toBeVisible();
+  const replaced = waitForApi(page, 'PATCH', `/v1/collections/media/documents/${target.id}`);
+  await page.getByRole('button', { name: '附加到文档', exact: true }).click();
+  expect((await replaced).status()).toBe(200);
+  await expect(page.getByRole('link', { name: '下载原件', exact: true })).toHaveAttribute(
+    'download',
+    'after-replace.png',
+  );
+  await privateDownload(page, next);
+  const history = await page.request.get(
+    `/api/cms/v1/collections/media/documents/${target.id}/file?versionId=${target.versionId}`,
+  );
+  expect(history.status()).toBe(200);
+  expect(new Uint8Array(await history.body())).toEqual(new Uint8Array(original));
+});
+
+function readyUpload(page: Page) {
+  return page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' &&
+      /^\/api\/cms\/v1\/collections\/media\/uploads\/[0-9a-f-]+$/.test(
+        new URL(response.url()).pathname,
+      ) &&
+      response.status() === 200,
+  );
+}

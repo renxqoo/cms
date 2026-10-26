@@ -9,9 +9,16 @@ import { cn } from '../cn.ts';
 
 export interface CheckboxProps extends BaseCheckbox.Root.Props {
   label: string;
+  hideLabel?: boolean;
 }
 
-export function Checkbox({ label, className, indeterminate, ...props }: CheckboxProps) {
+export function Checkbox({
+  label,
+  className,
+  indeterminate,
+  hideLabel = false,
+  ...props
+}: CheckboxProps) {
   return (
     <label className="inline-flex cursor-pointer items-center gap-2 text-sm has-data-disabled:cursor-not-allowed has-data-disabled:opacity-50">
       <BaseCheckbox.Root
@@ -27,7 +34,7 @@ export function Checkbox({ label, className, indeterminate, ...props }: Checkbox
           {indeterminate ? <MinusIcon /> : <CheckIcon />}
         </BaseCheckbox.Indicator>
       </BaseCheckbox.Root>
-      <span>{label}</span>
+      <span className={hideLabel ? 'sr-only' : undefined}>{label}</span>
     </label>
   );
 }

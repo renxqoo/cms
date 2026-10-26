@@ -12,7 +12,7 @@ import { ManagementFeedback } from '../management-shared/feedback';
 import type { Collection } from '../../contracts/content';
 import { PermissionFields } from './permission-fields';
 import type { PermissionDraft } from './permission-fields';
-import { permissionChanges } from './permission-model';
+import { permissionChanges, permissionCollections } from './permission-model';
 import { permissionReadSource } from './permission-read';
 import type { PermissionReadSource } from './permission-read';
 import { usePermissionEditor } from './use-permission-editor';
@@ -50,8 +50,10 @@ export function PermissionDialog(props: DialogProps) {
   const access = useAccessControl();
   const locale = useShell((state) => state.locale);
   const t = permissionMessages[locale];
+  const collections = permissionCollections(props);
   const policy = dialogPolicy({
     ...props,
+    collections,
     flow,
     canRead: access.can(source.operation) && source.ready !== false,
   });
@@ -82,7 +84,7 @@ export function PermissionDialog(props: DialogProps) {
       <PermissionFields
         value={flow.draft}
         onChange={flow.setDraft}
-        collections={props.collections}
+        collections={collections}
         creating={!props.permission}
         canDisable={policy.canDisable}
         locale={locale}

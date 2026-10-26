@@ -207,6 +207,8 @@ content/editor 从现有字段注册和真实读写上下文生成安全编辑�
 
 ## 6. 精确导出与依赖约定
 
+access/composition的createAccessCatalog为迁移命令提供仅依赖数据库、策略与应用操作定义的目录装配能力，可接收应用定义的首次集合权限。它复用正常access目录实现，不构造identity、邮件、存储或HTTP服务。apps/api/config维护实际操作清单与首次权限策略，database/migrate仍只执行物理SQL迁移；db:migrate负责顺序装配两者。
+
 当前私有包名为@new-cms/api、@new-cms/cms、@new-cms/database，实际入口以各manifest为准。content/assets、schema-plan、codegen及生成schema均通过精确入口导出。
 
 | 导出类型 | 允许的调用方 | 禁止的用法 |
@@ -260,4 +262,4 @@ http/content/publications.routes.ts 与协议 schema
 
 ## 9. OneAster 前端与共享UI
 
-前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；proxy只传递实际受保护pathname，不承担身份验证。server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力，原始字节、上传进度及私有Blob继续走同一边界。features/auth与session拥有认证和真实布局装配，account/admins/roles/permissions/navigation/endpoints/audit拥有对应管理流程，access-control拥有主体实例的完整授权快照，management-shared提供有界读取及表格弹窗；fields提供安全metadata驱动的20类编辑节点；collections拥有集合列表、文档单通道、完整版本恢复、文件夹与批量和计划；assets拥有上传队列、文档资产租约消费者、图片及私有Blob，jobs拥有有界可见性轮询、发现列表和清理重试。features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口，逐spec连接独立真实API/Next世界。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。
+前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；proxy只传递实际受保护pathname，不承担身份验证。server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力，原始字节、上传进度及私有Blob继续走同一边界。features/auth与session拥有认证和真实布局装配，account/admins/roles/permissions/navigation/endpoints/audit拥有对应管理流程，access-control拥有主体实例的完整授权快照，management-shared提供有界读取及表格弹窗；fields提供安全metadata驱动的20类编辑节点；collections拥有目录、列表、字段编辑、版本、发布、回收站、批量、文件夹及多语言复制；assets拥有资源、上传队列、私有Blob和图片任务；jobs与asset-cleanups拥有可发现任务、上传会话及安全清理重试。离站保护按实例聚合，并在导航时读取已提交的实时嵌套状态。features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口，逐spec连接独立真实API/Next世界。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。

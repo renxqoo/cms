@@ -41,6 +41,7 @@ export async function restoreTrashInTransaction(
     revision: latest.revision + 1,
     currentVersionId: latest.currentVersionId,
     publishedVersionId: state.collection.mode === 'direct' ? latest.currentVersionId : null,
+    clearPublications: state.collection.mode !== 'direct',
     trashedAt: null,
   });
   await input.runtime.store.syncActiveUnique(state.tx, {

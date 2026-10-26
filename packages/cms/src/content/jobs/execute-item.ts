@@ -13,7 +13,7 @@ import { saveInTransaction } from '../documents/save-document.ts';
 import { copyInTransaction } from '../documents/copy-document.ts';
 import { archiveInTransaction } from '../documents/archive-document.ts';
 import { restoreTrashInTransaction } from '../documents/restore-trash.ts';
-import { publishInTransaction } from '../documents/publish-document.ts';
+import { publishInTransaction, unpublishInTransaction } from '../documents/publish-document.ts';
 import { completeJob, fenceJob, finalizeBatch, renewJobLease } from './store.ts';
 import type { JobItemRow, JobRow } from './store.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
@@ -35,6 +35,8 @@ export function itemOperation(action: JobItemRow['payload']['action']): string {
     copy: 'documents.copy',
     archive: 'documents.archive',
     restoreTrash: 'documents.restoreTrash',
+    publish: 'documents.publish',
+    unpublish: 'documents.unpublish',
   };
   return operations[action];
 }
@@ -85,6 +87,13 @@ async function performItem(
   };
   if (input.job.action === 'publication') {
     if (!input.job.version_id) fail('invalid_input');
+    if (input.item.payload.action === 'unpublish')
+      return unpublishInTransaction(state, {
+        runtime: input.runtime,
+        id: values.id,
+        revision: values.revision,
+        versionId: input.job.version_id,
+      });
     return publishInTransaction(state, {
       runtime: input.runtime,
       id: values.id,
@@ -121,10 +130,7 @@ async function executeFenced(
   await renewJobLease(tx, { job: input.job, leaseMs: input.runtime.workPolicy.jobLeaseMs });
   await tx.query('SAVEPOINT content_item');
   try {
-    const operationId =
-      input.job.action === 'publication'
-        ? 'documents.publish'
-        : itemOperation(input.item.payload.action);
+    const operationId = itemOperation(input.item.payload.action);
     const state = await jobState(tx, {
       runtime: input.runtime,
       job: input.job,

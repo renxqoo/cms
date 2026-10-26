@@ -22,6 +22,7 @@ export function metadata(state: ContentState, runtime: ContentRuntime) {
     capabilities: {
       autosave: state.collection.mode === 'drafts',
       publication: state.collection.mode === 'drafts',
+      localizedPublication: state.collection.localizeStatus === true,
       schedules: state.collection.mode === 'drafts',
       history: state.collection.history !== false,
       trash: true,

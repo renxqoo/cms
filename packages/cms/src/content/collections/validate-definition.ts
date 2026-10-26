@@ -153,6 +153,7 @@ export function validateDefinition(
   historical = false,
 ): void {
   rejectUnless(collection.mode !== 'drafts' || collection.history !== false);
+  rejectUnless(!collection.localizeStatus || collection.mode === 'drafts');
   validateCollectionLocales(collection, limits);
   validateFields({
     fields: collection.fields,
