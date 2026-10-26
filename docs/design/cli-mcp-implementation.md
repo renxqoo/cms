@@ -1,6 +1,6 @@
 # CLI/MCP 施工与验证记录
 
-状态：已实施，功能与本地验收通过，Git 交付待完成。对应 [设计基线](cli-mcp-design.md) 和 [单元验收](cli-mcp-units.md)。
+状态：已实施，功能与本地验收通过，已提交并纳入 main。对应 [设计基线](cli-mcp-design.md) 和 [单元验收](cli-mcp-units.md)，Git 交付记录见第 5 节。
 
 ## 1. 实施顺序
 
@@ -22,7 +22,7 @@
 
 ## 4. 验收证据
 
-2026-10-27 在主工作树执行完整门禁，四项退出码均为 0：
+2026-10-27 在主开发 worktree 执行完整门禁，四项退出码均为 0：
 
 | 检查 | 实际结果 |
 | --- | --- |
@@ -67,4 +67,6 @@
 
 ## 5. 工作区与交付
 
-主 worktree：/Users/wrr/.codex/worktrees/cli-mcp-access/new-cms，codex/cli-mcp-access；起点 main 与 origin/main 相同，初始工作区干净。只提交本次明确路径；合并前重新核对主工作区状态和 main 更新。部署不在授权范围。
+本次使用独立 worktree /Users/wrr/.codex/worktrees/cli-mcp-access/new-cms，分支 codex/cli-mcp-access；起点 main 与 origin/main 相同，初始工作区干净。功能提交为 `e872de4e2d9f0631fb58605b9676b27ba3c7f732`，包含 177 个明确点名的本次文件；设计先行提交为 `1194496fe719ea4a35b0297cdea6c1564d78f8e8`。未提交本地环境文件或他人改动。
+
+main 通过 fast-forward 纳入功能和验收记录。最终 codex/cli-mcp-access 与 main 通过同一次 atomic push 同步到 origin；交付核对要求本地 main、origin/main 和功能分支指向一致，均包含上述功能提交，主工作区干净。仓库 pre-commit 的 lint/typecheck 与 pre-push 的 build/test 保持启用。部署不在本次交付范围。

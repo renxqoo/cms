@@ -147,7 +147,7 @@ bun run test
 
 lint包含工作区、HTTP/业务依赖和schema owner导入约束及类型感知Oxlint；typecheck使用bun check检查后端、UI包和Next应用；build构建Node API、命令、SQL迁移、规范插件及Next生产产物；test运行Vitest/Istanbul、React交互测试、真实PostgreSQL集成、Bun/Node网络旅程及开发/生产浏览器冒烟。覆盖率包含全部本期手写业务代码及原插件范围，门槛为statements/functions/lines90%、branches85%，不排除入口或SQL适配器。
 
-测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，连接需具备CREATEDB/CREATEROLE。其他环境设置CMS_TEST_DATABASE_URL；所有数据库装置尊重该连接并显式隔离迁移连接，不使用部署凭据。CI使用PostgreSQL17，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。网络测试使用真实Bun与Node（可用CMS_NODE_BINARY指定），缺失运行时直接失败。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test执行账户、内容和媒体三组共6条旅程，并运行开发/生产浏览器旅程。浏览器入口为bun run test:e2e e2e/admin-ui.browser.spec.ts，可追加--project production或--grep。首次运行执行bun --bun node_modules/@playwright/test/cli.js install chromium；CI安装浏览器及系统依赖。
+测试默认连接本机Unix socket的postgres数据库，并为普通测试建立随机隔离schema后清理；权限及受限角色旅程使用随机专用数据库/角色，连接需具备CREATEDB/CREATEROLE。其他环境设置CMS_TEST_DATABASE_URL；所有数据库装置尊重该连接并显式隔离迁移连接，不使用部署凭据。CI使用PostgreSQL17，SMTP/S3使用本地可编程装置，不访问真实收件箱或云账号。网络测试使用真实Bun与Node（可用CMS_NODE_BINARY指定），缺失运行时直接失败。针对性入口为bun run test:e2e e2e/collections.spec.ts或e2e/assets.spec.ts；完整test执行账户、内容、媒体、CLI/MCP传输及业务接缝五个spec共14条进程旅程，并运行24个浏览器spec在开发/生产模式下的122条旅程。浏览器入口为bun run test:e2e e2e/admin-ui.browser.spec.ts，可追加--project production或--grep。首次运行执行bun --bun node_modules/@playwright/test/cli.js install chromium；CI安装浏览器及系统依赖。
 
 Husky由bun install时的prepare安装：pre-commit跑lint/typecheck，pre-push跑build/test，失败立即阻断。GitHub Actions对push/PR执行相同四门，固定Bun1.4.4、Node26.9.0和官方Action SHA，不部署。CI仅在安装时禁用本地hook，随后显式执行全部检查。
 
