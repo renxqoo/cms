@@ -1,6 +1,6 @@
 # OneAster 内容接口与数据单元
 
-状态：定稿，用户已确认实施。本文定义目标合同，实现状态以验收记录为准。实施与证据见 [施工图](IMPLEMENTATION.md)。
+状态：CMS/client代码范围已核销。本文定义当前合同，实测结果与外部限制见[验收记录](VERIFICATION.md)，实施与证据见[施工图](IMPLEMENTATION.md)。
 
 ## 1. 模型单元
 

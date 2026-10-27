@@ -1,6 +1,6 @@
 # 新CMS跨仓验收记录
 
-2026-10-27。本轮无旧CMS内容迁移，代码及生成物单轨切换；运行手册见[OPERATIONS](OPERATIONS.md)。CMS最终完整门禁尚在执行，完成后填写准确数字；未执行成功的检查不计通过。
+2026-10-27。本轮无旧CMS内容迁移，代码及生成物单轨切换；运行手册见[OPERATIONS](OPERATIONS.md)。CMS main 7171298完整CI已通过，最终数字见末节；未执行成功的检查不计通过。
 
 ## 客户端与真实执行
 
@@ -59,3 +59,15 @@ PR7合并main f1a9a0c后的本地lint/typecheck/build通过；仓库test命令�
 PR8合并main 7a38cdd的[CI40432414111](https://github.com/renxqoo/cms/actions/runs/40432414111)中，lint/typecheck/build通过，完整单元326文件2877项通过，440.54秒；覆盖率statements93.83%、branches88.61%、functions96.39%、lines96.34%，配置范围门禁全部通过。Bun/Node/CLI/MCP跨进程5文件14项通过，64.85秒。浏览器阶段在admin-jobs开发模式第四旅程读取清理账本时收到429而失败，未将该run记为完整test通过。
 
 该浏览器失败已独立复现并定位为跨用例共享限流窗口：整文件开发模式累计121次IP请求、生产115次，各单项操作桶最高39次；仅执行最后旅程时开发/生产为25/26次并全部通过，未见异常轮询。四种独立旅程改用四个spec及既有独立world生命周期，保留原测试调用的完整AST与所有断言；全部8项开发/生产旅程通过，既有分组/选择器及新增隔离回归共12项通过。新增回归在原四用例共用文件时先红，隔离后绿。不修改生产限流、期限、并发、重试或页面，不清桶、不伪造IP、不新增控制通道；详见[旅程隔离](../jobs-browser-isolation.md)。新main完整CI另行记录。
+
+## 最终完整门禁与交付
+
+CMS代码经[PR9](https://github.com/renxqoo/cms/pull/9)合入main 7171298d650a552e4081012e85624d47fd00d003。[CI40436093022](https://github.com/renxqoo/cms/actions/runs/40436093022)整轮success，job实际35分钟；lint零错误/警告、typecheck、生产build和完整bun run test均通过。该test命令为同一源树、同一次连续执行的最终证据，不拼接旧轮次。
+
+完整单元327文件2878项通过，679.64秒；statements93.82%、branches88.61%、functions96.38%、lines96.33%，配置内全局及指定范围门禁全部通过。Bun/Node/CLI/MCP跨进程5文件14项通过，97.85秒。完整浏览器29组124项通过，开发与生产各62项；四个工作旅程分别独立world，保留全部原用例。test步骤总计33分21秒，包含构建、装置启动与清理；本轮runner时间与旧轮不同，未通过调整单项期限或降低覆盖率换绿。
+
+Client代码通过[PR13](https://github.com/juyuanzhisuan/oneaster-client/pull/13)合入main 750f121f51fc684deb5d4e03f89ae2a4b25fd0c7，本地四门及18项真实跨仓旅程通过。Client GitHub Actions受组织账单/额度阻塞，检查步骤未执行，不能记为CI通过。Core本地候选de754357880d974383e70affee79d7e1c481aa2f完整原生unit/race、vet/build及合同/发布检查通过；全包statements79.5%、Core80.2%，没有独立branches/functions/lines数字或百分比门禁。仅有pull权限且禁止fork，按用户授权交付[issue31](https://github.com/juyuanzhisuan/oneaster-backend/issues/31)，未上传或合入Core main。
+
+独立审查及假绿抽查均关闭，无开放P1/P2；未新增跳过测试、弱化有效断言或降低阈值。原始失败记录保留以区分修复和环境证据。最后核销提交只更新本目录文档，生产代码、测试、配置和锁文件与上述通过CI的源树相同；按AGENTS纯文档规则核对引用、内容及diff，不重复四门。
+
+边界保留：真实试用使用隔离Core0.24候选；文本、图片、WAV转写与视频成功，音乐HTTP410/2153拒绝、平台扣费0，生成成功未验。PHP缺少执行器而未实跑；本机Core Docker入口与生产容器部署未执行，CI的PG服务容器不等于生产部署验收。生产发布回滚、云存储及数据库灾备未演练；尚未部署，不声明生产SLA。

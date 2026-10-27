@@ -1,6 +1,6 @@
 # OneAster 内容系统施工与验收
 
-状态：功能已实现，已完成范围验收；最终CMS整体门禁以当前main的完整CI结果为准。关联：[DESIGN](DESIGN.md)、[CONTRACTS](CONTRACTS.md)。
+状态：CMS/client代码范围已核销；Core按授权替代方案交付issue，外部服务与部署限制见第7节。关联：[DESIGN](DESIGN.md)、[CONTRACTS](CONTRACTS.md)。
 
 ## 1. 起点与隔离
 
@@ -101,7 +101,7 @@ client真实服务suite当前拦截真实生成POST；这类suite不能作为真
 - [x] 真实CMS+client+数据库跨进程旅程通过，付费执行证据边界真实报告。
 - [x] 两API实例共享事实，同机单实例停止/重启、客户端断开、独立数据库不可用/恢复及资源预算通过；不推导跨区域灾备或生产SLA。
 - [x] 运维手册已交付；原生生产构建、启动、就绪、摘流与故障恢复已有证据。
-- [ ] 当前main的CMS完整测试命令通过；等待本轮CI整条命令退出码0。client本地四门通过；测试数和覆盖率按实测记录。
+- [x] CMS main 7171298完整CI四门通过，test整条命令退出码0；327文件2878单测、5文件14跨进程、29组124浏览器用例全部通过。client本地四门通过；测试数和覆盖率按实测记录。
 - [x] 无新增skip、有效断言未弱化、覆盖率阈值未降低；独立对抗审查与假绿抽查已完成，新测试可证伪错误行为。
 - [x] 仅提交本次明确文件；CMS/client已提交、push并合并main；Core仅PR、不合main，权限受阻后按用户授权交付issue31，未声称代码已上传或合入Core main。
 
@@ -109,7 +109,7 @@ client真实服务suite当前拦截真实生成POST；这类suite不能作为真
 
 ## 8. 当前验证记录
 
-实测结果与外部限制见[VERIFICATION](VERIFICATION.md)，运行与恢复步骤见[OPERATIONS](OPERATIONS.md)。当前main完整CI仍在执行，未完成的检查不计为通过；本地Node构建、真实PostgreSQL与S3协议测试服务的双节点证据不等于线上云存储、数据库灾备或月可用性已达标。
+实测结果与外部限制见[VERIFICATION](VERIFICATION.md)，运行与恢复步骤见[OPERATIONS](OPERATIONS.md)。CMS main 7171298的[完整CI40436093022](https://github.com/renxqoo/cms/actions/runs/40436093022)成功，耗时35分钟；CMS覆盖率statements93.82%、branches88.61%、functions96.38%、lines96.33%，配置内全局及指定范围门禁通过。client完整本地门禁278文件3669单测与14浏览器冒烟通过，覆盖率分别91.28%、89.97%、90.63%、93.59%，配置内门禁通过；另18项真实服务跨仓旅程通过。Core原生完整unit/race各128顶层、767含子例通过，全包statements79.5%、Core80.2%，Go未提供独立branches/functions/lines数据。未执行的检查不计为通过；本地Node构建、真实PostgreSQL与S3协议测试服务的双节点证据不等于线上云存储、数据库灾备或月可用性已达标。
 
 ## 9. 独立方案审查处置
 
