@@ -1,6 +1,6 @@
 # OneAster 全新内容系统设计基线
 
-状态：定稿，用户已于2026-10-27确认实施。级别：大。
+状态：CMS/client代码范围已核销，用户已于2026-10-27确认实施。级别：大。Core按授权替代方案交付issue，供应商权限与部署限制见[验收记录](VERIFICATION.md)。
 
 关联：[接口与数据单元](CONTRACTS.md)、[实施及验收](IMPLEMENTATION.md)。本次使用 feature-dev-v2；借用跨应用功能的设计、施工、单元三件套，不实施旧 CMS 数据迁移。
 
