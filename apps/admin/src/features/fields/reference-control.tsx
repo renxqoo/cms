@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
+import type { ReactNode } from 'react';
 import { Pagination } from '@new-cms/ui/data';
 import { RelationshipInput } from '../../components/cms/relationship-input';
 import type {
@@ -11,6 +12,7 @@ import type {
   RelationshipValue,
 } from '../../components/cms/relationship-types';
 import { relationshipKey } from '../../components/cms/relationship-types';
+import { useReferenceEditor } from './reference-editor';
 import { useFields } from './field-context';
 import { fieldSorting } from './sorting';
 import type { JsonValue, ReferencePage, ReferenceValue, FieldPath } from './types';
@@ -25,8 +27,23 @@ export function fieldReferences(value: JsonValue | undefined) {
   });
 }
 
+function selectedReferences(
+  values: readonly ReferenceValue[],
+  options: readonly RelationshipOption[],
+  collections: readonly { id: string; label: string }[],
+) {
+  return values.map((value) => ({
+    ...value,
+    label:
+      options.find((option) => relationshipKey(option) === relationshipKey(value))?.label ??
+      `${collections.find((collection) => collection.id === value.collection)?.label ?? value.collection} / ${value.id}`,
+  }));
+}
+
 export interface ReferenceControlProps {
+  placeholder?: string;
   label: string;
+  labelContent?: ReactNode;
   collectionKeys: readonly string[];
   value: readonly ReferenceValue[];
   onChange: (value: ReferenceValue[]) => void;
@@ -36,25 +53,31 @@ export interface ReferenceControlProps {
   renderMediaPreviews?: boolean;
   path?: FieldPath;
   sourcePath?: string;
+  filterOptions?: boolean;
   appearance?: 'select' | 'drawer';
+  context?: 'admin';
 }
 
 export function ReferenceControl(props: ReferenceControlProps) {
   const field = useFields();
   const { readOnly = false } = props;
+  const active = field.active !== false;
   const values = props.value;
   const latest = useRef(values);
   useEffect(() => {
     latest.current = values;
   }, [values]);
-  const [page, setPage] = useState(1);
-  const [result, setResult] = useState<ReferencePage | null>(null);
+  const [paging, setPaging] = useState({ key: '', page: 1 });
+  const [result, setResult] = useState<{ key: string; data: ReferencePage } | null>(null);
   const [options, setOptions] = useState<RelationshipOption[]>([]);
   const [waiting, setWaiting] = useState(false);
-  const previous = useRef('');
   const allowed = JSON.stringify(props.collectionKeys);
   const loadService = field.services.searchReferences;
   const { locale } = field;
+  const { sourcePath = '', filterOptions = false, context } = props;
+  const candidateKey = filterOptions
+    ? JSON.stringify([field.services.referenceContextKey, field.value])
+    : '';
   const load = useCallback(
     async (query: RelationshipQuery) => {
       const collections = z.array(z.string()).parse(JSON.parse(allowed));
@@ -65,18 +88,25 @@ export function ReferenceControl(props: ReferenceControlProps) {
         return [];
       }
       if (!collections.includes(collection)) throw new Error('Invalid reference collection');
-      const key = JSON.stringify([collection, query.query]);
-      const currentPage = key === previous.current ? page : 1;
-      if (previous.current !== key) {
-        previous.current = key;
-        if (page !== 1) setPage(1);
-      }
+      const key = JSON.stringify([
+        collection,
+        query.query,
+        candidateKey,
+        locale,
+        sourcePath,
+        context,
+      ]);
+      const currentPage = key === paging.key ? paging.page : 1;
+      setResult(null);
       const data = await loadService({
         collections,
         collection,
         query: query.query,
         page: currentPage,
         locale,
+        sourcePath,
+        filterOptions,
+        ...(context ? { context } : {}),
         signal: query.signal,
       });
       if (query.signal.aborted) return [];
@@ -88,7 +118,7 @@ export function ReferenceControl(props: ReferenceControlProps) {
       )
         throw new Error('Invalid reference page');
       setWaiting(false);
-      setResult(data);
+      setResult({ key, data });
       setOptions((before) => {
         const selected = new Set(latest.current.map(relationshipKey));
         const merged = new Map(
@@ -101,57 +131,51 @@ export function ReferenceControl(props: ReferenceControlProps) {
       });
       return data.rows;
     },
-    [allowed, loadService, locale, page],
+    [allowed, loadService, locale, paging, sourcePath, filterOptions, candidateKey, context],
   );
   const collections = props.collectionKeys.map((id) => ({
     id,
     label: field.services.collections.find((entry) => entry.id === id)?.label ?? id,
   }));
-  const selected = values.map((value) => ({
-    ...value,
-    label:
-      options.find((option) => relationshipKey(option) === relationshipKey(value))?.label ??
-      `${collections.find((collection) => collection.id === value.collection)?.label ?? value.collection} / ${value.id}`,
-  }));
-  const labels: RelationshipLabels = {
-    search: field.t.search,
-    chooseExisting: field.t.choose,
-    empty: waiting ? field.t.collection : field.t.empty,
-    loading: field.t.loading,
-    error: field.t.referenceError,
-    retry: field.t.retry,
-    clear: field.t.clear,
-    remove: field.t.remove,
-    unavailable: field.t.unavailable,
-    maximum: field.t.maximum,
-    create: field.t.create,
-    edit: field.t.edit,
-    moveUp: field.t.moveUp,
-    moveDown: field.t.moveDown,
-    close: field.t.close,
-    collection: field.t.collection,
-    sorting: fieldSorting(field.t, props.label),
-  };
+  const selected = selectedReferences(values, options, collections);
+  const labels = referenceLabels(field.t, props.label, waiting);
   const pagination = result ? (
     <Pagination
-      {...result}
-      onPageChange={setPage}
+      {...result.data}
+      onPageChange={(page) => setPaging({ key: result.key, page })}
       previousLabel={field.t.previous}
       nextLabel={field.t.next}
-      pageLabel={`${field.t.page} ${result.page}`}
-      totalLabel={`${result.total} ${field.t.total}`}
+      pageLabel={`${field.t.page} ${result.data.page}`}
+      totalLabel={`${result.data.total} ${field.t.total}`}
     />
   ) : null;
+  const editing = useReferenceEditor({
+    collectionKeys: props.collectionKeys,
+    value: props.value,
+    onChange: props.onChange,
+    onResolved: (rows) => setOptions((entries) => mergeReferenceOptions(entries, rows)),
+    multiple: props.multiple === true,
+    maxRows: props.maxRows ?? Number.MAX_SAFE_INTEGER,
+    readOnly,
+    active,
+    locale,
+    sourcePath,
+    filterOptions,
+    services: field.services,
+  });
   const common = {
+    ...(props.placeholder === undefined ? {} : { placeholder: props.placeholder }),
     label: props.label,
+    labelContent: props.labelContent,
     collections,
     options,
     loadOptions: load,
     appearance: props.appearance ?? 'drawer',
     maxRows: props.maxRows ?? Number.MAX_SAFE_INTEGER,
     labels,
-    readOnly,
+    readOnly: readOnly || !active,
     pagination,
+    ...editing.ports,
   };
   function change(next: RelationshipValue | RelationshipValue[] | null) {
     if (Array.isArray(next)) props.onChange(next.map(({ collection, id }) => ({ collection, id })));
@@ -159,18 +183,78 @@ export function ReferenceControl(props: ReferenceControlProps) {
   }
   return (
     <div className="space-y-3">
+      {editing.element}
       {props.multiple ? (
-        <RelationshipInput {...common} mode="multiple" value={selected} onChange={change} />
+        <RelationshipInput
+          key={String(active)}
+          {...common}
+          mode="multiple"
+          value={selected}
+          onChange={change}
+        />
       ) : (
         <RelationshipInput
+          key={String(active)}
           {...common}
           mode="single"
           value={selected[0] ?? null}
           onChange={change}
         />
       )}
+      <ReferenceMediaPreviews {...props} />
+    </div>
+  );
+}
+
+function referenceLabels(
+  t: ReturnType<typeof useFields>['t'],
+  label: string,
+  waiting: boolean,
+): RelationshipLabels {
+  return {
+    search: t.search,
+    chooseExisting: t.choose,
+    empty: waiting ? t.collection : t.empty,
+    loading: t.loading,
+    error: t.referenceError,
+    retry: t.retry,
+    clear: t.clear,
+    remove: t.remove,
+    unavailable: t.unavailable,
+    maximum: t.maximum,
+    create: t.create,
+    edit: t.edit,
+    moveUp: t.moveUp,
+    moveDown: t.moveDown,
+    close: t.close,
+    collection: t.collection,
+    sorting: fieldSorting(t, label),
+  };
+}
+
+function mergeReferenceOptions(
+  entries: RelationshipOption[],
+  rows: RelationshipOption[],
+): RelationshipOption[] {
+  return [
+    ...entries.filter(
+      (entry) => !rows.some((row) => relationshipKey(row) === relationshipKey(entry)),
+    ),
+    ...rows,
+  ];
+}
+
+function ReferenceMediaPreviews(
+  props: Pick<
+    ReferenceControlProps,
+    'renderMediaPreviews' | 'value' | 'sourcePath' | 'multiple' | 'path'
+  >,
+) {
+  const field = useFields();
+  return (
+    <>
       {props.renderMediaPreviews === true
-        ? values.map((value, index) => (
+        ? props.value.map((value, index) => (
             <div key={relationshipKey(value)}>
               {field.services.renderPreview?.({
                 reference: value,
@@ -180,6 +264,6 @@ export function ReferenceControl(props: ReferenceControlProps) {
             </div>
           ))
         : null}
-    </div>
+    </>
   );
 }

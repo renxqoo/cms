@@ -7,17 +7,13 @@ import {
   $isRangeSelection,
   COMMAND_PRIORITY_HIGH,
   DROP_COMMAND,
-  FORMAT_ELEMENT_COMMAND,
-  FORMAT_TEXT_COMMAND,
-  INDENT_CONTENT_COMMAND,
   INSERT_LINE_BREAK_COMMAND,
-  OUTDENT_CONTENT_COMMAND,
   PASTE_COMMAND,
-  SET_TEXT_FORMAT_COMMAND,
 } from 'lexical';
-import { INSERT_CHECK_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
-import { $exportRichText, prepareRichText } from './rich-text-mapping';
+import { $exportRichText, $richTextNodes, prepareRichText } from './rich-text-mapping';
+import { parseRichTextHtml } from './rich-text-paste';
+import { fieldEditorPolicy } from './policy';
 import { parseRichText, richTextData } from './rich-text-value';
 import { useFields } from './field-context';
 import { equalFieldValue } from './data';
@@ -35,8 +31,16 @@ export interface RichBridgeProps {
 function plainPaste(event: ClipboardEvent | InputEvent | KeyboardEvent) {
   event.preventDefault();
   const selection = $getSelection();
-  if ('clipboardData' in event && $isRangeSelection(selection))
-    selection.insertText(event.clipboardData?.getData('text/plain') ?? '');
+  if ('clipboardData' in event && $isRangeSelection(selection)) {
+    const html = event.clipboardData?.getData('text/html');
+    const rich = html ? parseRichTextHtml(html) : null;
+    if (rich) selection.insertNodes($richTextNodes(rich));
+    else {
+      const text = event.clipboardData?.getData('text/plain') ?? '';
+      if (new TextEncoder().encode(text).length <= fieldEditorPolicy.richTextPasteBytes)
+        selection.insertText(text);
+    }
+  }
   return true;
 }
 
@@ -103,13 +107,6 @@ export function RichTextBridge(props: RichBridgeProps) {
           },
           COMMAND_PRIORITY_HIGH,
         ),
-        editor.registerCommand(FORMAT_TEXT_COMMAND, () => true, COMMAND_PRIORITY_HIGH),
-        editor.registerCommand(SET_TEXT_FORMAT_COMMAND, () => true, COMMAND_PRIORITY_HIGH),
-        editor.registerCommand(FORMAT_ELEMENT_COMMAND, () => true, COMMAND_PRIORITY_HIGH),
-        editor.registerCommand(INDENT_CONTENT_COMMAND, () => true, COMMAND_PRIORITY_HIGH),
-        editor.registerCommand(OUTDENT_CONTENT_COMMAND, () => true, COMMAND_PRIORITY_HIGH),
-        editor.registerCommand(INSERT_ORDERED_LIST_COMMAND, () => true, COMMAND_PRIORITY_HIGH),
-        editor.registerCommand(INSERT_CHECK_LIST_COMMAND, () => true, COMMAND_PRIORITY_HIGH),
       ),
     [editor],
   );

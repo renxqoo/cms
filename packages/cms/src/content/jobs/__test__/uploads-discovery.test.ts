@@ -139,7 +139,7 @@ it('excludes create sessions without a document when the new list operation has 
   });
 });
 
-it('upload and job discovery recheck bound historical revision permission and keep original upload target semantics', async () => {
+it('regression: upload and job discovery stay within the SQL budget while rechecking historical permissions', async () => {
   const kit = await fixture();
   const actor = await contentActor(kit, permissions);
   const first = await ready(kit, actor.ctx);

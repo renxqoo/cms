@@ -1,10 +1,13 @@
 'use client';
+import { useContentLocale } from './use-content-locale';
+
+import { DocumentListHeader } from './document-list-header';
+import { CollectionViewNavigation, CollectionViewPresentation } from './custom-views';
+import { ListSlot } from './list-customization';
 
 import { useState } from 'react';
-import type { ReactNode } from 'react';
+import { CollectionPresentation } from '../admin-components/collection-presentation';
 import { useSearchParams } from 'next/navigation';
-import { FileTextIcon } from 'lucide-react';
-import { Button } from '@new-cms/ui/actions';
 import { Banner } from '@new-cms/ui/feedback';
 import { PageHeader } from '@new-cms/ui/layout';
 import { ClientInteractionBoundary } from '../../components/client-interaction-boundary';
@@ -13,28 +16,39 @@ import { useQueryNavigation } from '../../components/shell/navigation/use-query-
 import { useShell } from '../../components/shell/shell-provider';
 import { collectionSchema } from '../../contracts/content';
 import type { Collection } from '../../contracts/content';
-import { documentPageSchema } from '../../contracts/documents';
 import type { Document, DocumentPage } from '../../contracts/documents';
-import type { DataTableColumn } from '@new-cms/ui/data';
 import { folderListSchema } from '../../contracts/folders';
 import { useAccessControl } from '../access-control/provider';
 import { useApiQuery } from '../management-shared/query';
-import { ManagementList, managementListState } from '../management-shared/management-list';
 import { ManagementFeedback } from '../management-shared/feedback';
-import { FolderManager } from './folder-manager';
 import { contentMessages } from './messages';
-import type { ContentMessages } from './messages';
 import { collectionHref, documentQueryHref, parseDocumentQuery, queryFilter } from './query';
 import type { DocumentQuery } from './query';
 import { defaultVisibleFields, documentColumns, selectedDocuments } from './document-columns';
 import { DocumentListControls } from './list-controls';
+import { useDocumentListQuery } from './document-list-query';
+import { DocumentTable } from './document-table';
+import type { DocumentGroups } from '../../contracts/document-groups';
 import { TrashAction } from './trash-action';
 import { BulkDocuments } from './bulk-documents';
+import { QueryPresetManager } from './query-presets';
+import { DocumentHierarchy } from './hierarchy-tree';
+import { canBulkDocuments } from './bulk-actions';
+import { SelectionActions } from './document-selection-actions';
+import { useDocumentOrdering, documentOrderColumn, DocumentOrderFeedback } from './document-order';
 
-export function DocumentListPage({ collectionKey }: { collectionKey: string }) {
+export function DocumentListPage({
+  collectionKey,
+  viewPath,
+}: {
+  collectionKey: string;
+  viewPath?: string | undefined;
+}) {
+  const contentLocale = useContentLocale();
   const access = useAccessControl();
   const catalog = useApiQuery({
     operation: 'collections.get',
+    query: { locale: contentLocale },
     params: { collection: collectionKey },
     response: collectionSchema,
     enabled: access.can('collections.get', { scopeKind: 'collection', collectionKey }),
@@ -48,7 +62,7 @@ export function DocumentListPage({ collectionKey }: { collectionKey: string }) {
     <ClientInteractionBoundary className="space-y-6">
       <ManagementFeedback error={catalog.error} onRetry={catalog.reload} />
       {catalog.data ? (
-        <DocumentList key={collectionKey} collection={catalog.data} />
+        <DocumentList key={collectionKey} collection={catalog.data} viewPath={viewPath} />
       ) : (
         <PageHeader
           title={collectionKey}
@@ -59,24 +73,13 @@ export function DocumentListPage({ collectionKey }: { collectionKey: string }) {
   );
 }
 
-function documentApiQuery(query: DocumentQuery, collection: Collection) {
-  const filter = queryFilter(query, collection);
-  return {
-    page: query.page,
-    pageSize: query.pageSize,
-    q: query.q,
-    mode: query.mode,
-    trashed: query.trashed,
-    locale: query.locale,
-    fallback: [],
-    depth: 0,
-    sort: [{ field: query.sort, order: query.order }],
-    ...(filter.where ? { where: filter.where } : {}),
-    ...(query.folderId !== undefined ? { folderId: query.folderId } : {}),
-  };
-}
-
-function DocumentList({ collection }: { collection: Collection }) {
+function DocumentList({
+  collection,
+  viewPath,
+}: {
+  collection: Collection;
+  viewPath?: string | undefined;
+}) {
   const locale = useShell((state) => state.locale);
   const t = contentMessages[locale];
   const access = useAccessControl();
@@ -86,13 +89,14 @@ function DocumentList({ collection }: { collection: Collection }) {
   const [search, update] = useQueryNavigation(params.toString());
   const query = parseDocumentQuery(new URLSearchParams(search), collection);
   const filter = queryFilter(query, collection);
-  const [visible, setVisible] = useState(() => defaultVisibleFields(collection));
-  const result = useApiQuery({
-    operation: 'documents.list',
-    params: { collection: collection.key },
-    query: documentApiQuery(query, collection),
-    response: documentPageSchema,
-    enabled: queryFilter(query, collection).valid && access.can('documents.list', scope),
+  const visible = query.columns ?? defaultVisibleFields(collection);
+  const { result, groups } = useDocumentListQuery({
+    collection,
+    query,
+    enabled:
+      filter.valid &&
+      access.can('documents.list', scope) &&
+      (!query.groupBy || access.can('documents.groups', scope)),
   });
   const folders = useApiQuery({
     operation: 'folders.list',
@@ -117,48 +121,71 @@ function DocumentList({ collection }: { collection: Collection }) {
     query.mode,
     query.trashed,
     query.q,
-    query.filterField,
-    query.filterValue,
+    query.where,
+    query.groupBy,
     query.folderId === undefined ? 'all' : query.folderId,
   ]);
   return (
-    <>
-      <DocumentListHeader
+    <CollectionViewPresentation
+      scope="collection"
+      path={viewPath}
+      collection={collection}
+      document={null}
+      editor={null}
+      readOnly={!access.can('documents.create', scope)}
+    >
+      <CollectionViewNavigation
+        scope="collection"
         collection={collection}
-        query={query}
-        t={t}
-        canCreate={access.can('documents.create', scope)}
-        folderAction={
-          <FolderManager
-            collection={collection.key}
-            t={t}
-            onChanged={() => {
-              folders.reload();
-              result.reload();
-            }}
-          />
-        }
+        document={null}
+        editor={null}
+        readOnly={!access.can('documents.create', scope)}
       />
-      <DocumentListControls
+      <CollectionPresentation
+        kind="list"
         collection={collection}
-        query={query}
-        folders={folders.data?.rows ?? null}
-        visible={visible}
-        setVisible={setVisible}
-        t={t}
-        change={change}
-      />
-      <ManagementFeedback error={result.error} onRetry={result.reload} />
-      {!filter.valid ? <Banner tone="warning">{t.filterInvalid}</Banner> : null}
-      <DocumentListContent
-        key={selectionScope}
-        collection={collection}
-        query={query}
-        change={change}
-        result={result}
-        visible={visible}
-      />
-    </>
+        document={null}
+        editor={null}
+        readOnly={!access.can('documents.create', scope)}
+      >
+        <DocumentListHeader
+          collection={collection}
+          query={query}
+          t={t}
+          canCreate={access.can('documents.create', scope)}
+          onFoldersChanged={() => {
+            folders.reload();
+            result.reload();
+          }}
+        />
+        <DocumentListControls
+          collection={collection}
+          query={query}
+          folders={folders.data?.rows ?? null}
+          visible={visible}
+          setVisible={(updater) => change({ columns: updater(visible) })}
+          t={t}
+          change={change}
+        />
+        <QueryPresetManager
+          collection={collection}
+          query={query}
+          columns={visible}
+          onApply={change}
+        />
+        <ManagementFeedback error={result.error} onRetry={result.reload} />
+        {!filter.valid ? <Banner tone="warning">{t.filterInvalid}</Banner> : null}
+        <DocumentListContent
+          key={selectionScope}
+          collection={collection}
+          query={query}
+          change={change}
+          result={result}
+          groups={groups}
+          visible={visible}
+        />
+      </CollectionPresentation>
+    </CollectionViewPresentation>
   );
 }
 
@@ -167,6 +194,7 @@ function DocumentListContent({
   query,
   change,
   result,
+  groups,
   visible,
 }: {
   collection: Collection;
@@ -174,6 +202,7 @@ function DocumentListContent({
   change: (changes: Partial<DocumentQuery>) => void;
   result: ReturnType<typeof useApiQuery<DocumentPage>>;
   visible: string[];
+  groups: DocumentGroups | null;
 }) {
   const locale = useShell((state) => state.locale);
   const t = contentMessages[locale];
@@ -186,7 +215,13 @@ function DocumentListContent({
   const [trash, setTrash] = useState<{ document: Document; action: 'restore' | 'purge' } | null>(
     null,
   );
-  const columns = documentColumns({
+  const ordering = useDocumentOrdering({
+    collection,
+    query,
+    rows: result.data?.rows ?? [],
+    onChanged: result.reload,
+  });
+  const dataColumns = documentColumns({
     collection,
     t,
     locale,
@@ -194,6 +229,7 @@ function DocumentListContent({
     visible,
     trashed: query.trashed,
     mode: query.mode,
+    contentLocale: query.locale,
     select: (document, checked) =>
       setSelected((previous) => selectedDocuments(previous, document, checked)),
     open: (id) =>
@@ -204,36 +240,53 @@ function DocumentListContent({
     canRestore: access.can('documents.restoreTrash', scope),
     canPurge: access.can('documents.purge', scope),
   });
-  const table = managementListState(access.phase, result.phase);
+  const columns = [...documentOrderColumn(ordering), ...dataColumns];
+  const groupColumns = (rows: Document[]) => [
+    ...documentOrderColumn({ ...ordering, input: { ...ordering.input, rows } }),
+    ...dataColumns,
+  ];
   return (
     <>
-      {selected.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <p>
-            {t.selected}: {selected.length}
-          </p>
-          {access.can('content.batch', scope) && access.can('content.getJob', scope) ? (
-            <Button variant="outline" onClick={() => setBulk(true)}>
-              {t.bulk}
-            </Button>
-          ) : null}
-          <Button variant="ghost" onClick={() => setSelected([])}>
-            {t.cancel}
-          </Button>
-        </div>
-      ) : null}
+      <DocumentOrderFeedback
+        controller={ordering}
+        onSort={() => change({ sort: [{ field: '_order', order: 'asc' }] })}
+      />
+      <SelectionActions
+        count={selected.length}
+        t={t}
+        clear={() => setSelected([])}
+        onBulk={
+          canBulkDocuments(collection, query.trashed, access.can) ? () => setBulk(true) : undefined
+        }
+      />
+      <DocumentHierarchy
+        collection={collection}
+        query={query}
+        selected={selected}
+        onChanged={() => {
+          setSelected([]);
+          result.reload();
+        }}
+      />
+      <ListSlot collection={collection} slot="beforeListTable" />
       <DocumentTable
         result={result}
+        groups={groups}
+        groupColumns={groupColumns}
         collection={collection}
         query={query}
         change={change}
         t={t}
         columns={columns}
         filterValid={filter.valid}
-        denied={access.phase === 'ready' && !access.can('documents.list', scope)}
-        loading={table.loading}
-        failed={table.failed}
+        denied={
+          access.phase === 'ready' &&
+          (!access.can('documents.list', scope) ||
+            Boolean(query.groupBy && !access.can('documents.groups', scope)))
+        }
+        phase={access.phase}
       />
+      <ListSlot collection={collection} slot="afterListTable" />
       {trash ? (
         <TrashAction
           {...trash}
@@ -260,111 +313,6 @@ function DocumentListContent({
           }}
         />
       ) : null}
-    </>
-  );
-}
-
-function DocumentListHeader({
-  collection,
-  query,
-  t,
-  canCreate,
-  folderAction,
-}: {
-  collection: Collection;
-  query: DocumentQuery;
-  t: ContentMessages;
-  canCreate: boolean;
-  folderAction: ReactNode;
-}) {
-  const router = useAppNavigation();
-  return (
-    <PageHeader
-      title={`${collection.label} · ${query.trashed ? t.trash : t.active}`}
-      description={t.description}
-      icon={<FileTextIcon />}
-      actions={
-        <div className="flex flex-wrap gap-2">
-          {folderAction}
-          <Button
-            variant="outline"
-            onClick={() => router.push(collectionHref(collection.key, 'structure'))}
-          >
-            {t.structure}
-          </Button>
-          {canCreate && !query.trashed ? (
-            <Button
-              onClick={() =>
-                router.push(
-                  `${collectionHref(collection.key, 'new')}?locale=${encodeURIComponent(query.locale)}`,
-                )
-              }
-            >
-              {collection.singleton ? t.open : t.create}
-            </Button>
-          ) : null}
-        </div>
-      }
-    />
-  );
-}
-
-function DocumentTable({
-  result,
-  collection,
-  query,
-  change,
-  t,
-  columns,
-  filterValid,
-  denied,
-  loading,
-  failed,
-}: {
-  result: ReturnType<typeof useApiQuery<DocumentPage>>;
-  collection: Collection;
-  query: DocumentQuery;
-  change: (patch: Partial<DocumentQuery>) => void;
-  t: ContentMessages;
-  columns: readonly DataTableColumn<Document>[];
-  filterValid: boolean;
-  denied: boolean;
-  loading: boolean;
-  failed: boolean;
-}) {
-  return (
-    <>
-      {denied ? (
-        <Banner tone="warning">{t.denied}</Banner>
-      ) : (
-        <ManagementList
-          columns={columns}
-          rows={filterValid ? (result.data?.rows ?? []) : []}
-          rowKey={(document) => document.id}
-          page={query.page}
-          pageSize={query.pageSize}
-          total={result.data?.total ?? 0}
-          loading={filterValid && loading}
-          error={failed ? t.failed : null}
-          query={query.q}
-          onSearch={(q) => change({ q })}
-          onPageChange={(page) => change({ page })}
-          onPageSizeChange={(pageSize) => change({ pageSize })}
-          sort={{
-            key: collection.fields.some((field) => field.path === query.sort)
-              ? `field:${query.sort}`
-              : query.sort,
-            direction: query.order === 'asc' ? 'asc' : 'desc',
-          }}
-          onSortChange={(sort) =>
-            change({
-              sort: sort?.key.replace(/^field:/, '') ?? 'updatedAt',
-              order: sort?.direction ?? 'desc',
-            })
-          }
-          onRetry={result.reload}
-        />
-      )}
     </>
   );
 }

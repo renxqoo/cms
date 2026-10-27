@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { createDatabase } from '@new-cms/database/client';
 import type { Database } from '@new-cms/database/client';
 import { createTestDatabase, testDatabaseConnectionString } from './database.ts';
+import { withTestDatabaseDdl } from './database-ddl.ts';
 
 interface RuntimeResources {
   control: Database;
@@ -36,11 +37,28 @@ async function closeResources(resources: RuntimeResources): Promise<void> {
     resources;
   const steps = [
     () => runtime?.close(),
-    () => roleCreated && fixture?.database.query(`DROP OWNED BY ${roleName}`),
+    () =>
+      roleCreated &&
+      fixture &&
+      withTestDatabaseDdl(testDatabaseConnectionString(), () =>
+        fixture.database.query(`DROP OWNED BY ${roleName}`),
+      ),
     () => fixture?.close(),
-    () => roleCreated && control.query(`DROP ROLE IF EXISTS ${roleName}`),
-    () => databaseCreated && control.query(`DROP DATABASE IF EXISTS ${databaseName}`),
-    () => roleCreated && control.query(`DROP ROLE IF EXISTS ${roleName}`),
+    () =>
+      roleCreated &&
+      withTestDatabaseDdl(testDatabaseConnectionString(), () =>
+        control.query(`DROP ROLE IF EXISTS ${roleName}`),
+      ),
+    () =>
+      databaseCreated &&
+      withTestDatabaseDdl(testDatabaseConnectionString(), () =>
+        control.query(`DROP DATABASE IF EXISTS ${databaseName}`),
+      ),
+    () =>
+      roleCreated &&
+      withTestDatabaseDdl(testDatabaseConnectionString(), () =>
+        control.query(`DROP ROLE IF EXISTS ${roleName}`),
+      ),
     () => control.close(),
   ];
   const errors: unknown[] = [];
@@ -65,7 +83,9 @@ export async function createTestRuntimeDatabase() {
     roleCreated: false,
   };
   try {
-    await resources.control.query(`CREATE DATABASE ${databaseName} TEMPLATE template0`);
+    await withTestDatabaseDdl(connectionString, () =>
+      resources.control.query(`CREATE DATABASE ${databaseName} TEMPLATE template0`),
+    );
     resources.databaseCreated = true;
     const fixture = await createTestDatabase({
       connectionString: databaseConnectionString(connectionString, databaseName),

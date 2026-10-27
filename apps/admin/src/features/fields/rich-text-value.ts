@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { richTextNodeSchemas } from './rich-text-schema';
+export { richTextFormats } from './rich-text-schema';
+export type { RichTextFormat } from './rich-text-schema';
 import { isFieldData } from './data';
 import { isJsonValue } from './parsing';
 import type { FieldData, JsonValue } from './types';
@@ -40,6 +43,23 @@ function validCustomNode(value: FieldData, version: string) {
   );
 }
 
+function validContainer(value: FieldData, type: string): boolean {
+  if (type === 'link')
+    return (
+      Object.keys(value).every((key) => ['type', 'url', 'reference', 'children'].includes(key)) &&
+      (value['reference'] === undefined
+        ? safeRichTextLink(value['url'])
+        : value['url'] === undefined &&
+          isFieldData(value['reference']) &&
+          Object.keys(value['reference']).length === 2 &&
+          validReference(value['reference']))
+    );
+  return (
+    Object.hasOwn(richTextNodeSchemas, type) &&
+    richTextNodeSchemas[type]?.safeParse(value).success === true
+  );
+}
+
 function validNode(
   value: JsonValue,
   registrations: readonly { type: string; version: string }[],
@@ -47,8 +67,8 @@ function validNode(
   if (!isFieldData(value) || typeof value['type'] !== 'string') return false;
   const { type } = value;
   const keys = Object.keys(value);
-  if (type === 'text')
-    return keys.every((key) => ['type', 'text'].includes(key)) && typeof value['text'] === 'string';
+  if (type === 'text' || type === 'horizontalRule')
+    return richTextNodeSchemas[type]?.safeParse(value).success === true;
   if (type === 'relationship' || type === 'media')
     return (
       keys.length === 3 &&
@@ -57,15 +77,8 @@ function validNode(
     );
   const registered = registrations.find((registration) => registration.type === type);
   if (registered) return validCustomNode(value, registered.version);
-  if (!['paragraph', 'heading', 'list', 'listItem', 'link'].includes(type)) return false;
-  if (
-    !keys.every((key) =>
-      (type === 'link' ? ['type', 'url', 'children'] : ['type', 'children']).includes(key),
-    )
-  )
-    return false;
+  if (!validContainer(value, type)) return false;
   return (
-    (type !== 'link' || safeRichTextLink(value['url'])) &&
     Array.isArray(value['children']) &&
     value['children'].every((child) => validNode(child, registrations))
   );
@@ -93,6 +106,7 @@ export function richTextData(value: RichTextValue): FieldData {
 }
 
 export function richTextNode(type: string): FieldData {
+  if (type === 'horizontalRule') return { type };
   if (type === 'text') return { type, text: '' };
   if (type === 'link') return { type, url: 'https://', children: [{ type: 'text', text: '' }] };
   if (type === 'list')

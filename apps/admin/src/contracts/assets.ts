@@ -51,6 +51,7 @@ export const manifestSchema = z.strictObject({
 });
 
 export const uploadSessionSchema = z.strictObject({
+  locale: z.string().nullable(),
   id: z.uuid(),
   filename: z.string(),
   declaredMimeType: z.string(),

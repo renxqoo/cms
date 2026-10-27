@@ -12,6 +12,7 @@ import type { ApiClient, ApiOptions } from './cms-api.ts';
 import { availablePort } from './tcp-port.ts';
 
 export interface CmsProcessOptions {
+  port?: number;
   environment?: NodeJS.ProcessEnv;
   frontendUrl?: string;
   navigationPaths?: readonly string[];
@@ -69,7 +70,7 @@ async function processSettings(
   input: Parameters<typeof settings>[1],
   options: CmsProcessOptions,
 ) {
-  const port = await availablePort();
+  const port = options.port ?? (await availablePort());
   return settings(mode, input, {
     ...options,
     environment: {

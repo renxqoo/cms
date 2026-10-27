@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ParsedField } from './parsing';
 import type { JsonValue } from './types';
 
@@ -21,15 +21,16 @@ export function useFieldDraft(input: DraftInput) {
   const report = useEffectEvent((identity: string, message: string | null) =>
     input.onValidityChange(identity, message),
   );
-  const initialError = useEffectEvent(() => error);
+  const currentError = useRef(error);
   useEffect(() => {
-    report(input.identity, initialError());
+    report(input.identity, currentError.current);
     return () => report(input.identity, null);
   }, [input.identity]);
   function change(next: string) {
     setText(next);
     const parsed = input.parse(next);
     const message = parsed.valid ? null : input.invalidMessage;
+    currentError.current = message;
     setError(message);
     input.onValidityChange(input.identity, message);
     if (parsed.valid) input.onChange(parsed.value);

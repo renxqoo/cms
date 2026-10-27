@@ -1,7 +1,8 @@
 import 'server-only';
 import type { z } from 'zod';
 import { acceptsIdempotencyKey, getOperation, operationPath } from '../contracts/operations';
-import type { OperationDefinition, OperationId } from '../contracts/operations';
+import type { OperationId } from '../contracts/operations';
+import type { OperationDefinition } from '../contracts/operation-definition';
 import { apiResponse, failure } from '../api/result';
 import type { ApiResult } from '../api/result';
 import { loadAdminConfig } from './config';

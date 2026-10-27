@@ -28,6 +28,8 @@ export const contentJobSummarySchema = z.object({
   documentId: z.uuid().nullable(),
   expectedRevision: z.number().int().positive().nullable(),
   requestedVersionId: z.uuid().nullable(),
+  publicationAction: z.enum(['publish', 'unpublish']).optional(),
+  locale: z.string().optional(),
   total: z.number().int().nonnegative(),
   succeeded: z.number().int().nonnegative(),
   failed: z.number().int().nonnegative(),
@@ -60,7 +62,7 @@ export const contentJobSchema = contentJobSummarySchema.extend({
     z.object({
       position: z.number().int().nonnegative(),
       id: z.uuid(),
-      status: z.enum(['queued', 'succeeded', 'failed']),
+      status: z.enum(['queued', 'succeeded', 'failed', 'cancelled']),
       resultId: z.uuid().optional(),
       versionId: z.uuid().optional(),
       error: z.object({ code: z.string() }).optional(),

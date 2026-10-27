@@ -78,7 +78,7 @@ function nextChild(options: NextProcessOptions) {
       env: {
         ...process.env,
         NEXT_TELEMETRY_DISABLED: '1',
-        CMS_ADMIN_E2E: '1',
+        CMS_ADMIN_E2E: process.env['CMS_ADMIN_E2E'] === 'suite' ? 'suite' : '1',
         NODE_ENV: mode,
         CMS_API_BASE_URL: apiOrigin,
         CMS_ADMIN_ORIGIN: `http://127.0.0.1:${port}`,
@@ -120,7 +120,7 @@ function nextProcess(options: NextProcessOptions) {
   return { close, exited, stopped: () => stopped, output: () => output };
 }
 
-async function startNext(options: NextProcessOptions) {
+export async function startNext(options: NextProcessOptions) {
   options.signal?.throwIfAborted();
   const server = nextProcess(options);
   try {
@@ -144,12 +144,13 @@ async function startNext(options: NextProcessOptions) {
 export async function createAdminApplicationProcess(
   mode: 'development' | 'production',
   port: number,
-  options: { signal?: AbortSignal | undefined; content?: boolean } = {},
+  options: { signal?: AbortSignal | undefined; content?: boolean; apiPort?: number } = {},
 ) {
   const { signal } = options;
   signal?.throwIfAborted();
   const origin = `http://127.0.0.1:${port}`;
   const cms = await createCmsProcess(mode === 'development' ? 'bun' : 'node', {
+    ...(options.apiPort === undefined ? {} : { port: options.apiPort }),
     frontendUrl: origin,
     navigationPaths: adminRoutes.map((route) => route.path),
     navigationIcons: Object.keys(adminIcons),

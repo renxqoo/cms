@@ -19,6 +19,14 @@ export interface HttpEnvironment {
 export function requestContext(c: Context<HttpEnvironment>): RequestContext {
   const authorization = c.req.header('authorization');
   const key = c.req.header('idempotency-key');
+  const editorSessionId = c.req.header('x-cms-editor-session');
+  if (
+    editorSessionId !== undefined &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      editorSessionId,
+    )
+  )
+    throw new CmsError('invalid_input');
   return {
     requestId: c.get('requestId'),
     ip: c.get('ip'),
@@ -27,22 +35,27 @@ export function requestContext(c: Context<HttpEnvironment>): RequestContext {
     onCredential: (credentialId) => c.set('credentialId', credentialId),
     ...(authorization?.startsWith('Bearer ') ? { token: authorization.slice(7) } : {}),
     ...(key === undefined ? {} : { idempotencyKey: key }),
+    ...(editorSessionId === undefined ? {} : { editorSessionId: editorSessionId.toLowerCase() }),
   };
 }
 
 function queryValue(key: string, value: string | undefined): unknown {
-  if (['page', 'pageSize', 'version', 'revision', 'depth'].includes(key)) {
+  if (
+    ['page', 'pageSize', 'groupPageSize', 'version', 'revision', 'depth', 'generation'].includes(
+      key,
+    )
+  ) {
     const pattern = key === 'depth' ? /^(0|[1-9]\d*)$/ : /^[1-9]\d*$/;
     if (!value || !pattern.test(value) || !Number.isSafeInteger(Number(value)))
       throw new CmsError('invalid_input');
     return Number(value);
   }
-  if (key === 'trashed' || key === 'blocked') {
+  if (['trashed', 'blocked', 'count'].includes(key)) {
     if (value !== 'true' && value !== 'false') throw new CmsError('invalid_input');
     return value === 'true';
   }
-  if (key === 'folderId' && value === 'null') return null;
-  if (['where', 'sort', 'select', 'fallback'].includes(key)) {
+  if (['folderId', 'parentId'].includes(key) && value === 'null') return null;
+  if (['where', 'sort', 'select', 'fallback', 'joins', 'groupBy', 'queryByGroup'].includes(key)) {
     try {
       return JSON.parse(value ?? '') as unknown;
     } catch {

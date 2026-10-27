@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { requestApi } from '../../../api/client';
 import { failure } from '../../../api/result';
-import { readBulkEditor } from '../bulk-read';
+import { readBulkEditor, bulkEditorLayout } from '../bulk-read';
 import { catalog, document, documentId, editor, folderId, success, versionId } from './support';
 
 vi.mock('../../../api/client', () => ({ requestApi: vi.fn<typeof requestApi>() }));
@@ -10,6 +10,39 @@ beforeEach(() => request.mockReset());
 function input(documents = [document()]) {
   return { collection: catalog(), documents, locale: 'en', signal: new AbortController().signal };
 }
+
+it('omits bulk-disabled descendants from groups, tabs and blocks while retaining ordinary editing descriptors', () => {
+  const [field] = editor().layout;
+  if (!field) throw new Error('Missing field');
+  const omitted = {
+    ...field,
+    id: 'private',
+    name: 'private',
+    disabled: { field: false, column: false, filter: false, bulkEdit: true },
+  };
+  const layout = [
+    { ...field, id: 'group', type: 'group' as const, children: [field, omitted] },
+    {
+      ...field,
+      id: 'tabs',
+      type: 'tabs' as const,
+      tabs: [{ id: 'tab', label: 'Tab', children: [omitted, field] }],
+    },
+    {
+      ...field,
+      id: 'blocks',
+      type: 'blocks' as const,
+      blocks: [{ id: 'block', key: 'hero', label: 'Hero', children: [omitted, field] }],
+    },
+    omitted,
+  ];
+  const filtered = bulkEditorLayout(layout);
+  expect(filtered).toHaveLength(3);
+  expect(filtered[0]?.children).toEqual([field]);
+  expect(filtered[1]?.tabs?.[0]?.children).toEqual([field]);
+  expect(filtered[2]?.blocks?.[0]?.children).toEqual([field]);
+  expect(layout[0]?.children).toHaveLength(2);
+});
 
 it('reads at most ten explicitly selected update descriptors in sequence with no fallback or depth', async () => {
   request

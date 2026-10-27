@@ -40,7 +40,11 @@ it('binds a ready replacement with the original CAS revision and refreshes befor
   mocks.request.mockResolvedValue(success({ ...document, revision: 8 }));
   const state = input();
   await attachFile(state, session({ status: 'ready', manifest }));
-  expect(mocks.request.mock.calls[0]?.[0].body).toEqual({ revision: 7, uploadId: session().id });
+  expect(mocks.request.mock.calls[0]?.[0].body).toEqual({
+    locale: 'en',
+    revision: 7,
+    uploadId: session().id,
+  });
   expect(state.changed).toHaveBeenCalledOnce();
   expect(state.release).toHaveBeenCalledOnce();
   expect(state.setUncertain).toHaveBeenCalledWith(null);

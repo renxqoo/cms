@@ -10,7 +10,8 @@ import {
   requireAdditionalOperation,
   requireRevision,
 } from '../runtime.ts';
-import { lockRevisionResources } from './revision-data.ts';
+import { lockRevisionResources, allRevisionReferences } from './revision-data.ts';
+import { validateHierarchyRevision, validateHierarchyReferences } from '../hierarchy/validation.ts';
 import { prepareLocaleSnapshot, readLocaleData } from './prepare-write.ts';
 import { writeRevision } from './write-revision.ts';
 import type { DocumentRow } from '../model.ts';
@@ -34,7 +35,17 @@ export async function restoreTrashInTransaction(
     collection: state.collection.key,
     id: document.id,
   });
+  await validateHierarchyRevision(state, {
+    runtime: input.runtime,
+    documentId: document.id,
+    revisionId: latest.currentVersionId,
+  });
+  await validateHierarchyReferences(state, {
+    runtime: input.runtime,
+    references: await allRevisionReferences(state, { runtime: input.runtime, document: latest }),
+  });
   await input.runtime.store.updateDocumentPointers(state.tx, {
+    actorId: state.actor.id,
     collection: state.collection.key,
     id: document.id,
     expectedRevision: latest.revision,
@@ -44,7 +55,7 @@ export async function restoreTrashInTransaction(
     clearPublications: state.collection.mode !== 'direct',
     trashedAt: null,
   });
-  await input.runtime.store.syncActiveUnique(state.tx, {
+  await input.runtime.store.syncActiveProjections(state.tx, {
     collection: state.collection.key,
     id: document.id,
   });
@@ -70,7 +81,8 @@ async function restoreEffectiveRevision(
       trashed: true,
     });
     const dataByLocale = await readLocaleData(writer, { runtime: input.runtime, document });
-    const prepared = prepareLocaleSnapshot(writer, {
+    const prepared = await prepareLocaleSnapshot(writer, {
+      documentId: input.document.id,
       runtime: input.runtime,
       current: dataByLocale,
       next: dataByLocale,

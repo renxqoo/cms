@@ -5,7 +5,9 @@ import { createRegistry } from '../../generate.ts';
 import type { CollectionDefinition, FieldPolicyContext } from '../../definition.ts';
 import { parseQuery } from '../../queries/parse-query.ts';
 import { validateData } from '../validate-data.ts';
-import { assertWritableData, projectData, queryableFields } from '../policies.ts';
+import { assertWritableData } from '../policy-write.ts';
+import { projectData } from '../policy-read.ts';
+import { queryableFields } from '../policy-metadata.ts';
 
 const time = '2026-10-26T00:00:00.000Z';
 const actor: Principal = {
@@ -78,7 +80,7 @@ it('query depth and node limits reject garbage before recursive schema parsing c
     parseQuery({ collection, limits, input: { where: { or: [leaf, leaf, leaf, leaf, leaf] } } }),
   ).toThrowError('invalid input');
 });
-it('query values and document JSON reject deeply nested and cyclic garbage with domain errors', () => {
+it('query values and document JSON reject deeply nested and cyclic garbage with domain errors', async () => {
   const collection = definition();
   const limits = contentLimits();
   let nested: unknown = 'leaf';
@@ -90,14 +92,14 @@ it('query values and document JSON reject deeply nested and cyclic garbage with 
       input: { where: { field: 'json', operator: 'contains', value: nested } },
     }),
   ).toThrowError('payload too large');
-  expect(() =>
+  await expect(
     validateData({ collection, data: { json: nested }, locale: 'en', mode: 'draft', limits }),
-  ).toThrowError('payload too large');
+  ).rejects.toThrowError('payload too large');
   const cycle: Record<string, unknown> = {};
   cycle['self'] = cycle;
-  expect(() =>
+  await expect(
     validateData({ collection, data: { json: cycle }, locale: 'en', mode: 'draft', limits }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
   expect(() =>
     parseQuery({
       collection,
@@ -106,7 +108,7 @@ it('query values and document JSON reject deeply nested and cyclic garbage with 
     }),
   ).toThrowError('invalid input');
 });
-it('parent field policies protect descendant read, query and write paths even when child rules allow', () => {
+it('parent field policies protect descendant read, query and write paths even when child rules allow', async () => {
   const deny = { version: '1', run: () => false };
   const allow = { version: '1', run: () => true };
   const raw: CollectionDefinition = {
@@ -131,17 +133,48 @@ it('parent field policies protect descendant read, query and write paths even wh
   };
   const collection = createRegistry({ collections: [raw], limits: contentLimits() }).get('items');
   const data = { visible: 'Visible', private: { child: 'Secret' } };
-  expect(projectData({ collection, data, context })).toEqual({ visible: 'Visible' });
-  expect(projectData({ collection, data, context, select: ['private.child'] })).toEqual({});
-  expect(queryableFields({ collection, context })).toEqual(['visible']);
-  expect(() =>
-    assertWritableData({ collection, context, data: { private: { child: 'Attempt' } } }),
-  ).toThrowError('forbidden');
-  expect(() =>
-    assertWritableData({ collection, context, data: { visible: 'Allowed' } }),
-  ).not.toThrow();
+  expect(
+    await projectData({
+      ...scope(),
+      collection,
+      data,
+      context,
+    }),
+  ).toEqual({ visible: 'Visible' });
+  expect(
+    await projectData({
+      ...scope(),
+      collection,
+      data,
+      context,
+      select: ['private.child'],
+    }),
+  ).toEqual({});
+  expect(
+    await queryableFields({
+      ...scope(),
+      collection,
+      context,
+    }),
+  ).toEqual(['visible']);
+  await expect(
+    assertWritableData({
+      ...scope(),
+      collection,
+      context,
+      data: { private: { child: 'Attempt' } },
+    }),
+  ).rejects.toThrowError('forbidden');
+  await expect(
+    assertWritableData({
+      ...scope(),
+      collection,
+      context,
+      data: { visible: 'Allowed' },
+    }),
+  ).resolves.toBeUndefined();
 });
-it('legitimate prototype-method field names only read and authorize explicitly provided values', () => {
+it('legitimate prototype-method field names only read and authorize explicitly provided values', async () => {
   const raw = {
     ...definition(),
     fields: [
@@ -155,12 +188,32 @@ it('legitimate prototype-method field names only read and authorize explicitly p
   };
   const collection = createRegistry({ collections: [raw], limits: contentLimits() }).get('items');
   expect(
-    validateData({ collection, data: {}, locale: 'en', mode: 'draft', limits: contentLimits() }),
+    await validateData({
+      collection,
+      data: {},
+      locale: 'en',
+      mode: 'draft',
+      limits: contentLimits(),
+    }),
   ).toEqual({});
-  expect(projectData({ collection, data: {}, context })).toEqual({});
-  expect(() => assertWritableData({ collection, data: {}, context })).not.toThrow();
   expect(
-    validateData({
+    await projectData({
+      ...scope(),
+      collection,
+      data: {},
+      context,
+    }),
+  ).toEqual({});
+  await expect(
+    assertWritableData({
+      ...scope(),
+      collection,
+      data: {},
+      context,
+    }),
+  ).resolves.toBeUndefined();
+  expect(
+    await validateData({
       collection,
       data: { toString: 'Explicit text' },
       locale: 'en',
@@ -168,7 +221,16 @@ it('legitimate prototype-method field names only read and authorize explicitly p
       limits: contentLimits(),
     }),
   ).toEqual({ toString: 'Explicit text' });
-  expect(() =>
-    assertWritableData({ collection, data: { toString: 'Explicit text' }, context }),
-  ).toThrowError('forbidden');
+  await expect(
+    assertWritableData({
+      ...scope(),
+      collection,
+      data: { toString: 'Explicit text' },
+      context,
+    }),
+  ).rejects.toThrowError('forbidden');
 });
+
+function scope() {
+  return { limits: contentLimits(), functions: { budget: { used: 0 } } };
+}

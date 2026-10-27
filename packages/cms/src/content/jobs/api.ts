@@ -1,3 +1,4 @@
+import { itemOperation } from './execute-item.ts';
 import { assertAssetJobVisible } from '../adapters/postgres/asset-job-discovery.ts';
 import { randomUUID } from 'node:crypto';
 import { fail } from '@new-cms/cms/platform/contracts';
@@ -10,6 +11,7 @@ import {
   parse,
   requireAdditionalOperation,
   requireRevision,
+  resolveLocale,
 } from '../runtime.ts';
 import { insertJob, readJob } from './store.ts';
 import type { JobRow } from './store.ts';
@@ -71,7 +73,7 @@ function acceptedJob(job: Awaited<ReturnType<typeof currentJob>>) {
   return {
     jobId: job.id,
     status: job.status,
-    location: `/v1/collections/${job.collection}/jobs/${job.id}`,
+    location: `/v1/collections/${job.collection}/jobs/${job.id}${job.locale ? `?locale=${encodeURIComponent(job.locale)}` : ''}`,
   };
 }
 
@@ -82,6 +84,7 @@ async function createBatch(runtime: ContentRuntime, ctx: RequestContext, raw: un
     {
       ctx,
       operationId: 'content.batch',
+      batchOperation: itemOperation(input.action),
       collection: input.collection,
       ...(language.locale ? { locale: language.locale } : {}),
     },
@@ -97,7 +100,13 @@ async function createBatch(runtime: ContentRuntime, ctx: RequestContext, raw: un
       await runClaimedJob(runtime, { job, signal: ctx.signal ?? new AbortController().signal });
   }
   return createRunner(runtime)(
-    { ctx, operationId: 'content.batch', collection: input.collection },
+    {
+      ctx,
+      operationId: 'content.batch',
+      batchOperation: itemOperation(input.action),
+      collection: input.collection,
+      ...(language.locale ? { locale: language.locale } : {}),
+    },
     async (state) => {
       const job = await currentJob(state, { runtime, id: reference.jobId });
       return synchronous ? job : acceptedJob(job);
@@ -151,7 +160,7 @@ async function acceptSchedule(
       id,
       input.values.id,
       input.values.revision,
-      JSON.stringify({ action: input.values.action, locale: state.locale }),
+      JSON.stringify({ action: input.values.action ?? 'publish', locale: state.locale }),
     ],
   );
   await auditContent(state, {
@@ -183,7 +192,12 @@ async function schedulePublication(runtime: ContentRuntime, ctx: RequestContext,
 async function cancelSchedule(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['content.cancelPublicationSchedule'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'content.cancelPublicationSchedule', collection: input.collection },
+    {
+      ctx,
+      operationId: 'content.cancelPublicationSchedule',
+      collection: input.collection,
+      ...(input.locale ? { locale: input.locale } : {}),
+    },
     async (state) => {
       const job = await readJob(state.tx, {
         id: input.scheduleId,
@@ -191,7 +205,16 @@ async function cancelSchedule(runtime: ContentRuntime, ctx: RequestContext, raw:
         lock: true,
       });
       if (job.action !== 'publication' || job.document_id !== input.id) fail('not_found');
-      await ensureVisible(state, { runtime, id: input.id, trashed: true });
+      const item = await state.tx.query<{ locale: string }>(
+        "SELECT payload->>'locale' AS locale FROM content_job_items WHERE job_id=$1 AND position=0",
+        [job.id],
+      );
+      const locale = item.rows[0]?.locale;
+      if (!locale) fail('invalid_input');
+      const localized = await requireAdditionalOperation(
+        { ...state, locale: resolveLocale(state.collection, locale) },
+        { runtime, operationId: 'content.cancelPublicationSchedule', id: input.id, trashed: true },
+      );
       if (job.status === 'cancelled') return;
       if (job.status !== 'queued' && job.status !== 'running') fail('version_conflict');
       await state.tx.query(
@@ -202,7 +225,7 @@ async function cancelSchedule(runtime: ContentRuntime, ctx: RequestContext, raw:
         "UPDATE content_job_items SET status='cancelled' WHERE job_id=$1 AND status='queued'",
         [job.id],
       );
-      await auditContent(state, {
+      await auditContent(localized, {
         runtime,
         id: input.id,
         detail: { kind: 'publicationScheduleCancelled', jobId: job.id },
@@ -214,7 +237,12 @@ async function cancelSchedule(runtime: ContentRuntime, ctx: RequestContext, raw:
 async function getJob(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['content.getJob'], raw);
   const result = await createRunner(runtime)(
-    { ctx, operationId: 'content.getJob', collection: input.collection },
+    {
+      ctx,
+      operationId: 'content.getJob',
+      collection: input.collection,
+      ...(input.locale ? { locale: input.locale } : {}),
+    },
     async (state) => {
       const match = await state.tx.query<JobRow>(
         'SELECT * FROM content_jobs WHERE id=$1 AND collection_id=$2',

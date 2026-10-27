@@ -26,7 +26,22 @@ export const site = collection(
         run: (value) => value === '' || validApiBaseUrl(value),
       },
     }),
-    field('defaultDocumentSlug', 'text', { maxLength: 120, validate: slugRule }),
+    field('defaultDocumentSlug', 'text', {
+      maxLength: 120,
+      validate: slugRule,
+      hooks: {
+        beforeValidate: [
+          {
+            version: 'default-document-slug.v1',
+            run: ({ value }) => {
+              if (value !== undefined && value !== null && !slugRule.run(value))
+                throw new Error('Invalid default document slug');
+              return value;
+            },
+          },
+        ],
+      },
+    }),
     group('header', [
       rows('navigation', [linkFields('link'), linkFields('homeLink')], 20),
       linkFields('consoleLink'),

@@ -1,4 +1,5 @@
 'use client';
+import { useContentLocale } from './use-content-locale';
 
 import { DatabaseIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
@@ -13,17 +14,21 @@ import { useApiQuery } from '../management-shared/query';
 import { ManagementFeedback } from '../management-shared/feedback';
 import { contentMessages } from './messages';
 import { collectionHref } from './query';
+import { navigableCollection } from './navigation-model';
 
 export function CollectionCatalogPage() {
+  const contentLocale = useContentLocale();
   const locale = useShell((state) => state.locale);
   const t = contentMessages[locale];
   const access = useAccessControl();
   const navigation = useAppNavigation();
   const result = useApiQuery({
     operation: 'collections.list',
+    query: { locale: contentLocale },
     response: collectionListSchema,
     enabled: access.can('collections.list'),
   });
+  const visible = result.data?.rows.filter(navigableCollection) ?? [];
   return (
     <ClientInteractionBoundary className="space-y-6">
       <PageHeader title={t.title} description={t.description} icon={<DatabaseIcon />} />
@@ -32,11 +37,11 @@ export function CollectionCatalogPage() {
         <Banner tone="warning">{t.denied}</Banner>
       ) : null}
       {result.phase === 'loading' ? <p role="status">{t.loading}</p> : null}
-      {result.phase === 'ready' && result.data?.rows.length === 0 ? (
+      {result.phase === 'ready' && visible.length === 0 ? (
         <EmptyCatalog onRefresh={result.reload} />
       ) : null}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {result.data?.rows.map((collection) => (
+        {visible.map((collection) => (
           <Card key={collection.key}>
             <CardHeader>
               <CardTitle>{collection.label}</CardTitle>

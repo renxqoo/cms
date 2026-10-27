@@ -30,6 +30,7 @@ const time = '2026-10-26T00:00:00.000Z';
 const upload = {
   ...target,
   purpose: 'create' as const,
+  locale: 'en',
   filename: 'Private report.pdf',
   declaredMimeType: 'application/pdf',
   declaredBytes: 400,

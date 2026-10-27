@@ -1,11 +1,13 @@
+import { policyScope } from '../hooks/invoke.ts';
 import { collectReferences } from '../fields/collect-references.ts';
-import { projectData } from '../fields/policies.ts';
+import { projectData } from '../fields/policy-read.ts';
 import { historicalLocale } from '../fields/remap-locale.ts';
 import { remapReferencePath } from '../fields/remap-reference-path.ts';
 import { fieldPaths } from '../fields/structure.ts';
 import { authorizeStateOperation, collectionPredicate, policyContext } from '../runtime.ts';
 import { denied, targetState } from './relation-scopes.ts';
 import { visibleDocuments } from './visible-documents.ts';
+import { targetReadContext } from '../queries/resolve-locale.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
 import type { DocumentData } from '../definition.ts';
 import type { InboundReference } from '../adapters/postgres/store-contract.ts';
@@ -35,7 +37,7 @@ async function historyState(
     if (!actor || !state.collection.history) return undefined;
     const { predicate: _old, ...base } = state;
     const next = { ...base, actor, operationId: 'versions.get' };
-    const predicate = collectionPredicate(next);
+    const predicate = await collectionPredicate(next);
     return { ...next, ...(predicate ? { predicate } : {}) };
   } catch (error) {
     if (!denied(error)) throw error;
@@ -71,7 +73,7 @@ function referenceLocation(
   return { reference, locale, path };
 }
 
-function visibleReference(
+async function visibleReference(
   state: ContentState,
   input: {
     runtime: ContentRuntime;
@@ -79,8 +81,9 @@ function visibleReference(
     data: DocumentData;
     target: { id: string; collection: string };
   },
-): boolean {
-  const data = projectData({
+): Promise<boolean> {
+  const data = await projectData({
+    ...policyScope(state),
     collection: state.collection,
     data: input.data,
     context: policyContext({ ...state, locale: input.item.locale }, input.data),
@@ -108,7 +111,10 @@ function readReferenceData(
       documentId: reference.sourceDocumentId,
       versionId: reference.sourceRevisionId,
       locale,
-      fallback: [],
+      fallback:
+        reader.mode === 'published'
+          ? targetReadContext({ collection: reader.collection, locale }).fallback
+          : [],
     })),
   });
 }
@@ -123,18 +129,17 @@ async function projectLocaleReferences(
 ): Promise<ReferenceSummary[]> {
   const ids = input.items.map(({ reference }) => reference.sourceDocumentId);
   const current = await visibleDocuments(reader, { runtime: input.runtime, ids });
-  const historical = await historyState(reader, input.runtime);
+  const historical =
+    reader.mode === 'published' ? undefined : await historyState(reader, input.runtime);
   const oldVisible = historical
     ? await visibleDocuments(historical, { runtime: input.runtime, ids })
     : new Map();
   const contextFor = (reference: InboundReference): ContentState | null => {
     const document = current.get(reference.sourceDocumentId);
     if (!document) return null;
-    if (
-      document.currentVersionId === reference.sourceRevisionId ||
-      document.publishedVersionId === reference.sourceRevisionId
-    )
-      return reader;
+    if (reference.sourceView === 'published')
+      return document.publishedVersionId === reference.sourceRevisionId ? reader : null;
+    if (document.currentVersionId === reference.sourceRevisionId) return reader;
     return oldVisible.has(reference.sourceDocumentId) ? (historical ?? null) : null;
   };
   const allowed = input.items.filter(({ reference }) => contextFor(reference));
@@ -149,7 +154,7 @@ async function projectLocaleReferences(
         value.locale === item.locale,
     )?.data;
     const context = contextFor(reference);
-    if (data && context && visibleReference(context, { ...input, item, data }))
+    if (data && context && (await visibleReference(context, { ...input, item, data })))
       rows.push({
         collection: reader.collection.key,
         id: reference.sourceDocumentId,
@@ -176,16 +181,25 @@ export async function projectReferenceGroup(
     )
     .filter((item): item is LocatedReference => item !== undefined);
   const rows: ReferenceSummary[] = [];
-  for (const locale of new Set(located.map((item) => item.locale))) {
+  const groups = new Map(
+    located.map((item) => [
+      `${item.locale}:${item.reference.sourceView === 'published'}`,
+      { locale: item.locale, published: item.reference.sourceView === 'published' },
+    ]),
+  );
+  for (const { locale, published } of groups.values()) {
     try {
       const reader = await targetState(
-        { ...state, locale },
+        { ...state, locale, mode: published ? 'published' : 'editing' },
         { runtime: input.runtime, collection: input.collection },
       );
       rows.push(
         ...(await projectLocaleReferences(reader, {
           runtime: input.runtime,
-          items: located.filter((item) => item.locale === locale),
+          items: located.filter(
+            (item) =>
+              item.locale === locale && (item.reference.sourceView === 'published') === published,
+          ),
           target: { collection: state.collection.key, id: input.targetId },
         })),
       );

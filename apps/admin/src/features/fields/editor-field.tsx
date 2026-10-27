@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { FieldLabel, FieldError } from './configured-field';
 import { CodeEditor } from '@new-cms/ui/forms';
 import { useFieldValue } from './field-context';
 import { parseJson, parseText } from './parsing';
@@ -36,6 +37,7 @@ export function EditorField({ node, location, readOnly }: ScalarProps) {
         language={node.type === 'json' ? 'json' : 'plaintext'}
         theme={field.theme}
         label={node.label}
+        labelContent={<FieldLabel node={node} location={location} readOnly={readOnly} />}
         loadingLabel={field.t.loading}
         errorLabel={field.t.editorError}
         retryLabel={field.t.retry}
@@ -47,7 +49,7 @@ export function EditorField({ node, location, readOnly }: ScalarProps) {
       />
       {draft.error ? (
         <p role="alert" className="text-sm text-destructive">
-          {draft.error}
+          <FieldError node={node} location={location} readOnly={readOnly} error={draft.error} />
         </p>
       ) : null}
     </>

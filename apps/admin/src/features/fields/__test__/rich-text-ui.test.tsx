@@ -214,7 +214,7 @@ describe('rich-text references and controls', () => {
   });
 });
 
-it('blocks unsupported formatting and rich HTML paste while releasing update listeners on unmount', async () => {
+it('persists supported formatting, blocks unsafe HTML paste and releases update listeners on unmount', async () => {
   const controls: RichTestControls = { current: null };
   const onChange = vi.fn<(value: FieldData) => void>();
   const view = render(
@@ -238,7 +238,7 @@ it('blocks unsupported formatting and rich HTML paste while releasing update lis
   });
   expect(onChange).toHaveBeenLastCalledWith({
     version: 1,
-    children: [{ type: 'paragraph', children: [{ type: 'text', text: 'First' }] }],
+    children: [{ type: 'paragraph', align: 'center', children: [{ type: 'text', text: 'First' }] }],
   });
   await act(async () => {
     await controls.current?.paste();
@@ -246,7 +246,14 @@ it('blocks unsupported formatting and rich HTML paste while releasing update lis
   expect(onChange).toHaveBeenLastCalledWith({
     version: 1,
     children: [
-      { type: 'paragraph', children: [{ type: 'text', text: 'First<script>safe text</script>' }] },
+      {
+        type: 'paragraph',
+        align: 'center',
+        children: [
+          { type: 'text', text: 'First' },
+          { type: 'text', text: '<script>safe text</script>', format: ['bold', 'italic'] },
+        ],
+      },
     ],
   });
   expect(document.querySelector('script')).toBeNull();
@@ -258,7 +265,7 @@ it('blocks unsupported formatting and rich HTML paste while releasing update lis
   expect(onChange).not.toHaveBeenCalled();
 });
 
-it('persists only the fixed heading level and bullet lists from toolbar controls', async () => {
+it('persists default headings and bullet lists from toolbar controls', async () => {
   render(<Harness layout={[node('Body', { type: 'richText' })]} initial={{ Body: paragraph }} />);
   await screen.findByRole('toolbar');
   const heading = screen.getByRole('button', { name: 'Heading' });

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { budgetedExecutor } from '../runtime.ts';
 import { appendAudit } from '@new-cms/cms/audit/composition';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
 import type { ContentRuntime } from '../types.ts';
@@ -16,9 +17,10 @@ export function createPreviewApi(runtime: ContentRuntime, options: ContentDelive
       return securityTransaction(runtime.database, runtime.policy, {
         mode: 'shared',
         ...(signal ? { signal } : {}),
-        async work(tx) {
+        async work(executor) {
+          const tx = budgetedExecutor(executor, options.policy.maxSqlQueries);
           const grant = await readPreviewGrant(tx, options, { grant: input.grant, revoked: true });
-          await assertPreviewIssuer(runtime, tx, grant);
+          await assertPreviewIssuer(runtime, tx, { grant, ...(signal ? { signal } : {}) });
           await tx.query(
             'UPDATE content_preview_grants SET revoked_at=COALESCE(revoked_at,clock_timestamp()) WHERE id=$1',
             [grant.id],

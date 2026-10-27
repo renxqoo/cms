@@ -20,11 +20,43 @@ const backend = [
 ];
 
 describe('operation manifest HTTP contract', () => {
+  it('regression: collection metadata requests retain the content locale through the BFF', () => {
+    expect(
+      operationPath(getOperation('collections.get'), { collection: 'articles' }, { locale: 'zh' }),
+    ).toBe('/v1/collections/articles?locale=zh');
+  });
+  it('preserves a scheduled job language through its BFF detail and cancellation paths', () => {
+    expect(
+      operationPath(
+        getOperation('content.getJob'),
+        { collection: 'articles', jobId: 'job_1' },
+        { locale: 'zh-CN' },
+      ),
+    ).toBe('/v1/collections/articles/jobs/job_1?locale=zh-CN');
+    expect(
+      operationPath(
+        getOperation('content.cancelPublicationSchedule'),
+        { collection: 'articles', id: 'document_1', scheduleId: 'job_1' },
+        { locale: 'zh-CN' },
+      ),
+    ).toBe(
+      '/v1/collections/articles/documents/document_1/publication-schedules/job_1?locale=zh-CN',
+    );
+  });
+  it('regression: withdrawing a translation retains the selected locale in the BFF request', () => {
+    expect(
+      operationPath(
+        getOperation('documents.unpublish'),
+        { collection: 'articles', id: 'document_1' },
+        { revision: 7, locale: 'zh-CN' },
+      ),
+    ).toBe('/v1/collections/articles/documents/document_1/publication?revision=7&locale=zh-CN');
+  });
   it('regression: backend operations including recovery are registered exactly once with matching access and idempotency', () => {
-    expect(backend).toHaveLength(85);
+    expect(backend).toHaveLength(110);
     expect(
       operations.filter((value) => value.target === 'backend' && value.id !== 'system.openapi'),
-    ).toHaveLength(85);
+    ).toHaveLength(110);
     expect(new Set(operations.map((value) => value.id)).size).toBe(operations.length);
     for (const definition of backend) {
       const operation = operations.find((value) => value.id === definition.id);

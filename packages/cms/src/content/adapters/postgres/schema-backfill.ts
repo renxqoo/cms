@@ -13,7 +13,8 @@ import {
 import { readRevisionData, writeData, revisionProjection, revisionRow } from './revision-data.ts';
 import { readDocument, lockDocuments, publicationLocale } from './document-store.ts';
 import { writeIndexProjections } from './index-projections.ts';
-import { syncActiveUnique } from './unique-reservations.ts';
+import { syncActiveProjections } from './active-projections.ts';
+import { migratePublicationSlots } from './publication-slots.ts';
 import { writeReferences } from './history-store.ts';
 import { validateData } from '../../fields/validate-data.ts';
 import { normalizeLocaleData } from '../../fields/normalize-locale-data.ts';
@@ -66,12 +67,14 @@ async function revisionData(
       fallback: [],
     });
   }
-  return normalizeLocaleData({
-    collection: definition,
-    patches: data,
-    limits: input.limits,
-    applyDefaults: true,
-  }).dataByLocale;
+  return (
+    await normalizeLocaleData({
+      collection: definition,
+      patches: data,
+      limits: input.limits,
+      applyDefaults: true,
+    })
+  ).dataByLocale;
 }
 async function backfillRevision(
   tx: SqlExecutor,
@@ -111,8 +114,12 @@ async function backfillRevision(
   );
 }
 async function backfillDocument(tx: SqlExecutor, input: BackfillInput, id: string): Promise<void> {
+  await migratePublicationSlots(tx, {
+    collection: input.mapping.get(input.collection).definition,
+    id,
+  });
   await validateActiveData(tx, input, id);
-  await syncActiveUnique(tx, { ...input, id, preserveLegacy: true });
+  await syncActiveProjections(tx, { ...input, id, preserveLegacy: true });
   await tx.query(
     `INSERT INTO content_schema_document_backfills(document_id,collection_id,target_schema_version,revision) SELECT id,collection_id,$2,revision FROM content_documents WHERE id=$1 ON CONFLICT(document_id,target_schema_version) DO UPDATE SET revision=excluded.revision,completed_at=now()`,
     [id, input.to],
@@ -125,6 +132,11 @@ async function validateActiveData(
 ): Promise<void> {
   const { definition } = input.mapping.get(input.collection);
   const document = await readDocument(tx, { ...input, id });
+  const publicationLocales = definition.localizeStatus ? definition.locales.supported : ['*'];
+  if (
+    Object.keys(document.publications ?? {}).some((locale) => !publicationLocales.includes(locale))
+  )
+    fail('invalid_input');
   for (const locale of definition.locales.supported) {
     const versionId =
       definition.mode === 'direct'
@@ -141,7 +153,7 @@ async function validateActiveData(
       locale,
       fallback,
     });
-    validateData({
+    await validateData({
       collection: definition,
       data,
       mode: 'publish',
@@ -162,7 +174,7 @@ export async function backfillSchema(
     1,
     Math.floor(
       (input.limits.maxSqlQueries - 12) /
-        (24 +
+        (32 +
           definition.locales.supported.length * 8 +
           input.mapping.get(input.collection).indexes.length * 2),
     ),

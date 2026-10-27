@@ -2,6 +2,7 @@ import type { SqlExecutor } from '@new-cms/database/client';
 import { requireWritableSchema } from './schema-state.ts';
 import { backfillSchema, activateSchema } from './schema-backfill.ts';
 import { queryCollections } from './query-collections.ts';
+import { queryJoinedDocuments } from './query-union.ts';
 import { writeIndexProjections } from './index-projections.ts';
 import type { ContentLimits } from '../../definition.ts';
 import type { ContentMapping } from '../../model.ts';
@@ -16,29 +17,38 @@ import {
 import { insertRevision, readRevision, readRevisionData } from './revision-data.ts';
 import { queryDocuments } from './query-documents.ts';
 import { readRevisionDataBatch } from './read-data-batch.ts';
-import { syncActiveUnique } from './unique-reservations.ts';
+import { syncActiveProjections } from './active-projections.ts';
+import { queryDistinct } from './query-distinct.ts';
+import { conflictingUniqueFields } from './unique-reservations.ts';
+import { presetReferenceStore } from './preset-reference-store.ts';
 
-export function createContentStore(options: {
+interface StoreOptions {
   mapping: ContentMapping;
   limits: ContentLimits;
   mappingFor?(tx: SqlExecutor): Promise<ContentMapping>;
-}): ContentStore {
-  async function scoped(tx: SqlExecutor) {
+}
+
+function mappingScope(options: StoreOptions) {
+  return async function scoped(tx: SqlExecutor) {
     return {
       ...options,
       mapping: options.mappingFor ? await options.mappingFor(tx) : options.mapping,
     };
-  }
+  };
+}
+
+export function createContentStore(options: StoreOptions): ContentStore {
+  const scoped = mappingScope(options);
   return {
     ...createHistoryStore(options),
+    ...presetReferenceStore(scoped),
+    conflictingUniqueFields: async (tx, input) =>
+      conflictingUniqueFields(tx, { ...(await scoped(tx)), ...input }),
     definition: (collection, schemaVersion) =>
       options.mapping.get(collection, schemaVersion).definition,
     readDocument: async (tx, input) => readDocument(tx, { ...(await scoped(tx)), ...input }),
     lockDocuments,
-    queryCollections: async (tx, input) =>
-      queryCollections(tx, { ...(await scoped(tx)), ...input }),
-    readRevisionDataBatch: async (tx, input) =>
-      readRevisionDataBatch(tx, { ...(await scoped(tx)), ...input }),
+    ...readQueries(scoped),
     async insertDocument(tx, input) {
       const current = await scoped(tx);
       await requireWritableSchema(tx, { ...current, ...input });
@@ -62,7 +72,24 @@ export function createContentStore(options: {
     queryDocuments: async (tx, input) => queryDocuments(tx, { ...(await scoped(tx)), ...input }),
     backfillSchema: async (tx, input) => backfillSchema(tx, { ...(await scoped(tx)), ...input }),
     activateSchema: async (tx) => activateSchema(tx, await scoped(tx)),
-    syncActiveUnique: async (tx, input) =>
-      syncActiveUnique(tx, { ...(await scoped(tx)), ...input }),
+    syncActiveProjections: async (tx, input) =>
+      syncActiveProjections(tx, { ...(await scoped(tx)), ...input }),
+  };
+}
+
+function readQueries(
+  scoped: (tx: SqlExecutor) => Promise<{ mapping: ContentMapping; limits: ContentLimits }>,
+): Pick<
+  ContentStore,
+  'queryDistinct' | 'queryJoinedDocuments' | 'queryCollections' | 'readRevisionDataBatch'
+> {
+  return {
+    queryDistinct: async (tx, input) => queryDistinct(tx, { ...(await scoped(tx)), ...input }),
+    queryJoinedDocuments: async (tx, input) =>
+      queryJoinedDocuments(tx, { ...(await scoped(tx)), ...input }),
+    queryCollections: async (tx, input) =>
+      queryCollections(tx, { ...(await scoped(tx)), ...input }),
+    readRevisionDataBatch: async (tx, input) =>
+      readRevisionDataBatch(tx, { ...(await scoped(tx)), ...input }),
   };
 }

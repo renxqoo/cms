@@ -1,3 +1,4 @@
+import { readLocaleInput, projectAllLocales } from '../documents/all-locales.ts';
 import { projectDocument } from '../documents/project-document.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
@@ -53,44 +54,20 @@ async function getVersion(runtime: ContentRuntime, ctx: RequestContext, raw: unk
       collection: input.collection,
       mode: input.mode,
       ...(input.fallback ? { fallbackOverride: input.fallback } : {}),
-      ...(input.locale ? { locale: input.locale } : {}),
+      ...readLocaleInput(input.locale, input.fallback),
     },
     async (state) => {
       requireHistory(state);
       const { collection: _collection, id: _id, versionId: _versionId, ...readInput } = input;
       const query = parseQuery({
         collection: state.collection,
-        input: readInput,
+        input: {
+          ...readInput,
+          ...(input.locale === 'all' ? { locale: state.locale, fallback: [] } : {}),
+        },
         limits: runtime.limits,
       });
-      const document = await ensureVisible(state, { runtime, id: input.id, trashed: true });
-      const version = await runtime.store.readRevision(state.tx, {
-        collection: input.collection,
-        documentId: input.id,
-        versionId: input.versionId,
-      });
-      const view = await projectDocument(state, {
-        runtime,
-        document,
-        versionId: version.id,
-        ...(query.select ? { select: query.select } : {}),
-        fallback: query.fallback,
-      });
-      await expandRelations(state, {
-        runtime,
-        views: [view],
-        ...(query.select ? { select: query.select } : {}),
-        depth: query.depth ?? 0,
-        budget: { nodes: 0 },
-      });
-      return {
-        ...view,
-        revision: version.revision,
-        schemaVersion: version.schemaVersion,
-        kind: version.kind,
-        actorId: version.actorId,
-        createdAt: version.createdAt,
-      };
+      return versionDetail(state, { runtime, input, query });
     },
   );
 }
@@ -129,7 +106,12 @@ async function compareVersions(runtime: ContentRuntime, ctx: RequestContext, raw
       });
       const before = await projectDocument(state, { runtime, document, versionId: input.from });
       const after = await projectDocument(state, { runtime, document, versionId: input.to });
-      return { from: input.from, to: input.to, changes: dataDiff(before.data, after.data) };
+      return {
+        from: input.from,
+        to: input.to,
+        changes: dataDiff(before.data, after.data),
+        ...(after.componentProps ? { componentProps: after.componentProps } : {}),
+      };
     },
   );
 }
@@ -139,5 +121,52 @@ export function createVersionReadApi(runtime: ContentRuntime) {
     listVersions: (ctx: RequestContext, raw: unknown) => listVersions(runtime, ctx, raw),
     getVersion: (ctx: RequestContext, raw: unknown) => getVersion(runtime, ctx, raw),
     compareVersions: (ctx: RequestContext, raw: unknown) => compareVersions(runtime, ctx, raw),
+  };
+}
+
+async function versionDetail(
+  state: ContentState,
+  options: {
+    runtime: ContentRuntime;
+    input: ReturnType<ContentRuntime['schemas']['versions.get']['parse']>;
+    query: ReturnType<typeof parseQuery>;
+  },
+) {
+  const { runtime, input, query } = options;
+  const document = await ensureVisible(state, { runtime, id: input.id, trashed: true });
+  const version = await runtime.store.readRevision(state.tx, {
+    collection: input.collection,
+    documentId: input.id,
+    versionId: input.versionId,
+  });
+  const view = await projectDocument(state, {
+    runtime,
+    document: { ...document, updatedById: version.actorId },
+    versionId: version.id,
+    ...(query.select ? { select: query.select } : {}),
+    fallback: query.fallback,
+  });
+  await expandRelations(state, {
+    runtime,
+    views: [view],
+    ...(query.select ? { select: query.select } : {}),
+    depth: query.depth ?? 0,
+    budget: (state.expansionBudget ??= { nodes: 0 }),
+  });
+  if (input.locale === 'all')
+    await projectAllLocales(state, {
+      runtime,
+      views: [view],
+      ...(query.select ? { select: query.select } : {}),
+      depth: query.depth ?? 0,
+      historical: { id: version.id, schemaVersion: version.schemaVersion },
+    });
+  return {
+    ...view,
+    revision: version.revision,
+    schemaVersion: version.schemaVersion,
+    kind: version.kind,
+    actorId: version.actorId,
+    createdAt: version.createdAt,
   };
 }

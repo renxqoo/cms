@@ -1,0 +1,26 @@
+export const joinMessages = {
+  zh: {
+    saveFirst: '保存文档后查看关联记录',
+    empty: '暂无关联记录',
+    previous: '上一页',
+    next: '下一页',
+    count: '总计',
+    pageSize: '每页',
+    open: '打开',
+    refresh: '重新载入',
+    title: '关联记录',
+    collection: '集合',
+  },
+  en: {
+    saveFirst: 'Save this document to view related records',
+    empty: 'No related records',
+    previous: 'Previous',
+    next: 'Next',
+    count: 'Total',
+    pageSize: 'Page size',
+    open: 'Open',
+    refresh: 'Reload',
+    title: 'Related records',
+    collection: 'Collection',
+  },
+};

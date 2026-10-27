@@ -64,6 +64,7 @@ async function fixture() {
       data: {},
     });
     await oldStore.updateDocumentPointers(tx, {
+      actorId,
       collection: 'records',
       id,
       revision: 1,
@@ -80,7 +81,17 @@ async function fixture() {
     policy: createTestPolicy({ securityLockKey: randomInt(1, 1_000_000_000) }),
     resourceLockKey: randomInt(1_000_000_001, 2_000_000_000),
   });
-  return { ...kit, service, oldStore, previous, limits, mapping: evolution.mapping, id, versionId };
+  return {
+    ...kit,
+    actorId,
+    service,
+    oldStore,
+    previous,
+    limits,
+    mapping: evolution.mapping,
+    id,
+    versionId,
+  };
 }
 it('a draft backfill marker cannot bypass newly required published fields after an old writer publishes the same version', async () => {
   const kit = await fixture();
@@ -90,7 +101,7 @@ it('a draft backfill marker cannot bypass newly required published fields after 
     complete: true,
   });
   expect(
-    validateData({
+    await validateData({
       collection: kit.previous,
       data: {},
       locale: 'en',
@@ -100,6 +111,7 @@ it('a draft backfill marker cannot bypass newly required published fields after 
   ).toEqual({});
   await kit.database.transaction((tx) =>
     kit.oldStore.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'records',
       id: kit.id,
       revision: 2,
@@ -154,6 +166,7 @@ it('a draft backfill marker cannot bypass newly required published fields after 
   ).toEqual([{ count: '0' }]);
   await kit.database.transaction((tx) =>
     kit.oldStore.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'records',
       id: kit.id,
       revision: 3,

@@ -10,6 +10,32 @@ import { executeJobItem, failJob, jobState } from './execute-item.ts';
 import type { JobRow } from './store.ts';
 import type { ContentRuntime } from '../types.ts';
 
+async function authorizeExtension(
+  runtime: ContentRuntime,
+  input: { job: JobRow; signal: AbortSignal; documentId: string; revisionId: string },
+): Promise<void> {
+  await securityTransaction(runtime.database, runtime.policy, {
+    mode: 'shared',
+    signal: input.signal,
+    async work(tx) {
+      const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
+      await fenceJob(executor, input.job);
+      const state = await jobState(executor, {
+        runtime,
+        job: input.job,
+        operationId: input.job.source_operation,
+        signal: input.signal,
+      });
+      await ensureVisible(state, { runtime, id: input.documentId });
+      await runtime.store.readRevision(executor, {
+        collection: state.collection.key,
+        documentId: input.documentId,
+        versionId: input.revisionId,
+      });
+    },
+  });
+}
+
 async function runExtension(
   runtime: ContentRuntime,
   input: { job: JobRow; signal: AbortSignal },
@@ -18,28 +44,17 @@ async function runExtension(
     input.job.handler_name && Object.hasOwn(runtime.afterCommitHandlers, input.job.handler_name)
       ? runtime.afterCommitHandlers[input.job.handler_name]
       : undefined;
-  if (typeof handler !== 'function' || !input.job.document_id || !input.job.version_id)
+  if (
+    typeof handler !== 'function' ||
+    !input.job.document_id ||
+    !input.job.version_id ||
+    !input.job.source_locale
+  )
     fail('invalid_input');
   const documentId = input.job.document_id;
   const revisionId = input.job.version_id;
-  await securityTransaction(runtime.database, runtime.policy, {
-    mode: 'shared',
-    signal: input.signal,
-    async work(tx) {
-      await fenceJob(tx, input.job);
-      const state = await jobState(tx, {
-        runtime,
-        job: input.job,
-        operationId: input.job.source_operation,
-      });
-      await ensureVisible(state, { runtime, id: documentId });
-      await runtime.store.readRevision(tx, {
-        collection: state.collection.key,
-        documentId,
-        versionId: revisionId,
-      });
-    },
-  });
+  const locale = input.job.source_locale;
+  await authorizeExtension(runtime, { ...input, documentId, revisionId });
   const signal = AbortSignal.any([
     input.signal,
     AbortSignal.timeout(Math.min(runtime.policy.requestTimeoutMs, runtime.workPolicy.jobLeaseMs)),
@@ -50,6 +65,7 @@ async function runExtension(
       collection: input.job.collection_key,
       documentId,
       revisionId,
+      locale,
       signal,
     }),
     signal,

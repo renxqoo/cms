@@ -1,14 +1,12 @@
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { AssetsParticipants } from '@new-cms/cms/assets/composition';
 import { targetReadContext } from '../queries/resolve-locale.ts';
-import { historicalLocale } from '../fields/remap-locale.ts';
-import { remapReferencePath } from '../fields/remap-reference-path.ts';
-import { collectReferences } from '../fields/collect-references.ts';
 import { authorizeStateOperation, collectionPredicate } from '../runtime.ts';
 import { denied, targetState } from './relation-scopes.ts';
 import type { ContentDocumentView, ContentRuntime, ContentState } from '../types.ts';
 import { visibleDocuments } from './visible-documents.ts';
-import type { Where, ReferenceValue } from '../definition.ts';
+import { selectRevisionBindings } from './media-bindings.ts';
+import type { Where } from '../definition.ts';
 
 type Binding = Awaited<ReturnType<AssetsParticipants['listRevisionBindings']>>[number];
 interface Projection {
@@ -36,7 +34,11 @@ async function mediaAccess(
         collection,
       });
       if (!actor) fail('unauthenticated');
-      const policy = collectionPredicate({ ...reader, actor, operationId: 'assets.download' });
+      const policy = await collectionPredicate({
+        ...reader,
+        actor,
+        operationId: 'assets.download',
+      });
       const predicates = [reader.predicate, policy].filter(
         (item): item is Where => item !== undefined,
       );
@@ -61,73 +63,24 @@ async function mediaAccess(
   return access;
 }
 
-function bindingLocation(
-  state: ContentState,
-  input: { binding: Binding; runtime: ContentRuntime; schemaVersion: number },
-) {
-  const { binding } = input;
-  const separator = binding.sourcePath.indexOf(':');
-  const rawPath = separator >= 0 ? binding.sourcePath.slice(separator + 1) : binding.sourcePath;
-  const path =
-    rawPath === '$file'
-      ? rawPath
-      : remapReferencePath({
-          from: input.runtime.store.definition(state.collection.key, input.schemaVersion),
-          to: state.collection,
-          path: rawPath,
-        });
-  return { locale: separator >= 0 ? binding.sourcePath.slice(0, separator) : state.locale, path };
-}
-
-function bindingIsVisible(
-  binding: Binding,
-  input: {
-    locale: string;
-    path: string;
-    locales: readonly string[];
-    visible: Map<string, ReferenceValue>;
-  },
-): boolean {
-  if (input.path === '$file') return true;
-  const reference = input.visible.get(input.path);
-  return (
-    input.locales.includes(input.locale) &&
-    reference !== undefined &&
-    reference.id === binding.mediaDocumentId &&
-    reference.collection === binding.mediaCollectionKey
-  );
-}
-
 function decorateView(
   state: ContentState,
   input: Projection & { view: ContentDocumentView },
 ): void {
-  const references = collectReferences({
-    limits: input.runtime.limits,
-    collection: state.collection,
-    data: input.view.data,
-    locale: state.locale,
-  }).filter((reference) => reference.media);
-  const visible = new Map(references.map((reference) => [reference.path, reference]));
   input.view.mediaBindings = [];
   const schemaVersion = input.schemaVersions.get(input.view.versionId);
   if (schemaVersion === undefined) fail('internal_error');
-  for (const binding of input.bindings.filter((item) => item.revisionId === input.view.versionId)) {
-    const location = bindingLocation(state, { binding, runtime: input.runtime, schemaVersion });
-    const locales = input.locales
-      .map((locale) => historicalLocale({ current: state.collection, schemaVersion, locale }))
-      .filter((locale): locale is string => locale !== null);
-    if (!bindingIsVisible(binding, { ...location, locales, visible })) continue;
-    const key = `${binding.mediaCollectionKey}:${binding.mediaDocumentId}`;
-    if (!input.access.has(key)) continue;
+  const bindings = selectRevisionBindings(state, {
+    ...input,
+    data: input.view.data,
+    schemaVersion,
+    bindings: input.bindings.filter((item) => item.revisionId === input.view.versionId),
+  });
+  for (const binding of bindings) {
+    if (!input.access.has(`${binding.mediaCollectionKey}:${binding.mediaDocumentId}`)) continue;
     const { revisionId: _revisionId, ...safe } = binding;
-    if (location.path === '$file') input.view.file = binding.manifest;
-    else if (
-      !input.view.mediaBindings.some(
-        (item) => item.sourcePath.slice(item.sourcePath.indexOf(':') + 1) === location.path,
-      )
-    )
-      input.view.mediaBindings.push(safe);
+    if (binding.sourcePath === '$file') input.view.file = binding.manifest;
+    else input.view.mediaBindings.push(safe);
   }
 }
 

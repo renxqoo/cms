@@ -276,6 +276,7 @@ it('reports configured upload limits and recipe without storage implementation d
     maxWidth: 8192,
     maxHeight: 8192,
     maxVariants: 10,
+    filesRequiredOnCreate: true,
     directUpload: false,
     multipart: false,
   });

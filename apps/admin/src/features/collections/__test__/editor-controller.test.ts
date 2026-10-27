@@ -42,6 +42,27 @@ function setup(overrides: Partial<Options> = {}) {
 }
 
 describe('content editor write channel', () => {
+  it('uses server-resolved create defaults on the first form and submits those values', async () => {
+    const initialData = { title: '默认标题' };
+    const fresh = snapshot({
+      document: null,
+      editor: editor({ intent: 'create', document: null, initialData }),
+    });
+    const { controller, write } = setup({
+      target: { collection: 'articles', id: null, locale: 'zh-CN', intent: 'create' },
+      load: () => Promise.resolve(success(fresh)),
+    });
+    await controller.start();
+    expect(controller.store.getState().value).toEqual(initialData);
+    expect(controller.store.getState().value).not.toBe(initialData);
+    await controller.submit('save');
+    expect(write).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { title: '默认标题' } }),
+      expect.any(AbortSignal),
+    );
+    expect(initialData).toEqual({ title: '默认标题' });
+    controller.dispose();
+  });
   it('regression: unchanged rich text with reordered JSON keys does not block publishing', async () => {
     const body = {
       children: [{ children: [{ text: 'Saved', type: 'text' }], type: 'paragraph' }],

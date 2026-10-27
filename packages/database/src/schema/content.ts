@@ -55,6 +55,8 @@ export const contentDocuments = pgTable(
     folderId: uuid('folder_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid('created_by').references(() => admins.id, { onDelete: 'set null' }),
+    updatedBy: uuid('updated_by').references(() => admins.id, { onDelete: 'set null' }),
   },
   (t): PgTableExtraConfigValue[] => [
     unique().on(t.id, t.collectionId),
@@ -74,6 +76,8 @@ export const contentDocuments = pgTable(
     }),
     check('content_revision_check', sql`${t.revision}>=0`),
     index('content_documents_collection_idx').on(t.collectionId, t.trashedAt, t.createdAt, t.id),
+    index('content_documents_created_by_idx').on(t.collectionId, t.createdBy, t.id),
+    index('content_documents_updated_by_idx').on(t.collectionId, t.updatedBy, t.id),
   ],
 );
 export const contentRevisions = pgTable(
@@ -110,6 +114,11 @@ export const contentPublications = pgTable(
     collectionId: text('collection_id').notNull(),
     locale: text('locale').notNull(),
     versionId: uuid('version_id').notNull(),
+    completedSchemaVersions: integer('completed_schema_versions')
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    localeSchemaVersion: integer('locale_schema_version').notNull(),
   },
   (t) => [
     primaryKey({ columns: [t.documentId, t.locale] }),
@@ -132,6 +141,55 @@ export const contentPublications = pgTable(
       ],
     }).onDelete('restrict'),
     index('content_publications_version_idx').on(t.versionId),
+  ],
+);
+export const contentPublicationReferences = pgTable(
+  'content_publication_references',
+  {
+    sourceDocumentId: uuid('source_document_id').notNull(),
+    sourceCollectionId: text('source_collection_id').notNull(),
+    publicationLocale: text('publication_locale').notNull(),
+    sourceRevisionId: uuid('source_revision_id').notNull(),
+    projectionSchemaVersion: integer('projection_schema_version').notNull(),
+    fieldId: text('field_id').notNull(),
+    sourcePath: text('source_path').notNull(),
+    targetDocumentId: uuid('target_document_id').notNull(),
+    targetCollectionId: text('target_collection_id').notNull(),
+    onDelete: text('on_delete').notNull(),
+    media: boolean('media').notNull(),
+  },
+  (t) => [
+    primaryKey({
+      columns: [
+        t.sourceDocumentId,
+        t.publicationLocale,
+        t.projectionSchemaVersion,
+        t.sourcePath,
+        t.targetDocumentId,
+      ],
+    }),
+    foreignKey({
+      columns: [t.sourceDocumentId, t.publicationLocale],
+      foreignColumns: [contentPublications.documentId, contentPublications.locale],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.sourceRevisionId, t.sourceDocumentId, t.sourceCollectionId],
+      foreignColumns: [
+        contentRevisions.id,
+        contentRevisions.documentId,
+        contentRevisions.collectionId,
+      ],
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [t.targetDocumentId, t.targetCollectionId],
+      foreignColumns: [contentDocuments.id, contentDocuments.collectionId],
+    }).onDelete('restrict'),
+    check('content_publication_reference_schema_check', sql`${t.projectionSchemaVersion}>0`),
+    check(
+      'content_publication_reference_delete_check',
+      sql`${t.onDelete} IN ('restrict','nullify','cascade')`,
+    ),
+    index('content_publication_references_target_idx').on(t.targetDocumentId, t.targetCollectionId),
   ],
 );
 export const contentReferences = pgTable(
@@ -225,46 +283,5 @@ export const contentSchemaDocumentBackfills = pgTable(
       columns: [t.documentId, t.collectionId],
       foreignColumns: [contentDocuments.id, contentDocuments.collectionId],
     }).onDelete('cascade'),
-  ],
-);
-export const contentPreviewGrants = pgTable(
-  'content_preview_grants',
-  {
-    id: uuid('id').primaryKey(),
-    tokenHash: char('token_hash', { length: 64 }).notNull().unique(),
-    issuerId: uuid('issuer_id')
-      .notNull()
-      .references(() => admins.id, { onDelete: 'cascade' }),
-    collectionId: text('collection_id').notNull(),
-    documentId: uuid('document_id').notNull(),
-    revisionId: uuid('revision_id').notNull(),
-    locale: text('locale').notNull(),
-    clientOrigin: text('client_origin').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .default(sql`clock_timestamp()`),
-    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-    revokedAt: timestamp('revoked_at', { withTimezone: true }),
-  },
-  (t) => [
-    foreignKey({
-      name: 'content_preview_revision_fk',
-      columns: [t.revisionId, t.documentId, t.collectionId],
-      foreignColumns: [
-        contentRevisions.id,
-        contentRevisions.documentId,
-        contentRevisions.collectionId,
-      ],
-    }).onDelete('cascade'),
-    check(
-      'content_preview_lifetime',
-      sql`${t.expiresAt}>${t.createdAt} AND ${t.expiresAt}<=${t.createdAt}+interval '600 seconds'`,
-    ),
-    check('content_preview_locale', sql`${t.locale}~'^[a-zA-Z][a-zA-Z0-9-]{0,31}$'`),
-    check('content_preview_digest', sql`${t.tokenHash}~'^[0-9a-f]{64}$'`),
-    index('content_preview_grants_expiry_idx').on(t.expiresAt, t.id),
-    index('content_preview_grants_issuer_idx')
-      .on(t.issuerId, t.expiresAt)
-      .where(sql`${t.revokedAt} IS NULL`),
   ],
 );

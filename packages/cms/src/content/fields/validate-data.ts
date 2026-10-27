@@ -1,143 +1,185 @@
-import { ownValue } from './json-value.ts';
-import { assertJsonBudget } from './data-budget.ts';
-import { ruleResult } from './rule-result.ts';
-import { randomUUID } from 'node:crypto';
-import { z } from 'zod';
 import { fail } from '@new-cms/cms/platform/contracts';
+import { dataFields } from './structure.ts';
+import { assertJsonBudget } from './data-budget.ts';
+import { objectValue, ownValue } from './json-value.ts';
+import { immutable, invokeFunction } from './invoke-function.ts';
+import { fillDefaults } from './value-defaults.ts';
+import { validateDataShape } from './validate-shape.ts';
+import { disabledFieldRules } from './conditional-rules.ts';
+import { assertFilteredChoices } from './filtered-choices.ts';
+import { rethrowFieldError } from './validation-error.ts';
+import type { FunctionScope } from './invoke-function.ts';
 import type {
   CollectionDefinition,
   ContentLimits,
   DocumentData,
   FieldDefinition,
+  FieldValueContext,
   JsonValue,
-  RichTextNodeRegistration,
 } from '../definition.ts';
-import { dataFields } from './structure.ts';
-import { objectValue } from './json-value.ts';
-import { scalarValue } from './scalar.ts';
 
-interface State {
-  mode: 'draft' | 'publish';
-  locale: string;
-  limits: ContentLimits;
-  applyDefaults: boolean;
-  root: DocumentData;
-  registrations: readonly RichTextNodeRegistration[];
-}
-function itemIdentity(value: DocumentData): string {
-  const { id } = value;
-  if (id === undefined) return randomUUID();
-  if (typeof id !== 'string' || !z.uuid().safeParse(id).success) fail('invalid_input');
-  return id.toLowerCase();
-}
-function arrayValue(value: JsonValue, field: FieldDefinition, state: State): JsonValue {
-  if (
-    !Array.isArray(value) ||
-    value.length > state.limits.maxArrayItems ||
-    (field.max !== undefined && value.length > field.max) ||
-    (state.mode === 'publish' && field.min !== undefined && value.length < field.min)
-  )
-    fail('invalid_input');
-  const identities = new Set<string>();
-  return value.map((item) => {
-    if (!objectValue(item)) fail('invalid_input');
-    const id = itemIdentity(item);
-    if (identities.has(id)) fail('invalid_input');
-    identities.add(id);
-    const { id: _id, blockType, ...body } = item;
-    if (field.type === 'array') {
-      if (blockType !== undefined) fail('invalid_input');
-      return { id, ...validateFields(field.fields ?? [], body, state) };
-    }
-    const block = field.blocks?.find((candidate) => candidate.key === blockType);
-    if (!block || typeof blockType !== 'string') fail('invalid_input');
-    return { id, blockType, ...validateFields(block.fields, body, state) };
-  });
-}
-function presentValue(value: JsonValue, field: FieldDefinition, state: State): JsonValue {
-  if (value === null) {
-    if (field.required && state.mode === 'publish') fail('invalid_input');
-    return null;
-  }
-  let result: JsonValue;
-  if (field.type === 'group') {
-    if (!objectValue(value)) fail('invalid_input');
-    result = validateFields(field.fields ?? [], value, state);
-  } else if (field.type === 'array' || field.type === 'blocks')
-    result = arrayValue(value, field, state);
-  else
-    result = scalarValue({
-      value,
-      field,
-      limits: state.limits,
-      registrations: state.registrations,
-    });
-  if (emptyRequired(field, result, state.mode)) fail('invalid_input');
-  if (
-    field.validate &&
-    !ruleResult(
-      field.validate.run(result, { data: state.root, locale: state.locale, mode: state.mode }),
-    )
-  )
-    fail('invalid_input');
-  return result;
-}
-function validateFields(
-  fields: readonly FieldDefinition[],
-  value: DocumentData,
-  state: State,
-): DocumentData {
-  const definitions = dataFields(fields);
-  const allowed = new Map(
-    definitions.filter((field) => field.type !== 'join').map((field) => [field.name, field]),
-  );
-  if (Object.keys(value).some((key) => !allowed.has(key))) fail('invalid_input');
-  const result: DocumentData = {};
-  for (const field of definitions) {
-    if (field.type === 'join') continue;
-    const name = String(field.name);
-    let data = ownValue(value, name);
-    if (data === undefined && state.applyDefaults && field.defaultValue !== undefined)
-      data = structuredClone(field.defaultValue);
-    if (data === undefined) {
-      if (field.required && state.mode === 'publish') fail('invalid_input');
-      continue;
-    }
-    result[name] = presentValue(data, field, state);
-  }
-  return result;
-}
-export function validateData(input: {
+interface Input {
   collection: CollectionDefinition;
   data: unknown;
   mode: 'draft' | 'publish';
   locale: string;
   limits: ContentLimits;
   applyDefaults?: boolean;
-}): DocumentData {
-  if (!objectValue(input.data) || !input.collection.locales.supported.includes(input.locale))
-    fail('invalid_input');
+  requireComplete?: boolean;
+  allowVirtual?: boolean;
+  functions?: FunctionScope;
+}
+
+interface State {
+  path: string;
+  disabledRules: ReadonlySet<string>;
+  input: Input;
+  root: DocumentData;
+  scope: FunctionScope;
+}
+
+async function validateValue(
+  state: State,
+  field: FieldDefinition,
+  value: JsonValue,
+): Promise<void> {
+  if (value === null) return;
+  await assertFilteredChoices({
+    field,
+    path: state.path,
+    data: state.root,
+    locale: state.input.locale,
+    collection: state.input.collection.key,
+    mode: state.input.mode === 'publish' ? 'published' : 'editing',
+    limits: state.input.limits,
+    functions: state.scope,
+    value,
+  });
+  if (field.validate && !state.disabledRules.has(state.path)) {
+    const context: FieldValueContext = immutable({
+      data: state.root,
+      locale: state.input.locale,
+      mode: state.input.mode,
+      ...(state.scope.actor ? { actor: state.scope.actor } : {}),
+      ...(state.scope.operation ? { operation: state.scope.operation } : {}),
+    });
+    const accepted = await invokeFunction({
+      scope: state.scope,
+      limits: state.input.limits,
+      run: (signal) => field.validate?.run(immutable(value), Object.freeze({ ...context, signal })),
+    });
+    if (accepted !== true) fail('invalid_input');
+  }
+  if (field.type === 'group' && objectValue(value))
+    await validateFields(state, field.fields ?? [], value);
+  await validateChildren(state, field, value);
+}
+
+async function validateChildren(
+  state: State,
+  field: FieldDefinition,
+  value: JsonValue,
+): Promise<void> {
+  if ((field.type === 'array' || field.type === 'blocks') && Array.isArray(value)) {
+    for (const row of value) {
+      if (!objectValue(row)) continue;
+      const fields =
+        field.type === 'blocks'
+          ? (field.blocks?.find((block) => block.key === row['blockType'])?.fields ?? [])
+          : (field.fields ?? []);
+      await validateFields(
+        { ...state, path: `${state.path}.${typeof row['id'] === 'string' ? row['id'] : ''}` },
+        fields,
+        row,
+      );
+    }
+  }
+}
+
+async function validateFields(
+  state: State,
+  fields: readonly FieldDefinition[],
+  data: DocumentData,
+): Promise<void> {
+  for (const field of dataFields(fields)) {
+    const value = ownValue(data, String(field.name));
+    if (
+      value !== undefined &&
+      field.type !== 'join' &&
+      (state.input.allowVirtual || !field.virtual)
+    )
+      try {
+        await validateValue(
+          { ...state, path: [state.path, field.name].filter(Boolean).join('.') },
+          field,
+          value,
+        );
+      } catch (error) {
+        rethrowFieldError(error, [state.path, field.name].filter(Boolean).join('.'));
+      }
+  }
+}
+
+export async function validateData(input: Input): Promise<DocumentData> {
   assertJsonBudget(input.data, {
     maxDepth: input.limits.maxFieldDepth * 2 + input.limits.maxRichTextDepth * 2 + 1,
     maxBytes: input.limits.maxDataBytes,
     maxNodes: input.limits.maxDataBytes,
   });
-  const bytes = Buffer.byteLength(JSON.stringify(input.data));
-  if (bytes > input.limits.maxDataBytes) fail('payload_too_large');
-  const result = validateFields(input.collection.fields, input.data, {
-    mode: input.mode,
+  const scope = input.functions ?? { budget: { used: 0 } };
+  let source = input.data;
+  if (input.applyDefaults && objectValue(source))
+    source = await fillDefaults({
+      fields: input.collection.fields,
+      data: source,
+      locale: input.locale,
+      limits: input.limits,
+      scope,
+    });
+  const shaped = validateDataShape({ ...input, mode: 'draft', data: source, applyDefaults: false });
+  const disabledRules = await disabledFieldRules({
+    collection: input.collection,
+    data: shaped,
     locale: input.locale,
+    mode: input.mode,
     limits: input.limits,
-    applyDefaults: input.applyDefaults === true,
-    root: input.data,
-    registrations: input.collection.richTextNodes ?? [],
+    functions: scope,
   });
-  if (Buffer.byteLength(JSON.stringify(result)) > input.limits.maxDataBytes)
-    fail('payload_too_large');
-  return result;
+  const data = validateDataShape({
+    ...input,
+    mode: input.requireComplete ? 'publish' : input.mode,
+    data: shaped,
+    applyDefaults: false,
+    disabledRules,
+  });
+  await validateFields(
+    { input, root: data, scope, path: '', disabledRules },
+    input.collection.fields,
+    data,
+  );
+  return data;
 }
 
-function emptyRequired(field: FieldDefinition, value: JsonValue, mode: State['mode']): boolean {
-  if (!field.required || mode !== 'publish') return false;
-  return value === '' || (Array.isArray(value) && value.length === 0);
+export async function validateLocaleValues(input: {
+  collection: CollectionDefinition;
+  data: Readonly<Record<string, DocumentData>>;
+  limits: ContentLimits;
+  functions: FunctionScope;
+  validateRules: boolean;
+}): Promise<Record<string, DocumentData>> {
+  const values: Record<string, DocumentData> = {};
+  for (const [locale, data] of Object.entries(input.data)) {
+    const local = {
+      collection: input.collection,
+      data,
+      locale,
+      mode: 'draft' as const,
+      limits: input.limits,
+      functions: input.functions,
+    };
+    values[locale] = input.validateRules
+      ? await validateData(local)
+      : validateDataShape({ ...local, applyDefaults: false });
+  }
+  return values;
 }

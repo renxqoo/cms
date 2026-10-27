@@ -29,7 +29,7 @@ async function operationState(
     operationId: input.operationId,
     locale: resolveLocale(state.collection, input.locale),
   };
-  const predicate = collectionPredicate(next);
+  const predicate = await collectionPredicate(next);
   const all = [state.predicate, predicate].filter((item): item is Where => item !== undefined);
   const { predicate: _old, ...base } = next;
   return { ...base, ...(all.length > 0 ? { predicate: { and: all } } : {}) };
@@ -84,46 +84,66 @@ function projectedStatus(job: JobRow, items: { status: string }[]) {
   return failures === items.length ? 'failed' : 'partial';
 }
 
-async function visibleItems(
+async function visibleGroup(
   state: ContentState,
-  input: { runtime: ContentRuntime; job: JobRow; rows: JobItemRow[]; policy: DiscoveryPolicy },
+  input: { runtime: ContentRuntime; job: JobRow; group: JobItemRow[]; policy: DiscoveryPolicy },
 ) {
-  const { policy } = input;
-  const original = await operationState(state, {
+  const [first] = input.group;
+  if (!first) fail('invalid_input');
+  const { locale, action } = first.payload;
+  const { predicate: _predicate, ...base } = state;
+  const contextual = await operationState(base, {
+    runtime: input.runtime,
+    operationId: state.operationId,
+    locale,
+  });
+  const original = await operationState(contextual, {
     runtime: input.runtime,
     operationId: input.job.source_operation,
-    locale: state.locale,
+    locale,
   });
   const reader = await targetState(original, {
     runtime: input.runtime,
     collection: state.collection.key,
   });
+  const authorized = await operationState(original, {
+    runtime: input.runtime,
+    operationId: itemOperation(action),
+    locale,
+  });
   const visibleResults = await visibleIds(reader, {
     runtime: input.runtime,
-    policy,
-    ids: input.rows.map((item) => item.result_document_id ?? item.document_id),
+    policy: input.policy,
+    ids: input.group.map((item) => item.result_document_id ?? item.document_id),
   });
-  const visibleSources = new Set<string>();
-  for (const action of new Set(input.rows.map((item) => item.payload.action))) {
-    const group = input.rows.filter((item) => item.payload.action === action);
-    const locale = group[0]?.payload.locale ?? state.locale;
+  const visibleSources = await visibleIds(authorized, {
+    runtime: input.runtime,
+    policy: input.policy,
+    ids: input.group.map((item) => item.document_id),
+  });
+  return projectItems(input.group, { visibleSources, visibleResults });
+}
+
+async function visibleItems(
+  state: ContentState,
+  input: { runtime: ContentRuntime; job: JobRow; rows: JobItemRow[]; policy: DiscoveryPolicy },
+) {
+  const groups = new Map<string, JobItemRow[]>();
+  for (const row of input.rows) {
+    const key = `${row.payload.locale}:${row.payload.action}`;
+    const group = groups.get(key) ?? [];
+    group.push(row);
+    groups.set(key, group);
+  }
+  const visible: ReturnType<typeof projectItems> = [];
+  for (const group of groups.values()) {
     try {
-      const authorized = await operationState(original, {
-        runtime: input.runtime,
-        operationId: itemOperation(action),
-        locale,
-      });
-      const ids = await visibleIds(authorized, {
-        runtime: input.runtime,
-        policy,
-        ids: group.map((item) => item.document_id),
-      });
-      for (const id of ids) visibleSources.add(id);
+      visible.push(...(await visibleGroup(state, { ...input, group })));
     } catch (error) {
       if (!denied(error)) throw error;
     }
   }
-  return projectItems(input.rows, { visibleSources, visibleResults });
+  return visible.toSorted((a, b) => a.position - b.position);
 }
 
 function projectItems(
@@ -150,11 +170,17 @@ async function assertExtensionVisible(
   state: ContentState,
   input: { runtime: ContentRuntime; job: JobRow; policy: DiscoveryPolicy },
 ): Promise<void> {
-  if (!input.job.document_id) fail('not_found');
-  const original = await operationState(state, {
+  if (!input.job.document_id || !input.job.source_locale) fail('not_found');
+  const { predicate: _old, ...base } = state;
+  const contextual = await operationState(base, {
+    runtime: input.runtime,
+    operationId: state.operationId,
+    locale: input.job.source_locale,
+  });
+  const original = await operationState(contextual, {
     runtime: input.runtime,
     operationId: input.job.source_operation,
-    locale: state.locale,
+    locale: input.job.source_locale,
   });
   const reader = await targetState(original, {
     runtime: input.runtime,
@@ -195,6 +221,15 @@ export async function projectJob(
     documentId: input.job.document_id,
     expectedRevision: input.job.expected_revision,
     requestedVersionId: input.job.requested_version_id,
+    ...(input.job.action === 'extension' && input.job.source_locale
+      ? { locale: input.job.source_locale }
+      : {}),
+    ...(input.job.action === 'publication' && result.rows[0]
+      ? {
+          publicationAction: result.rows[0].payload.action,
+          locale: result.rows[0].payload.locale,
+        }
+      : {}),
     collection: state.collection.key,
     action: input.job.action,
     status: input.job.action === 'extension' ? input.job.status : projectedStatus(input.job, items),

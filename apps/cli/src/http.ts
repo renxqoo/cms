@@ -1,13 +1,14 @@
 import { beforeRequest } from '@renxqoo/agent-cli-sdk';
 import type { CommandContext, Plugin, RequestOptions } from '@renxqoo/agent-cli-sdk';
 import { z } from 'zod';
-import { createApiClient, ApiError } from '@new-cms/api-client/client';
+import { createApiClient, ApiError, editorSessionIdSchema } from '@new-cms/api-client/client';
 import { accessToken } from './oauth.ts';
 import { operationFor } from '@new-cms/api-client/operations';
 import type { CliConfig } from './config.ts';
 import type { CliState } from './commands.ts';
 
 const requestBody = z.object({
+  editorSessionId: editorSessionIdSchema.optional(),
   input: z.unknown(),
   idempotencyKey: z.string().optional(),
   bytes: z.instanceof(Uint8Array).optional(),
@@ -38,6 +39,7 @@ export function apiRequest(config: CliConfig, context: CommandContext<CliState>)
       signal: context.state.signal,
     });
     return client.call(request.path, body.input, {
+      ...(body.editorSessionId ? { editorSessionId: body.editorSessionId } : {}),
       ...(body.idempotencyKey ? { idempotencyKey: body.idempotencyKey } : {}),
       ...(body.bytes ? { bytes: body.bytes } : {}),
     });

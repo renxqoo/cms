@@ -2,6 +2,7 @@ import { open, writeFile, stat } from 'node:fs/promises';
 import { defineCommand, ValidationError } from '@renxqoo/agent-cli-sdk';
 import type { CommandGroup, CommandContext } from '@renxqoo/agent-cli-sdk';
 import { z } from 'zod';
+import { editorSessionIdSchema } from '@new-cms/api-client/client';
 import { operations } from '@new-cms/api-client/operations';
 import type { ApiOperation } from '@new-cms/api-client/operations';
 import type { CliConfig } from './config.ts';
@@ -13,6 +14,7 @@ export interface CliState {
   execute(request: { path: string; body?: unknown }): Promise<unknown>;
 }
 const input = z.object({
+  editorSessionId: editorSessionIdSchema.optional(),
   input: z.record(z.string(), z.unknown()),
   idempotencyKey: z.string().min(16).max(128).optional(),
   file: z.string().optional(),
@@ -88,7 +90,12 @@ function businessCommand(operation: ApiOperation, maximum: number) {
       const bytes = operation.transport === 'upload' ? await binaryInput(args, maximum) : undefined;
       const value = await context.state.execute({
         path: operation.id,
-        body: { input: args.input, idempotencyKey: args.idempotencyKey, bytes },
+        body: {
+          input: args.input,
+          idempotencyKey: args.idempotencyKey,
+          editorSessionId: args.editorSessionId,
+          bytes,
+        },
       });
       return {
         data: operation.transport === 'download' ? await binaryOutput(value, args.output) : value,

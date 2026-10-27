@@ -13,6 +13,10 @@ it('validates safe recursive metadata and rejects unknown controls or action pay
     locale: 'en',
     fallback: [],
     richTextNodes: [],
+    initialData: null,
+    initialSnapshot: null,
+    visibility: {},
+    componentVersions: {},
     document: null,
     locales: { default: 'en', supported: ['en', 'zh-CN'], fallback: { 'zh-CN': ['en'] } },
     layout: [
@@ -79,6 +83,7 @@ it('validates safe recursive metadata and rejects unknown controls or action pay
             { name: 'thumb', width: 40, height: 30, format: 'png', fit: 'cover', quality: 90 },
           ],
         },
+        filesRequiredOnCreate: true,
         directUpload: false,
         multipart: false,
       },

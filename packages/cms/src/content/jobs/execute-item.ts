@@ -1,5 +1,7 @@
+import { assertBatchOperation, assertDocumentOperation } from '../lifecycle/operation-controls.ts';
 import { randomUUID } from 'node:crypto';
 import { actorReference } from '@new-cms/cms/access';
+import { runOperationHooks } from '../hooks/api.ts';
 import { CmsError, fail } from '@new-cms/cms/platform/contracts';
 import type { ErrorCode } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
@@ -42,42 +44,81 @@ export function itemOperation(action: JobItemRow['payload']['action']): string {
   return operations[action];
 }
 
-export async function jobState(
-  tx: SqlExecutor,
-  input: { runtime: ContentRuntime; job: JobRow; operationId: string; locale?: string },
-): Promise<ContentState> {
+interface JobStateInput {
+  runtime: ContentRuntime;
+  job: JobRow;
+  operationId: string;
+  locale?: string;
+  signal?: AbortSignal;
+}
+async function jobCollection(tx: SqlExecutor, input: JobStateInput) {
+  const collection = await input.runtime.resolveCollection(tx, input.job.collection_key);
+  if (input.job.action === 'publication')
+    assertDocumentOperation(collection, 'content.schedulePublication');
+  if (input.job.action === 'batch') assertBatchOperation(collection, input.operationId);
+  if (input.job.action === 'extension' && !input.job.source_locale) fail('invalid_input');
+  return collection;
+}
+export async function jobState(tx: SqlExecutor, input: JobStateInput): Promise<ContentState> {
   const scope = { scopeKind: 'collection' as const, collectionKey: input.job.collection_key };
   const actor = await input.runtime.authorizeActor(tx, {
     actor: { id: input.job.actor_id, delegationId: input.job.delegation_id },
     operationId: input.job.source_operation,
     scope,
   });
-  const collection = await input.runtime.resolveCollection(tx, input.job.collection_key);
+  const collection = await jobCollection(tx, input);
   const base = {
+    hookBudget: { used: 0 },
+    hookLimits: input.runtime.limits,
     tx,
     actor,
     collection,
-    ctx: { requestId: randomUUID(), ip: 'internal' },
+    ctx: {
+      requestId: randomUUID(),
+      ip: 'internal',
+      ...(input.signal ? { signal: input.signal } : {}),
+    },
     operationId: input.job.source_operation,
-    locale: resolveLocale(collection, input.locale),
+    locale: resolveLocale(
+      collection,
+      input.job.action === 'extension' ? (input.job.source_locale ?? undefined) : input.locale,
+    ),
     mode: 'editing' as const,
     actorAuthorization: true,
+    backgroundWork: true,
   };
-  const original = collectionPredicate(base);
+  const original = await collectionPredicate(base);
   await input.runtime.authorizeActor(tx, {
     actor: actorReference(actor),
     operationId: input.operationId,
     scope,
   });
   const state = { ...base, operationId: input.operationId };
-  const target = collectionPredicate(state);
+  const target = await collectionPredicate(state);
   const predicates = [original, target].filter((predicate) => predicate !== undefined);
   return { ...state, ...(predicates.length > 0 ? { predicate: { and: predicates } } : {}) };
 }
 
-async function performItem(
+async function performPublication(
   state: ContentState,
   input: { runtime: ContentRuntime; job: JobRow; item: JobItemRow },
+) {
+  if (!input.job.version_id) fail('invalid_input');
+  if (input.item.payload.action !== 'publish' && input.item.payload.action !== 'unpublish')
+    fail('invalid_input');
+  const transition =
+    input.item.payload.action === 'unpublish' ? unpublishInTransaction : publishInTransaction;
+  return transition(state, {
+    runtime: input.runtime,
+    id: input.item.document_id,
+    revision: input.item.expected_revision,
+    versionId: input.job.version_id,
+  });
+}
+
+async function performItem(
+  state: ContentState,
+  input: { runtime: ContentRuntime; job: JobRow; item: JobItemRow; signal?: AbortSignal },
 ): Promise<{ id: string; versionId: string }> {
   const values = {
     collection: state.collection.key,
@@ -86,19 +127,11 @@ async function performItem(
     ...(input.item.payload.data ? { data: input.item.payload.data } : {}),
     ...(input.item.payload.dataByLocale ? { dataByLocale: input.item.payload.dataByLocale } : {}),
   };
-  if (input.job.action === 'publication') {
-    if (!input.job.version_id) fail('invalid_input');
-    const publication = {
-      runtime: input.runtime,
-      id: values.id,
-      revision: values.revision,
-      versionId: input.job.version_id,
-    };
-    return input.item.payload.action === 'unpublish'
-      ? unpublishInTransaction(state, publication)
-      : publishInTransaction(state, publication);
-  }
+  if (input.job.action === 'publication') return performPublication(state, input);
   switch (input.item.payload.action) {
+    case 'publish':
+    case 'unpublish':
+      return fail('invalid_input');
     case 'update':
       if (!values.data && !values.dataByLocale) fail('invalid_input');
       return saveInTransaction(state, { runtime: input.runtime, values, kind: 'batchUpdated' });
@@ -116,16 +149,30 @@ async function performItem(
         id: values.id,
         revision: values.revision,
       });
-    case 'publish':
-    case 'unpublish':
-      break;
   }
   return fail('invalid_input');
 }
 
+async function performOperation(
+  state: ContentState,
+  input: { runtime: ContentRuntime; job: JobRow; item: JobItemRow; signal?: AbortSignal },
+): Promise<{ id: string; versionId: string }> {
+  return runOperationHooks(state, {
+    limits: input.runtime.limits,
+    async work() {
+      const reference = await performItem(state, input);
+      await input.runtime.validateAfterMutation?.(state.tx, {
+        collection: state.collection.key,
+        operationId: state.operationId,
+      });
+      return reference;
+    },
+  });
+}
+
 async function executeFenced(
   tx: SqlExecutor,
-  input: { runtime: ContentRuntime; job: JobRow; item: JobItemRow },
+  input: { runtime: ContentRuntime; job: JobRow; item: JobItemRow; signal?: AbortSignal },
 ): Promise<void> {
   await renewJobLease(tx, { job: input.job, leaseMs: input.runtime.workPolicy.jobLeaseMs });
   await tx.query('SAVEPOINT content_item');
@@ -136,6 +183,7 @@ async function executeFenced(
       job: input.job,
       operationId,
       locale: input.item.payload.locale,
+      ...(input.signal ? { signal: input.signal } : {}),
     });
     await ensureVisible(state, {
       runtime: input.runtime,
@@ -143,11 +191,7 @@ async function executeFenced(
       trashed:
         input.item.payload.action === 'restoreTrash' || input.item.payload.action === 'archive',
     });
-    const reference = await performItem(state, input);
-    await input.runtime.validateAfterMutation?.(tx, {
-      collection: state.collection.key,
-      operationId,
-    });
+    const reference = await performOperation(state, input);
     await fenceJob(tx, input.job);
     await tx.query(
       "UPDATE content_job_items SET status='succeeded',result_document_id=$3,result_revision_id=$4 WHERE job_id=$1 AND position=$2 AND status='queued'",
@@ -169,16 +213,17 @@ export function executeJobItem(
   runtime: ContentRuntime,
   input: { job: JobRow; item: JobItemRow; signal?: AbortSignal },
 ): Promise<void> {
+  const signal = AbortSignal.any([
+    AbortSignal.timeout(Math.min(runtime.policy.requestTimeoutMs, runtime.workPolicy.jobLeaseMs)),
+    ...(input.signal ? [input.signal] : []),
+  ]);
   return securityTransaction(runtime.database, runtime.policy, {
     mode: 'shared',
-    signal: AbortSignal.any([
-      AbortSignal.timeout(Math.min(runtime.policy.requestTimeoutMs, runtime.workPolicy.jobLeaseMs)),
-      ...(input.signal ? [input.signal] : []),
-    ]),
+    signal,
     async work(tx) {
       const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
       await lockContentMutation(executor, runtime);
-      return executeFenced(executor, { runtime, job: input.job, item: input.item });
+      return executeFenced(executor, { runtime, job: input.job, item: input.item, signal });
     },
   });
 }

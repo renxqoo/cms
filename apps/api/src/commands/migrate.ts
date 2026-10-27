@@ -4,9 +4,11 @@ import { createAccessCatalog } from '@new-cms/cms/access/composition';
 import {
   createPublicationMigrator,
   createContentLocaleResolver,
+  createHierarchyIntegrityValidator,
 } from '@new-cms/cms/content/composition';
 import { contentConfiguration } from '../bootstrap/create-content.ts';
-import { contentWorkPolicy } from '../config/content-policy.ts';
+import { contentWorkPolicy, contentMigrationPolicy } from '../config/content-policy.ts';
+import { migrateSchemaState } from './migrate-schema-state.ts';
 import { loadContentMigrationConfig } from '../bootstrap/load-config.ts';
 import { applicationOperations } from '../config/operations.ts';
 import { initialCollectionPermissions } from '../config/access-defaults.ts';
@@ -20,27 +22,13 @@ async function main(): Promise<void> {
     lockTimeoutMs: 10000,
     statementTimeoutMs: 60000,
   });
+  const controller = new AbortController();
+  const stop = () => controller.abort();
+  process.once('SIGTERM', stop);
+  process.once('SIGINT', stop);
   try {
     await migrate(database);
-    const content = contentConfiguration();
-    const publicationMigrator = createPublicationMigrator({
-      database,
-      registry: content.registry,
-      resolveLocaleSource: createContentLocaleResolver(content),
-      policy: config.policy,
-      resourceLockKey: contentWorkPolicy().resourceLockKey,
-      maxPageSize: content.limits.maxPageSize,
-    });
-    for (const collection of content.registry.list) {
-      let complete = false;
-      while (!complete) {
-        const { complete: pageComplete } = await publicationMigrator.migratePage({
-          collection: collection.key,
-          pageSize: content.limits.maxPageSize,
-        });
-        complete = pageComplete;
-      }
-    }
+    await migrateContentState(database, config.policy, controller.signal);
     const catalog = createAccessCatalog({
       database,
       policy: config.policy,
@@ -52,8 +40,60 @@ async function main(): Promise<void> {
     await catalog.verifyReady();
     process.stdout.write('Database migrations and access catalog applied.\n');
   } finally {
+    process.removeListener('SIGTERM', stop);
+    process.removeListener('SIGINT', stop);
     await database.close();
   }
+}
+
+async function migrateContentState(
+  database: ReturnType<typeof createDatabase>,
+  policy: ReturnType<typeof loadContentMigrationConfig>['policy'],
+  signal: AbortSignal,
+): Promise<void> {
+  const content = contentConfiguration();
+  const work = contentWorkPolicy();
+  const options = {
+    database,
+    ...content,
+    policy,
+    resourceLockKey: work.resourceLockKey,
+    resolveLocaleSource: createContentLocaleResolver(content),
+  };
+  const migration = contentMigrationPolicy();
+  await migrateSchemaState(options, {
+    maxPages: migration.maxPages,
+    pageSize: migration.defaultPageSize,
+    signal,
+    report: (value) => process.stdout.write(`${JSON.stringify(value)}\n`),
+  });
+  const publicationMigrator = createPublicationMigrator(options);
+  for (const collection of content.registry.list) {
+    let complete = false;
+    for (let page = 0; page < migration.maxPages; page += 1) {
+      signal.throwIfAborted();
+      const result = await publicationMigrator.migratePage({
+        collection: collection.key,
+        pageSize: content.limits.maxPageSize,
+        signal,
+      });
+      process.stdout.write(
+        `${JSON.stringify({ type: 'publicationPage', collection: collection.key, ...result })}\n`,
+      );
+      if (result.complete) {
+        complete = true;
+        break;
+      }
+    }
+    if (!complete)
+      throw new Error('Publication migration page budget exhausted; rerun migration to resume');
+  }
+  const hierarchy = await createHierarchyIntegrityValidator({
+    ...options,
+    maxDepth: work.maxFolderDepth,
+  }).validateAll({ signal });
+  for (const result of hierarchy)
+    process.stdout.write(`${JSON.stringify({ type: 'hierarchyValidated', ...result })}\n`);
 }
 
 void main().catch(() => {

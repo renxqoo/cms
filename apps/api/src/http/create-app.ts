@@ -96,7 +96,7 @@ function registerInfrastructure(app: Hono<HttpEnvironment>, deps: HttpDependenci
     c.header('access-control-allow-methods', 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS');
     c.header(
       'access-control-allow-headers',
-      'Authorization,Content-Type,Idempotency-Key,If-None-Match,If-Range,Range',
+      'Authorization,Content-Type,Idempotency-Key,X-CMS-Editor-Session,If-None-Match,If-Range,Range',
     );
     c.header('access-control-max-age', '600');
     return c.body(null, 204);

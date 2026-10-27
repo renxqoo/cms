@@ -19,6 +19,8 @@ const builtins = new Set([
   'list',
   'listItem',
   'link',
+  'quote',
+  'horizontalRule',
 ]);
 const unsafeSegments = new Set(['__proto__', 'constructor', 'prototype']);
 const identity = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

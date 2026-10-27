@@ -10,7 +10,10 @@ import type { MailMessage } from '@new-cms/cms/identity/composition';
 import { assetsOperations } from '@new-cms/cms/assets';
 import { contentOperations } from '@new-cms/cms/content';
 import { createRegistry, generateArtifacts } from '@new-cms/cms/content/generate';
-import type { CollectionDefinition } from '@new-cms/cms/content/generate';
+import type {
+  CollectionDefinition,
+  AdminComponentRegistration,
+} from '@new-cms/cms/content/generate';
 import { CmsError } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { createTestDatabase } from './database.ts';
@@ -30,6 +33,7 @@ const workflowDefinitions: CollectionDefinition[] = [
     schemaVersion: 1,
     label: 'Articles',
     mode: 'drafts',
+    drafts: { validate: false, autosave: { intervalMs: 10000 }, schedule: true },
     history: { maxVersions: 3, retentionMs: 0 },
     locales,
     search: ['title'],
@@ -90,6 +94,7 @@ export function contentField(collection: CollectionDefinition, name: string) {
 
 export interface FixtureOptions {
   collections?: CollectionDefinition[];
+  adminComponents?: readonly AdminComponentRegistration[];
   maxSyncBatchItems?: number;
   maxSqlQueries?: number;
   trashRetentionMs?: number;
@@ -177,6 +182,22 @@ async function initializeAccess(
   return { owner, permissionIds };
 }
 
+function fixtureWorkPolicy(options: FixtureOptions): ContentOptions['workPolicy'] {
+  return {
+    resourceLockKey: randomInt(1, 2_000_000_000),
+    maxBatchItems: 1000,
+    maxSyncBatchItems: options.maxSyncBatchItems ?? 20,
+    jobBatchSize: 20,
+    jobLeaseMs: 30000,
+    jobMaxAttempts: 3,
+    maxScheduleDelayMs: 86400000,
+    trashRetentionMs: options.trashRetentionMs ?? 0,
+    maxFolders: 100,
+    maxFolderDepth: 8,
+    maxQueryPresets: 100,
+    maxOrderKeyBytes: 256,
+  };
+}
 function fixtureContentOptions(
   input: {
     database: ContentOptions['database'];
@@ -196,18 +217,8 @@ function fixtureContentOptions(
     mapping: input.mapping,
     authorize: input.access.authorize,
     authorizeActor: input.access.authorizeActor,
-    workPolicy: {
-      resourceLockKey: randomInt(1, 2_000_000_000),
-      maxBatchItems: 1000,
-      maxSyncBatchItems: options.maxSyncBatchItems ?? 20,
-      jobBatchSize: 20,
-      jobLeaseMs: 30000,
-      jobMaxAttempts: 3,
-      maxScheduleDelayMs: 86400000,
-      trashRetentionMs: options.trashRetentionMs ?? 0,
-      maxFolders: 100,
-      maxFolderDepth: 8,
-    },
+    resolveAuthor: input.access.readAuthor,
+    workPolicy: fixtureWorkPolicy(options),
     uploadPolicy: {
       maxBytes: 20971520,
       variantQuality: 80,
@@ -287,6 +298,7 @@ async function fixtureStorage(
   );
   const registry = createRegistry({
     collections: options.collections ?? workflowCollections(),
+    ...(options.adminComponents ? { adminComponents: options.adminComponents } : {}),
     limits,
     operations: [...contentOperations, ...assetsOperations],
   });

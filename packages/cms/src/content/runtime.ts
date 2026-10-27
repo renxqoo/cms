@@ -1,19 +1,28 @@
+import { assertBatchOperation, assertDocumentOperation } from './lifecycle/operation-controls.ts';
+import { authorReadPermission } from './authorship/api.ts';
+import { authorshipSettings } from './authorship/config.ts';
+import { immutable, invokeFunction } from './fields/invoke-function.ts';
+import { policyScope } from './hooks/invoke.ts';
 import type { z } from 'zod';
 import type { SqlExecutor } from '@new-cms/database/client';
+import { actorReference } from '@new-cms/cms/access';
 import type { Principal } from '@new-cms/cms/access';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { fail } from '@new-cms/cms/platform/contracts';
+import { withContentDeadline } from './hooks/deadline.ts';
+import { readHooks, runOperationHooks } from './hooks/api.ts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
 import { withIdempotency } from '@new-cms/cms/platform/idempotency';
 import { appendAudit } from '@new-cms/cms/audit/composition';
 import { contentOperations } from './operations.ts';
 import { assetsOperations } from '@new-cms/cms/assets';
-import { queryableFields } from './fields/policies.ts';
+import { queryableFields } from './fields/policy-metadata.ts';
 import { targetReadContext } from './queries/resolve-locale.ts';
 import { assertWhereBudget } from './queries/parse-query.ts';
 import type { CollectionDefinition, DocumentData, Where } from './definition.ts';
 import type { ContentRuntime, ContentState } from './types.ts';
 import type { DocumentRow, QueryInput } from './model.ts';
+import { assertEditorLease } from './collaboration/store.ts';
 
 export function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
@@ -33,20 +42,45 @@ export function resolveLocale(collection: CollectionDefinition, locale?: string)
   return resolved;
 }
 
-export function collectionPredicate(state: Omit<ContentState, 'predicate'>): Where | undefined {
+async function configuredPredicate(
+  state: Omit<ContentState, 'predicate'>,
+): Promise<Where | undefined> {
   const policy = state.collection.access?.[state.operationId];
   if (!policy) return undefined;
-  const result = policy.run({
+  const context = immutable({
     actor: state.actor,
     operation: state.operationId,
     collectionKey: state.collection.key,
     locale: state.locale,
     mode: state.mode,
   });
+  const scope = policyScope(state);
+  const result = await invokeFunction({
+    limits: scope.limits,
+    scope: scope.functions,
+    run: (signal) => policy.run(Object.freeze({ ...context, signal })),
+  });
   if (result === false) fail('forbidden');
   if (result === true) return undefined;
   if (result === null || typeof result !== 'object' || Array.isArray(result)) fail('invalid_input');
-  return result;
+  assertWhereBudget(result, scope.limits);
+  return immutable(result);
+}
+
+export async function collectionPredicate(
+  state: Omit<ContentState, 'predicate'>,
+): Promise<Where | undefined> {
+  const predicate = await configuredPredicate(state);
+  const reading =
+    contentOperations.some(
+      (operation) => operation.id === state.operationId && operation.method === 'GET',
+    ) &&
+    (state.operationId.startsWith('documents.') || state.operationId.startsWith('versions.'));
+  if (!reading || !state.collection.hooks?.beforeRead?.length) return predicate;
+  if (!state.hookLimits) fail('invalid_input');
+  const hook = await readHooks(state, state.hookLimits);
+  if (!hook) return predicate;
+  return predicate ? { and: [predicate, hook] } : hook;
 }
 
 interface RunnerInput {
@@ -56,6 +90,7 @@ interface RunnerInput {
   locale?: string;
   mode?: 'editing' | 'published';
   fallbackOverride?: readonly string[];
+  batchOperation?: string;
 }
 
 async function authorizedState(
@@ -69,23 +104,69 @@ async function authorizedState(
   });
   if (!actor) fail('unauthenticated');
   const collection = await runtime.resolveCollection(tx, input.collection);
+  assertDocumentOperation(collection, input.operationId);
+  if (input.batchOperation) assertBatchOperation(collection, input.batchOperation);
   const state: Omit<ContentState, 'predicate'> = {
     tx,
     ctx: input.ctx,
     actor,
     collection,
     operationId: input.operationId,
-    locale: resolveLocale(collection, input.locale),
+    locale:
+      input.operationId === 'collections.get'
+        ? targetReadContext({ collection, locale: input.locale ?? collection.locales.default })
+            .locale
+        : resolveLocale(collection, input.locale),
     mode: input.mode ?? 'editing',
+    hookBudget: { used: 0 },
+    hookLimits: runtime.limits,
+    expansionBudget: { nodes: 0 },
+    virtualReadCache: new Map(),
     ...(input.fallbackOverride ? { fallbackOverride: input.fallbackOverride } : {}),
   };
-  const predicate = collectionPredicate(state);
+  const predicate = await collectionPredicate(state);
+  const authorshipReadable = await authorReadPermission(state, runtime);
   if (
     predicate &&
     (input.operationId.startsWith('folders.') || input.operationId === 'collections.get')
   )
     fail('invalid_input');
-  return { ...state, ...(predicate ? { predicate } : {}) };
+  return { ...state, authorshipReadable, ...(predicate ? { predicate } : {}) };
+}
+
+function mutatingOperation(operationId: string): boolean {
+  if (
+    [
+      'collections.previewEditor',
+      'collections.fieldOptions',
+      'documents.validate',
+      'queryPresets.preview',
+      'queryPresets.fieldOptions',
+    ].includes(operationId)
+  )
+    return false;
+  return (
+    [...contentOperations, ...assetsOperations].find((operation) => operation.id === operationId)
+      ?.method !== 'GET'
+  );
+}
+
+async function performOperation<T>(
+  state: ContentState,
+  input: { runtime: ContentRuntime; mutating: boolean; work: () => Promise<T> },
+): Promise<T> {
+  return runOperationHooks(state, {
+    limits: input.runtime.limits,
+    async work() {
+      const result = await input.work();
+      if (input.mutating)
+        await input.runtime.validateAfterMutation?.(state.tx, {
+          collection: state.collection.key,
+          operationId: state.operationId,
+        });
+      return result;
+    },
+  });
 }
 
 export function createRunner(runtime: ContentRuntime) {
@@ -93,30 +174,34 @@ export function createRunner(runtime: ContentRuntime) {
     input: RunnerInput,
     work: (state: ContentState) => Promise<T>,
   ): Promise<T> {
-    return securityTransaction(runtime.database, runtime.policy, {
-      mode: 'shared',
+    return withContentDeadline({
+      timeoutMs: runtime.policy.requestTimeoutMs,
       ...(input.ctx.signal ? { signal: input.ctx.signal } : {}),
-      async work(tx) {
-        const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
-        const mutating =
-          [...contentOperations, ...assetsOperations].find(
-            (operation) => operation.id === input.operationId,
-          )?.method !== 'GET';
-        if (mutating) await lockContentMutation(executor, runtime);
-        const state = await authorizedState(runtime, executor, input);
-        const result = await work(state);
-        if (mutating)
-          await runtime.validateAfterMutation?.(executor, {
-            collection: state.collection.key,
-            operationId: input.operationId,
-          });
-        if (
-          result !== undefined &&
-          Buffer.byteLength(JSON.stringify(result)) > runtime.limits.maxResponseBytes
-        )
-          fail('capacity_exceeded');
-        return result;
-      },
+      work: (signal) =>
+        securityTransaction(runtime.database, runtime.policy, {
+          mode: 'shared',
+          signal,
+          async work(tx) {
+            const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
+            const mutating = mutatingOperation(input.operationId);
+            if (mutating) await lockContentMutation(executor, runtime);
+            const state = await authorizedState(runtime, executor, {
+              ...input,
+              ctx: { ...input.ctx, signal },
+            });
+            const result = await performOperation(state, {
+              runtime,
+              mutating,
+              work: () => work(state),
+            });
+            if (
+              result !== undefined &&
+              Buffer.byteLength(JSON.stringify(result)) > runtime.limits.maxResponseBytes
+            )
+              fail('capacity_exceeded');
+            return result;
+          },
+        }),
     });
   };
 }
@@ -161,6 +246,7 @@ export async function ensureVisible(
     });
     if (page.rows.length === 0) fail('not_found');
   }
+  await assertEditorLease(state, input.runtime, document.id);
   return document;
 }
 
@@ -179,8 +265,24 @@ export function policyContext(state: ContentState, data?: DocumentData) {
   };
 }
 
-export function permittedQueryFields(state: ContentState): readonly string[] {
-  return queryableFields({ collection: state.collection, context: policyContext(state) });
+export async function permittedQueryFields(
+  state: ContentState,
+  options: { linkedVirtual?: boolean } = {},
+): Promise<readonly string[]> {
+  const authors = authorshipSettings(state.collection);
+  return [
+    ...(await queryableFields({
+      ...policyScope(state),
+      collection: state.collection,
+      context: policyContext(state),
+      ...options,
+    })),
+    ...(state.authorshipReadable
+      ? Object.entries(authors)
+          .filter(([, enabled]) => enabled)
+          .map(([field]) => field)
+      : []),
+  ];
 }
 
 export function auditContent(
@@ -237,7 +339,7 @@ export async function requireAdditionalOperation(
   });
   if (!actor) fail('unauthenticated');
   const base = { ...state, operationId: input.operationId, actor };
-  const predicate = collectionPredicate(base);
+  const predicate = await collectionPredicate(base);
   const { predicate: _old, ...withoutPredicate } = base;
   const next = { ...withoutPredicate, ...(predicate ? { predicate } : {}) };
   await ensureVisible(next, {
@@ -296,4 +398,3 @@ export function policyUsesRelations(state: ContentState, runtime: ContentRuntime
 export async function policyRelations(state: ContentState, runtime: ContentRuntime) {
   return policyUsesRelations(state, runtime) ? runtime.resolveRelationScopes(state) : {};
 }
-import { actorReference } from '@new-cms/cms/access';

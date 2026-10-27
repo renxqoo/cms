@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { expect, it } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { Harness, node } from './support';
+import { Harness, node, rowA, services } from './support';
 
 const paragraph = {
   version: 1,
@@ -94,4 +94,77 @@ it('provides Chinese labels and a writing prompt for an empty editor', async () 
   expect(screen.getByRole('button', { name: '撤销' })).toBeDisabled();
   expect(screen.getByRole('button', { name: '重做' })).toBeDisabled();
   expect(screen.getByRole('button', { name: '结构编辑' })).toBeEnabled();
+});
+
+it('internal document links and relationship nodes use their own eligible collections and preserve existing references', async () => {
+  const ports = services();
+  ports.searchReferences.mockResolvedValue({
+    rows: [{ collection: 'pages', id: rowA, label: 'Allowed target' }],
+    total: 1,
+    page: 1,
+    pageSize: 10,
+  });
+  render(
+    <Harness
+      services={{
+        ...ports,
+        collections: [
+          { id: 'pages', label: 'Pages', richTextLink: true, richTextRelationship: false },
+          { id: 'articles', label: 'Articles', richTextLink: false, richTextRelationship: true },
+          {
+            id: 'images',
+            label: 'Images',
+            upload: true,
+            richTextLink: false,
+            richTextRelationship: false,
+          },
+        ],
+      }}
+      layout={[node('Body', { type: 'richText' })]}
+    />,
+  );
+  await screen.findByRole('toolbar');
+  fireEvent.click(screen.getByRole('button', { name: 'Internal document link' }));
+  expect(screen.queryByRole('combobox', { name: 'Choose collection' })).not.toBeInTheDocument();
+  fireEvent.click(await screen.findByRole('option', { name: 'Pages: Allowed target' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply selection' }));
+  await waitFor(() =>
+    expect(data()).toEqual({
+      Body: {
+        version: 1,
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'link',
+                reference: { collection: 'pages', id: rowA },
+                children: [{ type: 'text', text: `Pages / ${rowA}` }],
+              },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+  expect(ports.searchReferences.mock.calls[0]?.[0]).toMatchObject({
+    collections: ['pages'],
+    collection: 'pages',
+    context: 'admin',
+  });
+  ports.searchReferences.mockResolvedValue({
+    rows: [{ collection: 'articles', id: rowA, label: 'Related target' }],
+    total: 1,
+    page: 1,
+    pageSize: 10,
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Content reference' }));
+  await screen.findByRole('option', { name: 'Articles: Related target' });
+  expect(screen.queryByRole('combobox', { name: 'Choose collection' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(data()).toMatchObject({
+    Body: {
+      children: [{ children: [{ type: 'link', reference: { collection: 'pages', id: rowA } }] }],
+    },
+  });
 });

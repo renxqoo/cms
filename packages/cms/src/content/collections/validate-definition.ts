@@ -1,6 +1,11 @@
+import { validatePagination } from './pagination-config.ts';
+import { validateHooks } from './validate-hooks.ts';
+import { validateUiField } from './validate-ui-field.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { CollectionDefinition, ContentLimits, FieldDefinition } from '../definition.ts';
-import { dataFields, fieldPaths } from '../fields/structure.ts';
+import { optionValues } from '../fields/options.ts';
+import { assertSelect, dataFields, namedFields, fieldPaths } from '../fields/structure.ts';
+import { joinCollections, validateJoinDefinition } from '../joins/config.ts';
 
 const reserved = new Set([
   'id',
@@ -10,6 +15,8 @@ const reserved = new Set([
   'versionId',
   'publishedVersionId',
   'createdAt',
+  'createdBy',
+  'updatedBy',
   'updatedAt',
   'trashedAt',
   'folderId',
@@ -27,16 +34,24 @@ const optionTypes: Partial<Record<keyof FieldDefinition, readonly string[]>> = {
   fields: ['group', 'array', 'row', 'collapsible'],
   blocks: ['blocks'],
   tabs: ['tabs'],
-  options: ['select'],
+  options: ['select', 'radio'],
   relationTo: ['relationship', 'upload'],
   join: ['join'],
   onDelete: ['relationship', 'upload'],
-  hasMany: ['select', 'relationship', 'upload'],
+  maxDepth: ['relationship', 'upload', 'join'],
+  filterOptions: ['relationship', 'upload', 'select', 'radio', 'blocks'],
+  hasMany: ['text', 'number', 'select', 'relationship', 'upload'],
+  minRows: ['text', 'number'],
+  maxRows: ['text', 'number'],
   precision: ['number'],
   min: ['number', 'array', 'blocks'],
   max: ['number', 'array', 'blocks'],
-  minLength: ['text', 'textarea', 'email', 'code'],
-  maxLength: ['text', 'textarea', 'email', 'code'],
+  timezone: ['date'],
+  timezoneFor: ['select'],
+  useAsSlug: ['slug'],
+  slugify: ['slug'],
+  minLength: ['slug', 'text', 'textarea', 'email', 'code'],
+  maxLength: ['slug', 'text', 'textarea', 'email', 'code'],
 };
 const requiredProperties: Partial<Record<FieldDefinition['type'], keyof FieldDefinition>> = {
   group: 'fields',
@@ -46,31 +61,52 @@ const requiredProperties: Partial<Record<FieldDefinition['type'], keyof FieldDef
   blocks: 'blocks',
   tabs: 'tabs',
   select: 'options',
+  radio: 'options',
   relationship: 'relationTo',
   upload: 'relationTo',
   join: 'join',
 };
 function validateOptions(field: FieldDefinition): void {
+  if (field.virtual)
+    rejectUnless(
+      !field.unique && !field.index && field.defaultValue === undefined && field.type !== 'join',
+    );
   for (const [key, types] of Object.entries(optionTypes)) {
     if (Object.hasOwn(field, key) && !types.includes(field.type)) fail('invalid_input');
   }
   const required = requiredProperties[field.type];
   if (required && field[required] === undefined) fail('invalid_input');
-  if (field.options) rejectUnless(unique(field.options));
+  validateFilterOptions(field);
+  if (field.options) rejectUnless(unique(optionValues(field)));
   if (field.relationTo) rejectUnless(unique(field.relationTo));
   if (field.blocks) rejectUnless(unique(field.blocks.map((block) => block.key)));
+  if (field.minRows !== undefined || field.maxRows !== undefined)
+    rejectUnless(field.hasMany === true);
   validateBoundaries(field);
   validateFieldShape(field);
 }
-function validateBoundaries(field: FieldDefinition): void {
-  if (field.min !== undefined && field.max !== undefined) rejectUnless(field.min <= field.max);
-  if (field.minLength !== undefined && field.maxLength !== undefined)
-    rejectUnless(field.minLength <= field.maxLength);
-  if (field.unique)
-    rejectUnless(!['group', 'array', 'blocks', 'json', 'richText', 'join'].includes(field.type));
+function validateFilterOptions(field: FieldDefinition): void {
+  const configured = field.filterOptions;
+  if (configured === undefined) return;
+  if (typeof configured === 'object' && !Array.isArray(configured) && 'run' in configured) return;
+  if (field.type === 'blocks') {
+    rejectUnless(typeof configured === 'boolean' || Array.isArray(configured));
+    if (Array.isArray(configured))
+      rejectUnless(
+        unique(configured) &&
+          configured.every((key) => field.blocks?.some((block) => block.key === key)),
+      );
+    return;
+  }
+  rejectUnless(
+    ['relationship', 'upload'].includes(field.type) &&
+      typeof configured === 'object' &&
+      !Array.isArray(configured),
+  );
 }
 function validateFieldShape(field: FieldDefinition): void {
   if (['row', 'collapsible', 'tabs'].includes(field.type)) {
+    rejectUnless(field.disableDuplicate === undefined);
     rejectUnless(
       ![
         field.name,
@@ -80,12 +116,15 @@ function validateFieldShape(field: FieldDefinition): void {
         field.index,
         field.access,
         field.validate,
+        field.virtual,
+        field.hooks,
       ].some(Boolean),
     );
     rejectUnless(field.defaultValue === undefined);
     return;
   }
   rejectUnless(Boolean(field.name) && !reserved.has(String(field.name)));
+  if (field.type === 'ui') return validateUiField(field);
   if (field.type === 'join') {
     rejectUnless(
       ![field.required, field.localized, field.unique, field.index, field.hasMany].some(Boolean),
@@ -102,7 +141,7 @@ function validateFields(input: {
   count: { value: number };
 }): void {
   rejectUnless(input.depth <= input.limits.maxFieldDepth);
-  rejectUnless(unique(dataFields(input.fields).map((field) => String(field.name))));
+  rejectUnless(unique(namedFields(input.fields).map((field) => String(field.name))));
   for (const field of input.fields) {
     input.count.value += 1;
     rejectUnless(input.count.value <= input.limits.maxFields && !input.seen.has(field.id));
@@ -131,18 +170,50 @@ function validatePaths(collection: CollectionDefinition): void {
       rejectUnless(
         entry !== undefined &&
           !entry.repeated &&
+          !entry.field.virtual &&
           !['group', 'array', 'blocks', 'join', 'json', 'richText'].includes(entry.field.type),
       );
     }
   }
   rejectUnless(unique((collection.indexes ?? []).map((index) => index.id)));
-  for (const path of collection.search ?? [])
-    rejectUnless(['text', 'textarea', 'email', 'code'].includes(paths.get(path)?.field.type ?? ''));
-  for (const sort of collection.defaultSort ?? []) validateSort(paths.get(sort.field));
+  for (const path of collection.search ?? []) rejectUnless(searchable(paths.get(path)));
+  for (const sort of collection.defaultSort ?? [])
+    if (!(sort.field === '_order' && collection.orderable)) validateSort(paths.get(sort.field));
+  validateAdmin(collection, paths);
+}
+function searchable(entry: ReturnType<typeof fieldPaths>[number] | undefined): boolean {
+  return (
+    entry !== undefined &&
+    !entry.field.virtual &&
+    ['text', 'textarea', 'email', 'code'].includes(entry.field.type)
+  );
+}
+function validateAdmin(
+  collection: CollectionDefinition,
+  paths: ReadonlyMap<string, ReturnType<typeof fieldPaths>[number]>,
+): void {
+  if (collection.admin?.useAsThumbnail) {
+    const thumbnail = paths.get(collection.admin.useAsThumbnail);
+    rejectUnless(thumbnail?.field.type === 'upload' && !thumbnail.repeated);
+  }
+  if (collection.admin?.useAsTitle)
+    rejectUnless(
+      paths.has(collection.admin.useAsTitle) && !paths.get(collection.admin.useAsTitle)?.repeated,
+    );
+  if (collection.admin?.defaultColumns)
+    rejectUnless(
+      unique(collection.admin.defaultColumns) &&
+        collection.admin.defaultColumns.every((path) =>
+          fieldPaths(collection.fields, '', { includeUi: true }).some(
+            (entry) => entry.path === path,
+          ),
+        ),
+    );
 }
 function validateSort(entry: ReturnType<typeof fieldPaths>[number] | undefined): void {
   rejectUnless(
     entry !== undefined &&
+      !entry.field.virtual &&
       !entry.repeated &&
       !['group', 'join', 'array', 'blocks'].includes(entry.field.type),
   );
@@ -161,11 +232,13 @@ function validatePublicationPolicy(collection: CollectionDefinition): void {
     );
   }
 }
+
 export function validateDefinition(
   collection: CollectionDefinition,
   limits: ContentLimits,
   historical = false,
 ): void {
+  validatePagination(collection, limits);
   rejectUnless(collection.mode !== 'drafts' || collection.history !== false);
   rejectUnless(!collection.localizeStatus || collection.mode === 'drafts');
   validateCollectionLocales(collection, limits);
@@ -181,14 +254,58 @@ export function validateDefinition(
     (collection.indexes?.length ?? 0) <= limits.maxFields &&
       (collection.richTextNodes?.length ?? 0) <= limits.maxFields,
   );
+  assertSelect(collection, collection.defaultPopulate);
   validatePaths(collection);
+  validateHooks(collection, limits);
   if (!historical) validateMigrations(collection);
   validateSchemaVersions(collection);
 }
-export function validateRelations(collections: readonly CollectionDefinition[]): void {
+function virtualSource(input: {
+  collection: CollectionDefinition;
+  path: string;
+  byKey: ReadonlyMap<string, CollectionDefinition>;
+  depth: number;
+  limits: ContentLimits;
+}): boolean {
+  if (input.depth > input.limits.maxExpandDepth) return false;
+  const paths = fieldPaths(input.collection.fields);
+  const direct = paths.find((entry) => entry.path === input.path);
+  if (direct) return !direct.field.virtual && direct.field.type !== 'join';
+  for (const { field, path } of paths) {
+    if (
+      !input.path.startsWith(`${path}.`) ||
+      !['relationship', 'upload', 'join'].includes(field.type)
+    )
+      continue;
+    const targets = field.join ? joinCollections(field.join) : (field.relationTo ?? []);
+    if (
+      targets.some((key) => {
+        const collection = input.byKey.get(key);
+        return (
+          collection &&
+          virtualSource({
+            ...input,
+            collection,
+            path: input.path.slice(path.length + 1),
+            depth: input.depth + 1,
+          })
+        );
+      })
+    )
+      return true;
+  }
+  return false;
+}
+
+export function validateRelations(
+  collections: readonly CollectionDefinition[],
+  limits: ContentLimits,
+): void {
   const byKey = new Map(collections.map((collection) => [collection.key, collection]));
   for (const collection of collections) {
     for (const { field } of fieldPaths(collection.fields)) {
+      if (typeof field.virtual === 'string')
+        rejectUnless(virtualSource({ collection, path: field.virtual, byKey, depth: 0, limits }));
       for (const target of field.relationTo ?? []) {
         const definition = byKey.get(target);
         rejectUnless(
@@ -196,15 +313,7 @@ export function validateRelations(collections: readonly CollectionDefinition[]):
         );
       }
       if (field.join) {
-        const target = byKey.get(field.join.collection);
-        const inverse =
-          target &&
-          fieldPaths(target.fields).find((item) => item.path === field.join?.field)?.field;
-        rejectUnless(
-          inverse !== undefined &&
-            ['relationship', 'upload'].includes(inverse.type) &&
-            (inverse.relationTo ?? []).includes(collection.key),
-        );
+        validateJoinDefinition(collection, field, { byKey, limits });
       }
     }
   }
@@ -280,4 +389,14 @@ function validateLocaleMap(input: {
         (input.map[locale] === null ||
           input.previous.locales.supported.includes(input.map[locale] ?? '')),
     );
+}
+
+function validateBoundaries(field: FieldDefinition): void {
+  if (field.min !== undefined && field.max !== undefined) rejectUnless(field.min <= field.max);
+  if (field.minRows !== undefined && field.maxRows !== undefined)
+    rejectUnless(field.minRows <= field.maxRows);
+  if (field.minLength !== undefined && field.maxLength !== undefined)
+    rejectUnless(field.minLength <= field.maxLength);
+  if (field.unique)
+    rejectUnless(!['group', 'array', 'blocks', 'json', 'richText', 'join'].includes(field.type));
 }

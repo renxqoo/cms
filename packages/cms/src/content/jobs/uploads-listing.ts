@@ -7,7 +7,12 @@ import { queryUploads } from '../adapters/postgres/upload-discovery.ts';
 export async function listUploads(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(assetsInputSchemas(runtime.policy)['assets.listUploads'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'assets.listUploads', collection: input.collection },
+    {
+      ctx,
+      operationId: 'assets.listUploads',
+      collection: input.collection,
+      ...(input.locale ? { locale: input.locale } : {}),
+    },
     (state) =>
       queryUploads(state.tx, {
         state,

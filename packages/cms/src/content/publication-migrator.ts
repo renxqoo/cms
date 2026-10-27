@@ -1,77 +1,96 @@
 import { randomUUID } from 'node:crypto';
 import { createLocaleMapping } from './locale-source.ts';
-import { compileContent } from './adapters/postgres/compile-schema.ts';
 import type { ContentOptions } from './types.ts';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
 import { appendAudit } from '@new-cms/cms/audit/composition';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
-import type { CollectionDefinition, ContentRegistry } from './definition.ts';
+import type { CollectionDefinition, ContentLimits } from './definition.ts';
+import type { ContentMapping } from './model.ts';
+import { syncActiveProjections } from './adapters/postgres/active-projections.ts';
+import { migratePublicationSlots } from './adapters/postgres/publication-slots.ts';
+import { budgetedExecutor } from './runtime.ts';
 
-async function migrateLocalizedPage(
+interface PublicationMigrationOptions {
+  database: Database;
+  mapping: ContentMapping;
+  limits: ContentLimits;
+  policy: CmsPolicy;
+  resourceLockKey: number;
+  resolveLocaleSource?: NonNullable<ContentOptions['resolveLocaleSource']>;
+}
+interface MigrationInput {
+  collection: string;
+  pageSize: number;
+  signal?: AbortSignal;
+}
+
+async function migratePublications(
   tx: SqlExecutor,
-  input: { collection: CollectionDefinition; pageSize: number; policy: CmsPolicy },
+  options: PublicationMigrationOptions,
+  input: { collection: CollectionDefinition; mappingFor: ReturnType<typeof createLocaleMapping> },
 ) {
+  const { collection } = input;
+  await tx.query('SELECT pg_advisory_xact_lock($1::bigint)', [options.resourceLockKey]);
+  if (!collection.localizeStatus) {
+    const incompatible = await tx.query(
+      "SELECT 1 FROM content_publications WHERE collection_id=$1 AND locale<>'*' LIMIT 1",
+      [collection.id],
+    );
+    if (incompatible.rowCount !== 0) fail('invalid_input');
+  }
   const selected = await tx.query<{ document_id: string }>(
-    "SELECT document_id FROM content_publications WHERE collection_id=$1 AND locale='*' ORDER BY document_id LIMIT $2 FOR UPDATE",
-    [input.collection.id, input.pageSize],
+    "SELECT p.document_id FROM content_publications p WHERE p.collection_id=$1 AND (($2 AND p.locale='*') OR NOT $3=ANY(p.completed_schema_versions)) GROUP BY p.document_id ORDER BY p.document_id LIMIT 1",
+    [collection.id, Boolean(collection.localizeStatus), collection.schemaVersion],
   );
   const ids = selected.rows.map((row) => row.document_id);
   if (ids.length === 0) return { processed: 0, complete: true };
-  await tx.query(
-    `WITH original AS (DELETE FROM content_publications WHERE document_id=ANY($1::uuid[]) AND locale='*' RETURNING document_id,collection_id,version_id) INSERT INTO content_publications(document_id,collection_id,locale,version_id) SELECT o.document_id,o.collection_id,l.locale,o.version_id FROM original o CROSS JOIN unnest($2::text[]) AS l(locale)`,
-    [ids, input.collection.locales.supported],
-  );
+  const mapping = await input.mappingFor(tx);
+  const effective = mapping.get(collection.key).definition;
+  for (const id of ids) {
+    await migratePublicationSlots(tx, { collection: effective, id });
+    await syncActiveProjections(tx, {
+      mapping,
+      limits: options.limits,
+      collection: collection.key,
+      id,
+    });
+  }
   await appendAudit(
     tx,
     {
       actorKind: 'system',
       operationId: 'content.localizePublications',
       targetType: 'collection',
-      targetId: input.collection.id,
+      targetId: collection.id,
       requestId: randomUUID(),
-      detail: { processed: ids.length, locales: input.collection.locales.supported },
+      detail: { processed: ids.length, locales: effective.locales.supported },
     },
-    input.policy,
+    options.policy,
   );
-  return { processed: ids.length, complete: ids.length < input.pageSize };
-}
-
-interface PublicationMigrationOptions {
-  database: Database;
-  registry: ContentRegistry;
-  policy: CmsPolicy;
-  resourceLockKey: number;
-  maxPageSize: number;
-  limits?: Pick<ContentOptions['limits'], 'maxLocales'>;
-  resolveLocaleSource?: NonNullable<ContentOptions['resolveLocaleSource']>;
+  return { processed: ids.length, complete: false };
 }
 
 export function createPublicationMigrator(options: PublicationMigrationOptions) {
   if (
     !Number.isSafeInteger(options.resourceLockKey) ||
     options.resourceLockKey === options.policy.securityLockKey ||
-    !Number.isSafeInteger(options.maxPageSize) ||
-    options.maxPageSize < 1
+    !Number.isSafeInteger(options.limits.maxPageSize) ||
+    options.limits.maxPageSize < 1 ||
+    !Number.isSafeInteger(options.policy.requestTimeoutMs) ||
+    options.policy.requestTimeoutMs < 1 ||
+    options.policy.requestTimeoutMs > 2 ** 31 - 1
   )
     fail('invalid_input');
-  const mappingFor = options.limits
-    ? createLocaleMapping({
-        mapping: compileContent(options.registry),
-        limits: options.limits,
-        ...(options.resolveLocaleSource
-          ? { resolveLocaleSource: options.resolveLocaleSource }
-          : {}),
-      })
-    : undefined;
+  const mappingFor = createLocaleMapping(options);
   return {
-    migratePage(input: { collection: string; pageSize: number; signal?: AbortSignal }) {
-      const collection = options.registry.get(input.collection);
+    migratePage(input: MigrationInput) {
+      const collection = options.mapping.get(input.collection).definition;
       if (
         !Number.isSafeInteger(input.pageSize) ||
         input.pageSize < 1 ||
-        input.pageSize > options.maxPageSize
+        input.pageSize > options.limits.maxPageSize
       )
         fail('invalid_input');
       const signal = AbortSignal.any([
@@ -82,49 +101,11 @@ export function createPublicationMigrator(options: PublicationMigrationOptions) 
         mode: 'exclusive',
         signal,
         work: (tx) =>
-          migratePageInTransaction(tx, {
-            options,
+          migratePublications(budgetedExecutor(tx, options.limits.maxSqlQueries), options, {
             collection,
-            pageSize: input.pageSize,
-            ...(mappingFor ? { mappingFor } : {}),
+            mappingFor,
           }),
       });
     },
   };
-}
-
-async function migratePageInTransaction(
-  tx: SqlExecutor,
-  input: {
-    options: PublicationMigrationOptions;
-    collection: CollectionDefinition;
-    pageSize: number;
-    mappingFor?: ReturnType<typeof createLocaleMapping>;
-  },
-) {
-  await tx.query('SELECT pg_advisory_xact_lock($1::bigint)', [input.options.resourceLockKey]);
-  if (!input.collection.localizeStatus) {
-    const incompatible = await tx.query(
-      "SELECT 1 FROM content_publications WHERE collection_id=$1 AND locale<>'*' LIMIT 1",
-      [input.collection.id],
-    );
-    if (incompatible.rowCount !== 0) fail('invalid_input');
-    return { processed: 0, complete: true };
-  }
-  if (input.collection.localeSource) {
-    const pending = await tx.query(
-      "SELECT 1 FROM content_publications WHERE collection_id=$1 AND locale='*' LIMIT 1",
-      [input.collection.id],
-    );
-    if (pending.rowCount === 0) return { processed: 0, complete: true };
-    if (!input.mappingFor || !input.options.resolveLocaleSource) fail('invalid_input');
-  }
-  const effective = input.mappingFor
-    ? (await input.mappingFor(tx)).get(input.collection.key).definition
-    : input.collection;
-  return migrateLocalizedPage(tx, {
-    collection: effective,
-    pageSize: input.pageSize,
-    policy: input.options.policy,
-  });
 }

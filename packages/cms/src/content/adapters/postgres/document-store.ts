@@ -1,3 +1,4 @@
+import { authorshipSettings } from '../../authorship/config.ts';
 import type { SqlExecutor } from '@new-cms/database/client';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { ContentMapping, DocumentRow } from '../../model.ts';
@@ -8,7 +9,7 @@ import type {
   UpdatePointersInput,
 } from './store-contract.ts';
 
-export const documentProjection = `d.id,d.collection_id AS "collectionId",d.revision,d.current_version_id AS "currentVersionId",(SELECT p.version_id FROM content_publications p WHERE p.document_id=d.id AND p.locale='*') AS "publishedVersionId",(SELECT COALESCE(jsonb_object_agg(p.locale,p.version_id),'{}'::jsonb) FROM content_publications p WHERE p.document_id=d.id) AS publications,d.trashed_at AS "trashedAt",d.folder_id AS "folderId",d.created_at AS "createdAt",d.updated_at AS "updatedAt"`;
+export const documentProjection = `d.id,d.collection_id AS "collectionId",d.revision,d.current_version_id AS "currentVersionId",(SELECT p.version_id FROM content_publications p WHERE p.document_id=d.id AND p.locale='*') AS "publishedVersionId",(SELECT COALESCE(jsonb_object_agg(p.locale,p.version_id),'{}'::jsonb) FROM content_publications p WHERE p.document_id=d.id) AS publications,d.trashed_at AS "trashedAt",d.folder_id AS "folderId",d.created_at AS "createdAt",d.updated_at AS "updatedAt",d.created_by AS "createdById",d.updated_by AS "updatedById"`;
 
 export function publicationLocale(collection: CollectionDefinition, locale?: string): string {
   return collection.localizeStatus ? (locale ?? collection.locales.default) : '*';
@@ -25,6 +26,8 @@ export interface RawDocumentRow extends Omit<DocumentRow, 'createdAt' | 'updated
 export function documentRow(row: RawDocumentRow, locale = '*'): DocumentRow {
   return {
     id: row.id,
+    createdById: row.createdById,
+    updatedById: row.updatedById,
     collectionId: row.collectionId,
     revision: row.revision,
     currentVersionId: row.currentVersionId,
@@ -75,10 +78,16 @@ export async function insertDocument(
     ]);
     if (current.rowCount !== 0) fail('identifier_taken');
   }
-  await tx.query('INSERT INTO content_documents(id,collection_id) VALUES($1,$2)', [
-    input.id,
-    definition.id,
-  ]);
+  const authors = authorshipSettings(definition);
+  await tx.query(
+    'INSERT INTO content_documents(id,collection_id,created_by,updated_by) VALUES($1,$2,$3,$4)',
+    [
+      input.id,
+      definition.id,
+      authors.createdBy ? input.actorId : null,
+      authors.updatedBy ? input.actorId : null,
+    ],
+  );
 }
 export async function updateDocumentPointers(
   tx: SqlExecutor,
@@ -92,6 +101,10 @@ export async function updateDocumentPointers(
     input.currentVersionId,
     input.expectedRevision,
   ];
+  if (authorshipSettings(input.mapping.get(input.collection).definition).updatedBy) {
+    values.push(input.actorId);
+    assignments.push(`updated_by=$${values.length}`);
+  }
   if (input.trashedAt !== undefined) {
     values.push(input.trashedAt);
     assignments.push(`trashed_at=$${values.length}`);
@@ -107,14 +120,30 @@ export async function updateDocumentPointers(
   const [row] = result.rows;
   if (!row) fail('version_conflict');
   const key = publicationLocale(input.mapping.get(input.collection).definition, input.locale);
+  const publications = await updatePublications(tx, input, { row, key });
+  return documentRow({ ...row, publications: Object.fromEntries(publications) }, key);
+}
+
+async function updatePublications(
+  tx: SqlExecutor,
+  input: UpdatePointersInput & { mapping: ContentMapping },
+  context: { row: RawDocumentRow; key: string },
+): Promise<Map<string, string>> {
+  const { row, key } = context;
   const publications = new Map(Object.entries(row.publications ?? {}));
   if (input.clearPublications) {
     await tx.query('DELETE FROM content_publications WHERE document_id=$1', [input.id]);
     publications.clear();
   } else if (input.publishedVersionId) {
     await tx.query(
-      'INSERT INTO content_publications(document_id,collection_id,locale,version_id) VALUES($1,$2,$3,$4) ON CONFLICT(document_id,locale) DO UPDATE SET version_id=excluded.version_id',
-      [input.id, row.collectionId, key, input.publishedVersionId],
+      `WITH removed AS (DELETE FROM content_publication_references WHERE source_document_id=$1 AND publication_locale=$3 AND source_revision_id<>$4 RETURNING 1) INSERT INTO content_publications(document_id,collection_id,locale,version_id,locale_schema_version) VALUES($1,$2,$3,$4,$5) ON CONFLICT(document_id,locale) DO UPDATE SET version_id=excluded.version_id,locale_schema_version=excluded.locale_schema_version,completed_schema_versions=CASE WHEN content_publications.version_id=excluded.version_id THEN content_publications.completed_schema_versions ELSE '{}'::integer[] END`,
+      [
+        input.id,
+        row.collectionId,
+        key,
+        input.publishedVersionId,
+        input.mapping.get(input.collection).definition.schemaVersion,
+      ],
     );
     publications.set(key, input.publishedVersionId);
   } else {
@@ -124,5 +153,5 @@ export async function updateDocumentPointers(
     ]);
     publications.delete(key);
   }
-  return documentRow({ ...row, publications: Object.fromEntries(publications) }, key);
+  return publications;
 }

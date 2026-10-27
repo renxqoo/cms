@@ -101,6 +101,8 @@ export function ResourcesPage() {
           <ResourcePreview
             key={`${preview.collection}:${preview.id}:${preview.versionId}`}
             document={preview}
+            mode={query.mode}
+            fallback={query.fallback}
             onClose={() => setPreview(null)}
           />
         ) : null}

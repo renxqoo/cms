@@ -1,7 +1,8 @@
-import { targetReadContext } from '../../queries/resolve-locale.ts';
+import { relatedContext, relationScope } from './related-context.ts';
+import { safeDefaultSort } from '../../queries/default-sort.ts';
 import type { RelationScope } from '../../model.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
-import type { Where } from '../../definition.ts';
+import type { Where, QueryOperator } from '../../definition.ts';
 import type { CompiledCollection, FieldMapping } from '../../model.ts';
 import type { QueryContext } from './query-context.ts';
 import {
@@ -16,6 +17,7 @@ import {
   trustedContext,
 } from './query-context.ts';
 import { comparison, metadataComparison } from './query-comparison.ts';
+import { planarDistanceExpression } from './query-geo.ts';
 import { publicationLocale, publicationExpression } from './document-store.ts';
 
 interface PathCondition {
@@ -46,6 +48,12 @@ function fieldCondition(
     field,
     context,
   });
+  if (node.operator === 'near' && field.field.type === 'point') {
+    context.nearOrder = () => {
+      const distance = planarDistanceExpression(node.value, `${source.name}.value`, context);
+      return `(SELECT min(${distance}) FROM ${source.from} WHERE ${source.where} AND ${source.name}.state='value' AND ${condition})`;
+    };
+  }
   return `EXISTS (SELECT 1 FROM ${source.from} WHERE ${source.where} AND ${source.name}.state IN ('value','null') AND ${condition})`;
 }
 function relationCondition(
@@ -93,42 +101,58 @@ function relationFieldCondition(input: {
   if (targets.length === 0) return { match: 'FALSE', domain: 'FALSE' };
   const source = fieldSource(relation, context);
   const conditions: PathCondition[] = [];
+  const orders: (() => string)[] = [];
   for (const { collection, scope } of targets) {
-    const { policy } = scope;
-    const documentAlias = alias(context, 'td');
-    const revisionAlias = alias(context, 'tr');
-    const child = {
-      ...context,
+    const { condition, from, order } = relationQuery({
       collection,
-      query: { ...context.query, locale: scope.locale, fallback: scope.fallback },
-      documentAlias,
-      revisionAlias,
-      queryableFields: scope.queryableFields,
-      relationDepth: context.relationDepth + 1,
-    };
-    const predicates = [
-      `${documentAlias}.id=${source.name}.value`,
-      `${documentAlias}.collection_id=${parameter(context, collection.definition.id)}`,
-      `${documentAlias}.trashed_at IS NULL`,
-    ];
-    const condition = compilePathCondition({ ...node, field: nestedPath }, child);
-    if (typeof policy !== 'boolean') predicates.push(compileWhere(policy, trustedContext(child)));
-    const pointer =
-      context.query.mode === 'published'
-        ? publicationExpression(
-            documentAlias,
-            parameter(context, publicationLocale(collection.definition, scope.locale)),
-          )
-        : `${documentAlias}.current_version_id`;
-    const from = `FROM content_documents ${documentAlias} JOIN content_revisions ${revisionAlias} ON ${revisionAlias}.id=${pointer} WHERE ${predicates.join(' AND ')}`;
+      scope,
+      context,
+      source: source.name,
+      node: { ...node, field: nestedPath },
+    });
     conditions.push({
       match: `EXISTS (SELECT 1 ${from} AND ${condition.match})`,
       domain: `EXISTS (SELECT 1 ${from} AND ${condition.domain})`,
     });
+    if (node.operator === 'near' && order)
+      orders.push(() => `(SELECT ${order()} ${from} AND ${condition.match})`);
   }
+  if (orders.length > 0)
+    context.nearOrder = () => {
+      const order = alias(context, 'no');
+      return `(SELECT min(${order}.distance) FROM ${source.from} CROSS JOIN LATERAL (VALUES ${orders.map((value) => `(${value()})`).join(',')}) ${order}(distance) WHERE ${source.where})`;
+    };
   const exists = (key: keyof PathCondition) =>
     `EXISTS (SELECT 1 FROM ${source.from} WHERE ${source.where} AND (${conditions.map((condition) => condition[key]).join(' OR ')}))`;
   return { match: exists('match'), domain: exists('domain') };
+}
+function relationQuery(input: {
+  collection: CompiledCollection;
+  scope: RelationScope;
+  context: QueryContext;
+  source: string;
+  node: Extract<Where, { field: string }>;
+}) {
+  const { collection, scope, context, source, node } = input;
+  const child = relatedContext(context, collection, scope);
+  const { documentAlias, revisionAlias } = child;
+  const predicates = [
+    `${documentAlias}.id=${source}.value`,
+    `${documentAlias}.collection_id=${parameter(context, collection.definition.id)}`,
+    `${documentAlias}.trashed_at IS NULL`,
+  ];
+  const condition = compilePathCondition(node, child);
+  if (typeof scope.policy !== 'boolean')
+    predicates.push(compileWhere(scope.policy, trustedContext(child)));
+  const pointer =
+    context.query.mode === 'published'
+      ? publicationExpression(
+          documentAlias,
+          parameter(context, publicationLocale(collection.definition, scope.locale)),
+        )
+      : `${documentAlias}.current_version_id`;
+  const from = `FROM content_documents ${documentAlias} JOIN content_revisions ${revisionAlias} ON ${revisionAlias}.id=${pointer} WHERE ${predicates.join(' AND ')}`;
+  return { condition, from, order: child.nearOrder };
 }
 function relationTargets(input: {
   relation: FieldMapping;
@@ -223,6 +247,30 @@ function compilePathCondition(
     domain: `(${conditions.map((condition) => condition.domain).join(' OR ')})`,
   };
 }
+function normalizedComparison(where: Extract<Where, { field: string }>) {
+  const operators: Partial<Record<QueryOperator, QueryOperator>> = {
+    ne: 'eq',
+    notIn: 'in',
+    notLike: 'like',
+  };
+  const operator = operators[where.operator] ?? where.operator;
+  return {
+    negative: operator !== where.operator || (where.operator === 'exists' && where.value === false),
+    positive: { ...where, operator, value: where.operator === 'exists' ? true : where.value },
+  };
+}
+
+function allCondition(where: Extract<Where, { field: string }>, context: QueryContext): string {
+  if (
+    !Array.isArray(where.value) ||
+    where.value.length === 0 ||
+    where.value.length > context.limits.maxArrayItems
+  )
+    fail('invalid_input');
+  consumeNode(context);
+  return `(${where.value.map((value) => compileWhere({ ...where, operator: 'eq', value }, context)).join(' AND ')})`;
+}
+
 export function compileWhere(where: Where, context: QueryContext): string {
   if ('and' in where || 'or' in where) {
     consumeNode(context);
@@ -230,54 +278,60 @@ export function compileWhere(where: Where, context: QueryContext): string {
       ? `(${where.and.map((node) => compileWhere(node, context)).join(' AND ')})`
       : `(${where.or.map((node) => compileWhere(node, context)).join(' OR ')})`;
   }
+  if (
+    ['createdBy', 'updatedBy'].includes(where.field.split('.').at(-1) ?? '') &&
+    !['eq', 'ne', 'in', 'notIn', 'exists'].includes(where.operator)
+  )
+    fail('invalid_input');
+  if (where.operator === 'all') return allCondition(where, context);
   if (where.operator === 'exists' && typeof where.value !== 'boolean') fail('invalid_input');
-  const negative =
-    where.operator === 'ne' ||
-    where.operator === 'notIn' ||
-    (where.operator === 'exists' && where.value === false);
-  let { operator } = where;
-  if (operator === 'ne') operator = 'eq';
-  if (operator === 'notIn') operator = 'in';
-  const positive = {
-    ...where,
-    operator,
-    value: where.operator === 'exists' ? true : where.value,
-  } satisfies Extract<Where, { field: string }>;
+  const { negative, positive } = normalizedComparison(where);
   const condition = compilePathCondition(positive, context);
   return negative
     ? `(${condition.domain} AND NOT COALESCE(${condition.match},false))`
     : condition.match;
 }
-export function compileOrder(context: QueryContext): string {
-  const sort = context.query.sort ?? context.collection.definition.defaultSort ?? [];
-  const statements = sort.map((entry) => {
-    requireQueryable(entry.field, context);
-    const metadata = metadataExpression(entry.field, context);
-    const field = context.collection.flat.find((item) => item.path === entry.field);
-    if (!metadata && !field) fail('invalid_input');
-    const expression = metadata ?? (field && scalarExpression(field, context));
-    return `${expression} ${entry.order.toUpperCase()} NULLS LAST`;
-  });
+export function compileSortValues(
+  context: QueryContext,
+): { expression: string; order: 'asc' | 'desc' }[] {
+  if (context.nearOrder) return [{ expression: context.nearOrder(), order: 'asc' }];
+  const sort =
+    context.query.sort ??
+    safeDefaultSort(
+      context.collection.definition,
+      context.queryableFields.filter(
+        (path) => !context.valueReadableFields || context.valueReadableFields.includes(path),
+      ),
+    );
+  return sort.map((entry) => ({
+    expression: sortExpression(entry.field, context),
+    order: entry.order,
+  }));
+}
+
+function sortExpression(path: string, context: QueryContext): string {
+  if (path === '_order') {
+    if (!context.collection.definition.orderable && context.orderScope === undefined)
+      fail('invalid_input');
+    if (context.orderScope !== undefined)
+      return `coalesce((SELECT position FROM content_document_order WHERE document_id=${context.documentAlias}.id AND scope_key=${parameter(context, context.orderScope)}),(SELECT initial_position FROM content_document_order WHERE document_id=${context.documentAlias}.id AND scope_key=''))`;
+    return `(SELECT position FROM content_document_order WHERE document_id=${context.documentAlias}.id AND scope_key='')`;
+  }
+  requireQueryable(path, context);
+  const metadata = metadataExpression(path, context);
+  const field = context.collection.flat.find((item) => item.path === path);
+  if (!metadata && !field) fail('invalid_input');
+  const expression = metadata ?? (field && scalarExpression(field, context));
+  if (!expression) fail('invalid_input');
+  return expression;
+}
+
+export function compileOrder(context: QueryContext, sorts = compileSortValues(context)): string {
+  const statements = sorts.map(
+    ({ expression, order }) => `${expression} ${order.toUpperCase()} NULLS LAST`,
+  );
   statements.push(`${context.documentAlias}.id ASC`);
   return statements.join(',');
-}
-export function compileSearch(context: QueryContext): string | undefined {
-  const { q } = context.query;
-  if (q === undefined || q.length === 0) return undefined;
-  const paths = context.collection.definition.search ?? [];
-  if (paths.length === 0) fail('invalid_input');
-  const token = parameter(context, q);
-  return `(${paths
-    .flatMap((path) => {
-      requireQueryable(path, context);
-      return context.collection.flat
-        .filter((field) => field.path === path)
-        .map((field) => {
-          const source = fieldSource(field, context);
-          return `EXISTS (SELECT 1 FROM ${source.from} WHERE ${source.where} AND ${source.name}.search_vector @@ websearch_to_tsquery('simple',${token}))`;
-        });
-    })
-    .join(' OR ')})`;
 }
 function projectedCondition(
   field: FieldMapping,
@@ -299,16 +353,4 @@ function projectedCondition(
     ...(indexed.targetExpression ? { targetExpression: indexed.targetExpression } : {}),
   });
   return `(${indexed.present} AND ${condition})`;
-}
-
-function relationScope(context: QueryContext, target: string): RelationScope {
-  const { locale } = targetReadContext({
-    collection: context.mapping.get(target).definition,
-    locale: context.query.locale,
-  });
-  const scope = context.relationScopes.find(
-    (candidate) => candidate.collection === target && candidate.locale === locale,
-  );
-  if (!scope) fail('forbidden');
-  return scope;
 }

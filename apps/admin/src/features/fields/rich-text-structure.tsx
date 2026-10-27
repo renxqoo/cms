@@ -60,6 +60,8 @@ export function RichTextStructure({
     { key: 'paragraph', label: field.t.paragraph },
     { key: 'heading', label: field.t.heading },
     { key: 'list', label: field.t.list },
+    { key: 'quote', label: field.t.quote },
+    { key: 'horizontalRule', label: field.t.horizontalRule },
     { key: 'text', label: field.t.text },
     { key: 'link', label: field.t.link },
   ];

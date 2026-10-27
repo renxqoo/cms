@@ -29,7 +29,7 @@ HTTP 只消费注入的 `ContentApi` 与 `ContentUploadsApi`。可信后台装�
 
 创建时共享默认值只决策一次；本地化默认值只应用于原始请求包含的语言。默认值不算用户显式补丁。草稿允许缺失 required 值，但始终验证类型、结构和资源预算。
 
-集合的 publication 指针覆盖整个文档。direct 写入和 drafts 显式发布使用同一完整性规则：对全部支持语言的有效读取值执行 publish 校验，配置的 fallback 可补足缺值。原始语言快照只进行结构校验，不把 fallback 内容写回缺省语言。一个语言缺 required 且无有效 fallback 时，direct 创建/保存和显式发布均拒绝。
+集合启用 `localizeStatus` 时，各语言具有独立发布修订，发布和撤回只影响请求 locale，缺省使用默认语言；只对该语言的有效读取值执行 publish 校验。其他 drafts 集合及 direct 写入对全部支持语言执行完整性校验。配置 fallback 可以补足读取缺值，原始语言快照不写入 fallback 内容。任一被校验语言缺 required 且无有效 fallback 时拒绝生效。发布记录统一保存于 content_publications，不在文档行上另存发布指针。
 
 复制读取并投影来源的全部语言，独立检查来源读取、复制和目标创建权限，允许用 `dataByLocale` 一次替换全部语言的唯一字段。历史恢复创建新的不可变修订，恢复整个原始语言快照，按实际差异检查写权限；唯一冲突或完整性失败不会部分恢复。
 
@@ -37,7 +37,7 @@ HTTP 只消费注入的 `ContentApi` 与 `ContentUploadsApi`。可信后台装�
 
 drafts 保存只移动 current 指针；发布后继续编辑不会改变 published 读取。自动保存是可保留的真实修订，不能绕过草稿模式。direct 的每次有效保存同时移动 current 和 published；history:false 只保留仍活跃的修订。
 
-DocumentView 显式输出 id、collection、revision、versionId、publishedVersionId、trashedAt、folderId、createdAt、updatedAt 和授权后的 data，不展开数据库内部行对象。文件只输出安全清单摘要及固定 binding 引用，不输出存储 object key。
+DocumentView 显式输出 id、collection、revision、versionId、publishedVersionId、trashedAt、folderId、createdAt、updatedAt 和授权后的 data；publishedVersionId 对应请求语言的发布修订，不展开数据库内部行对象或其他语言的发布记录。文件只输出安全清单摘要及固定 binding 引用，不输出存储 object key。
 
 列表和 total 共用授权 SQL 谓词。select、字段 read/query 策略、版本比较、关系目标和任务结果均按当前权限重新投影。历史详情接受 mode、locale、fallback、select 和 depth，字段策略得到相同的读取上下文。未知或不适用输入由严格 schema 拒绝。
 

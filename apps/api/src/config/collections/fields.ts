@@ -159,6 +159,9 @@ export function collection(
     label: key,
     schemaVersion: 1,
     mode: 'drafts',
+    ...(options.mode === 'direct'
+      ? {}
+      : { drafts: { validate: false, autosave: { intervalMs: 10000 }, schedule: true } }),
     ...(!['languages', 'message-bundles'].includes(key)
       ? { localeSource: 'languages', publicationLocalesField: 'contentLocales' }
       : {}),

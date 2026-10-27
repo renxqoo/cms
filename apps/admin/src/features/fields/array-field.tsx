@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { labelledOptions } from './option-labels';
+import { ArrayRow, arrayRowLabel } from './array-row';
+import { FieldLabel } from './configured-field';
+import { PlusIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import { SortableList } from '@new-cms/ui/data';
 import { NativeSelect } from '@new-cms/ui/forms';
-import { addFieldRow, moveFieldRow, rowData } from './data';
+import { addFieldRow, rowData } from './data';
 import { newFieldData } from './initialize-data';
 import { useFieldValue } from './field-context';
 import type { RenderChildren } from './field-context';
@@ -35,7 +38,7 @@ export function ArrayField({
   const [blockType, setBlockType] = useState(node.blocks?.[0]?.key ?? '');
   const invalid = invalidRows(field.value, rows);
   const maximum = rows.length >= (node.constraints.max ?? Number.POSITIVE_INFINITY);
-  const selectedBlock = node.blocks?.find((block) => block.key === blockType);
+  const { availableBlocks, selectedBlock } = blockChoices(node, field.locale, blockType);
   const cannotAdd = maximum || invalid || (node.type === 'blocks' && !selectedBlock);
   function add() {
     if (readOnly || maximum || invalid || (node.type === 'blocks' && !selectedBlock)) return;
@@ -48,17 +51,18 @@ export function ArrayField({
         value: rows,
         defaults,
         id: crypto.randomUUID(),
-        ...(node.type === 'blocks' ? { blockType } : {}),
+        ...(node.type === 'blocks' && selectedBlock ? { blockType: selectedBlock.key } : {}),
       }),
     );
   }
   function rowLabel(row: FieldData) {
-    const block = node.blocks?.find((candidate) => candidate.key === row['blockType']);
-    return `${block?.label ?? field.t.row} ${rows.indexOf(row) + 1}`;
+    return arrayRowLabel(node, row, { index: rows.indexOf(row), fallback: field.t.row });
   }
   return (
     <fieldset className="min-w-0 space-y-3 rounded-xl border border-border/60 p-4">
-      <legend className="px-1 text-sm font-medium">{node.label}</legend>
+      <legend className="px-1 text-sm font-medium">
+        <FieldLabel node={node} location={location} readOnly={readOnly} />
+      </legend>
       {invalid ? (
         <p role="alert" className="text-sm text-destructive">
           {field.t.missingId}
@@ -71,67 +75,18 @@ export function ArrayField({
           onChange={field.change}
           labels={fieldSorting(field.t, node.label)}
           disabled={readOnly}
-          renderItem={(row, handle) => {
-            const index = rows.indexOf(row);
-            const block = node.blocks?.find((candidate) => candidate.key === row['blockType']);
-            return (
-              <div className="min-w-0 rounded-lg border border-border/60 bg-card p-3">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    {handle}
-                    {rowLabel(row)}
-                  </span>
-                  {!readOnly ? (
-                    <div className="flex gap-1">
-                      <Button
-                        size="icon-sm"
-                        variant="ghost"
-                        disabled={index === 0}
-                        aria-label={`${field.t.moveUp} ${rowLabel(row)}`}
-                        onClick={() => field.change(moveFieldRow(rows, index, index - 1))}
-                      >
-                        <ArrowUpIcon />
-                      </Button>
-                      <Button
-                        size="icon-sm"
-                        variant="ghost"
-                        disabled={index === rows.length - 1}
-                        aria-label={`${field.t.moveDown} ${rowLabel(row)}`}
-                        onClick={() => field.change(moveFieldRow(rows, index, index + 1))}
-                      >
-                        <ArrowDownIcon />
-                      </Button>
-                      <Button
-                        size="icon-sm"
-                        variant="ghost"
-                        aria-label={`${field.t.remove} ${rowLabel(row)}`}
-                        onClick={() => field.change(rows.filter((candidate) => candidate !== row))}
-                      >
-                        <Trash2Icon />
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-                {node.type === 'blocks' && !block ? (
-                  <pre className="overflow-x-auto text-xs">
-                    {field.t.unknownBlock}
-                    {'\n'}
-                    {JSON.stringify(row, null, 2)}
-                  </pre>
-                ) : (
-                  renderChildren(
-                    node.type === 'blocks' ? (block?.children ?? []) : (node.children ?? []),
-                    {
-                      path: [...location.path, index],
-                      identity: `${location.identity}/${rowIdentity(row)}`,
-                      sourcePath: `${location.sourcePath}.${rowIdentity(row)}`,
-                    },
-                    readOnly,
-                  )
-                )}
-              </div>
-            );
-          }}
+          renderItem={(row, handle) => (
+            <ArrayRow
+              node={node}
+              location={location}
+              readOnly={readOnly}
+              renderChildren={renderChildren}
+              row={row}
+              rows={rows}
+              index={rows.indexOf(row)}
+              handle={handle}
+            />
+          )}
         />
       )}
       {!readOnly ? (
@@ -139,10 +94,10 @@ export function ArrayField({
           {node.type === 'blocks' ? (
             <NativeSelect
               aria-label={`${node.label} ${field.t.chooseBlock}`}
-              value={blockType}
+              value={selectedBlock?.key ?? ''}
               onChange={(event) => setBlockType(event.currentTarget.value)}
             >
-              {node.blocks?.map((block) => (
+              {availableBlocks?.map((block) => (
                 <option key={block.key} value={block.key}>
                   {block.label}
                 </option>
@@ -158,4 +113,16 @@ export function ArrayField({
       {rows.length === 0 ? <p className="text-sm text-muted-foreground">{field.t.empty}</p> : null}
     </fieldset>
   );
+}
+
+function blockChoices(node: ScalarProps['node'], locale: string, blockType: string) {
+  const allowedTypes = node.constraints.options
+    ? new Set(labelledOptions(node.constraints.options, locale).map((option) => option.value))
+    : undefined;
+  const availableBlocks = node.blocks?.filter(
+    (block) => !allowedTypes || allowedTypes.has(block.key),
+  );
+  const selectedBlock =
+    availableBlocks?.find((block) => block.key === blockType) ?? availableBlocks?.[0];
+  return { availableBlocks, selectedBlock };
 }

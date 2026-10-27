@@ -17,6 +17,7 @@ export interface JobRow {
   version_id: string | null;
   handler_name: string | null;
   source_operation: string;
+  source_locale: string | null;
   requested_version_id: string | null;
   result_revision_id: string | null;
   execute_at: Date;
@@ -64,7 +65,7 @@ export async function insertJob(
 ): Promise<string> {
   const id = randomUUID();
   await state.tx.query(
-    `INSERT INTO content_jobs(id,collection_id,collection_key,action,actor_id,document_id,expected_revision,version_id,handler_name,source_operation,requested_version_id,execute_at,delegation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$8,coalesce($11::timestamptz,clock_timestamp()),$12)`,
+    `INSERT INTO content_jobs(id,collection_id,collection_key,action,actor_id,document_id,expected_revision,version_id,handler_name,source_operation,requested_version_id,execute_at,delegation_id,source_locale) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$8,coalesce($11::timestamptz,clock_timestamp()),$12,$13)`,
     [
       id,
       state.collection.id,
@@ -78,6 +79,7 @@ export async function insertJob(
       input.sourceOperation,
       input.executeAt ?? null,
       state.actor.delegation?.id ?? null,
+      input.action === 'extension' ? state.locale : null,
     ],
   );
   return id;

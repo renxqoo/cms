@@ -28,6 +28,8 @@ it('decodes explicit JSON query AST, projection and locale fallback without stri
     depth: '0',
     trashed: 'false',
     folderId: 'null',
+    count: 'true',
+    joins: JSON.stringify({ pages: { count: false, page: 2 } }),
   });
   const response = await app.request(`http://localhost/collections/articles?${query}`);
   expect(response.status).toBe(200);
@@ -43,6 +45,8 @@ it('decodes explicit JSON query AST, projection and locale fallback without stri
     depth: 0,
     trashed: false,
     folderId: null,
+    count: true,
+    joins: { pages: { count: false, page: 2 } },
   });
 });
 
@@ -51,6 +55,8 @@ it.each([
   'revision=0',
   'page=01',
   'trashed=1',
+  'count=1',
+  'joins=%7B',
   'where=%7B',
   'sort=undefined',
   'page=1&page=2',

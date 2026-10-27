@@ -6,7 +6,7 @@ import {
   myNavigationSchema,
   resetAcceptedSchema,
 } from '../contracts/auth';
-import type { OperationDefinition } from '../contracts/operations';
+import type { OperationDefinition } from '../contracts/operation-definition';
 import {
   authorizationDecisionSchema,
   authorizationRequestSchema,

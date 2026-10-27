@@ -1,4 +1,5 @@
 import { projectDocument } from '../documents/project-document.ts';
+import { beforeDelete, afterDelete } from '../hooks/delete.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import {
@@ -30,6 +31,7 @@ async function archiveIncoming(
   state: ContentState,
   input: { runtime: ContentRuntime; id: string },
 ) {
+  if (await input.runtime.store.hasPresetReferences(state.tx, input.id)) fail('resource_in_use');
   const maximum = Math.min(
     input.runtime.workPolicy.maxBatchItems,
     Math.max(input.runtime.limits.maxArrayItems, input.runtime.limits.maxExpandNodes),
@@ -168,6 +170,7 @@ async function nullifySource(
 async function archiveNode(node: ArchiveNode, runtime: ContentRuntime): Promise<void> {
   const current = await ensureVisible(node.state, { runtime, id: node.document.id, trashed: true });
   if (current.trashedAt) return;
+  const data = await beforeDelete(node.state, { runtime, document: current });
   await node.state.tx.query(
     "UPDATE content_jobs SET status='cancelled',owner=NULL,lease_until=NULL,version_id=NULL,finished_at=clock_timestamp(),updated_at=clock_timestamp() WHERE document_id=$1 AND action='publication' AND status IN('queued','running')",
     [current.id],
@@ -180,6 +183,7 @@ async function archiveNode(node: ArchiveNode, runtime: ContentRuntime): Promise<
   const now = time.rows[0]?.now;
   if (!now) fail('temporarily_unavailable');
   await runtime.store.updateDocumentPointers(node.state.tx, {
+    actorId: node.state.actor.id,
     collection: node.state.collection.key,
     id: current.id,
     expectedRevision: current.revision,
@@ -189,11 +193,17 @@ async function archiveNode(node: ArchiveNode, runtime: ContentRuntime): Promise<
     clearPublications: true,
     trashedAt: now.toISOString(),
   });
-  await runtime.store.syncActiveUnique(node.state.tx, {
+  await runtime.store.syncActiveProjections(node.state.tx, {
     collection: node.state.collection.key,
     id: current.id,
   });
+  if (node.state.collection.lockDocuments)
+    await node.state.tx.query(
+      'UPDATE content_document_leases SET expires_at=clock_timestamp(),generation=generation+1 WHERE document_id=$1',
+      [current.id],
+    );
   await auditContent(node.state, { runtime, id: current.id, detail: { kind: 'archived' } });
+  await afterDelete(node.state, { runtime, documentId: current.id, data });
 }
 
 export async function archiveInTransaction(

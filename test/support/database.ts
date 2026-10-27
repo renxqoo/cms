@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { createDatabase } from '@new-cms/database/client';
 import { migrate } from '@new-cms/database/migrate';
 import { createLibraryMigrationDirectory } from './library-migrations.ts';
+import { withTestDatabaseDdl } from './database-ddl.ts';
 
 export interface TestDatabaseOptions {
   connectionString?: string;
@@ -35,7 +36,9 @@ export async function createTestDatabase(options: TestDatabaseOptions = {}) {
         await database.close();
       } finally {
         try {
-          await control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+          await withTestDatabaseDdl(testDatabaseConnectionString(), () =>
+            control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`),
+          );
         } finally {
           try {
             await control.close();
@@ -51,8 +54,10 @@ export async function createTestDatabase(options: TestDatabaseOptions = {}) {
     if (options.migrationScope === 'library')
       library = await createLibraryMigrationDirectory(options.migrationDirectory);
     const directory = library?.directory ?? options.migrationDirectory;
-    await control.query(`CREATE SCHEMA ${schema}`);
-    await migrate(database, directory === undefined ? {} : { directory });
+    await withTestDatabaseDdl(testDatabaseConnectionString(), async () => {
+      await control.query(`CREATE SCHEMA ${schema}`);
+      await migrate(database, directory === undefined ? {} : { directory });
+    });
   } catch (error) {
     await close();
     throw error;

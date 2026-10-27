@@ -1,15 +1,20 @@
+import type { AuthorizedManifest } from '@new-cms/cms/assets/composition';
 import { randomUUID } from 'node:crypto';
 import { fail } from '@new-cms/cms/platform/contracts';
 import { auditContent, requireAdditionalOperation } from '../runtime.ts';
 
 import { authorizeReferences, referencesForLocale } from './revision-data.ts';
 import { bindRevisionAssets } from './bind-assets.ts';
+import type { RevisionMediaSources } from './bind-assets.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
 import type { DocumentData, ReferenceValue } from '../definition.ts';
 import type { DocumentRow } from '../model.ts';
 import { enqueueExtensionWork } from '../jobs/extension-work.ts';
 import { validatePublicationRevision } from './validate-publication.ts';
 import { assertFolder } from '../folders/store.ts';
+import { validateHierarchyRevision, validateHierarchyReferences } from '../hierarchy/validation.ts';
+import { observeRevision } from '../hooks/revision.ts';
+import { assertFieldOptions } from '../fields/filter-options.ts';
 
 export interface RevisionWrite {
   runtime: ContentRuntime;
@@ -20,7 +25,9 @@ export interface RevisionWrite {
   previous?: DocumentRow;
   source?: { documentId: string; revisionId: string };
   uploadId?: string;
+  fileManifest?: AuthorizedManifest;
   folderId?: string | null;
+  mediaSources?: RevisionMediaSources;
 }
 
 async function revisionReferences(
@@ -36,6 +43,10 @@ async function revisionReferences(
       locale,
       fallback: [],
     });
+    await assertFieldOptions(
+      { ...state, locale },
+      { runtime: input.runtime, data, documentId: input.documentId },
+    );
     references.push(
       ...referencesForLocale({
         collection: state.collection,
@@ -75,6 +86,7 @@ async function registerRevisionReferences(
 ): Promise<void> {
   const references = await revisionReferences(state, input);
   await authorizeReferences(state, { runtime: input.runtime, references });
+  await validateHierarchyReferences(state, { runtime: input.runtime, references });
   await input.runtime.store.writeReferences(state.tx, {
     collection: state.collection.key,
     documentId: input.documentId,
@@ -92,6 +104,9 @@ async function registerRevisionReferences(
     revisionId: input.revisionId,
     references,
     requireSourceRead: input.source !== undefined,
+    creating: input.previous === undefined,
+    ...(input.fileManifest ? { fileManifest: input.fileManifest } : {}),
+    ...(input.mediaSources ? { mediaSources: input.mediaSources } : {}),
     ...(input.uploadId ? { uploadId: input.uploadId } : {}),
     ...(input.previous ? { expectedRevision: input.previous.revision } : {}),
     ...(previous ? { previous } : {}),
@@ -103,6 +118,7 @@ async function commitRevision(
   input: RevisionWrite & { revisionId: string },
 ): Promise<void> {
   await input.runtime.store.updateDocumentPointers(state.tx, {
+    actorId: state.actor.id,
     collection: state.collection.key,
     id: input.documentId,
     expectedRevision: input.previous?.revision ?? 0,
@@ -121,7 +137,7 @@ async function commitRevision(
       operationId: input.kind === 'fileProcessed' ? 'assets.reprocess' : 'assets.completeUpload',
       id: input.documentId,
     });
-  await input.runtime.store.syncActiveUnique(state.tx, {
+  await input.runtime.store.syncActiveProjections(state.tx, {
     collection: state.collection.key,
     id: input.documentId,
   });
@@ -143,10 +159,16 @@ export async function writeRevision(
     await assertFolder(state, { runtime: input.runtime, folderId: input.folderId });
   const revisionId = randomUUID();
   await insertRevision(state, input, revisionId);
+  await validateHierarchyRevision(state, {
+    runtime: input.runtime,
+    documentId: input.documentId,
+    revisionId,
+  });
   await validateEffectiveRevision(state, { ...input, revisionId });
   const revision = { ...input, revisionId };
   await registerRevisionReferences(state, revision);
   await commitRevision(state, revision);
+  await observeRevision(state, input);
   return { id: input.documentId, versionId: revisionId };
 }
 

@@ -19,35 +19,47 @@ export interface PrivateFileTarget {
   versionId?: string;
   bindingId?: string;
   mode?: 'editing' | 'published';
+  locale?: string;
+  fallback?: readonly string[];
 }
 
 function usePrivateFile({
   target,
   manifest,
   onPreview,
+  initialVariant,
 }: {
   target: PrivateFileTarget;
   manifest: Manifest;
   onPreview?: (url: string | null) => void;
+  initialVariant?: string;
 }) {
   const { can, reportResult } = useAccessControl();
   const previewChanged = useEffectEvent((url: string | null) => onPreview?.(url));
-  const [variant, setVariant] = useState('original');
+  const [selectedVariant, setVariant] = useState<string | null>(null);
+  const requestedVariant = selectedVariant ?? initialVariant ?? 'original';
+  const variant = manifest.objects.some((object) => object.name === requestedVariant)
+    ? requestedVariant
+    : 'original';
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<{
     key: string;
     url: string | null;
+    filename: string | null;
     error: ApiFailure | null;
     loading: boolean;
-  }>({ key: '', url: null, error: null, loading: false });
+  }>({ key: '', url: null, filename: null, error: null, loading: false });
   const operation = target.bindingId ? 'assets.downloadBinding' : 'assets.download';
   const allowed = can(operation, { scopeKind: 'collection', collectionKey: target.collection });
+  const fallback = target.fallback?.join(',');
   const key = JSON.stringify([
     target.collection,
     target.id,
     target.versionId,
     target.bindingId,
     target.mode,
+    target.locale,
+    fallback,
     manifest.id,
     variant,
     attempt,
@@ -67,6 +79,8 @@ function usePrivateFile({
       },
       query: {
         ...(target.versionId ? { versionId: target.versionId } : {}),
+        ...(target.locale ? { locale: target.locale } : {}),
+        ...(fallback === undefined ? {} : { fallback: fallback ? fallback.split(',') : [] }),
         mode: target.mode ?? 'editing',
         variant,
       },
@@ -76,10 +90,16 @@ function usePrivateFile({
       if (controller.signal.aborted) return result;
       if (result.ok) {
         objectUrl = URL.createObjectURL(result.data.blob);
-        setState({ key, url: objectUrl, error: null, loading: false });
+        setState({
+          key,
+          url: objectUrl,
+          filename: result.data.filename,
+          error: null,
+          loading: false,
+        });
         previewChanged(objectUrl);
       } else {
-        setState({ key, url: null, error: result, loading: false });
+        setState({ key, url: null, filename: null, error: result, loading: false });
         previewChanged(null);
         reportResult(result);
       }
@@ -99,6 +119,8 @@ function usePrivateFile({
     target.versionId,
     target.bindingId,
     target.mode,
+    target.locale,
+    fallback,
     variant,
     reportResult,
   ]);
@@ -109,6 +131,38 @@ function usePrivateFile({
     allowed,
     reload: () => setAttempt((value) => value + 1),
   };
+}
+
+export function PrivateThumbnail(props: { target: PrivateFileTarget; manifest: Manifest }) {
+  const [image] = props.manifest.objects
+    .filter((object) => object.mimeType.startsWith('image/'))
+    .toSorted((left, right) => left.bytes - right.bytes);
+  if (!image) return null;
+  return <ThumbnailImage {...props} variant={image.name} />;
+}
+function ThumbnailImage(props: { target: PrivateFileTarget; manifest: Manifest; variant: string }) {
+  const { state, reload, allowed } = usePrivateFile({ ...props, initialVariant: props.variant });
+  const locale = useShell((value) => value.locale);
+  const t = assetMessages[locale];
+  if (!allowed) return null;
+  return state?.url ? (
+    <img
+      src={state.url}
+      alt={props.manifest.filename}
+      className="size-12 shrink-0 rounded-md object-cover"
+    />
+  ) : state?.error ? (
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={reload}
+      aria-label={`${t.reload} ${props.manifest.filename}`}
+    >
+      {t.reload}
+    </Button>
+  ) : (
+    <span role="status" className="size-12 shrink-0 rounded-md bg-muted" aria-label={t.pending} />
+  );
 }
 
 export function PrivateFile(props: {
@@ -141,9 +195,8 @@ export function PrivateFile(props: {
       {state?.url ? (
         <PrivateContent
           url={state.url}
-          filename={props.manifest.filename}
+          filename={state.filename ?? props.manifest.filename}
           image={object?.mimeType.startsWith('image/') === true}
-          variant={variant}
         />
       ) : null}
       {allowed ? (
@@ -159,12 +212,10 @@ function PrivateContent({
   url,
   filename,
   image,
-  variant,
 }: {
   url: string;
   filename: string;
   image: boolean;
-  variant: string;
 }) {
   const locale = useShell((value) => value.locale);
   const t = assetMessages[locale];
@@ -178,7 +229,7 @@ function PrivateContent({
       <a
         className="inline-flex min-h-8 items-center rounded-lg border px-3 text-sm focus-visible:ring-3 focus-visible:ring-ring/50"
         href={url}
-        download={variant === 'original' ? filename : `${variant}-${filename}`}
+        download={filename}
       >
         {t.download}
       </a>

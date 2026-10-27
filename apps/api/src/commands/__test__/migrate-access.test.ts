@@ -65,6 +65,7 @@ it('regression: database migration alone makes all initial collections editable 
     'pages',
     'settings',
     'site',
+    'tags',
   ]);
   for (const collection of [
     'articles',
@@ -78,6 +79,7 @@ it('regression: database migration alone makes all initial collections editable 
     'home',
     'languages',
     'message-bundles',
+    'tags',
   ]) {
     const editor = await kit.runtime.content.api.getEditor(owner(), {
       collection,

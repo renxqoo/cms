@@ -1,3 +1,4 @@
+import { renameManifest } from '../manifests/rename.ts';
 import { randomUUID } from 'node:crypto';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { SqlExecutor } from '@new-cms/database/client';
@@ -35,6 +36,7 @@ function validateUpload(
     fail('version_conflict');
   if (row.purpose === 'create' && input.expectedRevision !== undefined) fail('invalid_input');
   if (input.sourcePath !== '$file') fail('invalid_input');
+  if (row.authorization_locale !== input.locale) fail('forbidden');
 }
 
 async function describeBinding(tx: SqlExecutor, input: { bindingId: string }) {
@@ -63,6 +65,13 @@ export function createParticipants(
     openBinding: createBindingDownloader(runtime),
     describeBinding,
     readManifest,
+    async renameManifest(tx, input) {
+      if (grants.get(input.source) !== tx) fail('forbidden');
+      const manifestId = await renameManifest(tx, { ...input, retentionMs });
+      const grant = { ...input.source, manifestId };
+      grants.set(grant, tx);
+      return grant;
+    },
     listRevisionBindings,
     async listBindings(tx, input) {
       return (await listRevisionBindings(tx, { revisionIds: [input.revisionId] })).map(

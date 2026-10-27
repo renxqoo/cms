@@ -8,6 +8,53 @@ import type { ContentMapping, FieldMapping } from '../../model.ts';
 import { reservationDefinitions, reservationTableName } from './compile-schema.ts';
 import { readDocument } from './document-store.ts';
 import { objectValue } from '../../fields/json-value.ts';
+import { requireWritableSchema } from './schema-state.ts';
+
+export async function conflictingUniqueFields(
+  tx: SqlExecutor,
+  input: {
+    mapping: ContentMapping;
+    collection: string;
+    id?: string;
+    dataByLocale: Readonly<Record<string, DocumentData>>;
+  },
+): Promise<{ fields: string[]; locale: string | null }[]> {
+  await requireWritableSchema(tx, input);
+  const collection = input.mapping.get(input.collection);
+  const datasets = Object.entries(input.dataByLocale).map(([locale, data]) => ({ locale, data }));
+  const conflicts: { fields: string[]; locale: string | null }[] = [];
+  for (const reservation of reservationDefinitions(collection)) {
+    const entries = reservationEntries(
+      datasets,
+      reservation.fields,
+      reservation.fields.some((field) => field.localized),
+    );
+    if (entries.length === 0) continue;
+    const parameters: unknown[] = [];
+    const parameter = (value: unknown) => {
+      parameters.push(value);
+      return `$${parameters.length}`;
+    };
+    const clauses = entries.map(
+      (entry) =>
+        `(${[
+          `locale=${parameter(entry.locale)}`,
+          ...entry.values.map((value, index) => `${identifier(`k${index}`)}=${parameter(value)}`),
+        ].join(' AND ')})`,
+    );
+    const own = input.id ? ` AND document_id<>${parameter(input.id)}::uuid` : '';
+    const result = await tx.query<{ locale: string }>(
+      `SELECT DISTINCT locale FROM ${identifier(reservationTableName(collection, reservation))} WHERE (${clauses.join(' OR ')})${own}`,
+      parameters,
+    );
+    for (const row of result.rows)
+      conflicts.push({
+        fields: reservation.fields.map((field) => field.path),
+        locale: row.locale === '_' ? null : row.locale,
+      });
+  }
+  return conflicts;
+}
 
 function valuesAt(data: JsonValue, path: readonly string[]): JsonValue[] {
   if (path.length === 0) return [data];

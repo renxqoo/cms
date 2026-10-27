@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { ApiResult } from '../../../api/result';
 import { failure } from '../../../api/result';
-import { PrivateFile } from '../private-file';
+import { PrivateFile, PrivateThumbnail } from '../private-file';
 import { documentId, manifest, versionId, deferred, success } from './support';
 
 interface Request {
@@ -49,6 +49,41 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+it('loads the smallest authorized thumbnail variant and releases its private Blob on unmount', async () => {
+  const view = render(
+    <PrivateThumbnail
+      target={{ collection: 'articles', id: documentId, bindingId: versionId, versionId }}
+      manifest={manifest}
+    />,
+  );
+  expect(await screen.findByRole('img', { name: 'source.png' })).toHaveAttribute(
+    'src',
+    'blob:private-original',
+  );
+  expect(mocks.request.mock.calls[0]?.[0]).toMatchObject({
+    operation: 'assets.downloadBinding',
+    query: { variant: 'thumb', versionId },
+  });
+  view.unmount();
+  expect(mocks.revoke).toHaveBeenCalledWith('blob:private-original');
+});
+
+it('keeps denied thumbnails out of the page and permits retry after a failed private download', async () => {
+  mocks.can.mockReturnValue(false);
+  const denied = render(
+    <PrivateThumbnail target={{ collection: 'media', id: documentId }} manifest={manifest} />,
+  );
+  expect(mocks.request).not.toHaveBeenCalled();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  denied.unmount();
+  mocks.can.mockReturnValue(true);
+  mocks.request.mockResolvedValueOnce(failure('temporarily_unavailable', 503));
+  render(<PrivateThumbnail target={{ collection: 'media', id: documentId }} manifest={manifest} />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Refresh source.png' }));
+  expect(await screen.findByRole('img', { name: 'source.png' })).toBeVisible();
+  expect(mocks.report).toHaveBeenCalledWith(expect.objectContaining({ ok: false, status: 503 }));
+});
+
 it('reads fixed historical bytes through the source binding and revokes each Blob after variant change and unmount', async () => {
   const view = render(
     <PrivateFile
@@ -75,12 +110,21 @@ it('reads fixed historical bytes through the source binding and revokes each Blo
     query: { versionId, mode: 'editing', variant: 'original' },
   });
   mocks.create.mockReturnValue('blob:private-thumb');
+  mocks.request.mockResolvedValueOnce(
+    success({
+      blob: new Blob(['webp']),
+      filename: 'source-thumb.webp',
+      bytes: 4,
+      contentType: 'image/webp',
+      etag: 'variant',
+    }),
+  );
   fireEvent.change(screen.getByLabelText('Variant'), { target: { value: 'thumb' } });
   await waitFor(() => expect(screen.getByRole('img')).toHaveAttribute('src', 'blob:private-thumb'));
   expect(mocks.revoke).toHaveBeenCalledWith('blob:private-original');
   expect(screen.getByRole('link', { name: 'Download original' })).toHaveAttribute(
     'download',
-    'thumb-source.png',
+    'source-thumb.webp',
   );
   view.unmount();
   expect(mocks.revoke).toHaveBeenCalledWith('blob:private-thumb');
@@ -162,4 +206,54 @@ it('aborts an unmounted file request and refuses to allocate a Blob for a late r
     await result.promise;
   });
   expect(mocks.create).not.toHaveBeenCalled();
+});
+it('regression: non-image resource thumbnails do not download invisible file bytes', () => {
+  const pdf = {
+    ...manifest,
+    mimeType: 'application/pdf',
+    filename: 'private.pdf',
+    objects: manifest.objects
+      .filter((object) => object.name === 'original')
+      .map((object) => ({ ...object, mimeType: 'application/pdf' })),
+  };
+  render(<PrivateThumbnail target={{ collection: 'media', id: documentId }} manifest={pdf} />);
+  expect(mocks.request).not.toHaveBeenCalled();
+  expect(mocks.create).not.toHaveBeenCalled();
+});
+it('regression: a replacement manifest selects its available thumbnail after its old variant has been removed', async () => {
+  const view = render(
+    <PrivateThumbnail target={{ collection: 'media', id: documentId }} manifest={manifest} />,
+  );
+  await screen.findByRole('img');
+  view.rerender(
+    <PrivateThumbnail
+      target={{ collection: 'media', id: documentId }}
+      manifest={{
+        ...manifest,
+        id: '88888888-8888-4888-8888-888888888888',
+        objects: manifest.objects.filter((object) => object.name === 'original'),
+      }}
+    />,
+  );
+  await waitFor(() => expect(mocks.request).toHaveBeenCalledTimes(2));
+  expect(mocks.request.mock.lastCall?.[0].query).toMatchObject({ variant: 'original' });
+});
+it('regression: a private derived download uses the server filename and true output extension', async () => {
+  render(<PrivateFile target={{ collection: 'media', id: documentId }} manifest={manifest} />);
+  await screen.findByRole('img');
+  mocks.request.mockResolvedValueOnce(
+    success({
+      blob: new Blob(['webp']),
+      filename: 'source-thumb.webp',
+      bytes: 4,
+      contentType: 'image/webp',
+      etag: 'variant',
+    }),
+  );
+  fireEvent.change(screen.getByLabelText('Variant'), { target: { value: 'thumb' } });
+  await waitFor(() => expect(mocks.request).toHaveBeenCalledTimes(2));
+  expect(screen.getByRole('link', { name: 'Download original' })).toHaveAttribute(
+    'download',
+    'source-thumb.webp',
+  );
 });

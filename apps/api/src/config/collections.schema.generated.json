@@ -198,6 +198,76 @@
             "type": "null"
           }
         ]
+      },
+      "tags": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "collection": {
+                      "type": "string",
+                      "enum": [
+                        "tags"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "collection",
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "collection": {
+                      "type": "string",
+                      "enum": [
+                        "tags"
+                      ]
+                    },
+                    "revision": {
+                      "type": "integer"
+                    },
+                    "versionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "collection",
+                    "revision",
+                    "versionId",
+                    "data"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "uniqueItems": true
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "required": [],
@@ -8104,6 +8174,146 @@
             "type": "null"
           }
         ]
+      },
+      "articles": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "collection": {
+                          "type": "string",
+                          "enum": [
+                            "articles"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      },
+                      "required": [
+                        "collection",
+                        "id"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "collection": {
+                          "type": "string",
+                          "enum": [
+                            "articles"
+                          ]
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "versionId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "data": {
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "collection",
+                        "revision",
+                        "versionId",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "hasNextPage": {
+                "type": "boolean"
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "orderVersion": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "order": {
+                      "enum": [
+                        "asc",
+                        "desc"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "order"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "rows",
+              "page",
+              "pageSize",
+              "hasNextPage",
+              "sort"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "slugPath": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "titlePath": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "required": [],
@@ -8139,6 +8349,258 @@
           {
             "type": "string",
             "format": "email"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "tags": {
+    "type": "object",
+    "properties": {
+      "title": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 256
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "slug": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 128
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "parent": {
+        "anyOf": [
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "collection": {
+                    "type": "string",
+                    "enum": [
+                      "tags"
+                    ]
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "collection",
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "collection": {
+                    "type": "string",
+                    "enum": [
+                      "tags"
+                    ]
+                  },
+                  "revision": {
+                    "type": "integer"
+                  },
+                  "versionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "id",
+                  "collection",
+                  "revision",
+                  "versionId",
+                  "data"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "slugPath": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "titlePath": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "children": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "collection": {
+                          "type": "string",
+                          "enum": [
+                            "tags"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      },
+                      "required": [
+                        "collection",
+                        "id"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "collection": {
+                          "type": "string",
+                          "enum": [
+                            "tags"
+                          ]
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "versionId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "data": {
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "collection",
+                        "revision",
+                        "versionId",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "hasNextPage": {
+                "type": "boolean"
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "orderVersion": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sort": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "order": {
+                      "enum": [
+                        "asc",
+                        "desc"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "order"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "rows",
+              "page",
+              "pageSize",
+              "hasNextPage",
+              "sort"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "hierarchyType": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "articles"
+              ]
+            },
+            "uniqueItems": true
           },
           {
             "type": "null"

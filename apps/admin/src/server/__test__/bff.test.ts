@@ -811,3 +811,24 @@ describe('lazy server configuration and cookie policy', () => {
     );
   });
 });
+
+it('forwards only a valid editor session header and rejects malformed lease identity before contacting the API', async () => {
+  const editorId = '11111111-1111-4111-8111-111111111111';
+  const response = await handleCmsRequest(
+    request('/v1/collections/articles/documents/22222222-2222-4222-8222-222222222222', 'PATCH', {
+      body: { revision: 1, data: { title: 'Owned edit' } },
+      headers: { 'x-cms-editor-session': editorId, 'x-private-input': 'discard' },
+    }),
+  );
+  expect(response.status).toBe(200);
+  expect(requests[0]?.headers['x-cms-editor-session']).toBe(editorId);
+  expect(requests[0]?.headers['x-private-input']).toBeUndefined();
+  const invalid = await handleCmsRequest(
+    request('/v1/collections/articles/documents/22222222-2222-4222-8222-222222222222', 'PATCH', {
+      body: { revision: 1, data: {} },
+      headers: { 'x-cms-editor-session': 'invalid' },
+    }),
+  );
+  expect(invalid.status).toBe(400);
+  expect(requests).toHaveLength(1);
+});

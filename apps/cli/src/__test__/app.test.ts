@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { flattenCommands } from '@renxqoo/agent-cli-sdk';
 import { operations } from '@new-cms/api-client/operations';
 import { businessCommands } from '../commands.ts';
@@ -272,3 +273,32 @@ it.each(['login', 'logout'])(
     expect(stderr.join('')).not.toContain('sensitive-token');
   },
 );
+it('regression: CLI JSON editorSessionId is transported as context and is absent from the document body', async () => {
+  const { app, stdout, stderr } = await setup();
+  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ revision: 2 }));
+  vi.stubGlobal('fetch', fetcher);
+  const editorSessionId = 'ABCDEFAB-1234-4123-8123-ABCDEFABCDEF';
+  await app.run([
+    'documents',
+    'update',
+    '--input',
+    JSON.stringify({
+      editorSessionId,
+      input: {
+        collection: 'articles',
+        id: '11111111-1111-4111-8111-111111111111',
+        revision: 1,
+        data: { title: 'Editor' },
+      },
+    }),
+  ]);
+  expect(new Headers(fetcher.mock.calls[0]?.[1]?.headers).get('x-cms-editor-session')).toBe(
+    editorSessionId.toLowerCase(),
+  );
+  expect(JSON.parse(z.string().parse(fetcher.mock.calls[0]?.[1]?.body)) as unknown).toEqual({
+    revision: 1,
+    data: { title: 'Editor' },
+  });
+  expect(JSON.parse(stdout.join('')) as unknown).toMatchObject({ ok: true, data: { revision: 2 } });
+  expect(stderr).toEqual([]);
+});

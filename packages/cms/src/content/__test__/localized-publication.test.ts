@@ -183,3 +183,303 @@ it('validates only the language being published and keeps unfilled translations 
     }),
   ).toMatchObject({ versionId: draft.versionId });
 });
+
+it('reserves only the actual published locale values and releases never-published translations from old snapshots', async () => {
+  const collections = workflowCollections();
+  const articles = collections.find((collection) => collection.key === 'articles');
+  if (!articles) throw new Error('Missing articles fixture');
+  articles.localizeStatus = true;
+  articles.fields = articles.fields.map((field) =>
+    field.name === 'slug' ? { ...field, localized: true } : field,
+  );
+  const kit = await createContentFixture({ collections });
+  fixtures.push(kit);
+  const first = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    dataByLocale: {
+      en: { title: 'English', slug: 'en-old' },
+      zh: { title: '中文', slug: 'zh-never-published' },
+    },
+  });
+  const published = await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: first.id,
+    revision: first.revision,
+    locale: 'en',
+  });
+  const updated = await kit.content.api.updateDocument(kit.owner(), {
+    collection: 'articles',
+    id: first.id,
+    revision: published.revision,
+    dataByLocale: { en: { slug: 'en-current' }, zh: { slug: 'zh-current' } },
+  });
+  await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: first.id,
+    revision: updated.revision,
+    locale: 'zh',
+  });
+  await expect(
+    kit.content.api.createDocument(kit.owner(), {
+      collection: 'articles',
+      locale: 'en',
+      data: { title: 'Conflict', slug: 'en-old' },
+    }),
+  ).rejects.toMatchObject({ code: 'identifier_taken' });
+  expect(
+    await kit.content.api.createDocument(kit.owner(), {
+      collection: 'articles',
+      locale: 'zh',
+      data: { title: '可用', slug: 'zh-never-published' },
+    }),
+  ).toMatchObject({ data: { slug: 'zh-never-published' } });
+});
+
+it('does not treat a never-published translation reference as active when another language uses the old revision', async () => {
+  const collections = workflowCollections();
+  const articles = collections.find((collection) => collection.key === 'articles');
+  if (!articles) throw new Error('Missing articles fixture');
+  articles.localizeStatus = true;
+  articles.fields = articles.fields.map((field) =>
+    field.name === 'related' ? { ...field, localized: true } : field,
+  );
+  const kit = await createContentFixture({ collections, trashRetentionMs: 0 });
+  fixtures.push(kit);
+  const target = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'pages',
+    data: { title: 'Historical target' },
+  });
+  const source = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    dataByLocale: {
+      en: { title: 'English public', related: [] },
+      zh: { title: '中文草稿', related: [{ collection: 'pages', id: target.id }] },
+    },
+  });
+  const published = await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: source.revision,
+    locale: 'en',
+  });
+  await kit.content.api.updateDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: published.revision,
+    locale: 'zh',
+    data: { related: [] },
+  });
+  const archived = await kit.content.api.archiveDocument(kit.owner(), {
+    collection: 'pages',
+    id: target.id,
+    revision: target.revision,
+  });
+  expect(archived.trashedAt).not.toBeNull();
+  await expect(
+    kit.content.api.purgeDocument(kit.owner(), {
+      collection: 'pages',
+      id: target.id,
+      revision: archived.revision,
+    }),
+  ).rejects.toMatchObject({ code: 'resource_in_use' });
+});
+
+it('does not activate references from languages omitted by publicationLocalesField', async () => {
+  const collections = workflowCollections();
+  const articles = collections.find((collection) => collection.key === 'articles');
+  if (!articles) throw new Error('Missing articles fixture');
+  articles.publicationLocalesField = 'contentLocales';
+  articles.fields = [
+    ...articles.fields.map((field) =>
+      field.name === 'related' ? { ...field, localized: true } : field,
+    ),
+    {
+      id: 'content_locales',
+      name: 'contentLocales',
+      type: 'select',
+      options: ['en', 'zh'],
+      hasMany: true,
+    },
+  ];
+  const kit = await createContentFixture({ collections });
+  fixtures.push(kit);
+  const target = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'pages',
+    data: { title: 'Only Chinese draft' },
+  });
+  const source = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    dataByLocale: {
+      en: { title: 'English', contentLocales: ['en'], related: [] },
+      zh: { title: 'Chinese', related: [{ collection: 'pages', id: target.id }] },
+    },
+  });
+  const published = await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: source.revision,
+  });
+  await kit.content.api.updateDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: published.revision,
+    locale: 'zh',
+    data: { related: [] },
+  });
+  const archived = await kit.content.api.archiveDocument(kit.owner(), {
+    collection: 'pages',
+    id: target.id,
+    revision: target.revision,
+  });
+  expect(archived.id).toBe(target.id);
+  expect(archived.trashedAt).toBeTypeOf('string');
+});
+
+it('keeps a fallback reference active for its published language after the working draft removes it', async () => {
+  const collections = workflowCollections();
+  const articles = collections.find((collection) => collection.key === 'articles');
+  if (!articles) throw new Error('Missing articles fixture');
+  articles.localizeStatus = true;
+  articles.fields = articles.fields.map((field) =>
+    field.name === 'related' ? { ...field, localized: true } : field,
+  );
+  const kit = await createContentFixture({ collections });
+  fixtures.push(kit);
+  const target = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'pages',
+    data: { title: 'Fallback target' },
+  });
+  const source = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    locale: 'en',
+    data: { title: 'Fallback source', related: [{ collection: 'pages', id: target.id }] },
+  });
+  const published = await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: source.revision,
+    locale: 'zh',
+  });
+  await kit.content.api.updateDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: published.revision,
+    locale: 'en',
+    data: { related: [] },
+  });
+  await expect(
+    kit.content.api.archiveDocument(kit.owner(), {
+      collection: 'pages',
+      id: target.id,
+      revision: target.revision,
+    }),
+  ).rejects.toMatchObject({ code: 'resource_in_use' });
+  const references = await kit.content.api.listReferences(kit.owner(), {
+    collection: 'pages',
+    id: target.id,
+  });
+  expect(references.rows).toContainEqual({
+    collection: 'articles',
+    id: source.id,
+    versionId: source.versionId,
+    sourcePath: 'zh:related.0',
+  });
+  await kit.content.api.unpublishDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: published.revision + 1,
+    locale: 'zh',
+  });
+  const archived = await kit.content.api.archiveDocument(kit.owner(), {
+    collection: 'pages',
+    id: target.id,
+    revision: target.revision,
+  });
+  expect(archived.id).toBe(target.id);
+  expect(archived.trashedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+});
+
+it('does not reserve an unused fallback language reference when the published translation has an explicit value', async () => {
+  const collections = workflowCollections();
+  const articles = collections.find((collection) => collection.key === 'articles');
+  if (!articles) throw new Error('Missing articles fixture');
+  articles.localizeStatus = true;
+  articles.fields = articles.fields.map((field) =>
+    field.name === 'related' ? { ...field, localized: true } : field,
+  );
+  const kit = await createContentFixture({ collections });
+  fixtures.push(kit);
+  const target = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'pages',
+    data: { title: 'Unused fallback target' },
+  });
+  const source = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    dataByLocale: {
+      en: { title: 'English', related: [{ collection: 'pages', id: target.id }] },
+      zh: { title: '中文', related: [] },
+    },
+  });
+  const published = await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: source.revision,
+    locale: 'zh',
+  });
+  await kit.content.api.updateDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: published.revision,
+    locale: 'en',
+    data: { related: [] },
+  });
+  const archived = await kit.content.api.archiveDocument(kit.owner(), {
+    collection: 'pages',
+    id: target.id,
+    revision: target.revision,
+  });
+  expect(archived.id).toBe(target.id);
+  expect(archived.trashedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+});
+
+it('rechecks reference read permission separately for every language of a global publication', async () => {
+  const collections = workflowCollections();
+  const articles = collections.find((collection) => collection.key === 'articles');
+  const pages = collections.find((collection) => collection.key === 'pages');
+  if (!articles || !pages) throw new Error('Missing collections fixture');
+  articles.fields = articles.fields.map((field) =>
+    field.name === 'related' ? { ...field, localized: true } : field,
+  );
+  let chineseReadable = true;
+  pages.access = {
+    'documents.get': {
+      version: 'locale-read-v1',
+      run: ({ locale }) => locale !== 'zh' || chineseReadable,
+    },
+  };
+  const kit = await createContentFixture({ collections });
+  fixtures.push(kit);
+  const target = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'pages',
+    data: { title: 'Language restricted target' },
+  });
+  const source = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    dataByLocale: {
+      en: { title: 'English', related: [] },
+      zh: { title: '中文', related: [{ collection: 'pages', id: target.id }] },
+    },
+  });
+  chineseReadable = false;
+  await expect(
+    kit.content.api.publishDocument(kit.owner(), {
+      collection: 'articles',
+      id: source.id,
+      revision: source.revision,
+      locale: 'en',
+    }),
+  ).rejects.toMatchObject({ code: 'forbidden' });
+  expect(
+    await kit.content.api.getDocument(kit.owner(), { collection: 'articles', id: source.id }),
+  ).toMatchObject({ revision: source.revision, publishedVersionId: null });
+});

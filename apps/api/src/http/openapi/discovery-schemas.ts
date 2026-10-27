@@ -2,22 +2,28 @@ import { id, integer, nullable, object, page, reference, text, time } from './sc
 import type { Schema } from './schema.ts';
 
 function contentJobSummary(): Schema {
-  return object({
-    kind: { const: 'content' },
-    id,
-    collection: text,
-    action: { enum: ['batch', 'publication', 'extension'] },
-    status: { enum: ['queued', 'running', 'succeeded', 'partial', 'failed', 'cancelled'] },
-    executeAt: time,
-    createdAt: time,
-    finishedAt: nullable(time),
-    documentId: nullable(id),
-    expectedRevision: nullable(integer),
-    requestedVersionId: nullable(id),
-    total: integer,
-    succeeded: integer,
-    failed: integer,
-  });
+  return object(
+    {
+      kind: { const: 'content' },
+      id,
+      collection: text,
+      action: { enum: ['batch', 'publication', 'extension'] },
+      status: { enum: ['queued', 'running', 'succeeded', 'partial', 'failed', 'cancelled'] },
+      executeAt: time,
+      createdAt: time,
+      finishedAt: nullable(time),
+      documentId: nullable(id),
+      expectedRevision: nullable(integer),
+      requestedVersionId: nullable(id),
+      total: integer,
+      succeeded: integer,
+      failed: integer,
+    },
+    {
+      publicationAction: { enum: ['publish', 'unpublish'] },
+      locale: text,
+    },
+  );
 }
 
 function assetJobSummary(): Schema {
@@ -38,6 +44,7 @@ function assetJobSummary(): Schema {
 
 function uploadSummary(): Schema {
   return object({
+    locale: nullable(text),
     id,
     collection: text,
     purpose: { enum: ['create', 'replace'] },

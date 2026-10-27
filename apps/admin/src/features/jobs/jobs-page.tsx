@@ -89,7 +89,7 @@ export function JobsPage() {
             <Field id="work-collection" label={t.collection}>
               <NativeSelect
                 value={collection}
-                onChange={(event) => change({ collection: event.target.value })}
+                onChange={(event) => change({ collection: event.target.value, locale: undefined })}
                 className="w-full sm:min-w-48"
               >
                 <option value="">{t.chooseCollection}</option>
@@ -98,6 +98,21 @@ export function JobsPage() {
                     {item.label}
                   </option>
                 ))}
+              </NativeSelect>
+            </Field>
+            <Field id="work-locale" label={t.locale}>
+              <NativeSelect
+                value={query.locale ?? ''}
+                onChange={(event) => change({ locale: event.target.value })}
+              >
+                <option value="">{t.defaultLocale}</option>
+                {(collections.find((item) => item.key === collection)?.locales ?? []).map(
+                  (value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ),
+                )}
               </NativeSelect>
             </Field>
             <div className="flex gap-2" aria-label={t.kind}>
@@ -117,6 +132,7 @@ export function JobsPage() {
                     collection: uploadCollection(catalog.data?.rows, collection),
                     status: undefined,
                     action: undefined,
+                    locale: undefined,
                   })
                 }
               >
@@ -261,7 +277,15 @@ function JobList({
   });
   const [selected, setSelected] = useState<SelectedWork | null>(() =>
     query.jobId
-      ? { kind: 'job', value: { id: query.jobId, collection: query.collection, status: 'queued' } }
+      ? {
+          kind: 'job',
+          value: {
+            id: query.jobId,
+            collection: query.collection,
+            status: 'queued',
+            ...(query.locale ? { locale: query.locale } : {}),
+          },
+        }
       : null,
   );
   if (!allowed) return <Banner tone="warning">{t.denied}</Banner>;
@@ -278,7 +302,14 @@ function JobList({
           t,
           locale,
           canRead: access.can('content.getJob', scope),
-          open: (row) => setSelected({ kind: 'job', value: row }),
+          open: (row) =>
+            setSelected({
+              kind: 'job',
+              value: {
+                ...row,
+                locale: row.kind === 'content' ? (row.locale ?? query.locale) : query.locale,
+              },
+            }),
         })}
         rows={result.data?.rows ?? []}
         rowKey={(row) => row.id}

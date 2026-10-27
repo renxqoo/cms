@@ -4,6 +4,7 @@ import { readManifest } from '../manifests/read-manifest.ts';
 
 export async function sessionView(tx: SqlExecutor, row: UploadRow): Promise<UploadSessionView> {
   return {
+    locale: row.authorization_locale,
     id: row.id,
     filename: row.filename,
     declaredMimeType: row.declared_type,

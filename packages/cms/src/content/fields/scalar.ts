@@ -6,6 +6,7 @@ import type {
   JsonValue,
   RichTextNodeRegistration,
 } from '../definition.ts';
+import { optionValues } from './options.ts';
 import { objectValue } from './json-value.ts';
 import { validateRichText } from './rich-text.ts';
 
@@ -39,7 +40,8 @@ function textValue(value: JsonValue, field: FieldDefinition): string {
     if (!z.iso.datetime({ offset: true }).safeParse(value).success) fail('invalid_input');
     return new Date(value).toISOString();
   }
-  if (field.type === 'select' && !(field.options ?? []).includes(value)) fail('invalid_input');
+  if (['select', 'radio'].includes(field.type) && !optionValues(field).includes(value))
+    fail('invalid_input');
   return value;
 }
 function numberValue(value: JsonValue, field: FieldDefinition): number {
@@ -95,10 +97,18 @@ export function scalarValue(input: {
   const { value, field, limits } = input;
   if (field.hasMany) {
     if (!Array.isArray(value) || value.length > limits.maxArrayItems) fail('invalid_input');
+    if (
+      (field.minRows !== undefined && value.length < field.minRows) ||
+      (field.maxRows !== undefined && value.length > field.maxRows)
+    )
+      fail('invalid_input');
     const values = value.map((item) =>
       scalarValue({ ...input, value: item, field: { ...field, hasMany: false } }),
     );
-    if (new Set(values.map((item) => JSON.stringify(item))).size !== values.length)
+    if (
+      !['text', 'number'].includes(field.type) &&
+      new Set(values.map((item) => JSON.stringify(item))).size !== values.length
+    )
       fail('invalid_input');
     return values;
   }
@@ -114,11 +124,13 @@ const handlers: Partial<
   >
 > = {
   text: textValue,
+  slug: textValue,
   textarea: textValue,
   email: textValue,
   date: textValue,
   code: textValue,
   select: textValue,
+  radio: textValue,
   number: numberValue,
   boolean(value) {
     if (typeof value !== 'boolean') fail('invalid_input');

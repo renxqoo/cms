@@ -38,8 +38,8 @@ export function loadAdminConfig(): AdminConfig {
   const production = process.env.NODE_ENV === 'production';
   if (production && (!process.env.CMS_API_BASE_URL || !process.env.CMS_ADMIN_ORIGIN))
     throw new Error('CMS server configuration is required');
-  const api = origin(process.env.CMS_API_BASE_URL ?? 'http://127.0.0.1:3001');
-  const admin = origin(process.env.CMS_ADMIN_ORIGIN ?? 'http://localhost:3000');
+  const api = origin(process.env.CMS_API_BASE_URL ?? 'http://127.0.0.1:9091');
+  const admin = origin(process.env.CMS_ADMIN_ORIGIN ?? 'http://localhost:9092');
   if (production && admin.protocol !== 'https:' && !isLoopback(admin))
     throw new Error('CMS_ADMIN_ORIGIN must use HTTPS');
   if (production && api.protocol !== 'https:' && !isLoopback(api))

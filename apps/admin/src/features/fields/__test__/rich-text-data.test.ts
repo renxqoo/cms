@@ -116,7 +116,7 @@ describe('rich text AST safety and lossless conversion', () => {
       { version: 1, children: [1] },
       { version: 1, children: [{ type: 'text', text: 1 }] },
       { version: 1, children: [{ type: 'text', text: 'X', marks: ['bold'] }] },
-      { version: 1, children: [{ type: 'heading', level: 3, children: [] }] },
+      { version: 1, children: [{ type: 'heading', level: 7, children: [] }] },
       { version: 1, children: [{ type: 'paragraph', children: false }] },
       { version: 1, children: [{ type: 'relationship', collection: 'pages', id: 'bad' }] },
       { version: 1, children: [{ type: 'media', collection: 'images', id, extra: true }] },
@@ -146,7 +146,7 @@ describe('rich text AST safety and lossless conversion', () => {
   ])('rejects an unsafe or unsupported URL: %s', (value) =>
     expect(safeRichTextLink(value)).toBe(false),
   );
-  it('refuses formatting and heading levels which cannot be persisted by the backend', () => {
+  it('refuses unregistered text styling while persisting supported formatting and headings', () => {
     const editor = createEditor({ nodes: richTextLexicalNodes });
     editor.update(
       () => {
@@ -156,7 +156,7 @@ describe('rich text AST safety and lossless conversion', () => {
         });
         const paragraph = $getRoot().getFirstChild();
         const text = $isElementNode(paragraph) ? paragraph.getFirstChild() : null;
-        if ($isTextNode(text)) text.setFormat('bold');
+        if ($isTextNode(text)) text.setStyle('background:red');
       },
       { discrete: true },
     );
@@ -164,9 +164,10 @@ describe('rich text AST safety and lossless conversion', () => {
       'Unsupported text formatting',
     );
     editor.update(() => $getRoot().clear().append($createHeadingNode('h1')), { discrete: true });
-    expect(() => editor.getEditorState().read($exportRichText)).toThrow(
-      'Unsupported rich-text node',
-    );
+    expect(editor.getEditorState().read($exportRichText)).toEqual({
+      version: 1,
+      children: [{ type: 'heading', level: 1, children: [] }],
+    });
   });
   it('creates structural nodes whose editable data is explicit', () => {
     expect(richTextNode('paragraph')).toEqual({ type: 'paragraph', children: [] });

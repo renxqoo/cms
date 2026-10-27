@@ -4,8 +4,28 @@ import type { ApiResult } from '../../api/result';
 import type { Collection } from '../../contracts/content';
 import type { Document } from '../../contracts/documents';
 import { collectionEditorSchema } from '../../contracts/editor';
-import type { CollectionEditor } from '../../contracts/editor';
+import type { CollectionEditor, EditorNode } from '../../contracts/editor';
 import { contentEditorPolicy } from './policy';
+
+export function bulkEditorLayout(nodes: readonly EditorNode[]): EditorNode[] {
+  return nodes
+    .filter((node) => node.disabled?.bulkEdit !== true)
+    .map((node) => ({
+      ...node,
+      ...(node.children ? { children: bulkEditorLayout(node.children) } : {}),
+      ...(node.tabs
+        ? { tabs: node.tabs.map((tab) => ({ ...tab, children: bulkEditorLayout(tab.children) })) }
+        : {}),
+      ...(node.blocks
+        ? {
+            blocks: node.blocks.map((block) => ({
+              ...block,
+              children: bulkEditorLayout(block.children),
+            })),
+          }
+        : {}),
+    }));
+}
 
 export async function readBulkEditor(input: {
   collection: Collection;

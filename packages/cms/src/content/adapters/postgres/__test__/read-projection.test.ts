@@ -10,7 +10,7 @@ async function fixture() {
 afterEach(async () => {
   await Promise.all(resources.splice(0).map((kit) => kit.close()));
 });
-it('loads three legal large documents as summaries without reading their body tables', async () => {
+it('regression: projected summaries list large documents without reading their body tables', async () => {
   const kit = await fixture();
   for (let i = 0; i < 3; i++)
     await saveProjection(kit, { title: `Article ${i}`, body: { text: 'x'.repeat(800000) } });

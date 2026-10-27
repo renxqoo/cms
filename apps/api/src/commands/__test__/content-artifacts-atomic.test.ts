@@ -7,6 +7,7 @@ import { createRegistry } from '@new-cms/cms/content/generate';
 import { collections } from '../../config/collections/index.ts';
 import { contentLimits } from '../../config/content-policy.ts';
 import { applicationOperations } from '../../config/operations.ts';
+import { adminComponents } from '../../config/admin-components.ts';
 import { contentArtifacts, writeContentArtifacts } from '../content-artifacts.ts';
 
 const fault = vi.hoisted(() => ({ prefix: '' }));
@@ -68,6 +69,7 @@ it.each(['plan.json', 'sql', 'generated'])(
           : collection,
       ),
       limits: contentLimits(),
+      adminComponents,
     });
     const options = { root, check: false, migration: '0011_increment.sql', registry: next };
     fault.prefix =

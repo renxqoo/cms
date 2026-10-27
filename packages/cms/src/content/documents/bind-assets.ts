@@ -7,16 +7,23 @@ import { fieldPaths } from '../fields/structure.ts';
 import { requireAdditionalOperation } from '../runtime.ts';
 import type { ReferenceValue } from '../definition.ts';
 
+export type RevisionMediaSources = Readonly<
+  Record<string, { path: string; mediaDocumentId: string }>
+>;
+
 interface BindInput {
   runtime: ContentRuntime;
   documentId: string;
   revisionId: string;
   expectedRevision?: number;
   uploadId?: string;
+  fileManifest?: AuthorizedManifest;
+  creating: boolean;
   previous?: { documentId: string; revisionId: string };
   references: readonly ReferenceValue[];
   requireSourceRead?: boolean;
   previousSchemaVersion?: number;
+  mediaSources?: RevisionMediaSources;
 }
 
 async function inheritedManifest(
@@ -52,24 +59,21 @@ async function bindOwnFile(state: ContentState, input: BindInput): Promise<void>
     return;
   }
   if (!assets) fail('temporarily_unavailable');
-  if (input.requireSourceRead && input.previous)
+  const old = await ownManifest(state, input);
+  if (!input.uploadId && !old) {
+    requireInitialFile(state, input);
+    return;
+  }
+  if (input.requireSourceRead && input.previous && old)
     await requireAdditionalOperation(state, {
       runtime: input.runtime,
       operationId: 'assets.download',
       id: input.previous.documentId,
     });
-  const old = input.previous
-    ? await inheritedManifest(state, {
-        runtime: input.runtime,
-        revisionId: input.previous.revisionId,
-        sourcePath: '$file',
-        mediaDocumentId: input.previous.documentId,
-      })
-    : undefined;
-  if (!input.uploadId && !old) fail('invalid_input');
   await assets.bind(state.tx, {
     operationId: state.operationId,
     actorId: state.actor.id,
+    locale: state.locale,
     collectionKey: state.collection.key,
     documentId: input.documentId,
     revisionId: input.revisionId,
@@ -80,6 +84,24 @@ async function bindOwnFile(state: ContentState, input: BindInput): Promise<void>
   });
 }
 
+function requireInitialFile(state: ContentState, input: BindInput): void {
+  if (
+    input.creating &&
+    state.collection.mode !== 'drafts' &&
+    state.collection.upload?.filesRequiredOnCreate !== false
+  )
+    fail('invalid_input');
+}
+async function ownManifest(state: ContentState, input: BindInput) {
+  if (!input.previous || input.fileManifest) return input.fileManifest;
+  return inheritedManifest(state, {
+    runtime: input.runtime,
+    revisionId: input.previous.revisionId,
+    sourcePath: '$file',
+    mediaDocumentId: input.previous.documentId,
+  });
+}
+
 async function bindMediaReference(
   state: ContentState,
   input: BindInput,
@@ -87,11 +109,13 @@ async function bindMediaReference(
 ): Promise<void> {
   const { assets } = input.runtime;
   if (!assets) fail('temporarily_unavailable');
+  const selected = input.mediaSources?.[reference.path];
+  const copiedPath = selected?.mediaDocumentId === reference.id ? selected.path : undefined;
   let manifest = input.previous
     ? await inheritedManifest(state, {
         runtime: input.runtime,
         revisionId: input.previous.revisionId,
-        sourcePath: reference.path,
+        sourcePath: copiedPath ?? reference.path,
         mediaDocumentId: reference.id,
         ...(input.previousSchemaVersion === undefined
           ? {}
@@ -99,6 +123,7 @@ async function bindMediaReference(
         fieldId: reference.fieldId,
       })
     : undefined;
+  if (copiedPath && !manifest) fail('not_found');
   if (!manifest) {
     const target = await input.runtime.store.readDocument(state.tx, {
       collection: reference.collection,
@@ -117,6 +142,7 @@ async function bindMediaReference(
   await assets.bind(state.tx, {
     operationId: state.operationId,
     actorId: state.actor.id,
+    locale: state.locale,
     collectionKey: state.collection.key,
     documentId: input.documentId,
     revisionId: input.revisionId,

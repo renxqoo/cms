@@ -19,3 +19,5 @@ export type {
   Page,
   Principal,
 } from './types.ts';
+
+export type { AuthorIdentity, AuthorReader } from './author-reader.ts';

@@ -16,9 +16,13 @@ import { assetUiPolicy } from './policy';
 
 export function ResourcePreview({
   document,
+  mode = 'editing',
+  fallback,
   onClose,
 }: {
   document: Document;
+  mode?: 'editing' | 'published';
+  fallback?: readonly string[];
   onClose: () => void;
 }) {
   const locale = useShell((state) => state.locale);
@@ -53,6 +57,8 @@ export function ResourcePreview({
               collection: document.collection,
               id: document.id,
               versionId: document.versionId,
+              mode,
+              ...(fallback ? { fallback } : {}),
             }}
             manifest={document.file}
           />

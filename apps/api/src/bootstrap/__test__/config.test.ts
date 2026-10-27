@@ -12,6 +12,12 @@ const base = {
   CMS_RATE_LIMIT_SECRET: 'an-independent-test-secret-with-32-characters',
 };
 
+it('uses the agreed development API port and issuer on 9091', () => {
+  const config = loadConfig(base);
+  expect(config.http.port).toBe(9091);
+  expect(config.oauth.issuer).toBe('http://127.0.0.1:9091');
+});
+
 it('requires database and a shared rate-limit secret instead of starting with implicit credentials', () => {
   expect(() => loadConfig({})).toThrow(/DATABASE_URL/);
   expect(() =>

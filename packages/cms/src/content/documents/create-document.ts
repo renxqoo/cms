@@ -19,7 +19,7 @@ async function createDocument(runtime: ContentRuntime, ctx: RequestContext, raw:
     },
     async (state) => {
       const reference = await idempotentReference(state, { runtime, input }, async () => {
-        const prepared = prepareLocaleWrite(state, {
+        const prepared = await prepareLocaleWrite(state, {
           runtime,
           current: {},
           patches: inputPatches(state, language),

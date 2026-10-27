@@ -82,3 +82,19 @@ it('uses the blocked-ledger default and preserves explicit all-state pagination'
     }),
   ).toBe('/dashboard/asset-cleanups?page=3&pageSize=20&blocked=false');
 });
+
+it('preserves the content language across job and upload discovery, pagination and detail links', () => {
+  const search = new URLSearchParams(
+    'collection=articles&locale=zh-CN&jobId=11111111-1111-4111-8111-111111111111',
+  );
+  expect(jobsApiQuery(parseJobsQuery(search))).toEqual({ page: 1, pageSize: 20, locale: 'zh-CN' });
+  expect(jobsQueryHref(search, { page: 2 })).toBe(
+    '/dashboard/jobs?collection=articles&tab=jobs&jobId=11111111-1111-4111-8111-111111111111&page=2&pageSize=20&locale=zh-CN',
+  );
+  expect(jobsApiQuery(parseJobsQuery(new URLSearchParams('tab=uploads&locale=zh-CN')))).toEqual({
+    page: 1,
+    pageSize: 20,
+    locale: 'zh-CN',
+  });
+  expect(parseJobsQuery(new URLSearchParams('locale=../private')).locale).toBeUndefined();
+});

@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { useState } from 'react';
 import { FolderCog, FolderIcon, Plus } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
@@ -26,10 +28,12 @@ export function FolderManager({
   collection,
   t,
   onChanged,
+  icon,
 }: {
   collection: string;
   t: ContentMessages;
   onChanged: () => void;
+  icon?: ReactNode;
 }) {
   const access = useAccessControl();
   const scope = { scopeKind: 'collection', collectionKey: collection } as const;
@@ -105,7 +109,12 @@ export function FolderManager({
               className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 px-3 py-2"
             >
               <span className="flex min-w-0 flex-1 items-center gap-2 break-words">
-                <FolderIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                {icon ?? (
+                  <FolderIcon
+                    aria-hidden="true"
+                    className="size-4 shrink-0 text-muted-foreground"
+                  />
+                )}
                 <span>
                   {'— '.repeat(folder.depth)}
                   {folder.name}

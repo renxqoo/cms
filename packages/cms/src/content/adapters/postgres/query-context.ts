@@ -1,8 +1,10 @@
+import { authorshipSettings } from '../../authorship/config.ts';
 import type { RelationScope } from '../../model.ts';
 import type { CompiledCollection, ContentMapping, FieldMapping, QueryInput } from '../../model.ts';
-import type { ContentLimits } from '../../definition.ts';
+import type { ContentLimits, JsonValue } from '../../definition.ts';
 import { identifier } from '@new-cms/database/codegen';
 import { fail } from '@new-cms/cms/platform/contracts';
+import { targetReadContext } from '../../queries/resolve-locale.ts';
 
 export interface QueryContext {
   mapping: ContentMapping;
@@ -19,6 +21,10 @@ export interface QueryContext {
   indexAliases: Map<string, readonly string[]>;
   relationDepth: number;
   budget: { nodes: number };
+  nearOrder?: () => string;
+  orderScope?: string;
+  grouping?: { field: string; value: JsonValue };
+  valueReadableFields?: readonly string[];
 }
 export function parameter(context: QueryContext, value: unknown): string {
   context.values.push(value);
@@ -30,6 +36,8 @@ export function alias(context: QueryContext, prefix: string): string {
 }
 export const metadataColumns: Readonly<Record<string, string>> = {
   id: 'id',
+  createdBy: 'created_by',
+  updatedBy: 'updated_by',
   revision: 'revision',
   createdAt: 'created_at',
   updatedAt: 'updated_at',
@@ -37,6 +45,10 @@ export const metadataColumns: Readonly<Record<string, string>> = {
   folderId: 'folder_id',
 };
 export function metadataExpression(path: string, context: QueryContext): string | undefined {
+  if (path === 'createdBy' || path === 'updatedBy') {
+    if (!authorshipSettings(context.collection.definition)[path]) fail('forbidden');
+    if (!context.queryableFields.includes(path)) fail('forbidden');
+  }
   const column = Object.hasOwn(metadataColumns, path) ? metadataColumns[path] : undefined;
   return column ? `${context.documentAlias}.${identifier(column)}` : undefined;
 }
@@ -138,10 +150,32 @@ export function projectedValue(
 export function trustedContext(context: QueryContext): QueryContext {
   return {
     ...context,
-    queryableFields: context.collection.flat.map((field) => field.path),
-    relationScopes: context.relationScopes.map((scope) => ({
-      ...scope,
-      queryableFields: context.mapping.get(scope.collection).flat.map((field) => field.path),
-    })),
+    query: {
+      ...context.query,
+      ...targetReadContext({
+        collection: context.collection.definition,
+        locale: context.query.locale,
+      }),
+    },
+    indexAliases: new Map(),
+    queryableFields: [
+      ...context.collection.flat.map((field) => field.path),
+      ...Object.entries(authorshipSettings(context.collection.definition))
+        .filter(([, enabled]) => enabled)
+        .map(([field]) => field),
+    ],
+    relationScopes: context.relationScopes.map((scope) => {
+      const target = context.mapping.get(scope.collection);
+      return {
+        ...scope,
+        ...targetReadContext({ collection: target.definition, locale: scope.locale }),
+        queryableFields: [
+          ...target.flat.map((field) => field.path),
+          ...Object.entries(authorshipSettings(target.definition))
+            .filter(([, enabled]) => enabled)
+            .map(([field]) => field),
+        ],
+      };
+    }),
   };
 }

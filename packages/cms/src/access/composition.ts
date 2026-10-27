@@ -1,3 +1,4 @@
+import { createAuthorReader } from './author-reader.ts';
 import { requireRateLimit, rateLimitKey } from '@new-cms/cms/platform/rate-limits';
 import type { RequestContext, Scope } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
@@ -70,6 +71,7 @@ export function createAccess(options: AccessOptions) {
     },
     authorize: createAuthorization(runtime),
     authorizeActor: createActorAuthorization(runtime),
+    readAuthor: createAuthorReader(runtime),
     check: createCheck(runtime),
     ...createCatalog(runtime),
     initializeAdmin: createInitializer(runtime),

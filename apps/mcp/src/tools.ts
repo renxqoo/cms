@@ -1,8 +1,8 @@
 import { McpServer, SUPPORTED_PROTOCOL_VERSIONS } from '@modelcontextprotocol/server';
 import type { CallToolResult } from '@modelcontextprotocol/server';
 import { z } from 'zod';
-import { createApiClient, ApiError } from '@new-cms/api-client/client';
-import { operations } from '@new-cms/api-client/operations';
+import { createApiClient, ApiError, editorSessionIdSchema } from '@new-cms/api-client/client';
+import { operations, compileInputSchema } from '@new-cms/api-client/operations';
 import type { ApiOperation } from '@new-cms/api-client/operations';
 import type { McpConfig } from './config.ts';
 
@@ -20,17 +20,26 @@ const discovery = ['access.me', 'access.myOperations', 'collections.list', 'reso
 
 function toolSchema(operation: ApiOperation): Record<string, unknown> {
   const extra: Record<string, unknown> = {};
-  if (operation.idempotency === 'required')
+  const requiredExtras: string[] = [];
+  extra.editorSessionId = {
+    ...z.toJSONSchema(editorSessionIdSchema),
+    description: 'Owned editor session UUID; transmitted as request context.',
+  };
+  if (operation.idempotency === 'required') {
     extra.idempotencyKey = { type: 'string', minLength: 16, maxLength: 128 };
-  if (operation.transport === 'upload')
+    requiredExtras.push('idempotencyKey');
+  }
+  if (operation.transport === 'upload') {
+    requiredExtras.push('base64');
     extra.base64 = {
       type: 'string',
       description:
         'File bytes encoded as canonical base64. Local paths and URLs are not supported.',
     };
+  }
   function extend(schema: Record<string, unknown>): Record<string, unknown> {
     const branches = schema.anyOf;
-    if (Array.isArray(branches))
+    if (schema.type !== 'object' && Array.isArray(branches))
       return {
         ...schema,
         anyOf: branches.map((branch: Record<string, unknown>) => extend(branch)),
@@ -40,7 +49,7 @@ function toolSchema(operation: ApiOperation): Record<string, unknown> {
     return {
       ...schema,
       properties: { ...properties, ...extra },
-      required: [...required, ...Object.keys(extra)],
+      required: [...required, ...requiredExtras],
     };
   }
   return extend(operation.inputSchema);
@@ -79,11 +88,12 @@ async function invoke(
   options: { args: unknown; signal: AbortSignal; maximum: number },
 ): Promise<CallToolResult> {
   try {
-    const { idempotencyKey, base64, ...input } = z
+    const { idempotencyKey, base64, editorSessionId, ...input } = z
       .record(z.string(), z.unknown())
       .parse(options.args);
     const value = await client.call(operation.id, input, {
       ...(typeof idempotencyKey === 'string' ? { idempotencyKey } : {}),
+      ...(typeof editorSessionId === 'string' ? { editorSessionId } : {}),
       ...(operation.transport === 'upload' ? { bytes: decodeBase64(base64, options.maximum) } : {}),
       signal: options.signal,
     });
@@ -142,7 +152,7 @@ export async function createTools(config: McpConfig, token: string, signal?: Abo
       operation.tool,
       {
         description: `${operation.id}: ${operation.method} ${operation.path}`,
-        inputSchema: z.fromJSONSchema(toolSchema(operation)),
+        inputSchema: compileInputSchema(toolSchema(operation)),
         annotations: {
           readOnlyHint: operation.method === 'GET',
           destructiveHint: operation.method === 'DELETE',

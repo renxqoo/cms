@@ -16,8 +16,10 @@ export function catalog(overrides: Partial<Collection> = {}): Collection {
     mode: 'drafts',
     history: true,
     singleton: false,
+    orderable: false,
     defaultLocale: 'en',
     locales: ['en', 'zh-CN'],
+    defaultSort: [{ field: 'updatedAt', order: 'desc' }],
     dataSchema: { type: 'object' },
     fields: [
       {
@@ -28,6 +30,7 @@ export function catalog(overrides: Partial<Collection> = {}): Collection {
         required: true,
         localized: true,
         queryable: true,
+        sortable: true,
       },
       {
         id: 'count',
@@ -37,6 +40,7 @@ export function catalog(overrides: Partial<Collection> = {}): Collection {
         required: false,
         localized: false,
         queryable: true,
+        sortable: true,
       },
       {
         id: 'active',
@@ -46,11 +50,13 @@ export function catalog(overrides: Partial<Collection> = {}): Collection {
         required: false,
         localized: false,
         queryable: true,
+        sortable: true,
       },
     ],
     behaviorHash: 'behavior',
     mappingFingerprint: 'mapping',
     upload: false,
+    drafts: { validate: true, autosave: { intervalMs: 10000 }, schedule: true },
     capabilities: {
       autosave: true,
       publication: true,
@@ -88,6 +94,10 @@ export function editor(overrides: Partial<CollectionEditor> = {}): CollectionEdi
     locale: 'en',
     fallback: ['en'],
     richTextNodes: [],
+    initialData: null,
+    initialSnapshot: null,
+    visibility: {},
+    componentVersions: {},
     document: { id: documentId, revision: 1, versionId, trashedAt: null },
     locales: { default: 'en', supported: ['en', 'zh-CN'], fallback: { 'zh-CN': ['en'] } },
     layout: [

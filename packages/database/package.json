@@ -15,7 +15,8 @@
     "./schema/assets": "./src/schema/assets.ts",
     "./schema/generated/content": "./src/schema/generated/content.ts",
     "./schema/content-work": "./src/schema/content-work.ts",
-    "./privileges": "./src/privileges.ts"
+    "./privileges": "./src/privileges.ts",
+    "./schema/content-admin": "./src/schema/content-admin.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",

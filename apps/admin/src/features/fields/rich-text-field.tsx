@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import { FieldLabel } from './configured-field';
 import { Code2, FileText } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import { useFieldValue } from './field-context';
@@ -22,7 +23,9 @@ export function RichTextField({ node, location, readOnly }: ScalarProps) {
   return (
     <fieldset className="min-w-0 space-y-3">
       <legend className="mb-2 flex w-full items-center justify-between gap-3 text-sm font-medium">
-        <span>{node.label}</span>
+        <span>
+          <FieldLabel node={node} location={location} readOnly={readOnly} />
+        </span>
         <Button
           variant="ghost"
           size="sm"
@@ -53,11 +56,6 @@ export function RichTextField({ node, location, readOnly }: ScalarProps) {
           onInvalidChange={setInvalid}
         />
       )}
-      {field.error ? (
-        <p role="alert" className="text-sm text-destructive">
-          {field.error}
-        </p>
-      ) : null}
     </fieldset>
   );
 }

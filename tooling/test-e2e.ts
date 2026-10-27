@@ -6,9 +6,16 @@ import { basename, resolve } from 'node:path';
 
 const contentFeatures = [
   'admin-content',
+  'admin-content-hierarchy',
+  'admin-content-authorship',
+  'admin-content-copy-locale',
+  'admin-content-localized',
+  'admin-rich-text',
+  'admin-content-collaboration',
   'admin-content-editor',
   'admin-content-sidebar',
   'admin-content-workflow',
+  'admin-content-conditions',
   'admin-assets',
   'admin-images',
   'admin-private-media',
@@ -23,7 +30,12 @@ const contentFeatures = [
   'admin-content-presentation-en',
   'admin-content-folders',
   'admin-content-copy',
+  'admin-query-presets',
+  'admin-document-order',
+  'admin-content-join',
+  'admin-content-grouping',
   'admin-upload-recovery',
+  'admin-upload-controls',
 ];
 
 const interruption = new AbortController();
@@ -55,8 +67,9 @@ async function run(args: string[], env: NodeJS.ProcessEnv = process.env): Promis
 }
 
 async function browserJourneys(args: string[]) {
+  process.env['CMS_ADMIN_E2E'] = 'suite';
   await run(['tooling/build-api.ts']);
-  await run(['run', '--cwd', 'apps/admin', 'build'], { ...process.env, CMS_ADMIN_E2E: '1' });
+  await run(['run', '--cwd', 'apps/admin', 'build'], { ...process.env, CMS_ADMIN_E2E: 'suite' });
   const available = Array.from(new Bun.Glob('e2e/*.browser.spec.ts').scanSync('.'));
   for (const group of browserGroups(args, available)) {
     const devPort = await availablePort();

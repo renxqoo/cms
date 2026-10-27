@@ -1,11 +1,16 @@
 'use client';
 
+import { fieldEditorPolicy } from './policy';
+
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
+import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin';
+import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { useFields } from './field-context';
 import { prepareRichText, richTextLexicalNodes } from './rich-text-mapping';
@@ -50,9 +55,38 @@ export default function RichTextVisual(props: VisualProps) {
           },
           theme: {
             paragraph: 'mb-3 last:mb-0',
-            heading: { h2: 'mb-3 text-xl font-semibold' },
+            heading: {
+              h1: 'mb-4 text-3xl font-semibold',
+              h2: 'mb-3 text-2xl font-semibold',
+              h3: 'mb-3 text-xl font-semibold',
+              h4: 'mb-2 text-lg font-semibold',
+              h5: 'mb-2 text-base font-semibold',
+              h6: 'mb-2 text-sm font-semibold',
+            },
+            quote: 'my-3 border-l-4 border-border pl-4 text-muted-foreground',
+            hr: 'my-4 border-border',
+            text: {
+              bold: 'font-bold',
+              italic: 'italic',
+              underline: 'underline',
+              strikethrough: 'line-through',
+              underlineStrikethrough: 'underline line-through',
+              subscript: 'align-sub text-xs',
+              superscript: 'align-super text-xs',
+              code: 'rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]',
+            },
             link: 'text-primary underline underline-offset-4',
-            list: { ul: 'ml-6 list-disc', listitem: 'mb-1' },
+            list: {
+              ul: 'ml-6 list-disc',
+              ol: 'ml-6 list-decimal',
+              listitem: 'mb-1',
+              checklist: 'ml-6 list-none',
+              listitemChecked:
+                'relative cursor-pointer before:absolute before:-left-5 before:content-["☑"]',
+              listitemUnchecked:
+                'relative cursor-pointer before:absolute before:-left-5 before:content-["☐"]',
+              nested: { listitem: 'list-none' },
+            },
           },
         }}
       >
@@ -82,6 +116,9 @@ export default function RichTextVisual(props: VisualProps) {
           </div>
           <HistoryPlugin />
           <ListPlugin />
+          <CheckListPlugin />
+          <HorizontalRulePlugin />
+          <TabIndentationPlugin maxIndent={fieldEditorPolicy.richTextMaxIndent} />
           <LinkPlugin validateUrl={safeRichTextLink} />
           <RichTextBridge {...props} value={parsed} />
         </div>

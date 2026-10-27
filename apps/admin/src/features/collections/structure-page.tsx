@@ -1,4 +1,5 @@
 'use client';
+import { useContentLocale } from './use-content-locale';
 
 import { Button } from '@new-cms/ui/actions';
 import { Banner } from '@new-cms/ui/feedback';
@@ -14,12 +15,14 @@ import { contentMessages } from './messages';
 import { collectionHref } from './query';
 
 export function CollectionStructurePage({ collectionKey }: { collectionKey: string }) {
+  const contentLocale = useContentLocale();
   const locale = useShell((state) => state.locale);
   const t = contentMessages[locale];
   const access = useAccessControl();
   const navigation = useAppNavigation();
   const result = useApiQuery({
     operation: 'collections.get',
+    query: { locale: contentLocale },
     params: { collection: collectionKey },
     response: collectionSchema,
     enabled: access.can('collections.get', { scopeKind: 'collection', collectionKey }),

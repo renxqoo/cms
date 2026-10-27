@@ -1,5 +1,5 @@
 import 'server-only';
-import type { OperationDefinition } from '../contracts/operations';
+import type { OperationDefinition } from '../contracts/operation-definition';
 import type { AdminConfig } from './config';
 import { TransportError } from './errors';
 import { assertBodyLength } from './body';
@@ -39,6 +39,7 @@ interface BackendRequest {
   body?: string | ReadableStream<Uint8Array> | undefined;
   signal?: AbortSignal | undefined;
   idempotencyKey?: string | undefined;
+  editorSessionId?: string | undefined;
   method?: string;
   lifetime?: RequestLifetime;
 }
@@ -50,6 +51,8 @@ function backendInit(
   const headers = new Headers();
   if (input.token !== undefined) headers.set('authorization', `Bearer ${input.token}`);
   if (input.idempotencyKey !== undefined) headers.set('idempotency-key', input.idempotencyKey);
+  if (input.editorSessionId !== undefined)
+    headers.set('x-cms-editor-session', input.editorSessionId);
   if (input.operation.bodyKind === 'json') headers.set('content-type', 'application/json');
   if (input.operation.bodyKind === 'bytes') headers.set('content-type', 'application/octet-stream');
   const upload = input.body instanceof ReadableStream;

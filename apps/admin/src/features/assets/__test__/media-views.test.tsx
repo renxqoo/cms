@@ -268,7 +268,7 @@ it('replaces through a single document channel and waits for document refresh be
   await waitFor(() => expect(busy).toHaveBeenLastCalledWith(false));
   expect(
     mocks.request.mock.calls.find(([value]) => value.operation === 'documents.update')?.[0].body,
-  ).toEqual({ revision: 7, uploadId });
+  ).toEqual({ locale: 'en', revision: 7, uploadId });
 });
 
 it('starts reprocessing through the image controls and unlocks only when the job succeeds', async () => {

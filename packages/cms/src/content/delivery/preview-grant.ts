@@ -5,6 +5,7 @@ import type { ContentRuntime, ContentState } from '../types.ts';
 import type { ContentDeliveryOptions, DeliverySession } from './types.ts';
 import type { StoredDocument } from '../model.ts';
 import { assertCompletePreviewRead } from './preview-policy.ts';
+import { withContentDeadline } from '../hooks/deadline.ts';
 export interface PreviewGrant {
   id: string;
   issuer_id: string;
@@ -39,8 +40,9 @@ export async function readPreviewGrant(
 async function issuerState(
   runtime: ContentRuntime,
   tx: DeliverySession['tx'],
-  grant: PreviewGrant,
+  input: { grant: PreviewGrant; signal: AbortSignal },
 ): Promise<ContentState> {
+  const { grant } = input;
   const collection = await runtime.resolveCollection(tx, 'models');
   if (collection.id !== grant.collection_id || !collection.locales.supported.includes(grant.locale))
     fail('unauthenticated');
@@ -52,7 +54,11 @@ async function issuerState(
   if (!actor) fail('unauthenticated');
   const state: ContentState = {
     tx,
-    ctx: { requestId: randomUUID(), ip: '' },
+    ctx: { requestId: randomUUID(), ip: '', signal: input.signal },
+    hookBudget: { used: 0 },
+    hookLimits: runtime.limits,
+    expansionBudget: { nodes: 0 },
+    virtualReadCache: new Map(),
     actor,
     collection,
     operationId: 'documents.get',
@@ -60,16 +66,28 @@ async function issuerState(
     mode: 'editing',
     actorAuthorization: true,
   };
-  const predicate = collectionPredicate(state);
+  const predicate = await collectionPredicate(state);
   return { ...state, ...(predicate ? { predicate } : {}) };
 }
 export async function assertPreviewIssuer(
   runtime: ContentRuntime,
   tx: DeliverySession['tx'],
-  grant: PreviewGrant,
+  input: { grant: PreviewGrant; signal?: AbortSignal },
 ): Promise<StoredDocument> {
+  return withContentDeadline({
+    timeoutMs: runtime.policy.requestTimeoutMs,
+    ...(input.signal ? { signal: input.signal } : {}),
+    work: (signal) => verifyPreviewIssuer(runtime, tx, { grant: input.grant, signal }),
+  });
+}
+async function verifyPreviewIssuer(
+  runtime: ContentRuntime,
+  tx: DeliverySession['tx'],
+  input: { grant: PreviewGrant; signal: AbortSignal },
+): Promise<StoredDocument> {
+  const { grant } = input;
   try {
-    const state = await issuerState(runtime, tx, grant);
+    const state = await issuerState(runtime, tx, input);
     const document = await ensureVisible(state, { runtime, id: grant.document_id });
     const version = await runtime.store.readRevision(tx, {
       collection: 'models',
@@ -83,7 +101,7 @@ export async function assertPreviewIssuer(
       locale: grant.locale,
       fallback: [],
     });
-    assertCompletePreviewRead(state, data);
+    await assertCompletePreviewRead(state, data);
     return { document, version, data };
   } catch (error) {
     if (

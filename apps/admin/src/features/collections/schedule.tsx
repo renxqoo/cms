@@ -28,17 +28,16 @@ export function PublicationSchedule({
   onClose: () => void;
   onBusyChange: (busy: boolean) => void;
 }) {
-  const [time, setTime] = useState('');
+  const [{ time, checkedAt }, setTime] = useState({ time: '', checkedAt: 0 });
   const [action, setAction] = useState<'publish' | 'unpublish'>(
     canPublish ? 'publish' : 'unpublish',
   );
-  const [valid, setValid] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
   const [jobId, setJobId] = useState<string | null>(null);
   const mutation = useContentMutation();
   const navigation = useAppNavigation();
   const timestamp = Date.parse(time);
-  const controlsDisabled = mutation.pending || mutation.locked || jobId !== null;
+  const valid = Number.isFinite(timestamp) && timestamp > checkedAt;
   return (
     <ManagementDialog
       open
@@ -66,7 +65,7 @@ export function PublicationSchedule({
       }
       onSubmit={() => {
         if (!Number.isFinite(timestamp) || timestamp <= Date.now()) {
-          setValid(false);
+          setTime({ time, checkedAt: Date.now() });
           return;
         }
         onBusyChange(true);
@@ -97,34 +96,11 @@ export function PublicationSchedule({
           });
       }}
     >
-      <Field id="publication-action" label={t.scheduleAction}>
-        <NativeSelect
-          value={action}
-          disabled={controlsDisabled}
-          onChange={(event) =>
-            setAction(event.currentTarget.value === 'unpublish' ? 'unpublish' : 'publish')
-          }
-        >
-          <option value="publish" disabled={!canPublish}>
-            {t.publish}
-          </option>
-          <option value="unpublish" disabled={!canUnpublish || !document.publishedVersionId}>
-            {t.unpublish}
-          </option>
-        </NativeSelect>
-      </Field>
-      <Field id="publication-time" label={t.executeAt}>
-        <Input
-          type="datetime-local"
-          disabled={controlsDisabled}
-          value={time}
-          onChange={(event) => {
-            const { value } = event.currentTarget;
-            setTime(value);
-            setValid(Number.isFinite(Date.parse(value)) && Date.parse(value) > Date.now());
-          }}
-        />
-      </Field>
+      <ScheduleFields
+        {...{ action, setAction, time, canPublish, canUnpublish, document, t }}
+        setTime={(value) => setTime({ time: value, checkedAt: Date.now() })}
+        disabled={mutation.pending || mutation.locked || jobId !== null}
+      />
       {jobId ? (
         <div className="space-y-3">
           <p role="status">{t.scheduled}</p>
@@ -132,7 +108,7 @@ export function PublicationSchedule({
             variant="outline"
             onClick={() =>
               navigation.push(
-                `/dashboard/jobs?collection=${encodeURIComponent(document.collection)}&jobId=${jobId}`,
+                `/dashboard/jobs?${new URLSearchParams({ collection: document.collection, jobId, ...(locale ? { locale } : {}) })}`,
               )
             }
           >
@@ -152,5 +128,59 @@ export function PublicationSchedule({
         </Button>
       ) : null}
     </ManagementDialog>
+  );
+}
+
+function ScheduleFields({
+  action,
+  setAction,
+  time,
+  setTime,
+  canPublish,
+  canUnpublish,
+  document,
+  t,
+  disabled,
+}: {
+  action: 'publish' | 'unpublish';
+  setAction: (value: 'publish' | 'unpublish') => void;
+  time: string;
+  setTime: (value: string) => void;
+  canPublish: boolean;
+  canUnpublish: boolean;
+  document: Document;
+  t: ContentMessages;
+  disabled: boolean;
+}) {
+  return (
+    <>
+      <Field id="publication-action" label={t.scheduleAction}>
+        <NativeSelect
+          value={action}
+          disabled={disabled}
+          onChange={(event) =>
+            setAction(event.currentTarget.value === 'unpublish' ? 'unpublish' : 'publish')
+          }
+        >
+          <option value="publish" disabled={!canPublish}>
+            {t.publish}
+          </option>
+          <option value="unpublish" disabled={!canUnpublish || !document.publishedVersionId}>
+            {t.unpublish}
+          </option>
+        </NativeSelect>
+      </Field>
+      <Field id="publication-time" label={t.executeAt}>
+        <Input
+          type="datetime-local"
+          disabled={disabled}
+          value={time}
+          onChange={(event) => {
+            const { value } = event.currentTarget;
+            setTime(value);
+          }}
+        />
+      </Field>
+    </>
   );
 }

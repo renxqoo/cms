@@ -10,7 +10,8 @@ import type {
   FieldPolicyContext,
   Where,
 } from '../../../definition.ts';
-import { projectData, queryableFields } from '../../../fields/policies.ts';
+import { projectData } from '../../../fields/policy-read.ts';
+import { queryableFields } from '../../../fields/policy-metadata.ts';
 import { validateData } from '../../../fields/validate-data.ts';
 import { parseQuery } from '../../../queries/parse-query.ts';
 import { createContentStore } from '../store.ts';
@@ -127,7 +128,7 @@ type Fixture = Awaited<ReturnType<typeof fixture>>;
 async function save(kit: Fixture, collection: string, raw: DocumentData) {
   const id = randomUUID(),
     versionId = randomUUID();
-  const data = validateData({
+  const data = await validateData({
     collection: kit.registry.get(collection),
     data: raw,
     locale: 'en',
@@ -148,6 +149,7 @@ async function save(kit: Fixture, collection: string, raw: DocumentData) {
       data,
     });
     await kit.store.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection,
       id,
       revision: 1,
@@ -416,8 +418,15 @@ it('one denied block variant prevents its shared field path from leaking hidden 
     collectionKey: 'items',
     locale: 'en',
   };
-  const allowed = queryableFields({ collection, context });
-  const hidden = projectData({
+  const allowed = await queryableFields({
+    limits: contentLimits(),
+    functions: { budget: { used: 0 } },
+    collection,
+    context,
+  });
+  const hidden = await projectData({
+    limits: contentLimits(),
+    functions: { budget: { used: 0 } },
     collection,
     context,
     data: {

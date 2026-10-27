@@ -22,7 +22,7 @@ function compileFields(input: {
   blockKey?: string;
 }): FieldMapping[] {
   return dataFields(input.fields)
-    .filter((field) => field.type !== 'join')
+    .filter((field) => field.type !== 'join' && !field.virtual)
     .map((field) => {
       const identityPath = input.parent
         ? `${input.parent.identityPath}.${field.id}`

@@ -1,5 +1,8 @@
 'use client';
 
+import { FieldDiff } from './field-customization';
+import type { Collection } from '../../contracts/content';
+
 import { useState } from 'react';
 import { ArrowLeftIcon, HistoryIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
@@ -29,6 +32,7 @@ import { FixedMedia } from '../assets/document-media';
 import { PrivateFile } from '../assets/private-file';
 
 interface HistoryProps {
+  collection?: Collection | undefined;
   document: Document;
   locale: string;
   t: ContentMessages;
@@ -143,6 +147,7 @@ function HistoryPanel(props: HistoryProps & { onClose: () => void }) {
         ) : null}
         {access.can('versions.diff', scope) ? (
           <VersionComparison
+            collection={props.collection}
             document={document}
             locale={locale}
             versions={versions.data?.rows ?? []}
@@ -213,11 +218,13 @@ function HistoryDetail({
 }
 
 function VersionComparison({
+  collection,
   document,
   locale,
   versions,
   t,
 }: {
+  collection?: Collection | undefined;
   document: Document;
   locale: string;
   versions: readonly ContentVersion[];
@@ -260,9 +267,27 @@ function VersionComparison({
       </div>
       <ManagementFeedback error={diff.error} onRetry={diff.reload} />
       {diff.data && comparison ? (
-        <pre className="max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
-          {JSON.stringify(diff.data.changes, null, 2)}
-        </pre>
+        collection?.fields.some((field) => field.components?.Diff !== undefined) ? (
+          <div className="space-y-3">
+            {diff.data.changes.map((change) => (
+              <FieldDiff
+                key={change.field}
+                collection={collection}
+                change={change}
+                locale={locale}
+                componentProps={diff.data?.componentProps}
+              >
+                <pre className="max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
+                  {JSON.stringify(change, null, 2)}
+                </pre>
+              </FieldDiff>
+            ))}
+          </div>
+        ) : (
+          <pre className="max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
+            {JSON.stringify(diff.data.changes, null, 2)}
+          </pre>
+        )
       ) : null}
     </>
   );
@@ -334,11 +359,13 @@ function VersionPreview({
                 id: detail.data.id,
                 versionId: detail.data.versionId,
                 mode: 'editing',
+                locale,
+                fallback: [],
               }}
               manifest={detail.data.file}
             />
           ) : null}
-          <FixedMedia document={detail.data} />
+          <FixedMedia document={detail.data} locale={locale} mode="editing" fallback={[]} />
         </div>
       ) : detail.phase === 'loading' ? (
         <p role="status">{t.loading}</p>

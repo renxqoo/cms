@@ -55,7 +55,7 @@ function rowsDefinition(): CollectionDefinition {
   ]);
 }
 
-it('group patches merge recursively while hidden and omitted localized siblings remain intact', () => {
+it('group patches merge recursively while hidden and omitted localized siblings remain intact', async () => {
   const collection = definition([
     {
       id: 'settings',
@@ -80,7 +80,7 @@ it('group patches merge recursively while hidden and omitted localized siblings 
     ]),
   );
   const original = structuredClone(current);
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { settings: { label: '新名称' } } },
@@ -94,7 +94,7 @@ it('group patches merge recursively while hidden and omitted localized siblings 
   expect(output.patches).toEqual({ zh: { settings: { label: '新名称' } } });
   expect(current).toEqual(original);
 });
-it('explicit shared facts propagate to every locale without adding unchanged private children to effective patches', () => {
+it('explicit shared facts propagate to every locale without adding unchanged private children to effective patches', async () => {
   const collection = definition([
     { id: 'slug', name: 'slug', type: 'text' },
     {
@@ -114,7 +114,7 @@ it('explicit shared facts propagate to every locale without adding unchanged pri
       { slug: 'old', settings: { theme: 'old', label: locale, private: 'Hidden' } },
     ]),
   );
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { slug: 'new', settings: { theme: 'new' } } },
@@ -128,10 +128,10 @@ it('explicit shared facts propagate to every locale without adding unchanged pri
     expect(output.patches[locale]).toEqual({ slug: 'new', settings: { theme: 'new' } });
   }
 });
-it('keeps explicit same-value writes visible to authorization and retains explicitly empty locale patches', () => {
+it('keeps explicit same-value writes visible to authorization and retains explicitly empty locale patches', async () => {
   const collection = definition([{ id: 'private', name: 'private', type: 'text' }]);
   const current = Object.fromEntries(locales.map((locale) => [locale, { private: 'Hidden' }]));
-  const explicit = normalizeLocaleData({
+  const explicit = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { private: 'Hidden' } },
@@ -142,14 +142,14 @@ it('keeps explicit same-value writes visible to authorization and retains explic
     zh: { private: 'Hidden' },
     fr: { private: 'Hidden' },
   });
-  expect(normalizeLocaleData({ collection, current, patches: { zh: {} }, limits }).patches).toEqual(
-    { zh: {} },
-  );
+  expect(
+    (await normalizeLocaleData({ collection, current, patches: { zh: {} }, limits })).patches,
+  ).toEqual({ zh: {} });
 });
-it('array reorder and deletion replace membership globally and preserve untranslated row fields by stable ID', () => {
+it('array reorder and deletion replace membership globally and preserve untranslated row fields by stable ID', async () => {
   const collection = rowsDefinition();
   const current = currentRows();
-  const reordered = normalizeLocaleData({
+  const reordered = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { rows: [{ id: b, label: '新乙' }, { id: a }] } },
@@ -180,7 +180,7 @@ it('array reorder and deletion replace membership globally and preserve untransl
     zh: { rows: [{ id: b, label: '新乙' }, { id: a }] },
     fr: { rows: [{ id: b }, { id: a }] },
   });
-  const deleted = normalizeLocaleData({
+  const deleted = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { rows: [{ id: a, label: '新甲' }] } },
@@ -190,8 +190,8 @@ it('array reorder and deletion replace membership globally and preserve untransl
   expect(deleted.dataByLocale['zh']).toEqual({ rows: [{ id: a, code: 'A', label: '新甲' }] });
   expect(deleted.patches['fr']).toEqual({ rows: [{ id: a }] });
 });
-it('editing only a localized array child does not create unrelated locale write patches', () => {
-  const output = normalizeLocaleData({
+it('editing only a localized array child does not create unrelated locale write patches', async () => {
+  const output = await normalizeLocaleData({
     collection: rowsDefinition(),
     current: currentRows(),
     patches: { zh: { rows: [{ id: a, label: '新甲' }, { id: b }] } },
@@ -200,9 +200,9 @@ it('editing only a localized array child does not create unrelated locale write 
   expect(output.patches).toEqual({ zh: { rows: [{ id: a, label: '新甲' }, { id: b }] } });
   expect(output.dataByLocale['en']).toEqual(currentRows()['en']);
 });
-it('new shared array IDs are allocated once and missing IDs adopt the one explicit identity at that position', () => {
+it('new shared array IDs are allocated once and missing IDs adopt the one explicit identity at that position', async () => {
   const collection = rowsDefinition();
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     patches: {
       zh: { rows: [{ code: 'A', label: '中文' }] },
@@ -222,7 +222,7 @@ it('new shared array IDs are allocated once and missing IDs adopt the one explic
     zh: { rows: [{ id, code: 'A', label: '中文' }] },
     fr: { rows: [{ id, code: 'A' }] },
   });
-  const explicit = normalizeLocaleData({
+  const explicit = await normalizeLocaleData({
     collection,
     patches: {
       zh: { rows: [{ code: 'A', label: '中文' }] },
@@ -232,7 +232,7 @@ it('new shared array IDs are allocated once and missing IDs adopt the one explic
   });
   expect(explicit.dataByLocale['zh']).toEqual({ rows: [{ id: a, code: 'A', label: '中文' }] });
 });
-it('shared defaults never override a value from another locale and localized defaults only apply to requested locales', () => {
+it('shared defaults never override a value from another locale and localized defaults only apply to requested locales', async () => {
   const collection = definition([
     { id: 'slug', name: 'slug', type: 'text', defaultValue: 'default-slug' },
     { id: 'title', name: 'title', type: 'text', localized: true, defaultValue: 'Untitled' },
@@ -241,7 +241,7 @@ it('shared defaults never override a value from another locale and localized def
     { en: {}, zh: { slug: 'provided' } },
     { zh: { slug: 'provided' }, en: {} },
   ]) {
-    const output = normalizeLocaleData({ collection, patches, limits, applyDefaults: true });
+    const output = await normalizeLocaleData({ collection, patches, limits, applyDefaults: true });
     expect(output.dataByLocale).toEqual({
       en: { slug: 'provided', title: 'Untitled' },
       zh: { slug: 'provided', title: 'Untitled' },
@@ -253,7 +253,7 @@ it('shared defaults never override a value from another locale and localized def
       fr: { slug: 'provided' },
     });
   }
-  const defaults = normalizeLocaleData({
+  const defaults = await normalizeLocaleData({
     collection,
     patches: { en: {} },
     limits,
@@ -266,7 +266,7 @@ it('shared defaults never override a value from another locale and localized def
   });
   expect(defaults.patches).toEqual({ en: {} });
 });
-it('shared default containers keep one array identity and do not populate unrequested localized descendants', () => {
+it('shared default containers keep one array identity and do not populate unrequested localized descendants', async () => {
   const collection = definition([
     {
       id: 'rows',
@@ -279,7 +279,7 @@ it('shared default containers keep one array identity and do not populate unrequ
       ],
     },
   ]);
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     patches: { en: {} },
     limits,
@@ -298,7 +298,7 @@ it('shared default containers keep one array identity and do not populate unrequ
   });
   expect(output.patches).toEqual({ en: {} });
 });
-it('localized containers permit independent descendants and preserve other languages during patches', () => {
+it('localized containers permit independent descendants and preserve other languages during patches', async () => {
   const collection = definition([
     {
       id: 'translated',
@@ -308,7 +308,7 @@ it('localized containers permit independent descendants and preserve other langu
       fields: [{ id: 'shared_in_locale', name: 'value', type: 'text' }],
     },
   ]);
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     current: { en: { translated: { value: 'English' } }, zh: { translated: { value: '中文' } } },
     patches: { en: { translated: { value: 'New English' } } },
@@ -321,7 +321,7 @@ it('localized containers permit independent descendants and preserve other langu
   });
   expect(output.patches).toEqual({ en: { translated: { value: 'New English' } } });
 });
-it('null clears shared containers explicitly while empty group patches preserve existing children', () => {
+it('null clears shared containers explicitly while empty group patches preserve existing children', async () => {
   const collection = definition([
     {
       id: 'group',
@@ -334,10 +334,10 @@ it('null clears shared containers explicitly while empty group patches preserve 
     locales.map((locale) => [locale, { group: { text: locale } }]),
   );
   expect(
-    normalizeLocaleData({ collection, current, patches: { zh: { group: {} } }, limits })
+    (await normalizeLocaleData({ collection, current, patches: { zh: { group: {} } }, limits }))
       .dataByLocale,
   ).toEqual(current);
-  const cleared = normalizeLocaleData({
+  const cleared = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { group: null } },
@@ -358,37 +358,37 @@ it.each([
   { en: { rows: null }, zh: { rows: [] } },
 ])(
   'rejects explicit shared scalar, array identity, order or membership conflicts: %j',
-  (patches) => {
-    expect(() =>
+  async (patches) => {
+    await expect(
       normalizeLocaleData({ collection: rowsDefinition(), patches, limits }),
-    ).toThrowError('invalid input');
+    ).rejects.toThrowError('invalid input');
   },
 );
-it('rejects contradictory stored shared structure instead of resolving it by locale traversal order', () => {
-  expect(() =>
+it('rejects contradictory stored shared structure instead of resolving it by locale traversal order', async () => {
+  await expect(
     normalizeLocaleData({
       collection: rowsDefinition(),
       current: { en: { rows: [] }, zh: { rows: [{ id: a }] } },
       patches: {},
       limits,
     }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
   const collection = definition([{ id: 'shared', name: 'shared', type: 'text' }]);
-  expect(() =>
+  await expect(
     normalizeLocaleData({
       collection,
       patches: { en: { shared: 'A' }, zh: { shared: 'B' } },
       limits,
     }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
 });
-it('normalizes equivalent scalar encodings before checking shared conflicts', () => {
+it('normalizes equivalent scalar encodings before checking shared conflicts', async () => {
   const collection = definition([
     { id: 'ref', name: 'ref', type: 'relationship', relationTo: ['items'] },
     { id: 'date', name: 'date', type: 'date' },
     { id: 'json', name: 'json', type: 'json' },
   ]);
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     patches: {
       en: {
@@ -411,7 +411,7 @@ it('normalizes equivalent scalar encodings before checking shared conflicts', ()
       json: { a: 1, b: 2 },
     });
 });
-it('validates field rules against full normalized data rather than partial scalar comparison objects', () => {
+it('validates field rules against full normalized data rather than partial scalar comparison objects', async () => {
   const collection = definition([
     { id: 'slug', name: 'slug', type: 'text' },
     {
@@ -421,17 +421,17 @@ it('validates field rules against full normalized data rather than partial scala
       validate: { version: '1', run: (value, context) => value === context.data['slug'] },
     },
   ]);
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     patches: { en: { slug: 'same', confirm: 'same' } },
     limits,
   });
   expect(output.dataByLocale['zh']).toEqual({ slug: 'same', confirm: 'same' });
-  expect(() =>
+  await expect(
     normalizeLocaleData({ collection, patches: { en: { slug: 'one', confirm: 'two' } }, limits }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
 });
-it('rejects unknown locales, malformed values, duplicate row identities and garbage without mutating inputs', () => {
+it('rejects unknown locales, malformed values, duplicate row identities and garbage without mutating inputs', async () => {
   const collection = rowsDefinition();
   for (const patches of [
     {},
@@ -442,22 +442,24 @@ it('rejects unknown locales, malformed values, duplicate row identities and garb
     { en: { rows: [{ id: a, unknown: 'field' }] } },
     { en: { rows: [{ id: a, label: 12 }] } },
   ])
-    expect(() => normalizeLocaleData({ collection, patches, limits })).toThrowError(
+    await expect(normalizeLocaleData({ collection, patches, limits })).rejects.toThrowError(
       'invalid input',
     );
-  expect(() =>
+  await expect(
     normalizeLocaleData({ collection, current: { de: {} }, patches: { en: {} }, limits }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
   const cyclic: Record<string, unknown> = {};
   cyclic['self'] = cyclic;
   const patches: Record<string, DocumentData> = { en: {} };
   Reflect.set(patches['en'] ?? {}, 'rows', cyclic);
-  expect(() => normalizeLocaleData({ collection, patches, limits })).toThrowError('invalid input');
+  await expect(normalizeLocaleData({ collection, patches, limits })).rejects.toThrowError(
+    'invalid input',
+  );
   const current = currentRows();
   const original = structuredClone(current);
-  expect(normalizeLocaleData({ collection, current, patches: {}, limits }).dataByLocale).toEqual(
-    current,
-  );
+  expect(
+    (await normalizeLocaleData({ collection, current, patches: {}, limits })).dataByLocale,
+  ).toEqual(current);
   expect(current).toEqual(original);
 });
 
@@ -487,7 +489,7 @@ function blocksDefinition(): CollectionDefinition {
     },
   ]);
 }
-it('blocks preserve per-language fields, infer existing block type by identity and reject explicit type conflicts', () => {
+it('blocks preserve per-language fields, infer existing block type by identity and reject explicit type conflicts', async () => {
   const collection = blocksDefinition();
   const current = Object.fromEntries(
     locales.map((locale) => [
@@ -495,7 +497,7 @@ it('blocks preserve per-language fields, infer existing block type by identity a
       { blocks: [{ id: a, blockType: 'hero', code: 'H', heading: locale }] },
     ]),
   );
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { blocks: [{ id: a, heading: '新标题' }] } },
@@ -509,7 +511,7 @@ it('blocks preserve per-language fields, infer existing block type by identity a
   expect(output.patches).toEqual({
     zh: { blocks: [{ id: a, blockType: 'hero', heading: '新标题' }] },
   });
-  expect(() =>
+  await expect(
     normalizeLocaleData({
       collection,
       patches: {
@@ -518,8 +520,8 @@ it('blocks preserve per-language fields, infer existing block type by identity a
       },
       limits,
     }),
-  ).toThrowError('invalid input');
-  const changed = normalizeLocaleData({
+  ).rejects.toThrowError('invalid input');
+  const changed = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { blocks: [{ id: a, blockType: 'quote', quotation: '新引用' }] } },
@@ -531,7 +533,7 @@ it('blocks preserve per-language fields, infer existing block type by identity a
     fr: { blocks: [{ id: a, blockType: 'quote' }] },
   });
 });
-it('nested groups within shared rows retain localized siblings while propagating shared child facts', () => {
+it('nested groups within shared rows retain localized siblings while propagating shared child facts', async () => {
   const collection = definition([
     {
       id: 'rows',
@@ -556,7 +558,7 @@ it('nested groups within shared rows retain localized siblings while propagating
       { rows: [{ id: a, details: { enabled: false, text: locale } }] },
     ]),
   );
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     current,
     patches: { zh: { rows: [{ id: a, details: { enabled: true } }] } },
@@ -569,7 +571,7 @@ it('nested groups within shared rows retain localized siblings while propagating
     expect(output.patches[locale]).toEqual({ rows: [{ id: a, details: { enabled: true } }] });
   }
 });
-it('applying defaults without requested locale writes only shared values and preserves the explicit boundary', () => {
+it('applying defaults without requested locale writes only shared values and preserves the explicit boundary', async () => {
   const collection = definition([
     {
       id: 'title',
@@ -589,7 +591,7 @@ it('applying defaults without requested locale writes only shared values and pre
       ],
     },
   ]);
-  const output = normalizeLocaleData({
+  const output = await normalizeLocaleData({
     collection,
     current: { en: {} },
     patches: {},
@@ -603,28 +605,32 @@ it('applying defaults without requested locale writes only shared values and pre
   });
   expect(output.patches).toEqual({});
 });
-it('rejects oversized and deeply nested input before generating rows or recursing through field structure', () => {
-  expect(() =>
+it('rejects oversized and deeply nested input before generating rows or recursing through field structure', async () => {
+  await expect(
     normalizeLocaleData({
       collection: rowsDefinition(),
       patches: { en: { rows: [{}, {}, {}] } },
       limits: { ...limits, maxArrayItems: 2 },
     }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
   let deep: unknown = 'value';
   for (let index = 0; index < 50000; index += 1) deep = { nested: deep };
   const patches: Record<string, DocumentData> = { en: {} };
   Reflect.set(patches['en'] ?? {}, 'rows', deep);
-  expect(() => normalizeLocaleData({ collection: rowsDefinition(), patches, limits })).toThrowError(
-    'payload too large',
-  );
+  await expect(
+    normalizeLocaleData({ collection: rowsDefinition(), patches, limits }),
+  ).rejects.toThrowError('payload too large');
 });
-it('does not treat inherited object members as an unprovided locale patch', () => {
+it('does not treat inherited object members as an unprovided locale patch', async () => {
   const collection = {
     ...definition([{ id: 'name', name: 'name', type: 'text', localized: true }]),
     locales: { default: 'en', supported: ['en', 'constructor'], fallback: {} },
   };
-  const output = normalizeLocaleData({ collection, patches: { en: { name: 'English' } }, limits });
+  const output = await normalizeLocaleData({
+    collection,
+    patches: { en: { name: 'English' } },
+    limits,
+  });
   expect(output.dataByLocale).toEqual({ en: { name: 'English' }, constructor: {} });
   expect(output.patches).toEqual({ en: { name: 'English' } });
 });

@@ -4,6 +4,7 @@ export interface RequestContext {
   token?: string;
   idempotencyKey?: string;
   signal?: AbortSignal;
+  editorSessionId?: string;
   onAuthenticated?(adminId: string): void;
   onCredential?(credentialId: string): void;
 }
@@ -108,6 +109,7 @@ const errorStatuses = {
   version_conflict: 409,
   identifier_taken: 409,
   resource_in_use: 409,
+  document_locked: 423,
   binding_exists: 409,
   scope_mismatch: 409,
   last_super_admin: 409,

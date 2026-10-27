@@ -1,3 +1,4 @@
+import { canonical, consistent, candidates, assertMap } from './locale-values.ts';
 import { randomUUID } from 'node:crypto';
 import { fail } from '@new-cms/cms/platform/contracts';
 import { z } from 'zod';
@@ -8,10 +9,12 @@ import type {
   FieldDefinition,
   JsonValue,
 } from '../definition.ts';
-import { assertJsonBudget } from './data-budget.ts';
 import { objectValue } from './json-value.ts';
 import { dataFields } from './structure.ts';
-import { validateData } from './validate-data.ts';
+import { validateDataShape } from './validate-shape.ts';
+import { validateLocaleValues } from './validate-data.ts';
+import { dynamicDefault, fillDefaults } from './value-defaults.ts';
+import type { FunctionScope } from './invoke-function.ts';
 
 interface NormalizeInput {
   collection: CollectionDefinition;
@@ -19,6 +22,8 @@ interface NormalizeInput {
   patches: Readonly<Record<string, DocumentData>>;
   limits: ContentLimits;
   applyDefaults?: boolean;
+  functions?: FunctionScope;
+  validateRules?: boolean;
 }
 interface State extends NormalizeInput {
   requested: ReadonlySet<string>;
@@ -47,38 +52,12 @@ interface ObjectResult {
 function result(): Result {
   return { data: new Map(), patches: new Map() };
 }
-function canonical(value: JsonValue): string {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  if (objectValue(value))
-    return `{${Object.keys(value)
-      .toSorted()
-      .map((key) => `${JSON.stringify(key)}:${canonical(value[key] ?? null)}`)
-      .join(',')}}`;
-  return JSON.stringify(value);
-}
-function consistent<T extends JsonValue>(values: readonly T[]): T | undefined {
-  const [first] = values;
-  if (first !== undefined && values.some((value) => canonical(value) !== canonical(first)))
-    fail('invalid_input');
-  return first;
-}
-function candidates(frames: readonly Frame[]): { values: JsonValue[]; explicit: boolean } {
-  const supplied = frames.filter((frame) => frame.explicit);
-  const source =
-    supplied.length > 0
-      ? supplied.map((frame) => frame.patch)
-      : frames.map((frame) => frame.current);
-  return {
-    values: source.filter((value): value is JsonValue => value !== undefined),
-    explicit: supplied.length > 0,
-  };
-}
 function scalar(state: State, field: FieldDefinition, frames: readonly Frame[]): Result {
   const selected = candidates(frames);
   const { validate: _validate, ...shape } = field;
   const normalized = selected.values.map(
     (value) =>
-      validateData({
+      validateDataShape({
         collection: { ...state.collection, fields: [shape] },
         data: { [String(field.name)]: value },
         locale: frames[0]?.locale ?? state.collection.locales.default,
@@ -119,14 +98,14 @@ function nullContainer(frames: readonly Frame[]): Result {
   }
   return output;
 }
-function fields(
+async function fields(
   state: State,
   definitions: readonly FieldDefinition[],
   frames: readonly ObjectFrame[],
-): ObjectResult {
+): Promise<ObjectResult> {
   const definitionsByName = new Map(
     dataFields(definitions)
-      .filter((field) => field.type !== 'join')
+      .filter((field) => field.type !== 'join' && !field.virtual)
       .map((field) => [String(field.name), field]),
   );
   const output: ObjectResult = { data: {}, patches: {} };
@@ -149,17 +128,21 @@ function fields(
       explicit: frame.patch !== undefined && Object.hasOwn(frame.patch, name),
       defaulted: frame.defaulted,
     }));
-    const resolved = resolve(state, field, inputs);
+    const resolved = await resolve(state, field, inputs);
     for (const [locale, value] of resolved.data) (output.data[locale] ??= {})[name] = value;
     for (const [locale, value] of resolved.patches) (output.patches[locale] ??= {})[name] = value;
   }
   return output;
 }
-function group(state: State, field: FieldDefinition, frames: readonly Frame[]): Result {
+async function group(
+  state: State,
+  field: FieldDefinition,
+  frames: readonly Frame[],
+): Promise<Result> {
   const kind = container(frames, 'group');
   if (kind === 'missing') return result();
   if (kind === 'null') return nullContainer(frames);
-  const nested = fields(
+  const nested = await fields(
     state,
     field.fields ?? [],
     frames.map((frame) => ({
@@ -243,11 +226,11 @@ function rowBody(row: DocumentData | undefined, type: JsonValue | undefined): Do
   const { id: _id, blockType: _blockType, ...body } = row;
   return body;
 }
-function arrayRow(
+async function arrayRow(
   state: State,
   field: FieldDefinition,
   input: { frames: readonly Frame[]; row: DocumentData; position: number },
-): ObjectResult {
+): Promise<ObjectResult> {
   return fields(
     state,
     rowFields(field, input.row),
@@ -279,7 +262,11 @@ function structuralChanged(
   }));
   return canonical(before) !== canonical([...rows]);
 }
-function array(state: State, field: FieldDefinition, frames: readonly Frame[]): Result {
+async function array(
+  state: State,
+  field: FieldDefinition,
+  frames: readonly Frame[],
+): Promise<Result> {
   const kind = container(frames, 'array');
   if (kind === 'missing') return result();
   if (kind === 'null') return nullContainer(frames);
@@ -289,52 +276,74 @@ function array(state: State, field: FieldDefinition, frames: readonly Frame[]): 
   const changed =
     candidates(frames).explicit &&
     frames.some((frame) => structuralChanged(frame.current, rows, field));
-  const childChanges = new Set<string>();
-  rows.forEach((row, position) => {
-    const nested = arrayRow(state, field, { frames, row, position });
+  const childChanges = new Set(
+    frames.filter((frame) => frame.explicit || changed).map((frame) => frame.locale),
+  );
+  for (const [position, row] of rows.entries()) {
+    const nested = await arrayRow(state, field, { frames, row, position });
     for (const frame of frames) {
       values.get(frame.locale)?.push({ ...row, ...nested.data[frame.locale] });
       const patch = nested.patches[frame.locale] ?? {};
       if (Object.keys(patch).length > 0) childChanges.add(frame.locale);
       patches.get(frame.locale)?.push({ ...row, ...patch });
     }
-  });
+  }
   const output = result();
   for (const frame of frames) {
     output.data.set(frame.locale, values.get(frame.locale) ?? []);
-    if (frame.explicit || changed || childChanges.has(frame.locale))
+    if (childChanges.has(frame.locale))
       output.patches.set(frame.locale, patches.get(frame.locale) ?? []);
   }
   return output;
 }
-function withDefaults(
+async function withDefaults(
   state: State,
   field: FieldDefinition,
   frames: readonly Frame[],
-): readonly Frame[] {
+): Promise<readonly Frame[]> {
   if (
     !state.applyDefaults ||
     field.defaultValue === undefined ||
     candidates(frames).values.length > 0
   )
     return frames;
-  return frames.map((frame) => ({
-    ...frame,
-    current: structuredClone(field.defaultValue ?? null),
-    defaulted: true,
-  }));
+  let value: JsonValue | undefined;
+  if (dynamicDefault(field.defaultValue)) {
+    const locale =
+      frames.find((frame) => state.requested.has(frame.locale))?.locale ??
+      frames[0]?.locale ??
+      state.collection.locales.default;
+    const values = await fillDefaults({
+      fields: [field],
+      data: {},
+      locale,
+      limits: state.limits,
+      scope: state.functions ?? { budget: { used: 0 } },
+      root: state.patches[locale] ?? {},
+    });
+    value = values[String(field.name)];
+  } else value = field.defaultValue;
+  return frames.map((frame) => ({ ...frame, current: structuredClone(value), defaulted: true }));
 }
-function shared(state: State, field: FieldDefinition, frames: readonly Frame[]): Result {
-  const inputs = withDefaults(state, field, frames);
+async function shared(
+  state: State,
+  field: FieldDefinition,
+  frames: readonly Frame[],
+): Promise<Result> {
+  const inputs = await withDefaults(state, field, frames);
   if (field.type === 'group') return group(state, field, inputs);
   if (field.type === 'array' || field.type === 'blocks') return array(state, field, inputs);
   return scalar(state, field, inputs);
 }
-function resolve(state: State, field: FieldDefinition, frames: readonly Frame[]): Result {
+async function resolve(
+  state: State,
+  field: FieldDefinition,
+  frames: readonly Frame[],
+): Promise<Result> {
   if (!field.localized) return shared(state, field, frames);
   const output = result();
   for (const frame of frames) {
-    const local = shared(
+    const local = await shared(
       {
         ...state,
         applyDefaults: state.applyDefaults === true && state.requested.has(frame.locale),
@@ -347,30 +356,21 @@ function resolve(state: State, field: FieldDefinition, frames: readonly Frame[])
   }
   return output;
 }
-function assertMap(
-  value: unknown,
-  input: NormalizeInput,
-): asserts value is Readonly<Record<string, DocumentData>> {
-  if (!objectValue(value)) fail('invalid_input');
-  assertJsonBudget(value, {
-    maxDepth: input.limits.maxFieldDepth * 2 + input.limits.maxRichTextDepth * 2 + 2,
-    maxBytes: input.limits.maxStorageBytes,
-    maxNodes: input.limits.maxStorageBytes,
-  });
-  for (const [locale, data] of Object.entries(value))
-    if (!input.collection.locales.supported.includes(locale) || !objectValue(data))
-      fail('invalid_input');
-}
-export function normalizeLocaleData(input: NormalizeInput): {
+export async function normalizeLocaleData(input: NormalizeInput): Promise<{
   dataByLocale: Record<string, DocumentData>;
   patches: Record<string, DocumentData>;
-} {
+}> {
   assertMap(input.patches, input);
   if (input.current !== undefined) assertMap(input.current, input);
   if (Object.keys(input.patches).length === 0 && Object.keys(input.current ?? {}).length === 0)
     fail('invalid_input');
-  const state: State = { ...input, requested: new Set(Object.keys(input.patches)) };
-  const output = fields(
+  const scope = input.functions ?? { budget: { used: 0 } };
+  const state: State = {
+    ...input,
+    functions: scope,
+    requested: new Set(Object.keys(input.patches)),
+  };
+  const output = await fields(
     state,
     input.collection.fields,
     input.collection.locales.supported.map((locale) => ({
@@ -380,18 +380,13 @@ export function normalizeLocaleData(input: NormalizeInput): {
       ...(Object.hasOwn(input.patches, locale) ? { patch: input.patches[locale] ?? {} } : {}),
     })),
   );
-  const dataByLocale = Object.fromEntries(
-    Object.entries(output.data).map(([locale, data]) => [
-      locale,
-      validateData({
-        collection: input.collection,
-        data,
-        locale,
-        mode: 'draft',
-        limits: input.limits,
-      }),
-    ]),
-  );
+  const dataByLocale = await validateLocaleValues({
+    collection: input.collection,
+    data: output.data,
+    limits: input.limits,
+    functions: scope,
+    validateRules: input.validateRules !== false,
+  });
   const patches = Object.fromEntries(
     Object.entries(output.patches).filter(
       ([locale, data]) => state.requested.has(locale) || Object.keys(data).length > 0,

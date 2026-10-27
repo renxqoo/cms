@@ -79,7 +79,7 @@ async function issue(state: ContentState, work: IssueWork): Promise<PublicPrevie
     locale: reader.locale,
     fallback: [],
   });
-  assertCompletePreviewRead(reader, data);
+  await assertCompletePreviewRead(reader, data);
   await requirePreviewCapacity(reader, options);
   const ticket = await insertTicket(reader, { document, options });
   await auditContent(state, {

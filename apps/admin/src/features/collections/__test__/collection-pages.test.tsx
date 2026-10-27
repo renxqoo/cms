@@ -130,6 +130,7 @@ it('keeps search, typed filters, locale, mode and folder queries within the publ
     target: { value: 'root' },
   });
   await userEvent.click(screen.getByRole('button', { name: 'Filters' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Add condition' }));
   fireEvent.change(screen.getByRole('combobox', { name: 'Filter field' }), {
     target: { value: 'score' },
   });
@@ -138,7 +139,7 @@ it('keeps search, typed filters, locale, mode and folder queries within the publ
   });
   await userEvent.click(screen.getByRole('button', { name: 'Apply filter' }));
   expect(
-    screen.getByText('Invalid filter. Numbers, booleans, and JSON must match the field type.'),
+    screen.getByText('Check the fields, comparisons and values before applying.'),
   ).toBeInTheDocument();
   fireEvent.change(screen.getByRole('textbox', { name: 'Filter value' }), {
     target: { value: '0' },
@@ -558,6 +559,7 @@ it('uses real authorized reference identities and locale-safe pagination and rep
   const services = referenceServices([collection], pageApi.report);
   const { signal } = new AbortController();
   const page = await services.searchReferences({
+    sourcePath: 'related',
     collections: ['articles'],
     collection: 'articles',
     query: 'Story',
@@ -577,6 +579,7 @@ it('uses real authorized reference identities and locale-safe pagination and rep
   });
   await expect(
     services.searchReferences({
+      sourcePath: 'related',
       collections: ['articles'],
       collection: 'media',
       query: '',
@@ -588,6 +591,7 @@ it('uses real authorized reference identities and locale-safe pagination and rep
   pageApi.request.mockResolvedValueOnce(failure('forbidden', 403));
   await expect(
     services.searchReferences({
+      sourcePath: 'related',
       collections: ['articles'],
       collection: 'articles',
       query: '',
@@ -670,9 +674,35 @@ it('exposes trash restore and purge controls without attempting ordinary editing
   ).toBe(false);
 });
 
-it('autosaves an enabled draft only after its quiet window and stops when the confirmed data is clean', async () => {
+it('keeps disabled autosave and publication schedules out of the editor even with operation grants', async () => {
+  pageApi.request.mockImplementation((input) =>
+    input.operation === 'collections.get'
+      ? Promise.resolve(
+          ok({
+            ...collection,
+            drafts: { validate: false, autosave: false, schedule: false },
+            capabilities: { ...collection.capabilities, autosave: false, schedules: false },
+          }),
+        )
+      : defaultPageRequest(input),
+  );
+  renderManagement(<DocumentEditorPage collectionKey="articles" documentId={recordId} />);
+  await screen.findByRole('textbox', { name: /^Title\*?$/ });
+  expect(screen.queryByRole('switch', { name: 'Autosave drafts' })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'More actions' }));
+  expect(screen.queryByRole('menuitem', { name: 'Schedule publication' })).not.toBeInTheDocument();
+});
+
+it('autosaves after the configured quiet interval and stops when the confirmed data is clean', async () => {
   let current = record();
   pageApi.request.mockImplementation((input) => {
+    if (input.operation === 'collections.get')
+      return Promise.resolve(
+        ok({
+          ...collection,
+          drafts: { validate: true, autosave: { intervalMs: 320 }, schedule: true },
+        }),
+      );
     if (input.operation === 'documents.autosave') {
       current = record({
         revision: 4,
@@ -701,7 +731,7 @@ it('autosaves an enabled draft only after its quiet window and stops when the co
     fireEvent.change(screen.getByRole('textbox', { name: /^Title\*?$/ }), {
       target: { value: 'Autosaved title' },
     });
-    await act(() => vi.advanceTimersByTimeAsync(9999));
+    await act(() => vi.advanceTimersByTimeAsync(319));
     expect(
       pageApi.request.mock.calls.some(([input]) => input.operation === 'documents.autosave'),
     ).toBe(false);

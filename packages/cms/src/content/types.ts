@@ -1,3 +1,6 @@
+import type { AuthorIdentity, AuthorReader } from '@new-cms/cms/access';
+import type { JoinQueries } from './joins/definition.ts';
+import type { HierarchyCache } from './hierarchy/read-paths.ts';
 import type { AccessAuthorization, AccessActorAuthorization, Principal } from '@new-cms/cms/access';
 import type { CmsPolicy, RequestContext } from '@new-cms/cms/platform/contracts';
 import type { Database, SqlExecutor } from '@new-cms/database/client';
@@ -31,6 +34,8 @@ export interface ContentWorkPolicy {
   trashRetentionMs: number;
   maxFolders: number;
   maxFolderDepth: number;
+  maxQueryPresets: number;
+  maxOrderKeyBytes: number;
 }
 
 export interface ContentOptions {
@@ -53,6 +58,7 @@ export interface ContentOptions {
   }): boolean;
   authorize: AccessAuthorization;
   authorizeActor: AccessActorAuthorization;
+  resolveAuthor?: AuthorReader | undefined;
   assets?: AssetsParticipants;
   uploadApi?: AssetsApi;
   uploadPolicy: {
@@ -78,6 +84,7 @@ export interface ContentOptions {
         collection: string;
         documentId: string;
         revisionId: string;
+        locale: string;
         signal: AbortSignal;
       }) => Promise<void>
     >
@@ -85,13 +92,24 @@ export interface ContentOptions {
 }
 
 export interface ContentRuntime extends ContentOptions {
+  prepareHierarchyNode(
+    state: ContentState,
+    input: { data: DocumentData; documentId: string },
+  ): Promise<DocumentData>;
   store: ContentStore;
   resolveCollection(tx: SqlExecutor, key: string): Promise<CollectionDefinition>;
   schemas: ReturnType<typeof contentInputSchemas>;
+  evaluateCollectionPolicy(state: Omit<ContentState, 'predicate'>): Promise<Where | undefined>;
   resolveRelationScopes(state: ContentState): Promise<{ relationScopes: RelationScope[] }>;
 }
 
 export interface ContentState {
+  joinRead?: { collection: string; queries: JoinQueries };
+  hookBudget?: { used: number };
+  hookLimits?: ContentLimits;
+  expansionBudget?: { nodes: number };
+  virtualReadCache?: Map<string, Promise<{ state: ContentState; data: DocumentData } | undefined>>;
+  readPolicyData?: WeakMap<DocumentData, DocumentData>;
   tx: SqlExecutor;
   ctx: RequestContext;
   actor: Principal;
@@ -101,6 +119,10 @@ export interface ContentState {
   mode: 'editing' | 'published';
   predicate?: Where;
   actorAuthorization?: boolean;
+  hierarchyReadCache?: HierarchyCache;
+  authorshipReadable?: boolean;
+  authorCache?: Map<string, Promise<AuthorIdentity | null>>;
+  backgroundWork?: boolean;
   fallbackOverride?: readonly string[];
 }
 

@@ -30,7 +30,9 @@ export function CodeEditor(props: CodeEditorProps) {
       className="min-w-0 overflow-hidden rounded-lg border border-input"
       data-slot="code-editor"
     >
-      <header className="border-b bg-muted/30 px-3 py-2 text-sm font-medium">{props.label}</header>
+      <header className="border-b bg-muted/30 px-3 py-2 text-sm font-medium">
+        {props.labelContent ?? props.label}
+      </header>
       {validOptions(props) ? (
         <Suspense fallback={<CodeEditorLoading {...props} />}>
           <EditorEngine key={props.assetBaseUrl} {...props} />

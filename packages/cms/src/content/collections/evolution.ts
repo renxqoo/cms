@@ -40,6 +40,7 @@ export function schemaControlSql(input: {
   mapping: ContentMapping;
   previous: ContentSchemaSnapshot;
   backfills: readonly ContentSchemaBackfill[];
+  activateEmpty?: boolean;
 }): string {
   const statements: string[] = [];
   for (const compiled of input.mapping.collections)
@@ -62,11 +63,47 @@ export function schemaControlSql(input: {
   statements.push(
     `INSERT INTO content_schema_manifests(fingerprint,plan,status) VALUES(${literal(input.mapping.fingerprint)},${literal(JSON.stringify(input.mapping.plan))}::jsonb,${literal(status)}) ON CONFLICT(fingerprint) DO NOTHING;`,
   );
+  if (input.activateEmpty && input.backfills.length > 0)
+    statements.push(emptySchemaActivationSql(input));
   return `${statements.join('\n')}\n`;
+}
+
+function emptySchemaActivationSql(input: {
+  mapping: ContentMapping;
+  backfills: readonly ContentSchemaBackfill[];
+}): string {
+  const collections = [
+    ...new Map(
+      input.mapping.collections.map((collection) => [collection.definition.id, collection]),
+    ).values(),
+  ];
+  const changed = [
+    ...new Set(
+      input.backfills.map((backfill) => input.mapping.get(backfill.collection).definition.id),
+    ),
+  ];
+  const ids = changed.map(literal).join(',');
+  const targets = literal(
+    JSON.stringify(
+      collections.map(({ definition }) => ({
+        collection_id: definition.id,
+        schema_version: definition.schemaVersion,
+      })),
+    ),
+  );
+  const fingerprint = literal(input.mapping.fingerprint);
+  return `DO $$ BEGIN
+    IF NOT EXISTS(SELECT 1 FROM content_documents WHERE collection_id IN(${ids}))
+       AND NOT EXISTS(SELECT 1 FROM content_revisions WHERE collection_id IN(${ids})) THEN
+      UPDATE content_schema_control c SET schema_version=x.schema_version,prepared_schema_version=NULL,prepared_fingerprint=NULL FROM jsonb_to_recordset(${targets}::jsonb) x(collection_id text,schema_version integer) WHERE c.collection_id=x.collection_id AND (c.prepared_fingerprint=${fingerprint} OR c.schema_version=x.schema_version);
+      UPDATE content_schema_manifests SET status='ready' WHERE fingerprint=${fingerprint} AND NOT EXISTS(SELECT 1 FROM jsonb_to_recordset(${targets}::jsonb) x(collection_id text,schema_version integer) LEFT JOIN content_schema_control c USING(collection_id) WHERE c.schema_version IS DISTINCT FROM x.schema_version);
+    END IF;
+  END $$;`;
 }
 export function generateEvolution(input: {
   previous: ContentSchemaSnapshot;
   registry: ContentRegistry;
+  activateEmpty?: boolean;
 }): ContentEvolution {
   const mapping = compileContent(input.registry);
   const snapshot = schemaSnapshot(mapping);
@@ -81,7 +118,7 @@ export function generateEvolution(input: {
     mapping,
     snapshot,
     changes: physical.changes,
-    sql: `${physical.sql}${requiresMigration ? schemaControlSql({ mapping, previous: input.previous, backfills }) : ''}`,
+    sql: `${physical.sql}${requiresMigration ? schemaControlSql({ mapping, previous: input.previous, backfills, activateEmpty: input.activateEmpty === true }) : ''}`,
     requiresMigration,
     requiresManualMigration: manualReasons.length > 0,
     manualReasons,

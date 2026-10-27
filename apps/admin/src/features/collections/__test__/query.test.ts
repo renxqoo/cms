@@ -16,6 +16,13 @@ it('regression: collection lists honor the configured default language rather th
   expect(parseDocumentQuery(new URLSearchParams('locale=unknown'), configured).locale).toBe('en');
 });
 
+it('uses a collection pagination default while preserving a valid explicit URL page size', () => {
+  const collection = catalog({ admin: { pagination: { defaultLimit: 7, limits: [7, 21] } } });
+  expect(parseDocumentQuery(new URLSearchParams(), collection).pageSize).toBe(7);
+  expect(parseDocumentQuery(new URLSearchParams('pageSize=21'), collection).pageSize).toBe(21);
+  expect(parseDocumentQuery(new URLSearchParams('pageSize=1000'), collection).pageSize).toBe(7);
+});
+
 it('normalizes document pagination and rejects unregistered sort or locale values', () => {
   const parsed = parseDocumentQuery(
     new URLSearchParams(
@@ -26,7 +33,7 @@ it('normalizes document pagination and rejects unregistered sort or locale value
   expect(parsed).toMatchObject({
     page: 1,
     pageSize: 20,
-    sort: 'updatedAt',
+    sort: [{ field: 'updatedAt', order: 'desc' }],
     locale: 'en',
     mode: 'editing',
     folderId: undefined,
@@ -43,13 +50,15 @@ it('normalizes document pagination and rejects unregistered sort or locale value
     pageSize: 50,
     mode: 'published',
     trashed: true,
-    order: 'asc',
     locale: 'zh-CN',
     folderId: null,
   });
   expect(
-    parseDocumentQuery(new URLSearchParams(`folderId=${folderId}&sort=title`), catalog()),
-  ).toMatchObject({ folderId, sort: 'title' });
+    parseDocumentQuery(
+      new URLSearchParams({ folderId, sort: JSON.stringify([{ field: 'title', order: 'asc' }]) }),
+      catalog(),
+    ),
+  ).toMatchObject({ folderId, sort: [{ field: 'title', order: 'asc' }] });
 });
 
 it('keeps rapid search and filter patches while resetting pagination', () => {
@@ -73,28 +82,100 @@ it('keeps rapid search and filter patches while resetting pagination', () => {
   ).toBe('3');
 });
 
+it('uses safe collection defaults and excludes a non-sortable field from URL ordering', () => {
+  const configured = catalog({
+    defaultSort: [
+      { field: 'title', order: 'asc' },
+      { field: 'count', order: 'desc' },
+    ],
+  });
+  configured.fields.push({
+    id: 'tags',
+    path: 'tags',
+    type: 'select',
+    label: 'Tags',
+    required: false,
+    localized: false,
+    queryable: true,
+    sortable: false,
+  });
+  expect(parseDocumentQuery(new URLSearchParams(), configured).sort).toEqual([
+    { field: 'title', order: 'asc' },
+    { field: 'count', order: 'desc' },
+  ]);
+  expect(
+    parseDocumentQuery(
+      new URLSearchParams({ sort: JSON.stringify([{ field: 'tags', order: 'asc' }]) }),
+      configured,
+    ).sort,
+  ).toEqual([
+    { field: 'title', order: 'asc' },
+    { field: 'count', order: 'desc' },
+  ]);
+});
+
 it('constructs typed field filters only for queryable safe metadata', () => {
   const query = parseDocumentQuery(new URLSearchParams(), catalog());
   expect(queryFilter(query, catalog())).toEqual({ valid: true, where: undefined });
   expect(
-    queryFilter({ ...query, filterField: 'hidden', filterValue: 'secret' }, catalog()).valid,
+    queryFilter(
+      { ...query, where: JSON.stringify({ field: 'hidden', operator: 'eq', value: 'secret' }) },
+      catalog(),
+    ).valid,
   ).toBe(false);
   expect(
-    queryFilter({ ...query, filterField: 'count', filterValue: '0' }, catalog()).where,
+    queryFilter(
+      { ...query, where: JSON.stringify({ field: 'count', operator: 'eq', value: 0 }) },
+      catalog(),
+    ).where,
   ).toEqual({ field: 'count', operator: 'eq', value: 0 });
   for (const value of ['', 'Infinity', 'wrong'])
     expect(
-      queryFilter({ ...query, filterField: 'count', filterValue: value }, catalog()).valid,
+      queryFilter(
+        { ...query, where: JSON.stringify({ field: 'count', operator: 'eq', value }) },
+        catalog(),
+      ).valid,
     ).toBe(false);
   expect(
-    queryFilter({ ...query, filterField: 'active', filterValue: 'false' }, catalog()).where,
+    queryFilter(
+      { ...query, where: JSON.stringify({ field: 'active', operator: 'eq', value: false }) },
+      catalog(),
+    ).where,
   ).toEqual({ field: 'active', operator: 'eq', value: false });
-  expect(queryFilter({ ...query, filterField: 'active', filterValue: '1' }, catalog()).valid).toBe(
-    false,
-  );
   expect(
-    queryFilter({ ...query, filterField: 'title', filterValue: '文字' }, catalog()).where,
+    queryFilter(
+      { ...query, where: JSON.stringify({ field: 'active', operator: 'eq', value: '1' }) },
+      catalog(),
+    ).valid,
+  ).toBe(false);
+  expect(
+    queryFilter(
+      { ...query, where: JSON.stringify({ field: 'title', operator: 'eq', value: '文字' }) },
+      catalog(),
+    ).where,
   ).toEqual({ field: 'title', operator: 'eq', value: '文字' });
+});
+
+it('regression: URL query parsing retains server-supported views above historical fixed field caps', () => {
+  const fields = Array.from({ length: 501 }, (_, index) => ({
+    id: `field${index}`,
+    path: `field${index}`,
+    type: 'text',
+    label: `Field ${index}`,
+    required: false,
+    localized: false,
+    queryable: true,
+    sortable: true,
+  }));
+  const configured = catalog({ fields });
+  const sort = fields.slice(0, 101).map((field) => ({ field: field.path, order: 'asc' }));
+  const columns = fields.map((field) => field.path);
+  expect(
+    parseDocumentQuery(
+      new URLSearchParams({ sort: JSON.stringify(sort), columns: JSON.stringify(columns) }),
+      configured,
+    ),
+  ).toMatchObject({ sort, columns });
 });
 
 it('does not invent a title for unreadable data and renders full structured values safely', () => {

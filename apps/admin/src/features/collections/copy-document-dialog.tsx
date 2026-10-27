@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Banner } from '@new-cms/ui/feedback';
 import { Field, NativeSelect } from '@new-cms/ui/forms';
 import { requestApi } from '../../api/client';
@@ -13,16 +13,21 @@ import { documentSchema } from '../../contracts/documents';
 import type { Document } from '../../contracts/documents';
 import { useAccessControl } from '../access-control/provider';
 import { FieldRenderer } from '../fields/field-renderer';
-import type { FieldData, FieldServices } from '../fields/types';
+import type { FieldData } from '../fields/types';
+import type { Collection } from '../../contracts/content';
 import { writablePatch } from '../fields/writable-data';
 import { ManagementDialog } from '../management-shared/management-dialog';
 import { ManagementFeedback } from '../management-shared/feedback';
 import type { EditorFailure } from './editor-controller';
 import type { EditorSnapshot } from './editor-read';
+import { copyFieldData } from '../fields/copy-data';
+import { synchronizeSharedValues } from './copy-localization';
+import { useCandidatePresentation, usePresentationValidity } from './use-candidate-presentation';
+import { useEditorReferences } from './use-editor-references';
 
 interface CopyDocumentDialogProps {
   snapshot: EditorSnapshot;
-  services: FieldServices;
+  collections: readonly Collection[];
   busy: boolean;
   failure: EditorFailure | null;
   onClose: () => void;
@@ -113,7 +118,10 @@ async function readCopySource(
     signal,
   });
   if (!document.ok) return document;
-  const value = { editor: editor.data, document: document.data };
+  const value = {
+    editor: editor.data,
+    document: { ...document.data, data: copyFieldData(editor.data.layout, document.data.data) },
+  };
   return matchingCopy(source, value, locale)
     ? { ok: true, status: 200, requestId: document.requestId, data: value }
     : failure('version_conflict', 409);
@@ -196,9 +204,11 @@ export function CopyDocumentDialog(props: CopyDocumentDialogProps) {
   const language = useShell((state) => state.locale);
   const t = messages[language];
   const scope = { scopeKind: 'collection', collectionKey: source.collection.key } as const;
-  const allowed = ['collections.editor', 'documents.get', 'documents.copy'].every((operation) =>
-    can(operation, scope),
-  );
+  const allowed =
+    !source.collection.disableDuplicate &&
+    ['collections.editor', 'documents.get', 'documents.copy'].every((operation) =>
+      can(operation, scope),
+    );
   const state = useCopySources(source, allowed);
   const [locale, setLocale] = useState(source.editor.locale);
   const [values, setValues] = useState<Record<string, FieldData>>({});
@@ -259,27 +269,101 @@ export function CopyDocumentDialog(props: CopyDocumentDialogProps) {
         </NativeSelect>
       </Field>
       {Object.entries(allowed ? state.records : {}).map(([key, entry]) => (
-        <div key={key} hidden={locale !== key}>
-          <FieldRenderer
-            idPrefix={`copy-document-${key}`}
-            resetKey={`copy:${versionId}:${key}`}
-            layout={entry.editor.layout}
-            value={values[key] ?? entry.document.data}
-            onChange={(value) => setValues((previous) => ({ ...previous, [key]: value }))}
-            onValidityChange={(name, error) =>
-              setErrors((previous) => ({
-                ...previous,
-                [key]: withoutError(previous[key] ?? {}, name, error),
-              }))
-            }
-            locale={key}
-            services={props.services}
-            errors={errors[key] ?? {}}
-            richTextNodes={entry.editor.richTextNodes}
-            readOnly={!ready}
-          />
-        </div>
+        <CopyLocaleFields
+          key={key}
+          source={source}
+          entry={entry}
+          collections={props.collections}
+          active={locale === key}
+          value={values[key] ?? entry.document.data}
+          onChange={(value) =>
+            setValues((previous) =>
+              Object.fromEntries(
+                Object.entries(state.records).map(([targetLocale, target]) => [
+                  targetLocale,
+                  targetLocale === key
+                    ? value
+                    : synchronizeSharedValues({
+                        layout: entry.editor.layout,
+                        before: previous[key] ?? entry.document.data,
+                        next: value,
+                        other: previous[targetLocale] ?? target.document.data,
+                      }),
+                ]),
+              ),
+            )
+          }
+          onValidityChange={(name, error) =>
+            setErrors((previous) => ({
+              ...previous,
+              [key]: withoutError(previous[key] ?? {}, name, error),
+            }))
+          }
+          errors={errors[key] ?? {}}
+          readOnly={!ready}
+        />
       ))}
     </ManagementDialog>
+  );
+}
+
+function CopyLocaleFields(props: {
+  source: EditorSnapshot;
+  entry: CopySource;
+  collections: readonly Collection[];
+  active: boolean;
+  value: FieldData;
+  onChange: (value: FieldData) => void;
+  onValidityChange: (name: string, error: string | null) => void;
+  errors: Record<string, string>;
+  readOnly: boolean;
+}) {
+  const { source, entry, active } = props;
+  const language = useShell((state) => state.locale);
+  const { reportResult } = useAccessControl();
+  const snapshot = useMemo(
+    () => ({ ...source, editor: entry.editor, document: entry.document }),
+    [source, entry],
+  );
+  const presentation = useCandidatePresentation({
+    snapshot,
+    data: props.value,
+    active,
+    report: reportResult,
+  });
+  usePresentationValidity({
+    busy: presentation.previewBusy,
+    failed: presentation.previewFailure !== null,
+    report: props.onValidityChange,
+    message: messages[language].loading,
+  });
+  const services = useEditorReferences({
+    snapshot,
+    data: props.value,
+    collections: props.collections,
+    report: reportResult,
+  });
+  return (
+    <div hidden={!active} inert={!active}>
+      {presentation.previewBusy ? <p role="status">{messages[language].loading}</p> : null}
+      <ManagementFeedback error={presentation.previewFailure} onRetry={presentation.retry} />
+      <FieldRenderer
+        idPrefix={`copy-document-${entry.editor.locale}`}
+        resetKey={`copy:${entry.document.versionId}:${entry.editor.locale}`}
+        active={active}
+        layout={entry.editor.layout}
+        value={props.value}
+        onChange={props.onChange}
+        onValidityChange={props.onValidityChange}
+        locale={entry.editor.locale}
+        services={services}
+        errors={props.errors}
+        richTextNodes={entry.editor.richTextNodes}
+        visibility={presentation.visibility}
+        componentProps={presentation.componentProps}
+        choiceOptions={presentation.choiceOptions}
+        readOnly={props.readOnly}
+      />
+    </div>
   );
 }

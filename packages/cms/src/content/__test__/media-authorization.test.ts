@@ -342,3 +342,121 @@ it('maps renamed field and locale bindings when copying a migrated historical re
     await migrated.close();
   }
 });
+
+it('downloads an English fallback binding through a Chinese publication without requiring English read permission', async () => {
+  const collections = mediaCollections();
+  const articles = contentCollection(collections, 'articles');
+  articles.localizeStatus = true;
+  articles.fields = articles.fields.map((field) =>
+    field.name === 'cover' ? { ...field, localized: true } : field,
+  );
+  articles.access = Object.fromEntries(
+    ['documents.get', 'assets.downloadBinding'].map((operation) => [
+      operation,
+      {
+        version: 'read-chinese-v1',
+        run: ({ actor, locale }: { actor: { role: { isSuper: boolean } }; locale: string }) =>
+          actor.role.isSuper || locale === 'zh',
+      },
+    ]),
+  );
+  const kit = await fixture(collections);
+  const file = await media(kit);
+  const source = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    locale: 'en',
+    data: { title: 'English fallback', cover: { collection: 'media', id: file.id } },
+  });
+  await kit.content.api.publishDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: source.revision,
+    locale: 'zh',
+  });
+  const reader = await contentActor(kit, [
+    'articles:documents.get',
+    'articles:assets.downloadBinding',
+    'media:documents.get',
+    'media:assets.download',
+  ]);
+  const chinese = await kit.content.api.getDocument(reader.ctx(), {
+    collection: 'articles',
+    id: source.id,
+    locale: 'zh',
+    mode: 'published',
+  });
+  const binding = chinese.mediaBindings?.[0];
+  if (!binding) throw new Error('Missing fallback binding');
+  expect(binding.sourcePath).toBe('en:cover');
+  const downloaded = await kit.assets.api.download(reader.ctx(), {
+    collection: 'articles',
+    id: source.id,
+    locale: 'zh',
+    mode: 'published',
+    bindingId: binding.bindingId,
+  });
+  expect(new Uint8Array(await new Response(downloaded.stream).arrayBuffer())).toEqual(original);
+  await expect(
+    kit.content.api.getDocument(kit.owner(), {
+      collection: 'articles',
+      id: source.id,
+      locale: 'en',
+      mode: 'published',
+    }),
+  ).rejects.toMatchObject({ code: 'not_found' });
+});
+
+it('selects the fixed file of the requested translation when both translations reference the same media document', async () => {
+  const collections = mediaCollections();
+  const articles = contentCollection(collections, 'articles');
+  articles.localizeStatus = true;
+  articles.fields = articles.fields.map((field) =>
+    field.name === 'cover' ? { ...field, localized: true } : field,
+  );
+  const kit = await fixture(collections);
+  const file = await media(kit);
+  const source = await kit.content.api.createDocument(kit.owner(), {
+    collection: 'articles',
+    locale: 'en',
+    data: { title: 'English original', cover: { collection: 'media', id: file.id } },
+  });
+  const replacement = new TextEncoder().encode('%PDF-1.7\nnew Chinese fixed bytes\n%%EOF');
+  const changed = await kit.content.api.updateDocument(kit.owner(), {
+    collection: 'media',
+    id: file.id,
+    revision: file.revision,
+    uploadId: await upload(kit, replacement, { documentId: file.id, revision: file.revision }),
+  });
+  const chinese = await kit.content.api.updateDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    revision: source.revision,
+    locale: 'zh',
+    data: { title: '中文新版', cover: { collection: 'media', id: file.id } },
+  });
+  const binding = chinese.mediaBindings?.[0];
+  if (!binding) throw new Error('Missing Chinese binding');
+  expect(binding.sourcePath).toBe('zh:cover');
+  expect(binding.manifest.digest).toBe(changed.file?.digest);
+  const downloaded = await kit.assets.api.download(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    locale: 'zh',
+    bindingId: binding.bindingId,
+  });
+  expect(new Uint8Array(await new Response(downloaded.stream).arrayBuffer())).toEqual(replacement);
+  const english = await kit.content.api.getDocument(kit.owner(), {
+    collection: 'articles',
+    id: source.id,
+    locale: 'en',
+  });
+  expect(english.mediaBindings?.[0]?.manifest.digest).toBe(file.file?.digest);
+  await expect(
+    kit.assets.api.download(kit.owner(), {
+      collection: 'articles',
+      id: source.id,
+      locale: 'en',
+      bindingId: binding.bindingId,
+    }),
+  ).rejects.toMatchObject({ code: 'forbidden' });
+});

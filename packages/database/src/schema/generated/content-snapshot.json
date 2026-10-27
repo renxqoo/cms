@@ -1009,6 +1009,88 @@
         ]
       },
       {
+        "name": "cf_056b5427ae5d3b1ed689e6c3",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "uuid",
+            "nullable": true
+          },
+          {
+            "name": "target_collection_id",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_4e3e9d4d6ee5b8518022c9ec",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_920757954dc1a9e62f9b2178",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          },
+          {
+            "name": "fk_cfabec6aa532777096d8c467",
+            "columns": [
+              "value",
+              "target_collection_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id",
+              "collection_id"
+            ],
+            "onDelete": "restrict"
+          }
+        ]
+      },
+      {
         "name": "cf_05cbfcc9e119cc4362ebd16c",
         "columns": [
           {
@@ -1866,6 +1948,70 @@
         ]
       },
       {
+        "name": "cf_0a795984e1049ad0bd0da123",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "jsonb",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_3b2b9262463c7758b13dfe2e",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_bc094d8f936880141a6c48b9",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cf_0aaf95060c21fd2bb8a264a9",
         "columns": [
           {
@@ -2586,6 +2732,96 @@
               "document_id"
             ],
             "onDelete": "cascade"
+          }
+        ]
+      },
+      {
+        "name": "cf_0f5683fceeb158d5c1e958f6",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "uuid",
+            "nullable": true
+          },
+          {
+            "name": "target_collection_id",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_2f13d247306a2e0551503bed",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_145dfdd06e9393df5d38e088",
+            "columns": [
+              "value",
+              "locale",
+              "revision_id"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_7427d650ca7f849dde4b80e5",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          },
+          {
+            "name": "fk_a3cdf83ddbd2b324b4abee92",
+            "columns": [
+              "value",
+              "target_collection_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id",
+              "collection_id"
+            ],
+            "onDelete": "restrict"
           }
         ]
       },
@@ -10631,6 +10867,70 @@
         ]
       },
       {
+        "name": "cf_4cfd3f44aea31c9779e55068",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_f5390752b56c3e016cdbecc7",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_9399b70b50b291ffd0f94bb3",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cf_4cfdbddd685252ef93bd55e3",
         "columns": [
           {
@@ -17376,6 +17676,88 @@
         ]
       },
       {
+        "name": "cf_7e6f80051d2622cc9d7a9e2e",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "uuid",
+            "nullable": true
+          },
+          {
+            "name": "target_collection_id",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_4d6f1b0479c18af65f77365d",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_d3708415fec81a3d69208025",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          },
+          {
+            "name": "fk_b77e3d83737da872db722594",
+            "columns": [
+              "value",
+              "target_collection_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id",
+              "collection_id"
+            ],
+            "onDelete": "restrict"
+          }
+        ]
+      },
+      {
         "name": "cf_7ef59f92342c800a848ee52b",
         "columns": [
           {
@@ -19706,6 +20088,93 @@
         "foreignKeys": [
           {
             "name": "fk_9187c693039a55964b055da0",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
+        "name": "cf_8b57f0982622773d8fba1647",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          },
+          {
+            "name": "search_vector",
+            "type": "tsvector",
+            "generated": {
+              "kind": "textSearch",
+              "column": "value"
+            }
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_ca73f5393201b3875ba2bbf5",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_7585ec22e4418a9fd533bfb7",
+            "columns": [
+              "value",
+              "locale",
+              "revision_id"
+            ]
+          },
+          {
+            "name": "ix_9618be05c2ed6ae60642e3ea",
+            "columns": [
+              "search_vector"
+            ],
+            "method": "gin"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_3cb469b942154689a26199d5",
             "columns": [
               "revision_id",
               "document_id"
@@ -23327,6 +23796,175 @@
         ]
       },
       {
+        "name": "cf_a0d90d34e693cd076f3b7e54",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "uuid",
+            "nullable": true
+          },
+          {
+            "name": "target_collection_id",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_04720db236e24473c7fee6b7",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_2f675627ea75ce9efba1ea59",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          },
+          {
+            "name": "fk_3fe1ba54fe4113625f333945",
+            "columns": [
+              "value",
+              "target_collection_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id",
+              "collection_id"
+            ],
+            "onDelete": "restrict"
+          }
+        ]
+      },
+      {
+        "name": "cf_a2634b971cc9a9e20b0b2684",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          },
+          {
+            "name": "search_vector",
+            "type": "tsvector",
+            "generated": {
+              "kind": "textSearch",
+              "column": "value"
+            }
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_099aba64ae6c357366f68b59",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_11b6ac7a3c8b3559bca482ec",
+            "columns": [
+              "value",
+              "locale",
+              "revision_id"
+            ]
+          },
+          {
+            "name": "ix_dad8116e95b35af01da41957",
+            "columns": [
+              "search_vector"
+            ],
+            "method": "gin"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_e3548908c568c02abc65f39b",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cf_a2b04ecd11caf98249029a46",
         "columns": [
           {
@@ -24307,6 +24945,78 @@
         ]
       },
       {
+        "name": "cf_abbeafb1200904398fa1785d",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_a52ca9ed51a972a3542a1b60",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_f911b8fd92b7ef88135a0ae3",
+            "columns": [
+              "value",
+              "locale",
+              "revision_id"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_a80297c9624f42355017f54f",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cf_abeaf6f5cf406be0c5ea86c9",
         "columns": [
           {
@@ -24513,6 +25223,88 @@
           },
           {
             "name": "fk_cc5843cb3e8b3a1beb8e719a",
+            "columns": [
+              "value",
+              "target_collection_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id",
+              "collection_id"
+            ],
+            "onDelete": "restrict"
+          }
+        ]
+      },
+      {
+        "name": "cf_acadba7b133bc84357ce703f",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "uuid",
+            "nullable": true
+          },
+          {
+            "name": "target_collection_id",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_5ea3e4eef3875e1578548c64",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_20431677a1d45aad2b3af4e7",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          },
+          {
+            "name": "fk_2485cc2c232e1b407d14993a",
             "columns": [
               "value",
               "target_collection_id"
@@ -25133,6 +25925,93 @@
         ]
       },
       {
+        "name": "cf_b5095f504bcd9893959ca288",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          },
+          {
+            "name": "search_vector",
+            "type": "tsvector",
+            "generated": {
+              "kind": "textSearch",
+              "column": "value"
+            }
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_56218111c68f983f91fb258c",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_b3ce7cdb5dc5812815c49792",
+            "columns": [
+              "value",
+              "locale",
+              "revision_id"
+            ]
+          },
+          {
+            "name": "ix_5e0792696f11eea61351bedc",
+            "columns": [
+              "search_vector"
+            ],
+            "method": "gin"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_ec57fd4ce678ffd369bb178e",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cf_b5b54efa7becc947afeed61c",
         "columns": [
           {
@@ -25257,6 +26136,78 @@
         "foreignKeys": [
           {
             "name": "fk_5065961be69bef87d8af454c",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
+        "name": "cf_b730ec6c2b1ca5fd6813e093",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_1f85eefd94a44269fd4b9616",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_4815f7a05b36b2d57c909892",
+            "columns": [
+              "value",
+              "locale",
+              "revision_id"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_981d31349f7ee6a1ccbd64fa",
             "columns": [
               "revision_id",
               "document_id"
@@ -26892,6 +27843,85 @@
         "foreignKeys": [
           {
             "name": "fk_cb725946eaba22490cf04773",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
+        "name": "cf_c76a2bb9b7973b72b769aa94",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          },
+          {
+            "name": "search_vector",
+            "type": "tsvector",
+            "generated": {
+              "kind": "textSearch",
+              "column": "value"
+            }
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_6cddad8c35270340c3b40f70",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_db27d91b7c9af6dcdde7e107",
+            "columns": [
+              "search_vector"
+            ],
+            "method": "gin"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_22e686460c226e1ee4eca42b",
             "columns": [
               "revision_id",
               "document_id"
@@ -28914,6 +29944,70 @@
         "foreignKeys": [
           {
             "name": "fk_a80630a7f8a23fa19a253dbb",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
+        "name": "cf_d5116da741fa1e5ff6e60221",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "jsonb",
+            "nullable": true
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_a2c24d1dd6272593587fbf99",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_5c2b08789d17eff8f05480b7",
             "columns": [
               "revision_id",
               "document_id"
@@ -34379,6 +35473,93 @@
         ]
       },
       {
+        "name": "cf_fec29b20f657a8ca40db82c9",
+        "columns": [
+          {
+            "name": "revision_id",
+            "type": "uuid"
+          },
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "parent_path",
+            "type": "text"
+          },
+          {
+            "name": "position",
+            "type": "integer"
+          },
+          {
+            "name": "state",
+            "type": "text"
+          },
+          {
+            "name": "value",
+            "type": "text",
+            "nullable": true
+          },
+          {
+            "name": "search_vector",
+            "type": "tsvector",
+            "generated": {
+              "kind": "textSearch",
+              "column": "value"
+            }
+          }
+        ],
+        "primaryKey": [
+          "revision_id",
+          "locale",
+          "parent_path",
+          "position"
+        ],
+        "indexes": [
+          {
+            "name": "ix_7ceba526505870054be1a5cd",
+            "columns": [
+              "revision_id",
+              "locale"
+            ]
+          },
+          {
+            "name": "ix_0107c8f6e7b3157d131dc09e",
+            "columns": [
+              "value",
+              "locale",
+              "revision_id"
+            ]
+          },
+          {
+            "name": "ix_7071cdaf3491f447e0699a9a",
+            "columns": [
+              "search_vector"
+            ],
+            "method": "gin"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_a5ef083c8e81c353518f2c55",
+            "columns": [
+              "revision_id",
+              "document_id"
+            ],
+            "targetTable": "content_revisions",
+            "targetColumns": [
+              "id",
+              "document_id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cf_ff2c49715ff3344a4263f2b8",
         "columns": [
           {
@@ -34870,6 +36051,51 @@
         ]
       },
       {
+        "name": "cu_04ea569059d8e97740ae760d",
+        "columns": [
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "k0",
+            "type": "text"
+          }
+        ],
+        "primaryKey": [
+          "document_id",
+          "locale",
+          "k0"
+        ],
+        "indexes": [
+          {
+            "name": "uq_bd21c9c49c1470724ad5c19d",
+            "columns": [
+              "locale",
+              "k0"
+            ],
+            "unique": true
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_bd21c9c49c1470724ad5c19d",
+            "columns": [
+              "document_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cu_4b3157d1ad57acc25664c1b6",
         "columns": [
           {
@@ -34948,6 +36174,51 @@
         "foreignKeys": [
           {
             "name": "fk_f1e610ac618d94b19d777778",
+            "columns": [
+              "document_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
+        "name": "cu_904a443128559583da7f3baa",
+        "columns": [
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "k0",
+            "type": "text"
+          }
+        ],
+        "primaryKey": [
+          "document_id",
+          "locale",
+          "k0"
+        ],
+        "indexes": [
+          {
+            "name": "uq_e9dfae7b539e34f106793379",
+            "columns": [
+              "locale",
+              "k0"
+            ],
+            "unique": true
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_e9dfae7b539e34f106793379",
             "columns": [
               "document_id"
             ],
@@ -35197,6 +36468,51 @@
         ]
       },
       {
+        "name": "cu_dbd38eb03cebfd01e9ab7eb2",
+        "columns": [
+          {
+            "name": "document_id",
+            "type": "uuid"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "k0",
+            "type": "text"
+          }
+        ],
+        "primaryKey": [
+          "document_id",
+          "locale",
+          "k0"
+        ],
+        "indexes": [
+          {
+            "name": "uq_79bf2c216cf6a645c0c55665",
+            "columns": [
+              "locale",
+              "k0"
+            ],
+            "unique": true
+          }
+        ],
+        "foreignKeys": [
+          {
+            "name": "fk_79bf2c216cf6a645c0c55665",
+            "columns": [
+              "document_id"
+            ],
+            "targetTable": "content_documents",
+            "targetColumns": [
+              "id"
+            ],
+            "onDelete": "cascade"
+          }
+        ]
+      },
+      {
         "name": "cu_fac1ffad8f8a01b78464605c",
         "columns": [
           {
@@ -35247,8 +36563,8 @@
     {
       "id": "articles",
       "key": "articles",
-      "schemaVersion": 1,
-      "dataFingerprint": "54017320837d84c322bbc620902f482d6af28f17ee08829e8ad94d88fa35eedd"
+      "schemaVersion": 2,
+      "dataFingerprint": "7fbd9fad5fb5afe8c772b65a4f9ac0030869cad9941f2b1db18a6371bfbc7190"
     },
     {
       "id": "media",
@@ -35301,14 +36617,20 @@
     {
       "id": "pages",
       "key": "pages",
-      "schemaVersion": 1,
-      "dataFingerprint": "c6ae2083f67e96e38591f0489f7705b400c5b538b2a8df9b6e12b03eac9eea6c"
+      "schemaVersion": 2,
+      "dataFingerprint": "fa4c39dca393b18b4117831c0cbf9466d5eec4aa36c2ac9eed0ca0b706571195"
     },
     {
       "id": "settings",
       "key": "settings",
       "schemaVersion": 1,
       "dataFingerprint": "5b3a9a442798773344f315d77d524126ff7c0b61257056391597c4f6fc194b89"
+    },
+    {
+      "id": "tags",
+      "key": "tags",
+      "schemaVersion": 1,
+      "dataFingerprint": "522379583f905eab1c5e23e456b0496c2a7f810e899f3a8d8cc80a0221192b33"
     }
   ]
 }

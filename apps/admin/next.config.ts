@@ -1,7 +1,12 @@
 import type { NextConfig } from 'next';
 
+const outputDirectories: Readonly<Record<string, string>> = {
+  '1': '.next-e2e',
+  suite: '.next-e2e-suite',
+};
+
 const nextConfig: NextConfig = {
-  distDir: process.env.CMS_ADMIN_E2E === '1' ? '.next-e2e' : '.next',
+  distDir: outputDirectories[process.env.CMS_ADMIN_E2E ?? ''] ?? '.next',
   poweredByHeader: false,
   headers() {
     return ['/authorize', '/login', '/dashboard/account/credentials'].map((source) => ({
@@ -13,6 +18,16 @@ const nextConfig: NextConfig = {
     }));
   },
   transpilePackages: ['@new-cms/ui'],
+  outputFileTracingIncludes: {
+    '/api/admin/collections/*/og': [
+      './src/assets/admin-og/noto-sans-sc.ttf',
+      './.generated/og-worker.mjs',
+      './node_modules/next/og.js',
+      './node_modules/next/dist/server/og/**',
+      './node_modules/next/dist/compiled/@vercel/og/**',
+      './node_modules/react/**',
+    ],
+  },
   allowedDevOrigins: ['127.0.0.1', '192.168.110.207', '192.168.31.98'],
 };
 

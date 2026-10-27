@@ -32,6 +32,25 @@ it('moves only the catalog into an independent group while preserving collection
   expect(result[0]?.items[0]?.icon).not.toBe(result[0]?.items[1]?.icon);
 });
 
+it('groups visible collections while omitting hidden and group-disabled entries from navigation', () => {
+  const result = collectionNavigation({
+    groups,
+    overviewLabel: 'Overview',
+    collections: [
+      { key: 'news', label: 'News', upload: false, admin: { group: 'Editorial' } },
+      { key: 'media', label: 'Media', upload: true, admin: { group: 'Assets' } },
+      { key: 'hidden', label: 'Hidden', upload: false, admin: { hidden: true } },
+      { key: 'direct', label: 'Direct only', upload: false, admin: { group: false } },
+      { key: 'more', label: 'More', upload: false, admin: { group: 'Editorial' } },
+    ],
+  });
+  expect(result.map((group) => [group.label, group.items.map((item) => item.label)])).toEqual([
+    ['Editorial', ['News', 'More']],
+    ['Assets', ['Media']],
+    ['Content', ['Files']],
+  ]);
+});
+
 it('does not manufacture a catalog entry when it is absent or disabled', () => {
   const collections = [{ key: 'articles', label: 'News', upload: false }];
   const disabled = [

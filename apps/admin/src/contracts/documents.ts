@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { manifestSchema } from './assets';
+import { manifestSchema } from './assets.ts';
 
 export const fieldDataSchema = z.record(z.string(), z.json());
 export const documentSchema = z.object({
@@ -12,7 +12,11 @@ export const documentSchema = z.object({
   folderId: z.uuid().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  createdBy: z.object({ id: z.uuid(), displayName: z.string().nullable() }).nullable().optional(),
+  updatedBy: z.object({ id: z.uuid(), displayName: z.string().nullable() }).nullable().optional(),
   data: fieldDataSchema,
+  componentProps: z.record(z.string(), fieldDataSchema).optional(),
+  adminURL: z.string().nullable().optional(),
   file: manifestSchema.optional(),
   mediaBindings: z
     .array(
@@ -54,6 +58,7 @@ export const versionDetailSchema = documentSchema.extend({
 export const versionDiffSchema = z.object({
   from: z.uuid(),
   to: z.uuid(),
+  componentProps: z.record(z.string(), z.record(z.string(), z.json())).optional(),
   changes: z.array(z.object({ field: z.string(), before: z.unknown(), after: z.unknown() })),
 });
 export const purgeReceiptSchema = z.object({ id: z.uuid(), purged: z.literal(true) });

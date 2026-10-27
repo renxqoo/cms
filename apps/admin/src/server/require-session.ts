@@ -5,8 +5,8 @@ import { headers } from 'next/headers';
 import { adminRequestPathHeader, safeAdminDestination } from '../config/admin-routes';
 import { getCurrentSession } from './session';
 
-export async function requireSession() {
-  const result = await getCurrentSession();
+export async function requireSession(signal?: AbortSignal) {
+  const result = await getCurrentSession(signal);
   if (result.ok) return result.data;
   const destination = safeAdminDestination((await headers()).get(adminRequestPathHeader));
   const query = new URLSearchParams();

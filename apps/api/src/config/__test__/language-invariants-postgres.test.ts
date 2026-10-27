@@ -263,7 +263,11 @@ it('disabling a language retains supported content translations and software ide
   const namespace = bundle.data['namespace'] === 'site' ? 'auth' : 'site';
   const replacement = interfaceMessageSeeds['zh']?.[namespace];
   if (replacement === undefined) throw new Error('Missing alternate valid namespace');
-  for (const data of [{ locale: 'fr' }, { namespace, messages: replacement }])
+  for (const data of [
+    { locale: 'fr' },
+    { namespace, messages: replacement },
+    { contractVersion: 'another-contract' },
+  ])
     await expect(
       f.content.api.updateDocument(f.owner(), {
         collection: 'message-bundles',
@@ -273,11 +277,9 @@ it('disabling a language retains supported content translations and software ide
       }),
     ).rejects.toMatchObject({ code: 'forbidden' });
   await expect(
-    f.content.api.updateDocument(f.owner(), {
+    f.content.api.createDocument(f.owner(), {
       collection: 'message-bundles',
-      id: bundle.id,
-      revision: bundle.revision,
-      data: { contractVersion: 'another-contract' },
+      data: { ...bundle.data, contractVersion: 'another-contract' },
     }),
   ).rejects.toMatchObject({ code: 'invalid_input' });
   expect(

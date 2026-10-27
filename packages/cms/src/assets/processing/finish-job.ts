@@ -73,7 +73,7 @@ export async function finishJob(
     signal: input.signal,
     async work(tx) {
       await lockAssets(tx, runtime);
-      const actor = await authorizeWork(tx, { runtime, claimed });
+      const actor = await authorizeWork(tx, { runtime, claimed, signal: input.signal });
       await commitResult(tx, { ...input, runtime, actor });
     },
   });
@@ -81,7 +81,7 @@ export async function finishJob(
 
 async function authorizeWork(
   tx: SqlExecutor,
-  input: { runtime: AssetsOptions; claimed: ClaimedJob },
+  input: { runtime: AssetsOptions; claimed: ClaimedJob; signal: AbortSignal },
 ) {
   const { claimed } = input;
   if (
@@ -100,7 +100,12 @@ async function authorizeWork(
 
 async function authorizeWorkActor(
   tx: SqlExecutor,
-  input: { runtime: AssetsOptions; claimed: ClaimedJob; actor: ActorReference },
+  input: {
+    runtime: AssetsOptions;
+    claimed: ClaimedJob;
+    actor: ActorReference;
+    signal: AbortSignal;
+  },
 ) {
   const { runtime, claimed } = input;
   const actor = await runtime.authorizeActor(tx, {
@@ -112,6 +117,9 @@ async function authorizeWorkActor(
     claimed.upload.purpose === 'replace' ? 'replace' : 'upload';
   if (claimed.job.action === 'reprocess') action = 'reprocess';
   const authorization = await runtime.authorizeContent(tx, {
+    signal: input.signal,
+    background: true,
+    locale: claimed.upload.authorization_locale ?? undefined,
     operationId: claimed.job.action === 'reprocess' ? 'assets.reprocess' : 'assets.completeUpload',
     actor,
     action,
@@ -132,6 +140,7 @@ async function commitResult(
     image: ProcessedImage;
     candidates: CandidateObject[];
     actor: Principal;
+    signal: AbortSignal;
   },
 ): Promise<void> {
   const { runtime, claimed, actor } = input;
@@ -171,18 +180,20 @@ async function commitResult(
 
 async function bindReprocessing(
   tx: SqlExecutor,
-  input: { runtime: AssetsOptions; claimed: ClaimedJob; actor: Principal },
+  input: { runtime: AssetsOptions; claimed: ClaimedJob; actor: Principal; signal: AbortSignal },
 ): Promise<void> {
   const { runtime, claimed, actor } = input;
   if (claimed.job.action === 'reprocess') {
     if (!claimed.job.document_id || !claimed.job.expected_revision) fail('invalid_input');
     await runtime.commitProcessing(tx, {
       actor,
+      locale: claimed.upload.authorization_locale ?? undefined,
       collectionKey: claimed.job.collection_key,
       documentId: claimed.job.document_id,
       revision: claimed.job.expected_revision,
       uploadId: claimed.upload.id,
       jobId: claimed.job.id,
+      signal: input.signal,
     });
   }
 }

@@ -67,6 +67,7 @@ export async function writeEditor(
       : { body: writeBody(input, document) }),
     response: documentSchema,
     signal,
+    ...(input.editorSessionId ? { editorSessionId: input.editorSessionId } : {}),
     ...(definition.idempotency === 'required' ? { idempotencyKey: input.key } : {}),
   });
 }

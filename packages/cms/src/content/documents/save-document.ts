@@ -1,3 +1,4 @@
+import type { DocumentRow } from '../model.ts';
 import { projectDocument } from '../documents/project-document.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
@@ -6,17 +7,25 @@ import { lockRevisionResources, writeInput } from './revision-data.ts';
 import { inputPatches, prepareLocaleWrite, readLocaleData } from './prepare-write.ts';
 import { writeRevision } from './write-revision.ts';
 import { pruneDocumentVersions } from '../versions/retention.ts';
+import type { RevisionMediaSources } from './bind-assets.ts';
 import type { ContentRuntime, ContentState, ContentWriteInput } from '../types.ts';
 
 export async function saveInTransaction(
   state: ContentState,
-  input: { runtime: ContentRuntime; values: ContentWriteInput; kind: string },
+  input: {
+    runtime: ContentRuntime;
+    values: ContentWriteInput;
+    kind: string;
+    mediaSources?: RevisionMediaSources;
+    filename?: string;
+  },
 ): Promise<{ id: string; versionId: string }> {
   const current = await ensureVisible(state, { runtime: input.runtime, id: input.values.id });
   const currentLocales = await readLocaleData(state, { runtime: input.runtime, document: current });
-  const prepared = prepareLocaleWrite(state, {
+  const prepared = await prepareLocaleWrite(state, {
     runtime: input.runtime,
     current: currentLocales,
+    documentId: current.id,
     patches: inputPatches(state, input.values),
   });
   const document = await lockRevisionResources(state, {
@@ -25,6 +34,10 @@ export async function saveInTransaction(
     revision: input.values.revision,
     references: prepared.references,
   });
+  const fileManifest =
+    input.filename === undefined
+      ? undefined
+      : await renamedFile(state, { runtime: input.runtime, document, filename: input.filename });
   const reference = await writeRevision(state, {
     runtime: input.runtime,
     documentId: document.id,
@@ -32,6 +45,8 @@ export async function saveInTransaction(
     dataByLocale: prepared.dataByLocale,
     previous: document,
     kind: input.kind,
+    ...(fileManifest ? { fileManifest } : {}),
+    ...(input.mediaSources ? { mediaSources: input.mediaSources } : {}),
     ...(input.values.uploadId ? { uploadId: input.values.uploadId } : {}),
     ...(input.values.folderId === undefined ? {} : { folderId: input.values.folderId }),
   });
@@ -80,4 +95,19 @@ export function createSaveDocumentApi(runtime: ContentRuntime) {
     autosaveDocument: (ctx: RequestContext, raw: unknown) =>
       saveDocument(runtime, ctx, { raw, autosave: true }),
   };
+}
+
+async function renamedFile(
+  state: ContentState,
+  input: { runtime: ContentRuntime; document: DocumentRow; filename: string },
+) {
+  if (!state.collection.upload) fail('invalid_input');
+  const { assets } = input.runtime;
+  if (!assets) fail('temporarily_unavailable');
+  const source = await assets.resolveRevisionMedia(state.tx, {
+    revisionId: input.document.currentVersionId,
+    sourcePath: '$file',
+    mediaDocumentId: input.document.id,
+  });
+  return assets.renameManifest(state.tx, { source, filename: input.filename });
 }

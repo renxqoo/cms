@@ -28,6 +28,7 @@ export interface FieldProps {
   error?: string | undefined;
   required?: boolean;
   children: ReactNode;
+  renderError?: (error: string) => ReactNode;
   className?: string;
 }
 
@@ -39,6 +40,7 @@ export function Field({
   error: explicitError,
   required,
   children,
+  renderError,
   className,
 }: FieldProps) {
   const errors = useContext(FormFeedbackContext);
@@ -63,13 +65,13 @@ export function Field({
         </label>
         {children}
         {description ? (
-          <p id={`${id}-description`} className="text-sm leading-normal text-muted-foreground">
+          <div id={`${id}-description`} className="text-sm leading-normal text-muted-foreground">
             {description}
-          </p>
+          </div>
         ) : null}
         {error ? (
           <p id={`${id}-error`} data-slot="field-error" className="text-sm text-destructive">
-            {error}
+            {renderError ? renderError(error) : error}
           </p>
         ) : null}
       </div>

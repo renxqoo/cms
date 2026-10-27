@@ -72,7 +72,12 @@ async function prepareRestoration(
     document: input.document,
   });
   const next = await readLocaleData(writer, input);
-  return prepareLocaleSnapshot(writer, { runtime: input.runtime, current, next });
+  return prepareLocaleSnapshot(writer, {
+    runtime: input.runtime,
+    current,
+    next,
+    documentId: input.document.id,
+  });
 }
 
 async function restoreVersion(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {

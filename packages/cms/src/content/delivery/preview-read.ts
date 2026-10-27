@@ -16,32 +16,30 @@ function createPrivateReader(runtime: ContentRuntime, options: ContentDeliveryOp
     signal: AbortSignal | undefined,
     work: (session: DeliverySession, row: StoredDocument) => Promise<T>,
   ) {
-    return runtime.database.readOnlyTransaction(
-      async (executor) => {
-        const tx = budgetedExecutor(executor, options.policy.maxSqlQueries);
-        const grant = await readPreviewGrant(tx, options, { grant: raw.grant });
-        if (grant.locale !== raw.locale) fail('unauthenticated');
-        const row = await assertPreviewIssuer(runtime, tx, grant);
-        if (text(row.data['slug']) !== raw.slug) fail('unauthenticated');
-        const languages = await readLanguages(runtime, tx);
-        const session: DeliverySession = {
-          runtime,
-          options,
-          tx,
-          locale: grant.locale,
-          enabledLocales: languages.source.enabled,
-          preview: { documentId: grant.document_id, versionId: grant.revision_id },
-        };
-        const content = envelope(session.locale, await work(session, row));
-        if (Buffer.byteLength(JSON.stringify(content)) > options.policy.maxResponseBytes)
-          fail('payload_too_large');
-        return { content, expiresAt: new Date(grant.expires_at).toISOString() };
-      },
-      AbortSignal.any([
-        AbortSignal.timeout(options.policy.readTimeoutMs),
-        ...(signal ? [signal] : []),
-      ]),
-    );
+    const deadline = AbortSignal.any([
+      AbortSignal.timeout(options.policy.readTimeoutMs),
+      ...(signal ? [signal] : []),
+    ]);
+    return runtime.database.readOnlyTransaction(async (executor) => {
+      const tx = budgetedExecutor(executor, options.policy.maxSqlQueries);
+      const grant = await readPreviewGrant(tx, options, { grant: raw.grant });
+      if (grant.locale !== raw.locale) fail('unauthenticated');
+      const row = await assertPreviewIssuer(runtime, tx, { grant, signal: deadline });
+      if (text(row.data['slug']) !== raw.slug) fail('unauthenticated');
+      const languages = await readLanguages(runtime, tx);
+      const session: DeliverySession = {
+        runtime,
+        options,
+        tx,
+        locale: grant.locale,
+        enabledLocales: languages.source.enabled,
+        preview: { documentId: grant.document_id, versionId: grant.revision_id },
+      };
+      const content = envelope(session.locale, await work(session, row));
+      if (Buffer.byteLength(JSON.stringify(content)) > options.policy.maxResponseBytes)
+        fail('payload_too_large');
+      return { content, expiresAt: new Date(grant.expires_at).toISOString() };
+    }, deadline);
   };
 }
 async function draftDetail(

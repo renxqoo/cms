@@ -15,6 +15,7 @@ import {
   INSERT_LINE_BREAK_COMMAND,
   OUTDENT_CONTENT_COMMAND,
   PASTE_COMMAND,
+  SKIP_DOM_SELECTION_TAG,
 } from 'lexical';
 import { INSERT_CHECK_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND } from '@lexical/list';
 import { ShellProvider } from '../../../components/shell/shell-provider';
@@ -53,17 +54,28 @@ function Capture({
         return Promise.resolve();
       },
       format() {
-        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-        editor.dispatchCommand(SET_TEXT_FORMAT_COMMAND, { italic: true });
-        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
-        editor.dispatchCommand(INDENT_CONTENT_COMMAND);
-        editor.dispatchCommand(OUTDENT_CONTENT_COMMAND);
-        editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND);
-        editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND);
+        editor.update(
+          () => {
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+            editor.dispatchCommand(SET_TEXT_FORMAT_COMMAND, { italic: true });
+            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+            editor.dispatchCommand(INDENT_CONTENT_COMMAND);
+            editor.dispatchCommand(OUTDENT_CONTENT_COMMAND);
+            editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND);
+            editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND);
+          },
+          { discrete: true, tag: SKIP_DOM_SELECTION_TAG },
+        );
         return Promise.resolve();
       },
       softBreak() {
-        editor.dispatchCommand(INSERT_LINE_BREAK_COMMAND, false);
+        editor.update(
+          () => {
+            $getRoot().selectEnd();
+            editor.dispatchCommand(INSERT_LINE_BREAK_COMMAND, false);
+          },
+          { discrete: true, tag: SKIP_DOM_SELECTION_TAG },
+        );
         return Promise.resolve();
       },
       paste(value) {
@@ -76,7 +88,10 @@ function Capture({
                 : '<img src=x onerror=alert(1)>',
           },
         });
-        editor.dispatchCommand(PASTE_COMMAND, event);
+        editor.update(() => editor.dispatchCommand(PASTE_COMMAND, event), {
+          discrete: true,
+          tag: SKIP_DOM_SELECTION_TAG,
+        });
         return Promise.resolve();
       },
     });

@@ -113,6 +113,7 @@ function moduleViolation(input: {
 
 function schemaImportOwner(specifier: string): string | undefined {
   const schema = /@new-cms\/database\/schema\/(.+)/.exec(specifier)?.[1];
-  if (schema === 'generated/content' || schema === 'content-work') return 'content';
+  if (schema === 'generated/content' || schema === 'content-work' || schema === 'content-admin')
+    return 'content';
   return schema?.split('/')[0];
 }

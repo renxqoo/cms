@@ -1,4 +1,6 @@
 import { requestApi } from '../../api/client';
+import { editorComponentsAvailable } from '../admin-components/registry';
+import type { AdminComponentRegistry } from '../admin-components/types';
 import type { ApiResult } from '../../api/result';
 import { failure } from '../../api/result';
 import { collectionSchema } from '../../contracts/content';
@@ -119,9 +121,11 @@ function documentRequest(
 async function readSnapshot(
   target: EditorTarget,
   signal: AbortSignal,
+  registry: AdminComponentRegistry | undefined,
 ): Promise<ApiResult<{ snapshot: EditorSnapshot; target: EditorTarget }>> {
   const catalog = await requestApi({
     operation: 'collections.get',
+    query: { locale: target.locale },
     params: { collection: target.collection },
     response: collectionSchema,
     signal,
@@ -132,6 +136,8 @@ async function readSnapshot(
   const loaded = await readMetadata(resolved.data, signal);
   const { metadata } = loaded;
   if (!metadata.ok) return metadata;
+  if (!editorComponentsAvailable(catalog.data, metadata.data, registry))
+    return failure('invalid_response', 200);
   const document = await documentRequest(resolved.data, metadata.data.locale, signal);
   if (!document.ok) return document;
   return {
@@ -148,9 +154,10 @@ async function readSnapshot(
 export async function readEditor(
   target: EditorTarget,
   signal: AbortSignal,
+  registry?: AdminComponentRegistry,
 ): Promise<ApiResult<EditorSnapshot>> {
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const result = await readSnapshot(target, signal);
+    const result = await readSnapshot(target, signal, registry);
     if (!result.ok) return result;
     if (matchingEditor(result.data.snapshot, result.data.target))
       return { ...result, data: result.data.snapshot };

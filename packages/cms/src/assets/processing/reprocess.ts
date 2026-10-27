@@ -17,7 +17,10 @@ async function createJob(
   data: z.infer<ReturnType<typeof assetsInputSchemas>['assets.reprocess']>,
 ) {
   const authorization = await runtime.authorizeContent(state.tx, {
+    ...(state.ctx.signal ? { signal: state.ctx.signal } : {}),
     operationId: state.operationId,
+    editorSessionId: state.ctx.editorSessionId,
+    locale: data.locale,
     actor: state.actor,
     action: 'reprocess',
     collectionKey: data.collection,
@@ -75,7 +78,10 @@ export function createReprocessor(runtime: AssetsOptions) {
           () => createJob(runtime, state, data),
         );
         await runtime.authorizeContent(state.tx, {
+          ...(state.ctx.signal ? { signal: state.ctx.signal } : {}),
           operationId: state.operationId,
+          editorSessionId: state.ctx.editorSessionId,
+          locale: data.locale,
           actor: state.actor,
           action: 'reprocess',
           collectionKey: data.collection,
@@ -107,8 +113,8 @@ async function insertReprocessing(
   const uploadId = randomUUID();
   const jobId = randomUUID();
   await state.tx.query(
-    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at,original_object_id,delegation_id)
-     VALUES($1,$2,$3,'replace',$4,$5,$6,$7,$8,$9::jsonb,'processing',clock_timestamp()+$10*interval '1 millisecond',$11,$12)`,
+    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at,original_object_id,authorization_locale,delegation_id)
+     VALUES($1,$2,$3,'replace',$4,$5,$6,$7,$8,$9::jsonb,'processing',clock_timestamp()+$10*interval '1 millisecond',$11,$12,$13)`,
     [
       uploadId,
       state.actor.id,
@@ -121,6 +127,7 @@ async function insertReprocessing(
       JSON.stringify(authorization.upload),
       runtime.limits.sessionTtlMs,
       original.object_id,
+      authorization.locale,
       state.actor.delegation?.id ?? null,
     ],
   );

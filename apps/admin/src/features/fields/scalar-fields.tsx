@@ -1,5 +1,8 @@
 'use client';
 
+import { zonedDateInput, parseZonedDate } from './timezone';
+import { useShell } from '../../components/shell/shell-provider';
+import { labelledOptions } from './option-labels';
 import { Input, NativeSelect, RadioGroup, Textarea } from '@new-cms/ui/forms';
 import type { EditorNode } from '../../contracts/editor';
 import { useFieldValue } from './field-context';
@@ -25,6 +28,7 @@ export function TextField({ node, location, readOnly }: ScalarProps) {
   });
   const props = {
     value: draft.text,
+    placeholder: node.placeholder,
     readOnly,
     'aria-invalid': Boolean(draft.error ?? field.error),
     onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -60,6 +64,7 @@ export function NumberField({ node, location, readOnly }: ScalarProps) {
     <>
       <Input
         value={draft.text}
+        placeholder={node.placeholder}
         inputMode="decimal"
         readOnly={readOnly}
         aria-invalid={Boolean(draft.error ?? field.error)}
@@ -91,19 +96,32 @@ export function BooleanField({ node, location, readOnly }: ScalarProps) {
   );
 }
 
-export function DateField({ location, readOnly }: ScalarProps) {
+export function DateField(props: ScalarProps) {
+  const { node, location } = props;
+  const zone = useFieldValue({
+    ...location,
+    path: [...location.path.slice(0, -1), node.constraints.timezone ?? ''],
+  });
+  const timezone = node.constraints.timezone && typeof zone.value === 'string' ? zone.value : 'UTC';
+  return <DateInput key={timezone} {...props} timezone={timezone} />;
+}
+
+function DateInput({ node, location, readOnly, timezone }: ScalarProps & { timezone: string }) {
   const field = useFieldValue(location);
   const draft = useFieldDraft({
-    initial: dateInput(field.value),
-    identity: location.identity,
+    initial: node.constraints.timezone
+      ? zonedDateInput(field.value, timezone)
+      : dateInput(field.value),
+    identity: `${location.identity}/${timezone}`,
     invalidMessage: field.t.invalid,
-    parse: parseDate,
+    parse: node.constraints.timezone ? (text) => parseZonedDate(text, timezone) : parseDate,
     onChange: field.change,
     onValidityChange: field.onValidityChange,
   });
   return (
     <>
       <Input
+        placeholder={node.placeholder}
         type="datetime-local"
         step="0.001"
         value={draft.text}
@@ -111,7 +129,9 @@ export function DateField({ location, readOnly }: ScalarProps) {
         aria-invalid={Boolean(draft.error ?? field.error)}
         onChange={(event) => draft.change(event.currentTarget.value)}
       />
-      <span className="text-xs text-muted-foreground">{field.t.utc}</span>
+      <span className="text-xs text-muted-foreground">
+        {node.constraints.timezone ? timezone : field.t.utc}
+      </span>
       {draft.error ? (
         <p role="alert" className="text-sm text-destructive">
           {draft.error}
@@ -122,6 +142,7 @@ export function DateField({ location, readOnly }: ScalarProps) {
 }
 
 export function SingleSelectField({ node, location, readOnly }: ScalarProps) {
+  const locale = useShell((shell) => shell.locale);
   const field = useFieldValue(location);
   return (
     <NativeSelect
@@ -130,12 +151,26 @@ export function SingleSelectField({ node, location, readOnly }: ScalarProps) {
       value={typeof field.value === 'string' ? field.value : ''}
       onChange={(event) => field.change(event.currentTarget.value || null)}
     >
-      <option value="">{field.t.unset}</option>
-      {(node.constraints.options ?? []).map((option) => (
-        <option key={option} value={option}>
-          {option}
+      <option value="">{node.placeholder ?? field.t.unset}</option>
+      {labelledOptions(node.constraints.options ?? [], locale).map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
         </option>
       ))}
     </NativeSelect>
+  );
+}
+
+export function RadioField({ node, location, readOnly }: ScalarProps) {
+  const field = useFieldValue(location);
+  const locale = useShell((shell) => shell.locale);
+  return (
+    <RadioGroup
+      label={node.label}
+      value={typeof field.value === 'string' ? field.value : null}
+      readOnly={readOnly}
+      options={labelledOptions(node.constraints.options ?? [], locale)}
+      onValueChange={field.change}
+    />
   );
 }

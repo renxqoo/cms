@@ -10,7 +10,11 @@ import { readManifest } from '../manifests/read-manifest.ts';
 import { parse } from '../validation.ts';
 import type { JobRow } from '../processing/types.ts';
 
-const inputSchema = z.strictObject({ collection: z.string(), jobId: z.uuid() });
+const inputSchema = z.strictObject({
+  collection: z.string(),
+  jobId: z.uuid(),
+  locale: z.string().optional(),
+});
 
 async function readInTransaction(
   runtime: AssetsOptions,

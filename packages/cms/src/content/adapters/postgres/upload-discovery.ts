@@ -49,7 +49,7 @@ async function statement(
     ...sql.ctes,
     `discovery_file_bindings AS NOT MATERIALIZED (${files})`,
     `discovery_uploads AS NOT MATERIALIZED (${uploads})`,
-    `discovery_matches AS MATERIALIZED (SELECT u.id,u.collection,u.purpose,u."documentId",u.revision,u.status,u."expiresAt",u."failureCode",u."jobId",u.filename,u."declaredMimeType",u."declaredBytes",u."createdAt" FROM discovery_uploads u WHERE ${filters.join(' AND ')})`,
+    `discovery_matches AS MATERIALIZED (SELECT u."authorizationLocale" AS locale,u.id,u.collection,u.purpose,u."documentId",u.revision,u.status,u."expiresAt",u."failureCode",u."jobId",u.filename,u."declaredMimeType",u."declaredBytes",u."createdAt" FROM discovery_uploads u WHERE ${filters.join(' AND ')})`,
   ];
   return {
     sql: `WITH ${ctes.join(',')} SELECT (SELECT COALESCE(jsonb_agg(p ORDER BY p."createdAt" DESC,p.id DESC),'[]'::jsonb) FROM (SELECT * FROM discovery_matches ORDER BY "createdAt" DESC,id DESC LIMIT ${limit} OFFSET ${offset}) p) AS rows,(SELECT count(*)::text FROM discovery_matches) AS total`,

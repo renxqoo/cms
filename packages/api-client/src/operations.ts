@@ -1,3 +1,5 @@
+import { compileInputSchema } from './input-schema.ts';
+export { compileInputSchema } from './input-schema.ts';
 import { z } from 'zod';
 import rows from './operations.generated.json' with { type: 'json' };
 
@@ -34,7 +36,7 @@ export const operations: readonly ApiOperation[] = z
   .parse(rows);
 const byId = new Map(operations.map((operation) => [operation.id, operation]));
 const schemas = new Map(
-  operations.map((operation) => [operation.id, z.fromJSONSchema(operation.inputSchema)]),
+  operations.map((operation) => [operation.id, compileInputSchema(operation.inputSchema)]),
 );
 
 export function operationFor(id: string): ApiOperation {

@@ -1,11 +1,15 @@
+import { initialEditorState } from './editor-state';
 import { createStore } from 'zustand/vanilla';
+import { createEditorPreview } from './editor-preview-controller';
+import type { EditorPreviewState, PreviewRequest } from './editor-preview-controller';
+import { contentEditorPolicy } from './policy';
 import type { StoreApi } from 'zustand/vanilla';
 import type { ApiResult } from '../../api/result';
 import { failure } from '../../api/result';
 import type { Document } from '../../contracts/documents';
 import type { FieldData } from '../fields/types';
 import { writablePatch } from '../fields/writable-data';
-import { newFieldData } from '../fields/initialize-data';
+import { initializeFieldData } from '../fields/initialize-data';
 import type { EditorSnapshot, EditorTarget } from './editor-read';
 import { writeReplayable } from './write-actions';
 import type { WriteAction } from './write-actions';
@@ -13,6 +17,7 @@ import type { WriteAction } from './write-actions';
 export type EditorFailure = Extract<ApiResult<unknown>, { ok: false }>;
 export type { WriteAction } from './write-actions';
 export interface EditorWrite {
+  editorSessionId?: string;
   action: WriteAction;
   snapshot: EditorSnapshot;
   data: FieldData;
@@ -23,7 +28,7 @@ export interface EditorWrite {
   dataByLocale?: Readonly<Record<string, FieldData>>;
   versionId?: string;
 }
-export interface ContentEditorState {
+export interface ContentEditorState extends EditorPreviewState {
   phase: 'loading' | 'ready' | 'failed';
   snapshot: EditorSnapshot | null;
   value: FieldData;
@@ -49,11 +54,14 @@ interface EditorOptions {
     replay?: boolean,
   ) => Promise<ApiResult<Document>>;
   createId: () => string;
+  preview?: PreviewRequest;
   report: (result: ApiResult<unknown>) => void;
   onCreated: (document: Document) => void;
   onArchived: () => void;
+  onCommitted?: (document: Document) => void;
 }
 interface EditorRuntime {
+  preview: ReturnType<typeof createEditorPreview>;
   options: EditorOptions;
   store: StoreApi<ContentEditorState>;
   active: AbortController | null;
@@ -72,36 +80,28 @@ export function editorDirty(state: ContentEditorState): boolean {
   );
 }
 
-function initialState(): ContentEditorState {
-  return {
-    phase: 'loading',
-    snapshot: null,
-    value: {},
-    errors: {},
-    folderId: null,
-    uploadId: null,
-    busy: false,
-    externalBusy: false,
-    failure: null,
-    pending: null,
-    latest: null,
-    saved: false,
-    generation: 0,
-    resetEpoch: 0,
-  };
-}
-
 function adopt(runtime: EditorRuntime, snapshot: EditorSnapshot, preserve = false) {
+  runtime.preview.cancel();
   runtime.store.setState((state) => ({
     phase: 'ready',
     snapshot,
+    visibility: snapshot.editor.visibility,
+    componentProps: snapshot.editor.componentProps ?? {},
+    choiceOptions: snapshot.editor.choiceOptions ?? {},
+    previewFailure: null,
+    previewBusy: false,
     latest: null,
     failure: null,
     pending: null,
     busy: false,
     value: preserve
       ? state.value
-      : (snapshot.document?.data ?? newFieldData(snapshot.editor.layout, runtime.options.createId)),
+      : (snapshot.document?.data ??
+        initializeFieldData(
+          snapshot.editor.layout,
+          structuredClone(snapshot.editor.initialData ?? {}),
+          runtime.options.createId,
+        )),
     errors: preserve ? state.errors : {},
     folderId: preserve ? state.folderId : (snapshot.document?.folderId ?? null),
     uploadId: preserve ? state.uploadId : null,
@@ -227,6 +227,8 @@ async function refreshWritten(
       uploadId: null,
     });
   if (created) runtime.options.onCreated(document);
+  else if (result.ok && input.action !== 'autosave' && !editorDirty(runtime.store.getState()))
+    runtime.options.onCommitted?.(document);
 }
 
 async function execute(
@@ -332,18 +334,32 @@ async function adoptCurrent(runtime: EditorRuntime, preserve: boolean) {
 }
 
 export function createContentEditor(options: EditorOptions) {
-  const store = createStore<ContentEditorState>(initialState);
+  const store = createStore<ContentEditorState>(initialEditorState);
+  const preview = createEditorPreview({
+    request: options.preview,
+    source: () => store.getState(),
+    update: (patch) => store.setState(patch),
+    report: options.report,
+    delayMs: contentEditorPolicy.previewDelayMs,
+  });
   const runtime: EditorRuntime = {
+    preview,
     options,
     store,
     active: null,
     disposed: false,
     target: { ...options.target },
   };
+  return editorCommands(runtime);
+}
+
+function editorCommands(runtime: EditorRuntime) {
+  const { store, preview } = runtime;
   return {
     store,
     start: () => {
       runtime.disposed = false;
+      preview.start();
       return reload(runtime);
     },
     reload: (preserve = false) => reload(runtime, preserve),
@@ -352,8 +368,11 @@ export function createContentEditor(options: EditorOptions) {
     copy: (dataByLocale: Readonly<Record<string, FieldData>>) =>
       copyDocument(runtime, dataByLocale),
     readCurrent: () => readCurrent(runtime),
-    change: (value: FieldData) =>
-      store.setState((state) => ({ value, generation: state.generation + 1, saved: false })),
+    change: (value: FieldData) => {
+      store.setState((state) => ({ value, generation: state.generation + 1, saved: false }));
+      preview.schedule();
+    },
+    retryPreview: () => preview.retry(),
     validity: (key: string, error: string | null) => setValidity(runtime, key, error),
     setFolder: (folderId: string | null) =>
       store.setState((state) => ({ folderId, generation: state.generation + 1, saved: false })),
@@ -371,6 +390,7 @@ export function createContentEditor(options: EditorOptions) {
     },
     dispose: () => {
       runtime.disposed = true;
+      preview.dispose();
       runtime.active?.abort();
       runtime.active = null;
     },

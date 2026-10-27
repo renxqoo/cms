@@ -45,8 +45,8 @@ async function insertSession(
   });
   const id = randomUUID();
   await state.tx.query(
-    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at,delegation_id)
-     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,'pending',clock_timestamp()+$11*interval '1 millisecond',$12)`,
+    `INSERT INTO asset_uploads(id,actor_id,collection_key,purpose,document_id,expected_revision,filename,declared_type,declared_bytes,settings,status,expires_at,authorization_locale,delegation_id)
+     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,'pending',clock_timestamp()+$11*interval '1 millisecond',$12,$13)`,
     [
       id,
       state.actor.id,
@@ -59,6 +59,7 @@ async function insertSession(
       data.bytes,
       JSON.stringify(authorized.upload),
       runtime.limits.sessionTtlMs,
+      authorized.locale,
       state.actor.delegation?.id ?? null,
     ],
   );
@@ -219,7 +220,10 @@ async function authorizeCreation(
     fail('invalid_input');
   if (data.purpose === 'create' && (data.documentId || data.revision)) fail('invalid_input');
   const authorized = await runtime.authorizeContent(state.tx, {
+    ...(state.ctx.signal ? { signal: state.ctx.signal } : {}),
     operationId: state.operationId,
+    editorSessionId: state.ctx.editorSessionId,
+    locale: data.locale,
     actor: state.actor,
     action: data.purpose === 'create' ? 'upload' : 'replace',
     collectionKey: data.collection,

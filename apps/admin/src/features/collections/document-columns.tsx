@@ -1,4 +1,6 @@
 import { Button } from '@new-cms/ui/actions';
+import { RegisteredCell } from '../admin-components/renderers';
+import { fieldValue } from '../fields/data';
 import { Checkbox } from '@new-cms/ui/forms';
 import type { DataTableColumn } from '@new-cms/ui/data';
 import { DateCell, StatusCell } from '@new-cms/ui/data';
@@ -7,6 +9,7 @@ import type { Document } from '../../contracts/documents';
 import type { ContentMessages } from './messages';
 import { displayField, documentTitle } from './query';
 import { documentStatus } from './document-status';
+import { DocumentThumbnail } from './document-thumbnail';
 
 interface ColumnOptions {
   collection: Collection;
@@ -21,15 +24,21 @@ interface ColumnOptions {
   canRestore: boolean;
   canPurge: boolean;
   mode?: string;
+  contentLocale?: string;
 }
 
 export function defaultVisibleFields(collection: Collection) {
+  if (collection.admin?.defaultColumns)
+    return collection.admin.defaultColumns.filter((path) =>
+      collection.fields.some((field) => field.path === path && !field.disabled?.column),
+    );
   const title = collection.fields.find((field) =>
     ['text', 'textarea', 'email'].includes(field.type),
   );
   return collection.fields
     .filter(
       (field) =>
+        !field.disabled?.column &&
         field.path !== title?.path &&
         ['text', 'textarea', 'email', 'number', 'boolean', 'date', 'select'].includes(field.type),
     )
@@ -57,18 +66,26 @@ function trashButtons(options: ColumnOptions, document: Document) {
 
 function fieldColumns(options: ColumnOptions): DataTableColumn<Document>[] {
   return options.collection.fields
-    .filter((field) => options.visible.includes(field.path))
+    .filter((field) => !field.disabled?.column && options.visible.includes(field.path))
     .map((field) => ({
       key: `field:${field.path}`,
       header: field.label,
-      sortable: field.queryable,
+      sortable: field.queryable && field.sortable,
       cell: (document) => (
-        <span
-          className="block max-w-64 truncate"
-          title={displayField(document, field.path, field.type)}
+        <RegisteredCell
+          collection={options.collection}
+          field={field}
+          document={document}
+          text={displayField(document, field.path, field.type)}
+          value={fieldValue(document.data, field.path.split('.'))}
         >
-          {displayField(document, field.path, field.type)}
-        </span>
+          <span
+            className="block max-w-64 truncate"
+            title={displayField(document, field.path, field.type)}
+          >
+            {displayField(document, field.path, field.type)}
+          </span>
+        </RegisteredCell>
       ),
     }));
 }
@@ -91,14 +108,17 @@ export function documentColumns(options: ColumnOptions): DataTableColumn<Documen
     {
       key: 'title',
       header: t.name,
-      cell: (document) =>
-        options.trashed ? (
-          <span>{documentTitle(document, collection)}</span>
-        ) : (
-          <Button variant="link" onClick={() => options.open(document.id)}>
-            {documentTitle(document, collection)}
-          </Button>
-        ),
+      cell: (document) => (
+        <div className="flex items-center gap-3">
+          <DocumentThumbnail
+            collection={collection}
+            document={document}
+            locale={options.contentLocale ?? collection.defaultLocale}
+            mode={options.mode === 'published' ? 'published' : 'editing'}
+          />
+          <DocumentTitleCell options={options} document={document} />
+        </div>
+      ),
     },
     ...fieldColumns(options),
     { key: 'revision', header: t.revision, sortable: true, cell: (document) => document.revision },
@@ -150,4 +170,21 @@ export function selectedDocuments(
 ) {
   if (!checked) return previous.filter((item) => item.id !== document.id);
   return previous.some((item) => item.id === document.id) ? [...previous] : [...previous, document];
+}
+
+function DocumentTitleCell({ options, document }: { options: ColumnOptions; document: Document }) {
+  const title = documentTitle(document, options.collection);
+  if (document.adminURL === null || (document.adminURL === undefined && options.trashed))
+    return <span>{title}</span>;
+  if (document.adminURL !== undefined)
+    return (
+      <Button variant="link" render={<a href={document.adminURL} />}>
+        {title}
+      </Button>
+    );
+  return (
+    <Button variant="link" onClick={() => options.open(document.id)}>
+      {title}
+    </Button>
+  );
 }

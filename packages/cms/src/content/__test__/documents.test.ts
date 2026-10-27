@@ -34,6 +34,8 @@ it('creates a draft, publishes an immutable view and rejects stale editors', asy
       'folderId',
       'createdAt',
       'updatedAt',
+      'createdBy',
+      'updatedBy',
       'data',
     ].toSorted(),
   );
@@ -353,9 +355,17 @@ it('rolls back content when an extension rejects the change', async () => {
   const collections = workflowCollections();
   const [article] = collections;
   if (!article) throw new Error('Article definition missing');
-  article.extensions = [
-    { id: 'validate_title', version: '1', validate: (data) => data['title'] !== 'Reject' },
-  ];
+  article.hooks = {
+    beforeChange: [
+      {
+        version: 'validate-title-1',
+        run: ({ data }) => {
+          if (data['title'] === 'Reject') throw new Error('Rejected title');
+          return data;
+        },
+      },
+    ],
+  };
   const kit = await fixture({ collections });
   await expect(
     kit.content.api.createDocument(kit.owner(), {

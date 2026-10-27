@@ -103,7 +103,7 @@ async function evaluatePolicy(
   const collection = await input.runtime.resolveCollection(state.tx, input.collection);
   if (!collection.locales.supported.includes(input.locale)) fail('invalid_input');
   try {
-    const predicate = collectionPredicate({
+    const predicate = await collectionPredicate({
       ...state,
       actor,
       collection,

@@ -1,31 +1,44 @@
-import { policyContext } from '../runtime.ts';
-import { queryableFields } from '../fields/policies.ts';
+import { fail } from '@new-cms/cms/platform/contracts';
+import { draftSettings } from '../collections/draft-config.ts';
+import { policyScope } from '../hooks/invoke.ts';
+import { authorizeStateOperation, policyContext } from '../runtime.ts';
+import { queryableFields } from '../fields/policy-metadata.ts';
 import { denied } from '../documents/relation-scopes.ts';
 import { editorActionSchema } from './contracts.ts';
 import { operationState, requireEditorDocument, requireActionPrerequisites } from './context.ts';
 import type { EditorContext } from './context.ts';
 import type { EditorAction, EditorAccess } from './contracts.ts';
+import type { CollectionDefinition } from '../definition.ts';
 import type { ContentRuntime } from '../types.ts';
 
+function controlledAction(
+  collection: CollectionDefinition,
+  operation: EditorAction['operationId'],
+) {
+  const drafts = draftSettings(collection);
+  if (operation === 'documents.renameFile') return Boolean(collection.upload);
+  if (operation === 'documents.copy') return !collection.disableDuplicate;
+  if (operation === 'documents.copyLocale') return collection.locales.supported.length > 1;
+  if (operation === 'documents.autosave') return Boolean(drafts?.autosave);
+  if (operation === 'content.schedulePublication') return drafts?.schedule === true;
+  return null;
+}
 function eligible(context: EditorContext, operation: EditorAction['operationId']): boolean {
-  const { document } = context;
-  const drafts = context.state.collection.mode === 'drafts';
+  const {
+    document,
+    state: { collection },
+  } = context;
+  const drafts = collection.mode === 'drafts';
   if (operation === 'documents.create') return true;
   if (!document) return false;
   if (operation === 'documents.restoreTrash' || operation === 'documents.purge')
     return document.trashedAt !== null;
   if (document.trashedAt !== null) return false;
-  if (operation === 'versions.restore') return context.state.collection.history !== false;
+  const controlled = controlledAction(collection, operation);
+  if (controlled !== null) return controlled;
+  if (operation === 'versions.restore') return collection.history !== false;
   if (operation === 'documents.unpublish') return drafts && document.publishedVersionId !== null;
-  if (
-    [
-      'documents.publish',
-      'documents.autosave',
-      'content.schedulePublication',
-      'content.cancelPublicationSchedule',
-    ].includes(operation)
-  )
-    return drafts;
+  if (['documents.publish', 'content.cancelPublicationSchedule'].includes(operation)) return drafts;
   return true;
 }
 
@@ -35,6 +48,7 @@ function candidateAction(operation: EditorAction['operationId']): boolean {
     'documents.update',
     'documents.autosave',
     'documents.copy',
+    'documents.copyLocale',
     'documents.publish',
     'versions.restore',
     'content.schedulePublication',
@@ -48,6 +62,15 @@ async function actionState(
 ): Promise<EditorAccess> {
   if (!eligible(context, input.operationId)) return 'denied';
   try {
+    if (input.operationId === 'documents.copyLocale') {
+      const actor = await authorizeStateOperation(context.state, {
+        runtime: input.runtime,
+        operationId: input.operationId,
+        collection: context.state.collection.key,
+      });
+      if (!actor) fail('unauthenticated');
+      return 'conditional';
+    }
     const { fallbackOverride: _readFallback, ...base } = context.state;
     const state = await operationState(base, { ...input, mode: 'editing' });
     await requireActionPrerequisites(context, input);
@@ -87,7 +110,11 @@ export async function editorQueryableFields(
       mode: context.state.mode,
     });
     return new Set(
-      queryableFields({ collection: state.collection, context: policyContext(state) }),
+      await queryableFields({
+        ...policyScope(state),
+        collection: state.collection,
+        context: policyContext(state),
+      }),
     );
   } catch (error) {
     if (!denied(error)) throw error;

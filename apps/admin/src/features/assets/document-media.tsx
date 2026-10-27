@@ -1,5 +1,6 @@
 'use client';
 
+import { RenameFile } from './rename-file';
 import { Button } from '@new-cms/ui/actions';
 import { Banner } from '@new-cms/ui/feedback';
 import { Card, CardContent, CardHeader, CardTitle } from '@new-cms/ui/layout';
@@ -24,6 +25,7 @@ export interface DocumentMediaProps {
   onBusyChange?: (busy: boolean) => void;
   initialUploadId?: string;
   busy?: boolean;
+  editorSessionId?: string;
 }
 
 export function DocumentMedia(props: DocumentMediaProps) {
@@ -52,9 +54,17 @@ export function DocumentMedia(props: DocumentMediaProps) {
         ) : null}
         <CurrentMedia props={props} />
         <ReplacementMedia props={props} media={media} />
+        <RenameFile {...props} />
         <ImageMedia props={props} media={media} />
         <ProcessingResult media={media} />
-        {props.document ? <FixedMedia document={props.document} /> : null}
+        {props.document ? (
+          <FixedMedia
+            document={props.document}
+            locale={props.editor.locale}
+            mode={props.editor.mode}
+            fallback={props.editor.fallback}
+          />
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -80,6 +90,8 @@ function CurrentMedia({ props }: { props: DocumentMediaProps }) {
             id: document.id,
             versionId: document.versionId,
             mode: editor.mode,
+            locale: editor.locale,
+            fallback: editor.fallback,
           }}
           manifest={document.file}
         />
@@ -91,6 +103,7 @@ function CurrentMedia({ props }: { props: DocumentMediaProps }) {
           collection={collection.key}
           limits={editor.upload}
           purpose="create"
+          locale={editor.locale}
           single
           disabled={props.busy === true || !canCreate}
           onBusyChange={props.onBusyChange}
@@ -120,7 +133,7 @@ function ReplacementMedia({ props, media }: { props: DocumentMediaProps; media: 
           disabled={media.externalBusy || media.localBusy}
           onClick={() => media.setReplacing(true)}
         >
-          {t.replace}
+          {document.file ? t.replace : t.addFile}
         </Button>
       ) : null}
       {media.replacing && document && editor.upload ? (
@@ -131,6 +144,8 @@ function ReplacementMedia({ props, media }: { props: DocumentMediaProps; media: 
             collection={collection.key}
             limits={editor.upload}
             purpose="replace"
+            locale={editor.locale}
+            {...(props.editorSessionId ? { editorSessionId: props.editorSessionId } : {})}
             documentId={document.id}
             revision={document.revision}
             single
@@ -180,7 +195,14 @@ function ImageMedia({ props, media }: { props: DocumentMediaProps; media: MediaS
       ) : null}
       {media.image ? (
         <ImageDialog
-          target={{ collection: collection.key, id: document.id, versionId: document.versionId }}
+          target={{
+            collection: collection.key,
+            id: document.id,
+            versionId: document.versionId,
+            locale: editor.locale,
+            mode: editor.mode,
+            fallback: editor.fallback,
+          }}
           manifest={document.file}
           limits={editor.upload}
           onClose={() => media.setImage(false)}
@@ -220,7 +242,13 @@ function ProcessingResult({ media }: { media: MediaState }) {
   );
 }
 
-export function FixedMedia({ document }: { document: Document }) {
+interface MediaReadContext {
+  locale?: string;
+  mode?: 'editing' | 'published';
+  fallback?: readonly string[];
+}
+
+export function FixedMedia({ document, ...read }: { document: Document } & MediaReadContext) {
   const locale = useShell((state) => state.locale);
   const bindings =
     document.mediaBindings?.filter((binding) => binding.sourcePath !== '$file') ?? [];
@@ -236,6 +264,7 @@ export function FixedMedia({ document }: { document: Document }) {
             id: document.id,
             versionId: document.versionId,
             bindingId: binding.bindingId,
+            ...read,
           }}
           manifest={binding.manifest}
         />
@@ -248,11 +277,12 @@ export function ReferenceMediaPreview({
   document,
   reference,
   sourcePath,
+  ...read
 }: {
   document: Document;
   reference: { collection: string; id: string };
   sourcePath: string;
-}) {
+} & MediaReadContext) {
   const binding = document.mediaBindings?.find(
     (value) =>
       value.mediaCollectionKey === reference.collection &&
@@ -266,6 +296,7 @@ export function ReferenceMediaPreview({
         id: document.id,
         versionId: document.versionId,
         bindingId: binding.bindingId,
+        ...read,
       }}
       manifest={binding.manifest}
     />

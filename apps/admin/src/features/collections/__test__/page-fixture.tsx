@@ -32,7 +32,7 @@ const pageApi = vi.hoisted(() => ({
 vi.mock('../../../api/client', () => ({ requestApi: pageApi.request }));
 vi.mock('../../access-control/provider', () => ({
   useAccessControl: () => ({
-    principal: { id: 'owner' },
+    principal: { id: '11111111-1111-4111-8111-111111111111', role: { isSuper: false } },
     phase: pageApi.phase,
     error: null,
     can: (operation: string) => pageApi.phase === 'ready' && !pageApi.denied.has(operation),
@@ -78,8 +78,10 @@ export const collection: Collection = {
   mode: 'drafts',
   history: true,
   singleton: false,
+  orderable: false,
   defaultLocale: 'en',
   locales: ['en', 'zh-CN'],
+  defaultSort: [{ field: 'updatedAt', order: 'desc' }],
   dataSchema: {},
   behaviorHash: 'behavior',
   mappingFingerprint: 'mapping',
@@ -93,8 +95,10 @@ export const collection: Collection = {
       required: true,
       localized: true,
       queryable: true,
+      sortable: true,
     },
   ],
+  drafts: { validate: true, autosave: { intervalMs: 10000 }, schedule: true },
   capabilities: {
     autosave: true,
     publication: true,
@@ -133,6 +137,10 @@ export function descriptor(
     locale: 'en',
     fallback: [],
     richTextNodes: [],
+    initialData: null,
+    initialSnapshot: null,
+    visibility: {},
+    componentVersions: {},
     document: document
       ? {
           id: document.id,
@@ -176,6 +184,7 @@ export function descriptor(
         'documents.publish',
         'documents.unpublish',
         'documents.copy',
+        'documents.copyLocale',
         'documents.archive',
         'versions.restore',
         'content.schedulePublication',

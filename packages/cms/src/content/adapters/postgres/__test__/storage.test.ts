@@ -55,7 +55,7 @@ async function save(
       revision = old.revision + 1;
       ({ publishedVersionId } = old);
     } else await kit.store.insertDocument(tx, { collection, id, actorId: kit.actorId });
-    const data = validateData({
+    const data = await validateData({
       collection: definition,
       data: input.data,
       locale,
@@ -76,6 +76,7 @@ async function save(
       ...(input.previousVersionId ? { previousVersionId: input.previousVersionId } : {}),
     });
     await kit.store.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection,
       id,
       revision,
@@ -83,7 +84,7 @@ async function save(
       currentVersionId: version.id,
       publishedVersionId: input.publish ? version.id : publishedVersionId,
     });
-    await kit.store.syncActiveUnique(tx, { collection, id });
+    await kit.store.syncActiveProjections(tx, { collection, id });
     return { id, versionId: version.id, revision };
   });
 }
@@ -395,6 +396,7 @@ it('foreign version identity cannot be read or assigned as another document poin
   await expect(
     kit.database.transaction((tx) =>
       kit.store.updateDocumentPointers(tx, {
+        actorId: kit.actorId,
         collection: 'articles',
         id: first.id,
         revision: 2,
@@ -436,6 +438,7 @@ it('history and reference lifecycle preserve active revisions and allow external
       sourceDocumentId: source.id,
       sourceRevisionId: source.versionId,
       sourceCollectionId: 'test_articles',
+      sourceView: 'current',
       sourceCollection: 'articles',
       schemaVersion: 1,
       path: 'en:author',
@@ -503,6 +506,7 @@ it('database CAS rejects stale metadata transitions and preserves current pointe
   await expect(
     kit.database.transaction((tx) =>
       kit.store.updateDocumentPointers(tx, {
+        actorId: kit.actorId,
         collection: 'articles',
         id: saved.id,
         expectedRevision: 0,
@@ -520,6 +524,7 @@ it('database CAS rejects stale metadata transitions and preserves current pointe
     await kit.store.lockDocuments(tx, { ids: [] });
     await kit.store.lockDocuments(tx, { ids: [saved.id, saved.id] });
     await kit.store.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'articles',
       id: saved.id,
       expectedRevision: 1,
@@ -560,6 +565,7 @@ it('a singleton cannot be bypassed by concurrent creates or an archived existing
   if (item?.status !== 'fulfilled') throw new Error('Missing singleton');
   await kit.database.transaction((tx) =>
     kit.store.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'articles',
       id: item.value.id,
       expectedRevision: 1,

@@ -46,6 +46,7 @@ export function PointField({ node, location, readOnly }: ScalarProps) {
         <Input
           aria-label={`${node.label} ${field.t.longitude}`}
           inputMode="decimal"
+          placeholder={node.placeholder}
           value={longitude}
           readOnly={readOnly}
           onChange={(event) => change(0, event.currentTarget.value)}
@@ -54,6 +55,7 @@ export function PointField({ node, location, readOnly }: ScalarProps) {
           id={`${field.idPrefix}-${location.path.map(String).join('-')}-latitude`}
           aria-label={`${node.label} ${field.t.latitude}`}
           inputMode="decimal"
+          placeholder={node.placeholder}
           value={latitude}
           readOnly={readOnly}
           onChange={(event) => change(1, event.currentTarget.value)}

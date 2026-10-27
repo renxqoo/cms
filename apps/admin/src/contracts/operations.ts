@@ -1,41 +1,27 @@
-export interface OperationDefinition {
-  id: string;
-  target: 'backend' | 'frontend';
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  path: string;
-  access: 'public' | 'protected';
-  bodyKind: 'none' | 'json' | 'bytes';
-  queryKeys: readonly string[];
-  idempotency: 'required' | 'none';
-  responseKind: 'json' | 'empty' | 'stream';
-}
+import { mediaOperations } from './media-operations';
+import { queryOperations } from './query-operations';
+import { documentOrderingOperations } from './document-order-operations';
+import { segment, queryValue } from './operation-values';
+import { defineOperation, type OperationDefinition } from './operation-definition';
 
 const page = ['page', 'pageSize'] as const;
 const list = [...page, 'q', 'sortBy', 'order'] as const;
-const read = ['locale', 'fallback', 'mode', 'select', 'depth'] as const;
-const documents = [...read, ...page, 'q', 'where', 'sort', 'trashed', 'folderId'] as const;
-
-function defineOperation<const Id extends string>(
-  id: Id,
-  route: readonly [OperationDefinition['method'], string],
-  options: Partial<Omit<OperationDefinition, 'id' | 'method' | 'path'>> = {},
-): OperationDefinition & { id: Id } {
-  const [method, path] = route;
-  return {
-    id,
-    target: 'backend',
-    method,
-    path,
-    access: 'protected',
-    bodyKind: method === 'GET' || method === 'DELETE' ? 'none' : 'json',
-    queryKeys: [],
-    idempotency: 'none',
-    responseKind: 'json',
-    ...options,
-  };
-}
+const read = ['locale', 'fallback', 'mode', 'select', 'depth', 'joins'] as const;
+const documents = [
+  ...read,
+  ...page,
+  'q',
+  'where',
+  'sort',
+  'trashed',
+  'folderId',
+  'context',
+] as const;
 
 export const operations = [
+  ...documentOrderingOperations,
+  ...mediaOperations,
+  ...queryOperations(documents),
   defineOperation('identity.login', ['POST', '/v1/auth/login'], { access: 'public' }),
   defineOperation('identity.logout', ['POST', '/v1/auth/logout'], {
     bodyKind: 'none',
@@ -135,18 +121,56 @@ export const operations = [
   defineOperation('audit.list', ['GET', '/v1/audit-logs'], {
     queryKeys: [...list, 'actorId', 'operationId', 'targetType', 'targetId', 'from', 'to'],
   }),
-  defineOperation('collections.list', ['GET', '/v1/collections']),
+  defineOperation('collections.list', ['GET', '/v1/collections'], { queryKeys: ['locale'] }),
   defineOperation('resources.list', ['GET', '/v1/resources'], { queryKeys: documents }),
-  defineOperation('collections.get', ['GET', '/v1/collections/:collection']),
+  defineOperation('collections.get', ['GET', '/v1/collections/:collection'], {
+    queryKeys: ['locale'],
+  }),
+  defineOperation('collections.fieldOptions', [
+    'POST',
+    '/v1/collections/:collection/editor/options',
+  ]),
+  defineOperation('documents.getLock', ['GET', '/v1/collections/:collection/documents/:id/lock'], {
+    queryKeys: ['editorId', 'locale'],
+  }),
+  defineOperation('documents.acquireLock', [
+    'PUT',
+    '/v1/collections/:collection/documents/:id/lock',
+  ]),
+  defineOperation(
+    'documents.releaseLock',
+    ['DELETE', '/v1/collections/:collection/documents/:id/lock'],
+    { queryKeys: ['editorId', 'generation', 'locale'] },
+  ),
+  defineOperation('documents.unlock', [
+    'POST',
+    '/v1/collections/:collection/documents/:id/unlocks',
+  ]),
+  defineOperation(
+    'documents.preview',
+    ['GET', '/v1/collections/:collection/documents/:id/preview'],
+    { queryKeys: ['locale'] },
+  ),
   defineOperation('collections.editor', ['GET', '/v1/collections/:collection/editor'], {
     queryKeys: ['intent', 'id', 'locale', 'mode', 'fallback'],
   }),
+  defineOperation('hierarchy.tree', ['GET', '/v1/collections/:collection/hierarchy'], {
+    queryKeys: ['locale', 'mode', 'parentId', 'page', 'pageSize'],
+  }),
+  defineOperation('hierarchy.move', ['POST', '/v1/collections/:collection/hierarchy/moves'], {
+    idempotency: 'required',
+  }),
+  defineOperation('collections.previewEditor', [
+    'POST',
+    '/v1/collections/:collection/editor/preview',
+  ]),
   defineOperation('documents.list', ['GET', '/v1/collections/:collection/documents'], {
     queryKeys: documents,
   }),
   defineOperation('documents.create', ['POST', '/v1/collections/:collection/documents'], {
     idempotency: 'required',
   }),
+  defineOperation('documents.validate', ['POST', '/v1/collections/:collection/validations']),
   defineOperation('documents.get', ['GET', '/v1/collections/:collection/documents/:id'], {
     queryKeys: read,
   }),
@@ -167,6 +191,11 @@ export const operations = [
   defineOperation('documents.archive', ['DELETE', '/v1/collections/:collection/documents/:id'], {
     queryKeys: ['revision'],
   }),
+  defineOperation(
+    'documents.copyLocale',
+    ['POST', '/v1/collections/:collection/documents/:id/locale-copies'],
+    { idempotency: 'required' },
+  ),
   defineOperation('documents.copy', ['POST', '/v1/collections/:collection/documents/:id/copies'], {
     idempotency: 'required',
   }),
@@ -195,7 +224,7 @@ export const operations = [
   defineOperation(
     'documents.unpublish',
     ['DELETE', '/v1/collections/:collection/documents/:id/publication'],
-    { queryKeys: ['revision'] },
+    { queryKeys: ['revision', 'locale'] },
   ),
   defineOperation('versions.list', ['GET', '/v1/collections/:collection/documents/:id/versions'], {
     queryKeys: [...page, 'locale'],
@@ -227,15 +256,17 @@ export const operations = [
   defineOperation(
     'content.cancelPublicationSchedule',
     ['DELETE', '/v1/collections/:collection/documents/:id/publication-schedules/:scheduleId'],
-    { responseKind: 'empty' },
+    { responseKind: 'empty', queryKeys: ['locale'] },
   ),
   defineOperation('content.batch', ['POST', '/v1/collections/:collection/batches'], {
     idempotency: 'required',
   }),
   defineOperation('content.listJobs', ['GET', '/v1/collections/:collection/jobs'], {
-    queryKeys: [...page, 'action', 'status', 'documentId'],
+    queryKeys: [...page, 'action', 'status', 'documentId', 'locale'],
   }),
-  defineOperation('content.getJob', ['GET', '/v1/collections/:collection/jobs/:jobId']),
+  defineOperation('content.getJob', ['GET', '/v1/collections/:collection/jobs/:jobId'], {
+    queryKeys: ['locale'],
+  }),
   defineOperation(
     'resources.references',
     ['GET', '/v1/collections/:collection/documents/:id/references'],
@@ -249,53 +280,6 @@ export const operations = [
   defineOperation('folders.delete', ['DELETE', '/v1/folders/:id'], {
     queryKeys: ['collection', 'version'],
     responseKind: 'empty',
-  }),
-  defineOperation('assets.listUploads', ['GET', '/v1/collections/:collection/uploads'], {
-    queryKeys: [...page, 'status', 'purpose', 'documentId'],
-  }),
-  defineOperation('assets.createUpload', ['POST', '/v1/collections/:collection/uploads'], {
-    idempotency: 'required',
-  }),
-  defineOperation(
-    'assets.writeUpload',
-    ['PUT', '/v1/collections/:collection/uploads/:uploadId/content'],
-    {
-      bodyKind: 'bytes',
-    },
-  ),
-  defineOperation(
-    'assets.completeUpload',
-    ['POST', '/v1/collections/:collection/uploads/:uploadId/completions'],
-    { bodyKind: 'json', idempotency: 'required' },
-  ),
-  defineOperation('assets.readUpload', ['GET', '/v1/collections/:collection/uploads/:uploadId']),
-  defineOperation(
-    'assets.cancelUpload',
-    ['DELETE', '/v1/collections/:collection/uploads/:uploadId'],
-    {
-      responseKind: 'empty',
-    },
-  ),
-  defineOperation('assets.download', ['GET', '/v1/collections/:collection/documents/:id/file'], {
-    queryKeys: ['versionId', 'variant', 'mode'],
-    responseKind: 'stream',
-  }),
-  defineOperation(
-    'assets.downloadBinding',
-    ['GET', '/v1/collections/:collection/documents/:id/media-bindings/:bindingId/file'],
-    { queryKeys: ['versionId', 'variant', 'mode'], responseKind: 'stream' },
-  ),
-  defineOperation(
-    'assets.reprocess',
-    ['POST', '/v1/collections/:collection/documents/:id/file-processings'],
-    { idempotency: 'required' },
-  ),
-  defineOperation('assets.listCleanup', ['GET', '/v1/asset-cleanups'], {
-    queryKeys: [...page, 'blocked', 'state'],
-  }),
-  defineOperation('assets.getCleanup', ['GET', '/v1/asset-cleanups/:id']),
-  defineOperation('assets.retryCleanup', ['POST', '/v1/asset-cleanups/:id/retries'], {
-    idempotency: 'required',
   }),
   defineOperation('system.openapi', ['GET', '/openapi.json']),
   defineOperation('session.expire', ['POST', '/api/auth/expired-session'], {
@@ -319,23 +303,6 @@ export function acceptsIdempotencyKey(
 ): boolean {
   if (operation.idempotency === 'none') return key === undefined;
   return key !== undefined && /^[\x20-\x7e]{16,128}$/.test(key);
-}
-
-function segment(value: string): string {
-  if (!/^[a-zA-Z0-9_-]+$/.test(value)) throw new Error('Invalid path segment');
-  return encodeURIComponent(value);
-}
-
-function queryValue(key: string, value: unknown): string {
-  if (['where', 'sort', 'select', 'fallback'].includes(key)) {
-    const encoded = JSON.stringify(value);
-    if (encoded === undefined) throw new Error('Invalid query value');
-    return encoded;
-  }
-  if (value === null) return 'null';
-  if (typeof value === 'string' || typeof value === 'boolean') return String(value);
-  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
-  throw new Error('Invalid query value');
 }
 
 export function operationPath(

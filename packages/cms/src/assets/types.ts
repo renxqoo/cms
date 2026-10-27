@@ -94,20 +94,26 @@ export interface ImageProcessor {
 }
 
 export interface ContentAuthorizationInput {
+  signal?: AbortSignal;
+  locale?: string | undefined;
   operationId: string;
+  editorSessionId?: string | undefined;
+  background?: boolean;
   reauthorizeOnly?: boolean;
   actor: Principal;
-  action: 'upload' | 'replace' | 'download' | 'reprocess';
+  action: 'upload' | 'replace' | 'download' | 'inspectUpload' | 'reprocess';
   collectionKey: string;
   documentId?: string;
   revision?: number;
   versionId?: string;
   mode?: 'editing' | 'published';
+  fallback?: readonly string[];
   bindingId?: string;
   sourcePath?: string;
 }
 
 export interface ContentAuthorization {
+  locale: string;
   upload: UploadSettings;
   documentId?: string;
   revision?: number;
@@ -131,11 +137,13 @@ export interface AssetsOptions {
     tx: SqlExecutor,
     input: {
       actor: Principal;
+      locale?: string | undefined;
       collectionKey: string;
       documentId: string;
       revision: number;
       uploadId: string;
       jobId: string;
+      signal?: AbortSignal;
     },
   ) => Promise<{ revisionId: string }>;
   authorizeContent: ContentAuthorizer;
@@ -167,6 +175,7 @@ export interface ManifestSummary {
 }
 
 export interface UploadSessionView {
+  locale: string | null;
   id: string;
   filename: string;
   declaredMimeType: string;
@@ -203,6 +212,7 @@ export interface UploadRow {
   declared_type: string;
   declared_bytes: number;
   settings: UploadSettings;
+  authorization_locale: string | null;
   status: UploadSessionView['status'];
   expires_at: Date;
   generation: number;
@@ -239,6 +249,7 @@ export interface AuthorizedManifest {
 }
 
 export interface BindAssetInput {
+  locale: string;
   operationId: string;
   actorId: string;
   collectionKey: string;
@@ -251,6 +262,10 @@ export interface BindAssetInput {
 }
 
 export interface AssetsParticipants {
+  renameManifest(
+    tx: SqlExecutor,
+    input: { source: AuthorizedManifest; filename: string },
+  ): Promise<AuthorizedManifest>;
   describeBinding(
     tx: SqlExecutor,
     input: { bindingId: string },

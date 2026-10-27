@@ -1,22 +1,14 @@
 'use client';
 
+import { EditorSlot } from './editor-customization';
+import { DocumentMenu } from './editor-menu';
+
 import { useState } from 'react';
-import {
-  ArrowLeftIcon,
-  CheckIcon,
-  CircleDotIcon,
-  CopyIcon,
-  CalendarClockIcon,
-  EllipsisIcon,
-  SaveIcon,
-  SendIcon,
-  Trash2Icon,
-  Undo2Icon,
-} from 'lucide-react';
+import { ArrowLeftIcon, CheckIcon, CircleDotIcon, SaveIcon, SendIcon } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
 import { Field, NativeSelect, Switch } from '@new-cms/ui/forms';
-import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@new-cms/ui/overlays';
 import { ManagementDialog } from '../management-shared/management-dialog';
+import { CopyLocaleDialog } from './copy-locale-dialog';
 import { CopyDocumentDialog } from './copy-document-dialog';
 type ConfirmedAction = 'publish' | 'unpublish' | 'archive';
 import type { ContentEditorModel } from './use-content-editor';
@@ -49,7 +41,7 @@ export function EditorToolbar({ model }: { model: ContentEditorModel }) {
           <NativeSelect
             className="w-full"
             value={snapshot.editor.locale}
-            disabled={busy}
+            disabled={busy || Boolean(props.embedded)}
             onChange={(event) =>
               navigation.push(
                 `${collectionHref(props.collectionKey, props.documentId ?? 'new')}?locale=${encodeURIComponent(event.currentTarget.value)}`,
@@ -69,11 +61,16 @@ export function EditorToolbar({ model }: { model: ContentEditorModel }) {
           onChange={controller.setFolder}
           label={t.folder}
           root={t.rootFolder}
-          disabled={busy || snapshot.editor.intent === 'read'}
+          disabled={busy || snapshot.editor.intent === 'read' || model.lease.blocked}
         />
       </div>
+      <EditorSlot model={model} slot="BeforeDocumentMeta" />
       <div className="flex min-h-8 flex-wrap items-center gap-x-5 gap-y-3 border-t border-border/60 pt-4 xl:border-t-0 xl:border-l xl:pl-5 xl:pt-0">
-        {status ? <StatusCell tone={status.tone}>{status.label}</StatusCell> : null}
+        {status ? (
+          <EditorSlot model={model} slot="Status">
+            <StatusCell tone={status.tone}>{status.label}</StatusCell>
+          </EditorSlot>
+        ) : null}
         {snapshot.editor.intent === 'read' ? (
           <span className="text-sm text-muted-foreground">{t.readOnly}</span>
         ) : null}
@@ -100,11 +97,40 @@ export function EditorToolbar({ model }: { model: ContentEditorModel }) {
 export function EditorActions({ model }: { model: ContentEditorModel }) {
   const [confirm, setConfirm] = useState<ConfirmedAction | null>(null);
   const [schedule, setSchedule] = useState(false);
+  const [localeCopy, setLocaleCopy] = useState(false);
   const { state, t, controller, busy, dirty, invalid } = model;
   const { snapshot } = state;
   return (
     <>
-      <EditorActionButtons model={model} confirm={setConfirm} schedule={() => setSchedule(true)} />
+      <EditorActionButtons
+        model={model}
+        confirm={setConfirm}
+        schedule={() => setSchedule(true)}
+        copyLocale={() => {
+          setLocaleCopy(true);
+          controller.setExternalBusy(true);
+        }}
+      />
+      {localeCopy && snapshot ? (
+        <CopyLocaleDialog
+          snapshot={snapshot}
+          editorSessionId={model.editorSessionId}
+          onClose={() => {
+            setLocaleCopy(false);
+            controller.setExternalBusy(false);
+          }}
+          onRefresh={() => {
+            setLocaleCopy(false);
+            controller.setExternalBusy(false);
+            void controller.reload();
+          }}
+          onCopied={(locale, id) => {
+            setLocaleCopy(false);
+            controller.setExternalBusy(false);
+            model.openLocale(id, locale);
+          }}
+        />
+      ) : null}
       {schedule && snapshot?.document ? (
         <PublicationSchedule
           document={snapshot.document}
@@ -119,7 +145,7 @@ export function EditorActions({ model }: { model: ContentEditorModel }) {
       {model.copyOpen && snapshot ? (
         <CopyDocumentDialog
           snapshot={snapshot}
-          services={model.services}
+          collections={model.referenceCollections}
           busy={state.busy || state.externalBusy}
           failure={state.failure}
           onClose={() => model.setCopyOpen(false)}
@@ -152,10 +178,12 @@ function EditorActionButtons({
   model,
   confirm,
   schedule,
+  copyLocale,
 }: {
   model: ContentEditorModel;
   confirm: (action: ConfirmedAction) => void;
   schedule: () => void;
+  copyLocale: () => void;
 }) {
   const {
     state: { snapshot },
@@ -165,23 +193,35 @@ function EditorActionButtons({
   } = model;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button
-        variant="ghost"
-        onClick={() => model.navigation.push(collectionHref(model.props.collectionKey))}
-      >
-        <ArrowLeftIcon aria-hidden="true" />
-        {t.back}
-      </Button>
-      {snapshot && allowed(snapshot.document ? 'documents.update' : 'documents.create') ? (
+      <EditorSlot model={model} slot="beforeDocumentControls" />
+      {!model.props.embedded ? (
         <Button
+          variant="ghost"
+          onClick={() => model.navigation.push(collectionHref(model.props.collectionKey))}
+        >
+          <ArrowLeftIcon aria-hidden="true" />
+          {t.back}
+        </Button>
+      ) : null}
+      {snapshot && allowed(snapshot.document ? 'documents.update' : 'documents.create') ? (
+        <EditorSlot
+          model={model}
+          slot={snapshot.collection.capabilities.publication ? 'SaveDraftButton' : 'SaveButton'}
           disabled={saveBlocked(model)}
-          onClick={() => {
+          onAction={() => {
             void controller.submit('save');
           }}
         >
-          <SaveIcon aria-hidden="true" />
-          {t.save}
-        </Button>
+          <Button
+            disabled={saveBlocked(model)}
+            onClick={() => {
+              void controller.submit('save');
+            }}
+          >
+            <SaveIcon aria-hidden="true" />
+            {t.save}
+          </Button>
+        </EditorSlot>
       ) : null}
       {snapshot?.document ? (
         <DocumentActions
@@ -189,6 +229,7 @@ function EditorActionButtons({
           confirm={confirm}
           schedule={schedule}
           copy={() => model.setCopyOpen(true)}
+          copyLocale={copyLocale}
         />
       ) : null}
     </div>
@@ -201,11 +242,12 @@ function actionLabel(action: ConfirmedAction, t: ContentEditorModel['t']) {
   return t.archive;
 }
 
-interface DocumentActionProps {
+export interface DocumentActionProps {
   model: ContentEditorModel;
   confirm: (action: ConfirmedAction) => void;
   schedule: () => void;
   copy: () => void;
+  copyLocale: () => void;
 }
 
 function DocumentActions(props: DocumentActionProps) {
@@ -221,49 +263,28 @@ function DocumentActions(props: DocumentActionProps) {
   } = model;
   return (
     <>
-      {snapshot?.document ? (
-        <ContentPreviewControl
-          key={`${snapshot.document.id}:${snapshot.document.revision}:${snapshot.editor.locale}`}
-          target={{
-            collection: snapshot.collection.key,
-            id: snapshot.document.id,
-            revision: snapshot.document.revision,
-            locale: snapshot.editor.locale,
-          }}
-          disabled={busy || dirty || invalid}
-          permitted={model.canPreview}
-          canRevoke={model.canRevokePreview}
-          t={t}
-          report={model.reportResult}
-        />
-      ) : null}
-      {snapshot?.document ? (
-        <DefaultLanguageControl
-          key={`${snapshot.document.id}:${snapshot.document.revision}`}
-          document={snapshot.document}
-          permitted={model.canSetDefaultLanguage}
-          disabled={busy || dirty || invalid}
-          onChanged={() => {
-            void controller.reload();
-          }}
-          onBusy={controller.setExternalBusy}
-          report={model.reportResult}
-          t={t}
-        />
-      ) : null}
+      <DocumentPresentationActions model={model} />
       {allowed('documents.publish') ? (
-        <Button
-          variant="outline"
+        <EditorSlot
+          model={model}
+          slot="PublishButton"
           disabled={busy || dirty || invalid}
-          onClick={() => confirm('publish')}
+          onAction={() => confirm('publish')}
         >
-          <SendIcon aria-hidden="true" />
-          {t.publish}
-        </Button>
+          <Button
+            variant="outline"
+            disabled={busy || dirty || invalid}
+            onClick={() => confirm('publish')}
+          >
+            <SendIcon aria-hidden="true" />
+            {t.publish}
+          </Button>
+        </EditorSlot>
       ) : null}
       {snapshot?.document && snapshot.collection.history ? (
         <DocumentHistory
           document={snapshot.document}
+          collection={snapshot.collection}
           locale={snapshot.editor.locale}
           t={t}
           busy={busy}
@@ -278,58 +299,59 @@ function DocumentActions(props: DocumentActionProps) {
   );
 }
 
-function DocumentMenu({ model, confirm, schedule, copy }: DocumentActionProps) {
-  const { t, state, busy, dirty, allowed } = model;
-  const blocked = busy || dirty;
-  const unpublish =
-    Boolean(state.snapshot?.document?.publishedVersionId) && allowed('documents.unpublish');
-  const copyable = allowed('documents.copy');
-  const schedulable = allowed('content.schedulePublication') && model.canReadJob;
-  const archivable = allowed('documents.archive') && model.canReadList;
-  if (![unpublish, copyable, schedulable, archivable].some(Boolean)) return null;
-  return (
-    <Menu>
-      <MenuTrigger render={<Button variant="outline" size="icon" aria-label={t.moreActions} />}>
-        <EllipsisIcon aria-hidden="true" />
-      </MenuTrigger>
-      <MenuContent>
-        {unpublish ? (
-          <MenuItem disabled={blocked} onClick={() => confirm('unpublish')}>
-            <Undo2Icon aria-hidden="true" />
-            {t.unpublish}
-          </MenuItem>
-        ) : null}
-        {copyable ? (
-          <MenuItem disabled={blocked} onClick={copy}>
-            <CopyIcon aria-hidden="true" />
-            {t.copy}
-          </MenuItem>
-        ) : null}
-        {schedulable ? (
-          <MenuItem disabled={blocked} onClick={schedule}>
-            <CalendarClockIcon aria-hidden="true" />
-            {t.schedule}
-          </MenuItem>
-        ) : null}
-        {archivable ? (
-          <>
-            <MenuSeparator />
-            <MenuItem tone="destructive" disabled={blocked} onClick={() => confirm('archive')}>
-              <Trash2Icon aria-hidden="true" />
-              {t.archive}
-            </MenuItem>
-          </>
-        ) : null}
-      </MenuContent>
-    </Menu>
-  );
-}
-
 function saveBlocked(model: ContentEditorModel) {
   return (
     model.busy ||
     model.invalid ||
     (model.state.snapshot?.document !== null && !model.dirty) ||
     model.state.failure?.error.code === 'version_conflict'
+  );
+}
+
+function DocumentPresentationActions({ model }: { model: ContentEditorModel }) {
+  const {
+    state: { snapshot },
+    t,
+    busy,
+    dirty,
+    invalid,
+    controller,
+  } = model;
+  if (!snapshot?.document) return null;
+  return (
+    <>
+      {snapshot.document ? (
+        <EditorSlot model={model} slot="PreviewButton" disabled={busy || dirty || invalid}>
+          <ContentPreviewControl
+            key={`${snapshot.document.id}:${snapshot.document.revision}:${snapshot.editor.locale}`}
+            target={{
+              collection: snapshot.collection.key,
+              id: snapshot.document.id,
+              revision: snapshot.document.revision,
+              locale: snapshot.editor.locale,
+            }}
+            disabled={busy || dirty || invalid}
+            permitted={model.canPreview}
+            canRevoke={model.canRevokePreview}
+            t={t}
+            report={model.reportResult}
+          />
+        </EditorSlot>
+      ) : null}
+      {snapshot.document ? (
+        <DefaultLanguageControl
+          key={`${snapshot.document.id}:${snapshot.document.revision}`}
+          document={snapshot.document}
+          permitted={model.canSetDefaultLanguage}
+          disabled={busy || dirty || invalid}
+          onChanged={() => {
+            void controller.reload();
+          }}
+          onBusy={controller.setExternalBusy}
+          report={model.reportResult}
+          t={t}
+        />
+      ) : null}
+    </>
   );
 }

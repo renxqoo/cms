@@ -15,6 +15,8 @@ import * as identitySchema from '../schema/identity.ts';
 import * as auditSchema from '../schema/audit.ts';
 import * as platformSchema from '../schema/platform.ts';
 import * as contentSchema from '../schema/content.ts';
+import * as contentAdminSchema from '../schema/content-admin.ts';
+import * as assetsSchema from '../schema/assets.ts';
 import { createTestDatabase } from '../../../../test/support/database.ts';
 
 const fixtures: Awaited<ReturnType<typeof createTestDatabase>>[] = [];
@@ -29,7 +31,7 @@ afterEach(async () => {
 });
 
 describe('PostgreSQL migrations and owner schema', () => {
-  it('keeps every Drizzle column and relation consistent with the independent SQL migration', async () => {
+  it('regression: Drizzle columns and relations match the physical SQL migration order', async () => {
     const db = await fixture();
     const tables = [
       ...Object.values(accessSchema),
@@ -37,6 +39,8 @@ describe('PostgreSQL migrations and owner schema', () => {
       ...Object.values(auditSchema),
       ...Object.values(platformSchema),
       ...Object.values(contentSchema),
+      ...Object.values(contentAdminSchema),
+      ...Object.values(assetsSchema),
     ];
     for (const table of tables) {
       const config = getTableConfig(table);
@@ -111,10 +115,22 @@ describe('PostgreSQL migrations and owner schema', () => {
         '0004_content_work.sql',
         '0010_assets.sql',
         '0011_ui_api.sql',
+        '0012_editor_collaboration.sql',
+        '0013_query_presets.sql',
         '0014_localized_publications.sql',
         '0015_delegated_credentials.sql',
+        '0015_hierarchy_validation.sql',
         '0015_oneaster_content.sql',
         '0016_content_preview_grants.sql',
+        '0016_wgs84_distance.sql',
+        '0017_publication_references.sql',
+        '0018_extension_source_locale.sql',
+        '0019_document_order.sql',
+        '0020_content_taxonomy.sql',
+        '0021_delegated_editor_leases.sql',
+        '0022_content_authorship.sql',
+        '0023_join_order_scopes.sql',
+        '0024_query_preset_access.sql',
       ]);
       expect(after.rows[0]).toEqual(before.rows[0]);
       await expect(result.database.query('TRUNCATE audit_events')).rejects.toMatchObject({

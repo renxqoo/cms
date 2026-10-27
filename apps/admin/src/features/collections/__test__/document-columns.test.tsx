@@ -102,6 +102,7 @@ it('renders rich-text summaries without exposing the persisted JSON and formats 
     required: false,
     localized: true,
     queryable: false,
+    sortable: false,
   });
   const row = document({
     data: {

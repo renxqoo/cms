@@ -6,11 +6,15 @@ import { bodySchema, inputProperties } from './input-schema.ts';
 import type { InputSchema } from './input-schema.ts';
 import { recoveryOperationInput } from './recovery-schemas.ts';
 
-function operationInput(operation: OperationDefinition, schema: z.ZodType) {
-  if (operation.id === 'access.readRecovery') return recoveryOperationInput(schema);
-  const input = z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' });
-  const properties = inputProperties(input);
+function headerParameters(operation: OperationDefinition): unknown[] {
   const parameters: unknown[] = conditionalHeaders(operation);
+  if (operation.module === 'content' && !['GET'].includes(operation.method))
+    parameters.push({
+      name: 'X-CMS-Editor-Session',
+      in: 'header',
+      required: false,
+      schema: { type: 'string', format: 'uuid' },
+    });
   if (operation.idempotency === 'required') {
     parameters.push({
       name: 'Idempotency-Key',
@@ -19,6 +23,14 @@ function operationInput(operation: OperationDefinition, schema: z.ZodType) {
       schema: { type: 'string', minLength: 16, maxLength: 128, pattern: '^[\\x20-\\x7E]+$' },
     });
   }
+  return parameters;
+}
+
+function operationInput(operation: OperationDefinition, schema: z.ZodType) {
+  if (operation.id === 'access.readRecovery') return recoveryOperationInput(schema);
+  const input = z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' });
+  const properties = inputProperties(input);
+  const parameters = headerParameters(operation);
   for (const [name, value] of Object.entries(properties)) {
     const pathParameter = operation.path.includes(`:${name}`);
     if (!pathParameter && !['GET', 'DELETE'].includes(operation.method)) continue;

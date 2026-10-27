@@ -47,7 +47,7 @@ async function statement(input: QueryDependencies, query: JobDiscoveryQuery) {
     `discovery_file_bindings AS NOT MATERIALIZED (${files})`,
     `discovery_assets AS NOT MATERIALIZED (${assets})`,
     `discovery_content AS NOT MATERIALIZED (SELECT * FROM content_jobs WHERE collection_id=${collection})`,
-    `discovery_items AS MATERIALIZED (SELECT i.job_id,i.document_id,i.result_document_id,i.status FROM content_job_items i JOIN discovery_content j ON j.id=i.job_id WHERE ${content.items})`,
+    `discovery_items AS MATERIALIZED (SELECT i.job_id,i.position,i.document_id,i.result_document_id,i.status,i.payload FROM content_job_items i JOIN discovery_content j ON j.id=i.job_id WHERE ${content.items})`,
     `discovery_counts AS (SELECT job_id,count(*) AS total,count(*) FILTER(WHERE status='succeeded') AS succeeded,count(*) FILTER(WHERE status='failed') AS failed,count(*) FILTER(WHERE status='queued') AS queued FROM discovery_items GROUP BY job_id)`,
     contentProjection(content.extensions),
     assetProjection(asset),
@@ -58,8 +58,9 @@ async function statement(input: QueryDependencies, query: JobDiscoveryQuery) {
 
 function contentProjection(extensions: string): string {
   const status = `CASE WHEN j.action='extension' OR j.status='cancelled' THEN j.status WHEN c.queued>0 THEN CASE WHEN j.status='running' THEN 'running' ELSE 'queued' END WHEN c.failed=0 THEN 'succeeded' WHEN c.failed=c.total THEN 'failed' ELSE 'partial' END`;
+  const publication = `CASE WHEN j.action='publication' THEN (SELECT jsonb_build_object('publicationAction',di.payload->>'action','locale',di.payload->>'locale') FROM discovery_items di WHERE di.job_id=j.id ORDER BY di.position LIMIT 1) WHEN j.action='extension' THEN jsonb_build_object('locale',j.source_locale) ELSE '{}'::jsonb END`;
   return `discovery_content_rows AS (SELECT j.id,'content'::text AS kind,j.created_at AS created_at,j.action,${status} AS status,j.document_id AS document_id,
-    jsonb_build_object('kind','content','id',j.id,'collection',j.collection_key,'action',j.action,'status',${status},'executeAt',j.execute_at,'createdAt',j.created_at,'finishedAt',j.finished_at,'documentId',j.document_id,'expectedRevision',j.expected_revision,'requestedVersionId',j.requested_version_id,'total',COALESCE(c.total,0),'succeeded',COALESCE(c.succeeded,0),'failed',COALESCE(c.failed,0)) AS item
+    jsonb_build_object('kind','content','id',j.id,'collection',j.collection_key,'action',j.action,'status',${status},'executeAt',j.execute_at,'createdAt',j.created_at,'finishedAt',j.finished_at,'documentId',j.document_id,'expectedRevision',j.expected_revision,'requestedVersionId',j.requested_version_id,'total',COALESCE(c.total,0),'succeeded',COALESCE(c.succeeded,0),'failed',COALESCE(c.failed,0)) || ${publication} AS item
     FROM discovery_content j LEFT JOIN discovery_counts c ON c.job_id=j.id
     WHERE (j.action<>'extension' AND c.total>0) OR (j.action='extension' AND (${extensions})))`;
 }

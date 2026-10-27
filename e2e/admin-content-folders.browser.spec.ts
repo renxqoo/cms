@@ -40,16 +40,31 @@ test('regression: reopening a document waits for its editor before folder CAS, t
 }) => {
   expect((await loginManagement(page, applicationAccounts.owner)).status()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/);
+  const claiming = page.waitForRequest(
+    (request) =>
+      request.method() === 'PUT' &&
+      /\/v1\/collections\/articles\/documents\/[0-9a-f-]+\/lock$/.test(
+        new URL(request.url()).pathname,
+      ),
+  );
   const created = await createInUi(page, 'browser-folder-story');
+  const { editorId } = z
+    .object({ editorId: z.uuid() })
+    .parse((await claiming).postDataJSON() as unknown);
   const path = `/v1/collections/articles/documents/${created.id}`;
+  expectHttp(page, browserErrors, {
+    method: 'POST',
+    path: '/v1/collections/articles/editor/preview',
+    status: 409,
+  });
   await page.getByRole('textbox', { name: /^title/ }).fill('Preserved conflict draft');
-  const concurrent = await bffRequest(page, {
+  const concurrent = await page.request.fetch(`/api/cms${path}`, {
     method: 'PATCH',
-    path,
+    headers: { origin: new URL(page.url()).origin, 'X-CMS-Editor-Session': editorId },
     data: {
       revision: created.revision,
       locale: 'en',
-      data: { summary: 'Other administrator changed this' },
+      data: { summary: 'Concurrent request changed this' },
     },
   });
   expect(concurrent.status()).toBe(200);

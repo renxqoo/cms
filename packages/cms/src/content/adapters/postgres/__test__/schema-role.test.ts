@@ -100,6 +100,7 @@ it('activation waits for a SELECT-only runtime writer and rejects unbackfilled c
       data: { title: 'Before activation' },
     });
     await kit.old.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'records',
       id,
       expectedRevision: 0,

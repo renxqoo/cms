@@ -17,6 +17,12 @@ it('describes both atomic locale write branches while keeping collection and id 
   const update = document.paths['/v1/collections/{collection}/documents/{id}']?.['patch'];
   expect(update).toMatchObject({
     parameters: [
+      {
+        name: 'X-CMS-Editor-Session',
+        in: 'header',
+        required: false,
+        schema: { type: 'string', format: 'uuid' },
+      },
       { name: 'collection', in: 'path', required: true, schema: { type: 'string' } },
       { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
     ],

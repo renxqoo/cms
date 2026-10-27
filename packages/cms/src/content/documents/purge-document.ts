@@ -1,4 +1,5 @@
 import { fail } from '@new-cms/cms/platform/contracts';
+import { beforeDelete, afterDelete } from '../hooks/delete.ts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import {
   auditContent,
@@ -44,12 +45,14 @@ async function purgeInTransaction(
   if (jobs.rowCount !== 0) fail('resource_in_use');
   if (await input.runtime.assets?.hasPendingWork(state.tx, { documentId: input.id }))
     fail('resource_in_use');
+  const data = await beforeDelete(state, { runtime: input.runtime, document });
   await input.runtime.assets?.releaseDocument(state.tx, { documentId: input.id });
   await input.runtime.store.purgeDocument(state.tx, {
     collection: state.collection.key,
     id: input.id,
   });
   await auditContent(state, { runtime: input.runtime, id: input.id, detail: { kind: 'purged' } });
+  await afterDelete(state, { runtime: input.runtime, documentId: input.id, data });
   return { id: input.id, purged: true };
 }
 

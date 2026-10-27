@@ -37,8 +37,9 @@ export async function attachFile(input: AttachmentInput, session: UploadSession)
   setError(null);
   const result = await requestApi({
     operation: 'documents.update',
+    ...(input.props.editorSessionId ? { editorSessionId: input.props.editorSessionId } : {}),
     params: { collection: collection.key, id: document.id },
-    body: { revision: document.revision, uploadId: session.id },
+    body: { revision: document.revision, uploadId: session.id, locale: input.props.editor.locale },
     response: documentSchema,
     signal: controller.signal,
   });

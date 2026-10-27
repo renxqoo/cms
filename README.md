@@ -36,7 +36,7 @@ bun run dev:admin
 
 访问开发服务输出地址下的/ui，总览、七类组件页（/ui/actions、inputs、layout、feedback、data、overlays、documents）和/ui/lists组合列表均可直接访问或刷新。代码编辑引擎与worker在dev/build前从锁定的Monaco依赖生成到本地public目录，无需第三方CDN。工作台仅使用隔离合成示例，组件通过受控数据与事件验证，无需数据库或管理员凭据。构建后通过bun run start:admin启动Next服务。
 
-根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；按根.env.example运行时，API为127.0.0.1:3001、后台为localhost:9092，与dev:admin的实际端口一致。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
+根地址进入受保护的/dashboard，未登录时转到/login。先按下方步骤初始化并启动API，再启动Next；按根.env.example运行时，API为127.0.0.1:9091、后台为localhost:9092，与dev:admin的实际端口一致。Next服务端配置CMS_API_BASE_URL与CMS_ADMIN_ORIGIN，生产必须显式设置；非loopback地址必须为HTTPS，CMS_FRONTEND_URL与后台origin一致。配置不使用NEXT_PUBLIC。登录仅把后端Bearer保存在host-only HttpOnly Cookie，浏览器JSON及客户端状态不接收token。自动401和过期检查不改Cookie，避免迟到响应删除新登录；显式退出清浏览器身份，撤销失败如实提示。BFF不伪造转发IP，后端按实际出口IP限流，部署容量规划须计入聚合并发。
 
 账户页面提供资料和密码管理；管理员、角色、权限、导航、端点绑定、审计以及访问恢复位于/dashboard对应入口。操作以当前主体的完整授权快照判断，实际HTTP再次鉴权。邀请与重置通过实际邮件链接完成；普通目录被误配拒绝后，有效超级管理员可使用访问恢复读取最新绑定并按原CAS协议修复。验收范围和当前进度见[应用实施与验收](docs/design/admin-application-implementation.md)。
 
@@ -120,6 +120,8 @@ bun run operations:reconcile
 bun run db:grant-runtime
 bun run admin:initialize --email owner@example.com
 ```
+
+db:migrate 同时按当前集合配置将旧文档级发布记录有界转换为独立语言发布记录；执行前停止旧 writer、维护与 CLI。readiness 拒绝尚未转换的发布记录。文章和页面启用 localizeStatus，发布和撤回仅影响选定语言，迁移与回滚约束见 [发布契约](docs/design/collections-publication-parity.md)。
 
 db:grant-runtime按固定表策略和当前编译映射的精确表名验证并授予必要连接及业务权限，五张schema控制/版本/清单/回填表仅SELECT，审计只允许SELECT/INSERT，操作目录与迁移台账只允许SELECT；拒绝额外权限、可执行SECURITY DEFINER或可写业务表上的definer触发器。已有PUBLIC/列授权等无法安全收窄时整体失败，由数据库管理员修正后重跑，不显示假成功。生产API和超管初始化会检查运行账号权限；开发/测试可用owner，迁移与目录发布始终使用迁移连接，开发/测试缺省回退DATABASE_URL。
 

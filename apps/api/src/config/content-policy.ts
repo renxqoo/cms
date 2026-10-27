@@ -20,6 +20,8 @@ export function contentLimits(): ContentLimits {
     maxExpandNodes: 500,
     maxResponseBytes: 2_097_152,
     maxSqlQueries: 200,
+    maxHookCalls: 2000,
+    maxHookDurationMs: 5000,
   };
 }
 
@@ -35,6 +37,8 @@ export function contentWorkPolicy(): ContentWorkPolicy {
     trashRetentionMs: 604_800_000,
     maxFolders: 10_000,
     maxFolderDepth: 16,
+    maxQueryPresets: 100,
+    maxOrderKeyBytes: 256,
   };
 }
 

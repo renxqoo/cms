@@ -11,6 +11,10 @@ import {
 } from '../runtime.ts';
 import { lockRevisionResources } from './revision-data.ts';
 import { validatePublicationRevision } from './validate-publication.ts';
+import {
+  validateHierarchyPublication,
+  assertHierarchyUnpublication,
+} from '../hierarchy/validation.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
 
 export async function publishInTransaction(
@@ -30,7 +34,13 @@ export async function publishInTransaction(
     documentId: document.id,
     versionId: document.currentVersionId,
   });
+  await validateHierarchyPublication(state, {
+    runtime: input.runtime,
+    documentId: document.id,
+    versionId: document.currentVersionId,
+  });
   await input.runtime.store.updateDocumentPointers(state.tx, {
+    actorId: state.actor.id,
     collection: state.collection.key,
     id: document.id,
     expectedRevision: input.revision,
@@ -39,7 +49,7 @@ export async function publishInTransaction(
     publishedVersionId: document.currentVersionId,
     locale: state.locale,
   });
-  await input.runtime.store.syncActiveUnique(state.tx, {
+  await input.runtime.store.syncActiveProjections(state.tx, {
     collection: state.collection.key,
     id: document.id,
   });
@@ -101,7 +111,9 @@ export async function unpublishInTransaction(
   if (input.versionId && document.publishedVersionId !== input.versionId) fail('version_conflict');
   if (!document.publishedVersionId)
     return { id: document.id, versionId: document.currentVersionId };
+  await assertHierarchyUnpublication(state, { runtime: input.runtime, documentId: document.id });
   await input.runtime.store.updateDocumentPointers(state.tx, {
+    actorId: state.actor.id,
     collection: state.collection.key,
     id: input.id,
     expectedRevision: input.revision,
@@ -110,7 +122,7 @@ export async function unpublishInTransaction(
     publishedVersionId: null,
     locale: state.locale,
   });
-  await input.runtime.store.syncActiveUnique(state.tx, {
+  await input.runtime.store.syncActiveProjections(state.tx, {
     collection: state.collection.key,
     id: input.id,
   });

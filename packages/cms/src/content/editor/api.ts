@@ -5,17 +5,22 @@ import { fieldPaths } from '../fields/structure.ts';
 import { generateCollectionSchema } from '../fields/data-schema.ts';
 import { editorInputSchema } from './input.ts';
 import { editorContext } from './context.ts';
+import { editorPresentation } from './presentation.ts';
+import { previewEditor } from './preview.ts';
+import { editorComponentVersions } from './component-versions.ts';
 import { editorLayout } from './layout.ts';
 import { editorActions, editorQueryableFields } from './actions.ts';
 import { collectionEditorSchema } from './contracts.ts';
 import type { ContentRuntime } from '../types.ts';
 import type { EditorContext } from './context.ts';
 import type { CollectionEditor } from './contracts.ts';
+import { requireAdminVisible } from '../collections/admin-visibility.ts';
 
 function editorUpload(context: EditorContext, runtime: ContentRuntime) {
   if (!context.state.collection.upload) return null;
   return {
     ...uploadSettings(runtime, context.state.collection),
+    filesRequiredOnCreate: context.state.collection.upload.filesRequiredOnCreate !== false,
     ...runtime.uploadPolicy.imageLimits,
     directUpload: false,
     multipart: false,
@@ -27,7 +32,7 @@ async function describeEditor(
   runtime: ContentRuntime,
 ): Promise<CollectionEditor> {
   const { state, document, versionId } = context;
-  const projection = editorLayout(context, await editorQueryableFields(context, runtime));
+  const projection = await editorLayout(context, await editorQueryableFields(context, runtime));
   return collectionEditorSchema.parse({
     collection: state.collection.key,
     schemaVersion: state.collection.schemaVersion,
@@ -48,6 +53,12 @@ async function describeEditor(
       : null,
     locales: state.collection.locales,
     layout: projection.layout,
+    componentVersions: editorComponentVersions(runtime, state.collection, projection.layout),
+    ...(await editorPresentation(context, {
+      runtime,
+      fields: projection.read,
+      layout: projection.layout,
+    })),
     schemas: {
       read: generateCollectionSchema({ ...state.collection, fields: projection.read }, 'read'),
       draft: generateCollectionSchema({ ...state.collection, fields: projection.write }, 'draft'),
@@ -57,6 +68,9 @@ async function describeEditor(
       ),
     },
     actions: await editorActions(context, runtime),
+    collaboration:
+      state.collection.lockDocuments === false ? null : (state.collection.lockDocuments ?? null),
+    preview: state.collection.preview !== undefined && document !== null,
     upload: editorUpload(context, runtime),
   });
 }
@@ -76,11 +90,16 @@ async function getEditor(
       ...(input.locale ? { locale: input.locale } : {}),
       ...('fallback' in input && input.fallback ? { fallbackOverride: input.fallback } : {}),
     },
-    async (state) =>
-      describeEditor(await editorContext(state, { runtime, values: input }), runtime),
+    async (state) => {
+      await requireAdminVisible(state);
+      return describeEditor(await editorContext(state, { runtime, values: input }), runtime);
+    },
   );
 }
 
 export function createEditorApi(runtime: ContentRuntime) {
-  return { getEditor: (ctx: RequestContext, raw: unknown) => getEditor(runtime, ctx, raw) };
+  return {
+    getEditor: (ctx: RequestContext, raw: unknown) => getEditor(runtime, ctx, raw),
+    previewEditor: (ctx: RequestContext, raw: unknown) => previewEditor(runtime, ctx, raw),
+  };
 }

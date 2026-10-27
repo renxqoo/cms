@@ -22,6 +22,8 @@ export function contentLimits(overrides: Partial<ContentLimits> = {}): ContentLi
     maxExpandNodes: 500,
     maxResponseBytes: 2_097_152,
     maxSqlQueries: 200,
+    maxHookCalls: 1000,
+    maxHookDurationMs: 5000,
     ...overrides,
   };
 }
@@ -33,6 +35,7 @@ const definitions: CollectionDefinition[] = [
     label: 'Articles',
     schemaVersion: 1,
     mode: 'drafts',
+    drafts: { validate: false, autosave: { intervalMs: 10000 }, schedule: true },
     history: { maxVersions: 10, retentionMs: 0 },
     locales,
     search: ['title', 'sections.heading'],

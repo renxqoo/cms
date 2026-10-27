@@ -1,3 +1,4 @@
+import type { JoinQueries } from './joins/definition.ts';
 export const documentMetadataFields = [
   'id',
   'collection',
@@ -6,6 +7,8 @@ export const documentMetadataFields = [
   'publishedVersionId',
   'trashedAt',
   'createdAt',
+  'createdBy',
+  'updatedBy',
   'updatedAt',
   'folderId',
 ] as const;
@@ -28,6 +31,8 @@ export interface DocumentRow {
   trashedAt: string | null;
   folderId: string | null;
   createdAt: string;
+  createdById: string | null;
+  updatedById: string | null;
   updatedAt: string;
 }
 export interface RevisionRow {
@@ -41,6 +46,8 @@ export interface RevisionRow {
   createdAt: string;
 }
 export interface DocumentView {
+  adminURL?: string | null;
+  componentProps?: Record<string, DocumentData>;
   id: string;
   collection: string;
   revision: number;
@@ -51,8 +58,12 @@ export interface DocumentView {
   createdAt: string;
   updatedAt: string;
   data: DocumentData;
+  createdBy?: { id: string; displayName: string | null } | null;
+  updatedBy?: { id: string; displayName: string | null } | null;
 }
 export interface QueryInput {
+  context?: 'admin';
+  joins?: JoinQueries;
   where?: Where;
   policy?: Where;
   sort?: readonly SortField[];
@@ -109,6 +120,13 @@ export interface StoredPage {
   page: number;
   pageSize: number;
 }
+export interface StoredJoinPage {
+  rows: StoredDocument[];
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  total?: number;
+}
 
 export interface CollectionSchemaIdentity {
   dataFingerprint: string;
@@ -127,6 +145,7 @@ export interface ContentSchemaBackfill {
 }
 
 export interface RelationScope {
+  readableFields?: readonly string[];
   collection: string;
   locale: string;
   fallback: readonly string[];

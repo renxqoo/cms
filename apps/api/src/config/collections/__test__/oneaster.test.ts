@@ -1,13 +1,11 @@
 import { expect, it } from 'vitest';
-import { createRegistry } from '@new-cms/cms/content/generate';
 import type {
   CollectionDefinition,
   FieldDefinition,
   JsonValue,
 } from '@new-cms/cms/content/generate';
-import { contentLimits } from '../../content-policy.ts';
+import { applicationRegistry } from '../../content-registry.ts';
 import { collections } from '../index.ts';
-import { applicationOperations } from '../../operations.ts';
 function collection(key: string): CollectionDefinition {
   const result = collections.find((item) => item.key === key);
   if (!result) throw new Error('Collection is missing');
@@ -19,11 +17,7 @@ function field(key: string, name: string): FieldDefinition {
   return result;
 }
 it('registers editable OneAster business records without replacing original CMS collections', () => {
-  const registry = createRegistry({
-    collections,
-    operations: applicationOperations,
-    limits: contentLimits(),
-  });
+  const registry = applicationRegistry();
   expect(registry.list.map((item) => item.key)).toEqual(
     expect.arrayContaining([
       'articles',

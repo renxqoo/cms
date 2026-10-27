@@ -1,5 +1,6 @@
 'use client';
 
+import { useContentLocale } from './use-content-locale';
 import type { ShellGroup } from '../../components/shell/shell-surface';
 import { collectionListSchema } from '../../contracts/content';
 import { useAccessControl } from '../access-control/provider';
@@ -16,11 +17,13 @@ export function useCollectionNavigation(input: {
   pathname: string;
   locale: 'zh' | 'en';
 }) {
+  const locale = useContentLocale();
   const access = useAccessControl();
   const entry = collectionMenuEntry(input.groups);
   const allowed = access.can('collections.list');
   const result = useApiQuery({
     operation: 'collections.list',
+    query: { locale },
     response: collectionListSchema,
     enabled: Boolean(entry) && allowed,
     contextKey: JSON.stringify([access.principal.roleId, access.operations, access.navigation]),

@@ -85,6 +85,9 @@ async function cancel(runtime: UploadRuntime, id: string) {
   const input = taskFor(runtime, id);
   const result = await requestApi({
     operation: 'assets.cancelUpload',
+    ...(runtime.options.editorSessionId
+      ? { editorSessionId: runtime.options.editorSessionId }
+      : {}),
     params: { collection: runtime.options.collection, uploadId: current.session.id },
     response: z.undefined(),
     signal: input.task.controller.signal,

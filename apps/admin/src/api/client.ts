@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 import { acceptsIdempotencyKey, getOperation, operationPath } from '../contracts/operations';
-import type { OperationDefinition, OperationId } from '../contracts/operations';
+import type { OperationId } from '../contracts/operations';
+import type { OperationDefinition } from '../contracts/operation-definition';
 import { apiResponse, failure } from './result';
 import type { ApiResult } from './result';
 import { requestPolicy } from './config';
@@ -19,6 +20,8 @@ interface ApiRequest<T> {
   response: z.ZodType<T>;
   signal: AbortSignal;
   idempotencyKey?: string;
+  editorSessionId?: string;
+  keepalive?: boolean;
   onUploadProgress?: (progress: UploadProgress) => void;
 }
 
@@ -43,6 +46,15 @@ function preparedRequest<T>(operation: OperationDefinition, input: ApiRequest<T>
   )
     throw new Error('Invalid progress request');
   const headers = new Headers();
+  if (input.editorSessionId !== undefined) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        input.editorSessionId,
+      )
+    )
+      throw new Error('Invalid editor session');
+    headers.set('x-cms-editor-session', input.editorSessionId);
+  }
   if (!acceptsIdempotencyKey(operation, input.idempotencyKey))
     throw new Error('Invalid idempotency');
   if (input.idempotencyKey !== undefined) headers.set('idempotency-key', input.idempotencyKey);
@@ -56,6 +68,7 @@ function preparedRequest<T>(operation: OperationDefinition, input: ApiRequest<T>
     cache: 'no-store',
     credentials: 'same-origin',
     redirect: 'error',
+    ...(input.keepalive ? { keepalive: true } : {}),
   };
 }
 

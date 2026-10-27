@@ -1,5 +1,8 @@
 import type { CollectionDefinition, ContentRegistry, FieldDefinition } from '../definition.ts';
+import { optionValues } from './options.ts';
+import { conditionalContractFields } from './contract-fields.ts';
 import { dataFields } from './structure.ts';
+import { joinCollections } from '../joins/config.ts';
 type ContractMode = 'draft' | 'published' | 'read';
 interface DataSchema {
   [key: string]: unknown;
@@ -40,7 +43,8 @@ function scalarSchema(field: FieldDefinition): DataSchema {
       required: ['collection', 'id'],
       additionalProperties: false,
     };
-  if (field.type === 'select') return { type: 'string', enum: field.options };
+  if (['select', 'radio'].includes(field.type))
+    return { type: 'string', enum: optionValues(field) };
   return {
     type: 'string',
     ...(field.type === 'date' ? { format: 'date-time' } : {}),
@@ -72,7 +76,14 @@ function fieldSchema(field: FieldDefinition, mode: ContractMode): DataSchema {
   else schema = scalarSchema(field);
   if (mode === 'read' && ['relationship', 'upload', 'join'].includes(field.type))
     schema = relationReadSchema(field);
-  if (field.hasMany) schema = { type: 'array', items: schema, uniqueItems: true };
+  if (field.hasMany)
+    schema = {
+      type: 'array',
+      items: schema,
+      ...(['text', 'number'].includes(field.type) ? {} : { uniqueItems: true }),
+      ...(field.minRows === undefined ? {} : { minItems: field.minRows }),
+      ...(field.maxRows === undefined ? {} : { maxItems: field.maxRows }),
+    };
   return mode === 'published' && field.required ? schema : { anyOf: [schema, { type: 'null' }] };
 }
 function objectSchema(
@@ -80,7 +91,9 @@ function objectSchema(
   mode: ContractMode,
   extra: Record<string, DataSchema> = {},
 ): DataSchema {
-  const values = dataFields(fields).filter((field) => mode === 'read' || field.type !== 'join');
+  const values = dataFields(fields).filter(
+    (field) => mode === 'read' || (field.type !== 'join' && !field.virtual),
+  );
   return {
     type: 'object',
     properties: {
@@ -100,7 +113,10 @@ export function generateCollectionSchema(
   collection: CollectionDefinition,
   mode: ContractMode = 'read',
 ): DataSchema {
-  return objectSchema(collection.fields, mode);
+  return objectSchema(
+    mode === 'published' ? conditionalContractFields(collection.fields) : collection.fields,
+    mode,
+  );
 }
 export function generateDataSchemas(
   registry: ContentRegistry,
@@ -111,11 +127,12 @@ export function generateDataSchemas(
   );
 }
 function relationReadSchema(field: FieldDefinition): DataSchema {
+  const relation = field.join ? { ...field, relationTo: joinCollections(field.join) } : field;
   const expanded = {
     type: 'object',
     properties: {
       id: { type: 'string', format: 'uuid' },
-      collection: { type: 'string', ...(field.relationTo ? { enum: field.relationTo } : {}) },
+      collection: { type: 'string', ...(relation.relationTo ? { enum: relation.relationTo } : {}) },
       revision: { type: 'integer' },
       versionId: { type: 'string', format: 'uuid' },
       data: { type: 'object' },
@@ -123,7 +140,33 @@ function relationReadSchema(field: FieldDefinition): DataSchema {
     required: ['id', 'collection', 'revision', 'versionId', 'data'],
   };
   const schema = {
-    anyOf: [scalarSchema({ ...field, type: 'relationship' }), expanded, { type: 'null' }],
+    anyOf: [scalarSchema({ ...relation, type: 'relationship' }), expanded, { type: 'null' }],
   };
-  return field.type === 'join' ? { type: 'array', items: schema } : schema;
+  return field.type === 'join'
+    ? {
+        type: 'object',
+        properties: {
+          rows: {
+            type: 'array',
+            items: { anyOf: [scalarSchema({ ...relation, type: 'relationship' }), expanded] },
+          },
+          page: { type: 'integer', minimum: 1 },
+          pageSize: { type: 'integer', minimum: 1 },
+          hasNextPage: { type: 'boolean' },
+          total: { type: 'integer', minimum: 0 },
+          orderVersion: { type: 'string', format: 'uuid' },
+          sort: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: { field: { type: 'string' }, order: { enum: ['asc', 'desc'] } },
+              required: ['field', 'order'],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ['rows', 'page', 'pageSize', 'hasNextPage', 'sort'],
+        additionalProperties: false,
+      }
+    : schema;
 }

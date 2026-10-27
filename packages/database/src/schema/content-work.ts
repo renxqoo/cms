@@ -42,6 +42,7 @@ export const contentJobs = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     finishedAt: timestamp('finished_at', { withTimezone: true }),
     delegationId: uuid('delegation_id'),
+    sourceLocale: text('source_locale'),
   },
   (t) => [
     foreignKey({
@@ -80,6 +81,14 @@ export const contentJobs = pgTable(
       sql`${t.action}<>'extension' OR (${t.documentId} IS NOT NULL AND ${t.handlerName} IS NOT NULL)`,
     ),
     check('content_job_action_check', sql`${t.action} IN ('batch','publication','extension')`),
+    check(
+      'content_job_source_locale_shape',
+      sql`(${t.action}='extension' OR ${t.sourceLocale} IS NULL) AND (${t.action}<>'extension' OR ${t.status} NOT IN ('queued','running') OR ${t.sourceLocale} IS NOT NULL)`,
+    ),
+    check(
+      'content_job_source_locale_valid',
+      sql`${t.sourceLocale} IS NULL OR ${t.sourceLocale} ~ '^[a-zA-Z][a-zA-Z0-9-]{0,31}$'`,
+    ),
     check(
       'content_job_status_check',
       sql`${t.status} IN ('queued','running','succeeded','partial','failed','cancelled')`,

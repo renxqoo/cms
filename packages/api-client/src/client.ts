@@ -11,7 +11,14 @@ export interface ClientOptions {
   maxFileBytes: number;
   fetch?: typeof fetch;
 }
+export const editorSessionIdSchema = z
+  .string()
+  .regex(
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/,
+  );
+
 export interface CallOptions {
+  editorSessionId?: string;
   idempotencyKey?: string;
   bytes?: Uint8Array;
   signal?: AbortSignal;
@@ -139,6 +146,11 @@ function downloadResult(response: Response, data: Uint8Array): Download {
 
 function requestInit(operation: ApiOperation, input: unknown, options: CallOptions): RequestInit {
   const headers = new Headers();
+  if (options.editorSessionId !== undefined)
+    headers.set(
+      'x-cms-editor-session',
+      editorSessionIdSchema.parse(options.editorSessionId).toLowerCase(),
+    );
   if (operation.idempotency === 'required' && !options.idempotencyKey)
     throw new Error('This operation requires an idempotency key');
   if (options.idempotencyKey) headers.set('idempotency-key', options.idempotencyKey);

@@ -142,13 +142,20 @@ it('expands shared targets in a batch and returns canonical reverse joins at dep
     id: target.id,
     depth: 0,
   });
-  expect(raw.data['pages']).toEqual([{ collection: 'pages', id: page.id }]);
+  expect(raw.data['pages']).toMatchObject({
+    rows: [{ collection: 'pages', id: page.id }],
+    page: 1,
+    hasNextPage: false,
+  });
   const expanded = await kit.content.api.getDocument(kit.owner(), {
     collection: 'articles',
     id: target.id,
     depth: 1,
   });
-  expect(expanded.data['pages']).toMatchObject([{ id: page.id, data: { title: 'Page' } }]);
+  expect(expanded.data['pages']).toMatchObject({
+    rows: [{ id: page.id, data: { title: 'Page' } }],
+    hasNextPage: false,
+  });
   const back = await kit.content.api.getDocument(kit.owner(), {
     collection: 'pages',
     id: page.id,

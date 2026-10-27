@@ -28,15 +28,20 @@ function sessionContent(
   const documentId = row.bound_document_id ?? row.document_id;
   if (!input.forMutation && documentId)
     return runtime.authorizeContent(state.tx, {
+      ...(state.ctx.signal ? { signal: state.ctx.signal } : {}),
       operationId: state.operationId,
+      locale: row.authorization_locale ?? undefined,
       actor: state.actor,
-      action: 'download',
+      action: row.bound_revision_id ? 'download' : 'inspectUpload',
       collectionKey: row.collection_key,
       documentId,
       ...(row.bound_revision_id ? { versionId: row.bound_revision_id } : {}),
     });
   return runtime.authorizeContent(state.tx, {
+    ...(state.ctx.signal ? { signal: state.ctx.signal } : {}),
     operationId: state.operationId,
+    editorSessionId: state.ctx.editorSessionId,
+    locale: row.authorization_locale ?? undefined,
     actor: state.actor,
     action: row.purpose === 'replace' ? 'replace' : 'upload',
     collectionKey: row.collection_key,

@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { UiFieldFilters } from './ui-field-filters';
 import { ListFilter } from 'lucide-react';
 import { Button } from '@new-cms/ui/actions';
-import { Field, Input, NativeSelect } from '@new-cms/ui/forms';
+import { Field, NativeSelect } from '@new-cms/ui/forms';
 import { ColumnSelector } from '@new-cms/ui/data';
 import { Popover, PopoverTrigger, PopoverContent } from '@new-cms/ui/overlays';
 import type { Collection } from '../../contracts/content';
@@ -10,6 +10,12 @@ import type { FolderTree } from '../../contracts/folders';
 import type { DocumentQuery } from './query';
 import type { ContentMessages } from './messages';
 import { flattenFolders } from './folders';
+import { FilterBuilder } from './filter-builder';
+import { SortBuilder } from './sort-builder';
+import { GroupingControl } from './grouping-control';
+import { queryFilter } from './query';
+import { queryMessages } from './query-messages';
+import { useShell } from '../../components/shell/shell-provider';
 interface ListControlsProps {
   collection: Collection;
   query: DocumentQuery;
@@ -28,6 +34,8 @@ export function DocumentListControls({
   t,
   change,
 }: ListControlsProps) {
+  const locale = useShell((state) => state.locale);
+  const labels = queryMessages[locale];
   return (
     <>
       <div className="flex flex-wrap items-end gap-3">
@@ -84,80 +92,51 @@ export function DocumentListControls({
               <Button variant="outline">
                 <ListFilter aria-hidden="true" />
                 {t.filters}
-                {query.filterField ? ' · 1' : ''}
+                {query.where ? ' ·' : ''}
               </Button>
             }
           />
-          <PopoverContent className="w-80">
-            <DocumentFilter
-              key={`${query.filterField}:${query.filterValue}`}
-              query={query}
+          <PopoverContent className="max-h-[80vh] w-[min(48rem,calc(100vw-2rem))] overflow-auto">
+            <FilterBuilder
+              key={query.where}
+              value={queryFilter(query, collection).where}
               collection={collection}
               t={t}
-              change={change}
+              onApply={(where) => change({ where: where ? JSON.stringify(where) : '' })}
+            />
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button variant="outline">
+                {labels.sort} · {query.sort.length}
+              </Button>
+            }
+          />
+          <PopoverContent className="max-h-[80vh] w-[min(40rem,calc(100vw-2rem))] overflow-auto">
+            <SortBuilder
+              key={JSON.stringify(query.sort)}
+              collection={collection}
+              value={query.sort}
+              onApply={(sort) => change({ sort })}
             />
           </PopoverContent>
         </Popover>
         <ColumnSelector
-          columns={collection.fields.map((field) => ({ key: field.path, label: field.label }))}
+          columns={collection.fields
+            .filter((field) => !field.disabled?.column)
+            .map((field) => ({ key: field.path, label: field.label }))}
           selectedKeys={visible}
           onChange={(keys) => setVisible(() => keys)}
           label={t.columns}
         />
+        <GroupingControl collection={collection} query={query} change={change} />
       </div>
+      <UiFieldFilters collection={collection} query={query} change={change} />
     </>
   );
 }
-function DocumentFilter({
-  query,
-  collection,
-  t,
-  change,
-}: {
-  query: DocumentQuery;
-  collection: Collection;
-  t: ContentMessages;
-  change: (patch: Partial<DocumentQuery>) => void;
-}) {
-  const [field, setField] = useState(query.filterField);
-  const [value, setValue] = useState(query.filterValue);
-  return (
-    <form
-      className="grid gap-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        change({ filterField: field, filterValue: value });
-      }}
-    >
-      <Field id="list-filter-field" label={t.filterField}>
-        <NativeSelect value={field} onChange={(event) => setField(event.currentTarget.value)}>
-          <option value="">{t.noFilter}</option>
-          {collection.fields
-            .filter((candidate) => candidate.queryable)
-            .map((candidate) => (
-              <option key={candidate.path} value={candidate.path}>
-                {candidate.label}
-              </option>
-            ))}
-        </NativeSelect>
-      </Field>
-      {field ? (
-        <Field id="list-filter-value" label={t.filterValue}>
-          <Input value={value} onChange={(event) => setValue(event.currentTarget.value)} />
-        </Field>
-      ) : null}
-      <Button variant="outline" type="submit">
-        {t.apply}
-      </Button>
-      {query.filterField ? (
-        <Button variant="ghost" onClick={() => change({ filterField: '', filterValue: '' })}>
-          {t.clearFilter}
-        </Button>
-      ) : null}
-    </form>
-  );
-}
-
 function selectedFolder(value: string) {
   if (value === 'root') return null;
   return value === 'all' ? undefined : value;

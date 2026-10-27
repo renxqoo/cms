@@ -1,12 +1,15 @@
 import { expect, it } from 'vitest';
 import { contentInputSchemas } from '../input-schemas.ts';
+import { queryPresetSchema } from '../queries/preset-contracts.ts';
 
 const schemas = contentInputSchemas({
   defaultPageSize: 20,
   maxPageSize: 100,
   maxBatchItems: 1000,
+  maxSyncBatchItems: 20,
   maxLocales: 20,
   maxFields: 100,
+  maxArrayItems: 1000,
   maxQueryNodes: 100,
 });
 const target = { collection: 'articles', id: 'a5f54703-b924-4cdb-9aca-55c43086b145', revision: 1 };
@@ -80,4 +83,54 @@ it('requires timezone and fixed revision for publication schedules', () => {
       executeAt: '2026-10-26T12:00:00Z',
     }).success,
   ).toBe(true);
+});
+
+it('regression: query preset inputs and DTOs retain deployments with larger injected field and query limits', () => {
+  const configured = contentInputSchemas({
+    defaultPageSize: 20,
+    maxPageSize: 100,
+    maxBatchItems: 1000,
+    maxSyncBatchItems: 20,
+    maxLocales: 20,
+    maxFields: 501,
+    maxArrayItems: 1000,
+    maxQueryNodes: 101,
+  });
+  const query = {
+    q: '',
+    sort: Array.from({ length: 101 }, (_, index) => ({ field: `field${index}`, order: 'asc' })),
+    columns: Array.from({ length: 501 }, (_, index) => `field${index}`),
+  };
+  expect(
+    configured['queryPresets.create'].parse({ collection: 'articles', name: 'Large', query }).query,
+  ).toEqual(query);
+  const output = queryPresetSchema.parse({
+    id: target.id,
+    ownerId: target.id,
+    collection: 'articles',
+    name: 'Large',
+    shared: false,
+    access: {
+      read: { constraint: 'onlyMe' },
+      update: { constraint: 'onlyMe' },
+      delete: { constraint: 'onlyMe' },
+    },
+    permissions: { read: true, update: true, delete: true },
+    version: 1,
+    createdAt: '2026-10-26T12:00:00Z',
+    updatedAt: '2026-10-26T12:00:00Z',
+    query,
+  });
+  expect(output.query).toEqual(query);
+  for (const oversized of [
+    { ...query, sort: [...query.sort, { field: 'field102', order: 'asc' }] },
+    { ...query, columns: [...query.columns, 'field502'] },
+  ])
+    expect(
+      configured['queryPresets.create'].safeParse({
+        collection: 'articles',
+        name: 'Over budget',
+        query: oversized,
+      }).success,
+    ).toBe(false);
 });

@@ -34,7 +34,7 @@ export async function requireWritableSchema(
 ): Promise<void> {
   const { definition } = input.mapping.get(input.collection);
   const result = await tx.query<{ schema_version: number; data_fingerprint: string }>(
-    `SELECT c.schema_version,v.data_fingerprint FROM content_schema_control c JOIN content_schema_versions v USING(collection_id,schema_version) WHERE c.collection_id=$1`,
+    `SELECT c.schema_version,v.data_fingerprint FROM content_schema_control c JOIN content_schema_versions v USING(collection_id,schema_version) WHERE c.collection_id=$1 AND NOT EXISTS(SELECT 1 FROM content_publications p WHERE p.collection_id=c.collection_id AND p.locale_schema_version>c.schema_version)`,
     [definition.id],
   );
   const [row] = result.rows;

@@ -46,6 +46,7 @@ export const assetMessages = {
     error: 'Upload failed',
     paused: 'Automatic waiting paused. Verify the server result to continue.',
     replace: 'Replace file',
+    addFile: 'Add file',
     replaceDescription:
       'Replacement uses this document revision. Other writes wait until the result is confirmed.',
     image: 'Edit image',
@@ -132,6 +133,7 @@ export const assetMessages = {
     error: '上传失败',
     paused: '自动等待已暂停，请核实服务端结果后继续。',
     replace: '替换文件',
+    addFile: '添加文件',
     replaceDescription: '替换使用当前文档修订，结果确认前暂停其他写入。',
     image: '编辑图片',
     references: '引用情况',

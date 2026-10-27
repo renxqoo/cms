@@ -190,6 +190,20 @@ export const table_cf_05599eb4ede4827c775ba01f = pg.pgTable("cf_05599eb4ede4827c
   pg.index("ix_0e848f5bc77e78dab4da5ec7").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_88f1ead34cd4dc9661c364d3",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_056b5427ae5d3b1ed689e6c3 = pg.pgTable("cf_056b5427ae5d3b1ed689e6c3", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.uuid("value"),
+  target_collection_id: pg.text("target_collection_id")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_4e3e9d4d6ee5b8518022c9ec").on(t.revision_id,t.locale),
+  pg.foreignKey({name:"fk_920757954dc1a9e62f9b2178",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade"),
+  pg.foreignKey({name:"fk_cfabec6aa532777096d8c467",columns:[t.value,t.target_collection_id],foreignColumns:[ref_content_documents.id,ref_content_documents.collection_id] }).onDelete("restrict")]);
+
 export const table_cf_05cbfcc9e119cc4362ebd16c = pg.pgTable("cf_05cbfcc9e119cc4362ebd16c", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -350,6 +364,18 @@ export const table_cf_0a667456a824cb0c20c2221d = pg.pgTable("cf_0a667456a824cb0c
   pg.index("ix_aa77214f3deccb95937051c4").using('gin',t.search_vector),
   pg.foreignKey({name:"fk_22e686460c226e1ee4eca42b",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_0a795984e1049ad0bd0da123 = pg.pgTable("cf_0a795984e1049ad0bd0da123", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.jsonb("value")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_3b2b9262463c7758b13dfe2e").on(t.revision_id,t.locale),
+  pg.foreignKey({name:"fk_bc094d8f936880141a6c48b9",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
 export const table_cf_0aaf95060c21fd2bb8a264a9 = pg.pgTable("cf_0aaf95060c21fd2bb8a264a9", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -485,6 +511,21 @@ export const table_cf_0f428cc5f900d0459d75e73a = pg.pgTable("cf_0f428cc5f900d045
 }, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
   pg.index("ix_133d3f7d5842f59a2ec6ecc9").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_e923ce74e9a9f98922b69fe3",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
+export const table_cf_0f5683fceeb158d5c1e958f6 = pg.pgTable("cf_0f5683fceeb158d5c1e958f6", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.uuid("value"),
+  target_collection_id: pg.text("target_collection_id")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_2f13d247306a2e0551503bed").on(t.revision_id,t.locale),
+  pg.index("ix_145dfdd06e9393df5d38e088").on(t.value,t.locale,t.revision_id),
+  pg.foreignKey({name:"fk_7427d650ca7f849dde4b80e5",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade"),
+  pg.foreignKey({name:"fk_a3cdf83ddbd2b324b4abee92",columns:[t.value,t.target_collection_id],foreignColumns:[ref_content_documents.id,ref_content_documents.collection_id] }).onDelete("restrict")]);
 
 export const table_cf_101c779e9044ebee2331ab36 = pg.pgTable("cf_101c779e9044ebee2331ab36", {
   revision_id: pg.uuid("revision_id").notNull(),
@@ -1982,6 +2023,18 @@ export const table_cf_4c16614d0990fc8913887671 = pg.pgTable("cf_4c16614d0990fc89
   pg.index("ix_13c59c67a4cf9b690d5d29d4").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_9df53337960f3a2c6ba4d38b",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_4cfd3f44aea31c9779e55068 = pg.pgTable("cf_4cfd3f44aea31c9779e55068", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_f5390752b56c3e016cdbecc7").on(t.revision_id,t.locale),
+  pg.foreignKey({name:"fk_9399b70b50b291ffd0f94bb3",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
 export const table_cf_4cfdbddd685252ef93bd55e3 = pg.pgTable("cf_4cfdbddd685252ef93bd55e3", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -3238,6 +3291,20 @@ export const table_cf_7d4c55122e3ce6e49501347b = pg.pgTable("cf_7d4c55122e3ce6e4
   pg.index("ix_23df3f8e18674a709a623c7b").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_57b85335b61e097732939ae6",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_7e6f80051d2622cc9d7a9e2e = pg.pgTable("cf_7e6f80051d2622cc9d7a9e2e", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.uuid("value"),
+  target_collection_id: pg.text("target_collection_id")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_4d6f1b0479c18af65f77365d").on(t.revision_id,t.locale),
+  pg.foreignKey({name:"fk_d3708415fec81a3d69208025",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade"),
+  pg.foreignKey({name:"fk_b77e3d83737da872db722594",columns:[t.value,t.target_collection_id],foreignColumns:[ref_content_documents.id,ref_content_documents.collection_id] }).onDelete("restrict")]);
+
 export const table_cf_7ef59f92342c800a848ee52b = pg.pgTable("cf_7ef59f92342c800a848ee52b", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -3675,6 +3742,21 @@ export const table_cf_8b4a3e843ed23595e0a0df3f = pg.pgTable("cf_8b4a3e843ed23595
 }, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
   pg.index("ix_4779ee0583e14f8720b47d6a").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_9187c693039a55964b055da0",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
+export const table_cf_8b57f0982622773d8fba1647 = pg.pgTable("cf_8b57f0982622773d8fba1647", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value"),
+  search_vector: (pg.customType<{data:string}>({dataType:() => 'tsvector'}))("search_vector").notNull().generatedAlwaysAs(sql`to_tsvector('simple',coalesce("value",''))`)
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_ca73f5393201b3875ba2bbf5").on(t.revision_id,t.locale),
+  pg.index("ix_7585ec22e4418a9fd533bfb7").on(t.value,t.locale,t.revision_id),
+  pg.index("ix_9618be05c2ed6ae60642e3ea").using('gin',t.search_vector),
+  pg.foreignKey({name:"fk_3cb469b942154689a26199d5",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
 export const table_cf_8bfa27c1b598b742babedebe = pg.pgTable("cf_8bfa27c1b598b742babedebe", {
   revision_id: pg.uuid("revision_id").notNull(),
@@ -4350,6 +4432,35 @@ export const table_cf_a0b1c4c19435c7b7d245dd9e = pg.pgTable("cf_a0b1c4c19435c7b7
   pg.index("ix_c2db9777934a487bf37172ee").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_d47d38ab1a2b97dcbca2acd1",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_a0d90d34e693cd076f3b7e54 = pg.pgTable("cf_a0d90d34e693cd076f3b7e54", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.uuid("value"),
+  target_collection_id: pg.text("target_collection_id")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_04720db236e24473c7fee6b7").on(t.revision_id,t.locale),
+  pg.foreignKey({name:"fk_2f675627ea75ce9efba1ea59",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade"),
+  pg.foreignKey({name:"fk_3fe1ba54fe4113625f333945",columns:[t.value,t.target_collection_id],foreignColumns:[ref_content_documents.id,ref_content_documents.collection_id] }).onDelete("restrict")]);
+
+export const table_cf_a2634b971cc9a9e20b0b2684 = pg.pgTable("cf_a2634b971cc9a9e20b0b2684", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value"),
+  search_vector: (pg.customType<{data:string}>({dataType:() => 'tsvector'}))("search_vector").notNull().generatedAlwaysAs(sql`to_tsvector('simple',coalesce("value",''))`)
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_099aba64ae6c357366f68b59").on(t.revision_id,t.locale),
+  pg.index("ix_11b6ac7a3c8b3559bca482ec").on(t.value,t.locale,t.revision_id),
+  pg.index("ix_dad8116e95b35af01da41957").using('gin',t.search_vector),
+  pg.foreignKey({name:"fk_e3548908c568c02abc65f39b",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
 export const table_cf_a2b04ecd11caf98249029a46 = pg.pgTable("cf_a2b04ecd11caf98249029a46", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -4534,6 +4645,19 @@ export const table_cf_ab5294672999b899d9dd79c2 = pg.pgTable("cf_ab5294672999b899
   pg.index("ix_bc789de8e4b6f0a530ba6ec9").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_40ff046bfd3d8a38afe00331",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_abbeafb1200904398fa1785d = pg.pgTable("cf_abbeafb1200904398fa1785d", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_a52ca9ed51a972a3542a1b60").on(t.revision_id,t.locale),
+  pg.index("ix_f911b8fd92b7ef88135a0ae3").on(t.value,t.locale,t.revision_id),
+  pg.foreignKey({name:"fk_a80297c9624f42355017f54f",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
 export const table_cf_abeaf6f5cf406be0c5ea86c9 = pg.pgTable("cf_abeaf6f5cf406be0c5ea86c9", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -4573,6 +4697,20 @@ export const table_cf_ac9cda88954c0f01f1fe394e = pg.pgTable("cf_ac9cda88954c0f01
   pg.index("ix_ffcc0d30e0bf08c9f29c32e4").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_b364d952cbb11652ccc4eb0c",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade"),
   pg.foreignKey({name:"fk_cc5843cb3e8b3a1beb8e719a",columns:[t.value,t.target_collection_id],foreignColumns:[ref_content_documents.id,ref_content_documents.collection_id] }).onDelete("restrict")]);
+
+export const table_cf_acadba7b133bc84357ce703f = pg.pgTable("cf_acadba7b133bc84357ce703f", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.uuid("value"),
+  target_collection_id: pg.text("target_collection_id")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_5ea3e4eef3875e1578548c64").on(t.revision_id,t.locale),
+  pg.foreignKey({name:"fk_20431677a1d45aad2b3af4e7",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade"),
+  pg.foreignKey({name:"fk_2485cc2c232e1b407d14993a",columns:[t.value,t.target_collection_id],foreignColumns:[ref_content_documents.id,ref_content_documents.collection_id] }).onDelete("restrict")]);
 
 export const table_cf_ad2f75aa04964314b796002c = pg.pgTable("cf_ad2f75aa04964314b796002c", {
   revision_id: pg.uuid("revision_id").notNull(),
@@ -4688,6 +4826,21 @@ export const table_cf_b134367476d0bd2382c0ac11 = pg.pgTable("cf_b134367476d0bd23
   pg.index("ix_29c9973b58d403bb4c5f3a1b").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_26f9ed6a68119170c99b75f3",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_b5095f504bcd9893959ca288 = pg.pgTable("cf_b5095f504bcd9893959ca288", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value"),
+  search_vector: (pg.customType<{data:string}>({dataType:() => 'tsvector'}))("search_vector").notNull().generatedAlwaysAs(sql`to_tsvector('simple',coalesce("value",''))`)
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_56218111c68f983f91fb258c").on(t.revision_id,t.locale),
+  pg.index("ix_b3ce7cdb5dc5812815c49792").on(t.value,t.locale,t.revision_id),
+  pg.index("ix_5e0792696f11eea61351bedc").using('gin',t.search_vector),
+  pg.foreignKey({name:"fk_ec57fd4ce678ffd369bb178e",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
 export const table_cf_b5b54efa7becc947afeed61c = pg.pgTable("cf_b5b54efa7becc947afeed61c", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -4713,6 +4866,19 @@ export const table_cf_b6eed262f569483eeb7aa5bc = pg.pgTable("cf_b6eed262f569483e
 }, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
   pg.index("ix_cdf91e1d2bfaa14d1a3f4994").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_5065961be69bef87d8af454c",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
+export const table_cf_b730ec6c2b1ca5fd6813e093 = pg.pgTable("cf_b730ec6c2b1ca5fd6813e093", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_1f85eefd94a44269fd4b9616").on(t.revision_id,t.locale),
+  pg.index("ix_4815f7a05b36b2d57c909892").on(t.value,t.locale,t.revision_id),
+  pg.foreignKey({name:"fk_981d31349f7ee6a1ccbd64fa",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
 export const table_cf_b8320f1859970ca10ee3289e = pg.pgTable("cf_b8320f1859970ca10ee3289e", {
   revision_id: pg.uuid("revision_id").notNull(),
@@ -5016,6 +5182,20 @@ export const table_cf_c6d23e816fb22b5bae5d6984 = pg.pgTable("cf_c6d23e816fb22b5b
 }, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
   pg.index("ix_8bf8b14ab0b176288a74d3ac").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_cb725946eaba22490cf04773",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
+export const table_cf_c76a2bb9b7973b72b769aa94 = pg.pgTable("cf_c76a2bb9b7973b72b769aa94", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value"),
+  search_vector: (pg.customType<{data:string}>({dataType:() => 'tsvector'}))("search_vector").notNull().generatedAlwaysAs(sql`to_tsvector('simple',coalesce("value",''))`)
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_6cddad8c35270340c3b40f70").on(t.revision_id,t.locale),
+  pg.index("ix_db27d91b7c9af6dcdde7e107").using('gin',t.search_vector),
+  pg.foreignKey({name:"fk_22e686460c226e1ee4eca42b",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
 export const table_cf_c7a21b86881cc4bee63f6cd7 = pg.pgTable("cf_c7a21b86881cc4bee63f6cd7", {
   revision_id: pg.uuid("revision_id").notNull(),
@@ -5394,6 +5574,18 @@ export const table_cf_d4e3ae8c01b32e1fe0b0db89 = pg.pgTable("cf_d4e3ae8c01b32e1f
 }, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
   pg.index("ix_22db428e5d96a0d0eb97f60f").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_a80630a7f8a23fa19a253dbb",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
+export const table_cf_d5116da741fa1e5ff6e60221 = pg.pgTable("cf_d5116da741fa1e5ff6e60221", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.jsonb("value")
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_a2c24d1dd6272593587fbf99").on(t.revision_id,t.locale),
+  pg.foreignKey({name:"fk_5c2b08789d17eff8f05480b7",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
 export const table_cf_d596322d384c4cc028f66eab = pg.pgTable("cf_d596322d384c4cc028f66eab", {
   revision_id: pg.uuid("revision_id").notNull(),
@@ -6415,6 +6607,21 @@ export const table_cf_fddf3433941b3b1e81518a92 = pg.pgTable("cf_fddf3433941b3b1e
   pg.index("ix_01a8c5331c5b1fcf2097df24").on(t.revision_id,t.locale),
   pg.foreignKey({name:"fk_8a29c69d361cc2f5428abef8",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cf_fec29b20f657a8ca40db82c9 = pg.pgTable("cf_fec29b20f657a8ca40db82c9", {
+  revision_id: pg.uuid("revision_id").notNull(),
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  parent_path: pg.text("parent_path").notNull(),
+  position: pg.integer("position").notNull(),
+  state: pg.text("state").notNull(),
+  value: pg.text("value"),
+  search_vector: (pg.customType<{data:string}>({dataType:() => 'tsvector'}))("search_vector").notNull().generatedAlwaysAs(sql`to_tsvector('simple',coalesce("value",''))`)
+}, (t) => [pg.primaryKey({ columns: [t.revision_id,t.locale,t.parent_path,t.position] }),
+  pg.index("ix_7ceba526505870054be1a5cd").on(t.revision_id,t.locale),
+  pg.index("ix_0107c8f6e7b3157d131dc09e").on(t.value,t.locale,t.revision_id),
+  pg.index("ix_7071cdaf3491f447e0699a9a").using('gin',t.search_vector),
+  pg.foreignKey({name:"fk_a5ef083c8e81c353518f2c55",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
+
 export const table_cf_ff2c49715ff3344a4263f2b8 = pg.pgTable("cf_ff2c49715ff3344a4263f2b8", {
   revision_id: pg.uuid("revision_id").notNull(),
   document_id: pg.uuid("document_id").notNull(),
@@ -6508,6 +6715,14 @@ export const table_ci_9ad8315da76c8848b8870f2e = pg.pgTable("ci_9ad8315da76c8848
   pg.index("ix_d0d4eb4ee34c7660c18a83eb").on(t.locale,t.k0,t.k1,t.k2,t.revision_id),
   pg.foreignKey({name:"fk_d0d4eb4ee34c7660c18a83eb",columns:[t.revision_id,t.document_id],foreignColumns:[ref_content_revisions.id,ref_content_revisions.document_id] }).onDelete("cascade")]);
 
+export const table_cu_04ea569059d8e97740ae760d = pg.pgTable("cu_04ea569059d8e97740ae760d", {
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  k0: pg.text("k0").notNull()
+}, (t) => [pg.primaryKey({ columns: [t.document_id,t.locale,t.k0] }),
+  pg.uniqueIndex("uq_bd21c9c49c1470724ad5c19d").on(t.locale,t.k0),
+  pg.foreignKey({name:"fk_bd21c9c49c1470724ad5c19d",columns:[t.document_id],foreignColumns:[ref_content_documents.id] }).onDelete("cascade")]);
+
 export const table_cu_4b3157d1ad57acc25664c1b6 = pg.pgTable("cu_4b3157d1ad57acc25664c1b6", {
   document_id: pg.uuid("document_id").notNull(),
   locale: pg.text("locale").notNull(),
@@ -6523,6 +6738,14 @@ export const table_cu_631e9d9ab06536489ec1bf68 = pg.pgTable("cu_631e9d9ab0653648
 }, (t) => [pg.primaryKey({ columns: [t.document_id,t.locale,t.k0] }),
   pg.uniqueIndex("uq_f1e610ac618d94b19d777778").on(t.locale,t.k0),
   pg.foreignKey({name:"fk_f1e610ac618d94b19d777778",columns:[t.document_id],foreignColumns:[ref_content_documents.id] }).onDelete("cascade")]);
+
+export const table_cu_904a443128559583da7f3baa = pg.pgTable("cu_904a443128559583da7f3baa", {
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  k0: pg.text("k0").notNull()
+}, (t) => [pg.primaryKey({ columns: [t.document_id,t.locale,t.k0] }),
+  pg.uniqueIndex("uq_e9dfae7b539e34f106793379").on(t.locale,t.k0),
+  pg.foreignKey({name:"fk_e9dfae7b539e34f106793379",columns:[t.document_id],foreignColumns:[ref_content_documents.id] }).onDelete("cascade")]);
 
 export const table_cu_9ad8315da76c8848b8870f2e = pg.pgTable("cu_9ad8315da76c8848b8870f2e", {
   document_id: pg.uuid("document_id").notNull(),
@@ -6566,6 +6789,14 @@ export const table_cu_d39b972415ec56d3b602e581 = pg.pgTable("cu_d39b972415ec56d3
   pg.uniqueIndex("uq_adef3f37969bbb179117b763").on(t.locale,t.k0),
   pg.foreignKey({name:"fk_adef3f37969bbb179117b763",columns:[t.document_id],foreignColumns:[ref_content_documents.id] }).onDelete("cascade")]);
 
+export const table_cu_dbd38eb03cebfd01e9ab7eb2 = pg.pgTable("cu_dbd38eb03cebfd01e9ab7eb2", {
+  document_id: pg.uuid("document_id").notNull(),
+  locale: pg.text("locale").notNull(),
+  k0: pg.text("k0").notNull()
+}, (t) => [pg.primaryKey({ columns: [t.document_id,t.locale,t.k0] }),
+  pg.uniqueIndex("uq_79bf2c216cf6a645c0c55665").on(t.locale,t.k0),
+  pg.foreignKey({name:"fk_79bf2c216cf6a645c0c55665",columns:[t.document_id],foreignColumns:[ref_content_documents.id] }).onDelete("cascade")]);
+
 export const table_cu_fac1ffad8f8a01b78464605c = pg.pgTable("cu_fac1ffad8f8a01b78464605c", {
   document_id: pg.uuid("document_id").notNull(),
   locale: pg.text("locale").notNull(),
@@ -6574,5 +6805,5 @@ export const table_cu_fac1ffad8f8a01b78464605c = pg.pgTable("cu_fac1ffad8f8a01b7
   pg.uniqueIndex("uq_cdbdc2532df6ca877ce9eb19").on(t.locale,t.k0),
   pg.foreignKey({name:"fk_cdbdc2532df6ca877ce9eb19",columns:[t.document_id],foreignColumns:[ref_content_documents.id] }).onDelete("cascade")]);
 
-export const contentMappingFingerprint = "eb7eaa2b77fd36ed241c9c271b6ab035772267265006e37717589bd6f22c3a5c";
-export const contentBehaviorHash = "cc2e051287f803667209efa775fc85d4282506c2b8ec61f82405a0e152c08b7c";
+export const contentMappingFingerprint = "aaaca4d646813d3007b2b2348822183618a13c57bc3099c27b2c01f664c0218c";
+export const contentBehaviorHash = "577c6c126c16a0b62b7a257335bf98bc654b70579ea9d68152badc37be303d92";

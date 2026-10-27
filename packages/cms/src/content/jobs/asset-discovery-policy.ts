@@ -2,6 +2,7 @@ import type { ContentRuntime, ContentState } from '../types.ts';
 import type { DiscoveryPolicy } from './discovery-policy.ts';
 import { visibleFor } from './discovery-policy.ts';
 import { visibleDocuments } from '../adapters/postgres/discovery-sql.ts';
+import { publicationLocale } from '../adapters/postgres/document-store.ts';
 import type { DiscoverySql } from '../adapters/postgres/discovery-sql.ts';
 
 export interface AssetEligibility {
@@ -40,13 +41,14 @@ export async function assetEligibility(input: AssetEligibility): Promise<string>
   });
   const versions = visibleDocuments(input, historical);
   const collection = sql.parameter(state.collection.id);
-  return `((${withoutDocument}) OR (${document} IS NOT NULL AND EXISTS (
+  const boundLocale = `COALESCE(${alias}."authorizationLocale",${sql.parameter(state.collection.locales.default)})=${sql.parameter(state.locale)}`;
+  return `(${boundLocale} AND ((${withoutDocument}) OR (${document} IS NOT NULL AND EXISTS (
     SELECT 1 FROM content_documents ad JOIN content_revisions av
       ON av.id=COALESCE(${revision},ad.current_version_id) AND av.document_id=ad.id AND av.collection_id=${collection}
     WHERE ad.id=${document} AND ad.collection_id=${collection} AND ad.id IN (${documents})
       AND EXISTS(SELECT 1 FROM discovery_file_bindings fb WHERE fb."documentId"=ad.id AND fb."revisionId"=av.id)
-      AND (${revision} IS NULL OR av.id=ad.current_version_id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=ad.id AND p.version_id=av.id) OR ad.id IN (${versions}))
-  )))`;
+      AND (${revision} IS NULL OR av.id=ad.current_version_id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=ad.id AND p.version_id=av.id AND p.locale=${sql.parameter(publicationLocale(state.collection, state.locale))}) OR ad.id IN (${versions}))
+  ))))`;
 }
 
 export async function assetJobEligibility(

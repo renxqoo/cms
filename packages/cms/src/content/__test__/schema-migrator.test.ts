@@ -148,6 +148,7 @@ async function save(
       kind: 'save',
     });
     await kit.oldStore.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'records',
       id,
       revision,
@@ -155,7 +156,7 @@ async function save(
       currentVersionId: versionId,
       publishedVersionId: input.publish ? versionId : (previous?.publishedVersionId ?? null),
     });
-    await kit.oldStore.syncActiveUnique(tx, { collection: 'records', id });
+    await kit.oldStore.syncActiveProjections(tx, { collection: 'records', id });
     return { id, versionId, revision };
   });
   return row;

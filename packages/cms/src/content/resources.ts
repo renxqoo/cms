@@ -1,6 +1,8 @@
+import { authorReadPermission } from './authorship/api.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { RequestContext } from '@new-cms/cms/platform/contracts';
 import { securityTransaction } from '@new-cms/cms/platform/security-lock';
+import { withContentDeadline } from './hooks/deadline.ts';
 import { targetReadContext } from './queries/resolve-locale.ts';
 import { parseQuery } from './queries/parse-query.ts';
 import {
@@ -14,8 +16,10 @@ import {
 import { denied, relationScopes } from './documents/relation-scopes.ts';
 import { decorateDocuments } from './documents/project-assets.ts';
 import { projectReferenceGroup } from './documents/reference-query.ts';
-import { expandRelations, storedView } from './documents/expand-relations.ts';
-import type { ContentRuntime, ContentState } from './types.ts';
+import { expandRelations } from './documents/expand-relations.ts';
+import { storedView } from './documents/stored-views.ts';
+import type { ContentRuntime, ContentState, ContentDocumentView } from './types.ts';
+import type { StoredDocument } from './model.ts';
 
 async function resourceScopes(
   runtime: ContentRuntime,
@@ -26,9 +30,10 @@ async function resourceScopes(
   },
 ) {
   const scopes = [];
+  const hookBudget = { used: 0 };
   for (const collection of runtime.registry.list.filter((item) => item.upload)) {
     try {
-      scopes.push(await resourceScope(runtime, { ...input, collection }));
+      scopes.push(await resourceScope(runtime, { ...input, collection, hookBudget }));
     } catch (error) {
       if (!denied(error)) throw error;
     }
@@ -36,15 +41,14 @@ async function resourceScopes(
   return scopes;
 }
 
-async function resourceScope(
-  runtime: ContentRuntime,
-  input: {
-    ctx: RequestContext;
-    raw: ReturnType<ContentRuntime['schemas']['resources.list']['parse']>;
-    tx: ContentState['tx'];
-    collection: ContentState['collection'];
-  },
-) {
+interface ResourceScopeInput {
+  ctx: RequestContext;
+  raw: ReturnType<ContentRuntime['schemas']['resources.list']['parse']>;
+  tx: ContentState['tx'];
+  collection: ContentState['collection'];
+  hookBudget: { used: number };
+}
+async function resourceScope(runtime: ContentRuntime, input: ResourceScopeInput) {
   const collection = await runtime.resolveCollection(input.tx, input.collection.key);
   const actor = await runtime.authorize(input.tx, input.ctx, 'documents.list', {
     scopeKind: 'collection',
@@ -52,6 +56,9 @@ async function resourceScope(
   });
   if (!actor) fail('unauthenticated');
   const state = {
+    authorshipReadable: false,
+    hookBudget: input.hookBudget,
+    hookLimits: runtime.limits,
     tx: input.tx,
     ctx: input.ctx,
     actor,
@@ -65,7 +72,8 @@ async function resourceScope(
     operationId: 'documents.list',
     mode: input.raw.mode,
   };
-  const predicate = collectionPredicate(state);
+  const predicate = await collectionPredicate(state);
+  state.authorshipReadable = await authorReadPermission(state, runtime);
   const query = parseQuery({
     collection,
     input: {
@@ -80,13 +88,58 @@ async function resourceScope(
     state,
     collection: collection.key,
     query: { ...query, ...(predicate ? { policy: predicate } : {}) },
-    queryableFields: permittedQueryFields(state),
+    queryableFields: await permittedQueryFields(state),
     ...(await relationScopes(state, runtime)),
   };
 }
 
+async function resourceViews(
+  runtime: ContentRuntime,
+  input: {
+    scopes: Awaited<ReturnType<typeof resourceScopes>>;
+    rows: readonly StoredDocument[];
+    select?: readonly string[];
+  },
+): Promise<ContentDocumentView[]> {
+  const rows = [];
+  for (const row of input.rows) {
+    const scope = input.scopes.find(
+      (item) => item.state.collection.id === row.document.collectionId,
+    );
+    if (!scope) fail('internal_error');
+    rows.push(
+      await storedView(scope.state, row, {
+        runtime,
+        ...(input.select ? { select: input.select } : {}),
+      }),
+    );
+  }
+  return rows;
+}
+
+function shareBudgets(scopes: Awaited<ReturnType<typeof resourceScopes>>) {
+  const budget = { nodes: 0 };
+  const hookBudget = scopes[0]?.state.hookBudget ?? { used: 0 };
+  const virtualReadCache = new Map();
+  for (const scope of scopes)
+    Object.assign(scope.state, { expansionBudget: budget, hookBudget, virtualReadCache });
+  return budget;
+}
+
 async function listResources(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['resources.list'], raw);
+  return withContentDeadline({
+    timeoutMs: runtime.policy.requestTimeoutMs,
+    ...(ctx.signal ? { signal: ctx.signal } : {}),
+    work: (signal) => queryResources(runtime, { ...ctx, signal }, input),
+  });
+}
+
+async function queryResources(
+  runtime: ContentRuntime,
+  ctx: RequestContext,
+  input: ReturnType<ContentRuntime['schemas']['resources.list']['parse']>,
+) {
   return securityTransaction(runtime.database, runtime.policy, {
     mode: 'shared',
     ...(ctx.signal ? { signal: ctx.signal } : {}),
@@ -94,6 +147,7 @@ async function listResources(runtime: ContentRuntime, ctx: RequestContext, raw: 
       const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
       await runtime.authorize(executor, ctx, 'resources.list');
       const scopes = await resourceScopes(runtime, { ctx, raw: input, tx: executor });
+      const budget = shareBudgets(scopes);
       const page = await runtime.store.queryCollections(executor, {
         collections: scopes,
         page: input.page,
@@ -101,12 +155,11 @@ async function listResources(runtime: ContentRuntime, ctx: RequestContext, raw: 
         sort: input.sort ?? [{ field: 'createdAt', order: 'desc' }],
         limits: runtime.limits,
       });
-      const rows = page.rows.map((row) => {
-        const scope = scopes.find((item) => item.state.collection.id === row.document.collectionId);
-        if (!scope) fail('internal_error');
-        return storedView(scope.state, row, input.select);
+      const rows = await resourceViews(runtime, {
+        scopes,
+        rows: page.rows,
+        ...(input.select ? { select: input.select } : {}),
       });
-      const budget = { nodes: 0 };
       for (const scope of scopes) {
         const views = rows.filter((row) => row.collection === scope.collection);
         await decorateDocuments(scope.state, {
@@ -164,9 +217,17 @@ async function listReferences(runtime: ContentRuntime, ctx: RequestContext, raw:
       }
       const offset = (input.page - 1) * input.pageSize;
       if (!Number.isSafeInteger(offset)) fail('invalid_input');
+      const unique = [
+        ...new Map(
+          rows.map((row) => [
+            JSON.stringify([row.collection, row.id, row.versionId, row.sourcePath]),
+            row,
+          ]),
+        ).values(),
+      ];
       return {
-        rows: rows.slice(offset, offset + input.pageSize),
-        total: rows.length,
+        rows: unique.slice(offset, offset + input.pageSize),
+        total: unique.length,
         page: input.page,
         pageSize: input.pageSize,
       };

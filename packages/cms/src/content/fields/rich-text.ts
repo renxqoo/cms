@@ -1,4 +1,5 @@
 import { validateRegisteredNode, registeredNodeReferences } from './rich-text-nodes.ts';
+import { richTextNodeSchemas } from './rich-text-schema.ts';
 import { assertJsonBudget } from './data-budget.ts';
 import { objectValue } from './json-value.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
@@ -34,6 +35,26 @@ function safeLink(value: JsonValue | undefined): void {
   )
     fail('invalid_input');
 }
+function validateContainer(value: DocumentData, type: string): void {
+  if (type === 'link') {
+    keys(value, ['type', 'url', 'reference', 'children']);
+    const { reference } = value;
+    if (reference !== undefined) {
+      if (value['url'] !== undefined || !objectValue(reference)) fail('invalid_input');
+      keys(reference, ['collection', 'id']);
+      validateReferenceNode({ type: 'relationship', ...reference });
+    } else safeLink(value['url']);
+  } else if (
+    !Object.hasOwn(richTextNodeSchemas, type) ||
+    !richTextNodeSchemas[type]?.safeParse(value).success
+  )
+    fail('invalid_input');
+}
+function scalarNode(value: DocumentData, type: string): boolean {
+  if (type !== 'text' && type !== 'horizontalRule') return false;
+  if (!richTextNodeSchemas[type]?.safeParse(value).success) fail('invalid_input');
+  return true;
+}
 function node(
   value: JsonValue,
   state: {
@@ -48,11 +69,7 @@ function node(
   if (state.count > state.limits.maxRichTextNodes || state.depth > state.limits.maxRichTextDepth)
     fail('payload_too_large');
   const { type } = value;
-  if (type === 'text') {
-    keys(value, ['type', 'text']);
-    if (typeof value['text'] !== 'string') fail('invalid_input');
-    return;
-  }
+  if (scalarNode(value, type)) return;
   if (type === 'relationship' || type === 'media') {
     validateReferenceNode(value);
     return;
@@ -65,9 +82,7 @@ function node(
     })
   )
     return;
-  if (!['paragraph', 'heading', 'list', 'listItem', 'link'].includes(type)) fail('invalid_input');
-  keys(value, type === 'link' ? ['type', 'url', 'children'] : ['type', 'children']);
-  if (type === 'link') safeLink(value['url']);
+  validateContainer(value, type);
   const nodes = value['children'];
   if (!Array.isArray(nodes)) fail('invalid_input');
   for (const child of nodes) node(child, { ...state, depth: state.depth + 1 });
@@ -124,20 +139,7 @@ export function richTextReferences(input: {
     path: input.path,
     fieldId: input.fieldId,
   });
-  const { type } = input.value;
-  if (
-    (type === 'relationship' || type === 'media') &&
-    typeof input.value['collection'] === 'string' &&
-    typeof input.value['id'] === 'string'
-  )
-    result.push({
-      collection: input.value['collection'],
-      id: input.value['id'].toLowerCase(),
-      path: input.path,
-      fieldId: input.fieldId,
-      onDelete: 'restrict',
-      media: type === 'media',
-    });
+  result.push(...builtinReferences(input.value, input.path, input.fieldId));
   const nodes = input.value['children'];
   if (Array.isArray(nodes))
     for (const [index, child] of nodes.entries())
@@ -153,4 +155,31 @@ function validateReferenceNode(value: DocumentData): void {
   if (typeof value['collection'] !== 'string' || typeof id !== 'string') fail('invalid_input');
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))
     fail('invalid_input');
+}
+
+function builtinReferences(
+  candidate: DocumentData,
+  path: string,
+  fieldId: string,
+): ReferenceValue[] {
+  const { type } = candidate;
+  const reference = type === 'link' ? candidate['reference'] : candidate;
+  if (
+    typeof type !== 'string' ||
+    !['link', 'relationship', 'media'].includes(type) ||
+    !objectValue(reference) ||
+    typeof reference['collection'] !== 'string' ||
+    typeof reference['id'] !== 'string'
+  )
+    return [];
+  return [
+    {
+      collection: reference['collection'],
+      id: reference['id'].toLowerCase(),
+      path: type === 'link' ? `${path}.reference` : path,
+      fieldId,
+      onDelete: 'restrict',
+      media: type === 'media',
+    },
+  ];
 }

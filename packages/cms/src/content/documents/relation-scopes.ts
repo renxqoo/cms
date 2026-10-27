@@ -1,6 +1,13 @@
+import { authorReadPermission } from '../authorship/api.ts';
 import { CmsError, fail } from '@new-cms/cms/platform/contracts';
-import { authorizeStateOperation, collectionPredicate, policyContext } from '../runtime.ts';
-import { queryableFields } from '../fields/policies.ts';
+import {
+  authorizeStateOperation,
+  collectionPredicate,
+  permittedQueryFields,
+  policyContext,
+} from '../runtime.ts';
+import { policyScope } from '../hooks/invoke.ts';
+import { readableQueryFields } from '../fields/policy-metadata.ts';
 import { targetReadContext } from '../queries/resolve-locale.ts';
 import type { RelationScope } from '../model.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
@@ -29,14 +36,15 @@ export async function targetState(
   });
   const { predicate: _old, ...base } = state;
   const next = { ...base, actor, collection, locale, operationId: 'documents.get' };
-  const predicate = collectionPredicate(next);
-  return { ...next, ...(predicate ? { predicate } : {}) };
+  const predicate = await collectionPredicate(next);
+  const authorshipReadable = await authorReadPermission(next, input.runtime);
+  return { ...next, authorshipReadable, ...(predicate ? { predicate } : {}) };
 }
 
-function localeScope(
+async function localeScope(
   state: ContentState,
-  input: { collection: ContentState['collection']; locale: string },
-): RelationScope {
+  input: { collection: ContentState['collection']; locale: string; linkedVirtual?: boolean },
+): Promise<RelationScope> {
   const { predicate: _old, ...base } = state;
   const target = {
     ...base,
@@ -53,11 +61,20 @@ function localeScope(
     return {
       collection: input.collection.key,
       ...read,
-      policy: collectionPredicate(target) ?? true,
-      queryableFields: queryableFields({
-        collection: input.collection,
-        context: policyContext(target),
-      }),
+      policy: (await collectionPredicate(target)) ?? true,
+      queryableFields: await permittedQueryFields(
+        target,
+        input.linkedVirtual ? { linkedVirtual: true } : {},
+      ),
+      ...(input.linkedVirtual
+        ? {
+            readableFields: await readableQueryFields({
+              ...policyScope(target),
+              collection: target.collection,
+              context: policyContext(target),
+            }),
+          }
+        : {}),
     };
   } catch (error) {
     if (!denied(error)) throw error;
@@ -68,6 +85,7 @@ function localeScope(
 export async function relationScopes(
   state: ContentState,
   runtime: ContentRuntime,
+  options: { linkedVirtual?: boolean } = {},
 ): Promise<{ relationScopes: RelationScope[] }> {
   const scopes: RelationScope[] = [];
   for (const definition of runtime.registry.list) {
@@ -79,8 +97,17 @@ export async function relationScopes(
         collection: collection.key,
       });
       if (!actor) fail('unauthenticated');
+      const authorshipReadable = await authorReadPermission(
+        { ...state, actor, collection },
+        runtime,
+      );
       for (const locale of collection.locales.supported)
-        scopes.push(localeScope({ ...state, actor }, { collection, locale }));
+        scopes.push(
+          await localeScope(
+            { ...state, actor, authorshipReadable },
+            { collection, locale, ...options },
+          ),
+        );
     } catch (error) {
       if (!denied(error)) throw error;
       for (const locale of collection.locales.supported)

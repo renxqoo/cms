@@ -22,12 +22,12 @@ function application() {
   return app;
 }
 function apiFixture(grants = ['documents.list']) {
-  const calls: { path: string; headers: Headers }[] = [];
+  const calls: { path: string; headers: Headers; body: unknown }[] = [];
   vi.stubGlobal(
     'fetch',
     vi.fn<typeof fetch>().mockImplementation((url, init) => {
       const path = new URL(new Request(url ?? 'https://invalid.example').url).pathname;
-      calls.push({ path, headers: new Headers(init?.headers) });
+      calls.push({ path, headers: new Headers(init?.headers), body: init?.body });
       if (path === '/oauth/exchange')
         return Promise.resolve(
           Response.json({ access_token: 'exchanged', token_type: 'Bearer', expires_in: 60 }),
@@ -360,4 +360,55 @@ it('preserves shared account rate rejection and retry timing instead of reportin
   expect(result.status).toBe(429);
   expect(result.headers.get('retry-after')).toBe('42');
   expect(await result.json()).toMatchObject({ error: 'temporarily_unavailable' });
+});
+it('regression: MCP editorSessionId is optional tool context and is forwarded as an editor header after argument stripping', async () => {
+  const calls = apiFixture(['documents.update']);
+  const editorSessionId = 'ABCDEFAB-1234-4123-8123-ABCDEFABCDEF';
+  const response = await message(application(), {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: {
+      name: 'documents_update',
+      arguments: {
+        collection: 'articles',
+        id: '11111111-1111-4111-8111-111111111111',
+        revision: 1,
+        data: { title: 'Editor' },
+        editorSessionId,
+      },
+    },
+  });
+  expect(await json(response)).toMatchObject({
+    result: { isError: true, structuredContent: { error: { code: 'forbidden', status: 403 } } },
+  });
+  const call = calls.find((value) =>
+    value.path.endsWith('/documents/11111111-1111-4111-8111-111111111111'),
+  );
+  expect(call?.headers.get('x-cms-editor-session')).toBe(editorSessionId.toLowerCase());
+  expect(JSON.parse(String(call?.body)) as unknown).toEqual({
+    revision: 1,
+    data: { title: 'Editor' },
+  });
+  for (const editor of ['invalid', '00000000-0000-0000-0000-000000000000']) {
+    const invalid = await message(application(), {
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'tools/call',
+      params: {
+        name: 'documents_update',
+        arguments: {
+          collection: 'articles',
+          id: '11111111-1111-4111-8111-111111111111',
+          revision: 1,
+          data: { title: 'Editor' },
+          editorSessionId: editor,
+        },
+      },
+    });
+    expect(await json(invalid)).toMatchObject({ result: { isError: true } });
+  }
+  expect(
+    calls.filter((value) => value.path.endsWith('/documents/11111111-1111-4111-8111-111111111111')),
+  ).toHaveLength(1);
 });

@@ -59,7 +59,11 @@ function migrationSql(
       throw new Error('Initial generation does not accept reviewed SQL');
     return options.generated.initialSql;
   }
-  const evolution = generateEvolution({ previous, registry: options.registry });
+  const evolution = generateEvolution({
+    previous,
+    registry: options.registry,
+    activateEmpty: true,
+  });
   if (evolution.requiresManualMigration && reviewedSql === undefined)
     throw new Error(`Manual schema migration is required: ${evolution.manualReasons.join(', ')}`);
   if (!evolution.requiresMigration) throw new Error('No schema migration is required');
@@ -106,7 +110,11 @@ async function ensureNoUnreviewedMigration(options: MigrationOptions): Promise<v
     if (!options.check) throw new Error('Initial schema generation requires --migration');
     return;
   }
-  const evolution = generateEvolution({ previous: snapshot(current), registry: options.registry });
+  const evolution = generateEvolution({
+    previous: snapshot(current),
+    registry: options.registry,
+    activateEmpty: true,
+  });
   if (evolution.requiresMigration || evolution.requiresManualMigration)
     throw new Error('Schema changes require a new reviewed --migration');
 }

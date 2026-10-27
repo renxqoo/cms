@@ -163,7 +163,7 @@ export async function createFixture(
       mimeTypes: ['application/pdf', 'image/png'],
       recipe: { variants: [] },
     };
-    if (data.action === 'upload') return { upload };
+    if (data.action === 'upload') return { upload, locale: data.locale ?? 'en' };
     const rows = await tx.query<{ id: string; revision: number; current_version_id: string }>(
       'SELECT * FROM content_documents WHERE id=$1 FOR UPDATE',
       [data.documentId],
@@ -179,6 +179,7 @@ export async function createFixture(
     );
     return {
       upload,
+      locale: data.locale ?? 'en',
       documentId: document.id,
       revision: document.revision,
       revisionId,
@@ -206,6 +207,7 @@ export async function createFixture(
         [revisionId, data.documentId, data.revision + 1, data.actor.id],
       );
       await assets.participants.bind(tx, {
+        locale: data.locale ?? 'en',
         operationId: 'documents.create',
         actorId: data.actor.id,
         collectionKey: data.collectionKey,

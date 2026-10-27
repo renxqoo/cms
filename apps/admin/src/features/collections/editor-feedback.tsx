@@ -11,6 +11,8 @@ export function EditorFeedback({ model }: { model: ContentEditorModel }) {
   return (
     <>
       <ManagementFeedback error={state.failure} />
+      <ManagementFeedback error={state.previewFailure} onRetry={controller.retryPreview} />
+      {model.invalid ? <Banner tone="warning">{t.invalidFields}</Banner> : null}
       {state.phase === 'loading' ? <p role="status">{t.loading}</p> : null}
       {state.phase === 'failed' ? (
         <Button

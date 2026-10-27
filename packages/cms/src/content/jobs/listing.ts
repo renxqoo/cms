@@ -7,7 +7,12 @@ import { listUploads } from './uploads-listing.ts';
 async function listJobs(runtime: ContentRuntime, ctx: RequestContext, raw: unknown) {
   const input = parse(runtime.schemas['content.listJobs'], raw);
   return createRunner(runtime)(
-    { ctx, operationId: 'content.listJobs', collection: input.collection },
+    {
+      ctx,
+      operationId: 'content.listJobs',
+      collection: input.collection,
+      ...(input.locale ? { locale: input.locale } : {}),
+    },
     (state) =>
       queryJobs(state.tx, {
         state,

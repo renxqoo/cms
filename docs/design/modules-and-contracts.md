@@ -83,13 +83,13 @@
 | POST /v1/collections/:collection/documents/:id/trash-restorations | 草稿模式恢复编辑可见性；直接生效模式完整校验并要求生效写权限 |
 | POST /v1/collections/:collection/documents/:id/purges | 独立权限、保留期和外部引用检查，清除自身内容/历史并登记对象清理 |
 | POST /v1/collections/:collection/documents/:id/autosaves | 幂等保存新草稿修订，不覆盖已发布内容或并发新修改 |
-| POST /v1/collections/:collection/documents/:id/publications | 完整校验并发布当前草稿的确定版本 |
+| POST /v1/collections/:collection/documents/:id/publications | 完整校验并发布当前草稿的确定版本；localizeStatus 集合按请求 locale 独立发布 |
 | DELETE /v1/collections/:collection/documents/:id/publication | 取消发布，不删除编辑草稿 |
 | GET /v1/collections/:collection/documents/:id/versions | 版本历史，独立读取权限 |
 | GET /v1/collections/:collection/documents/:id/versions/:versionId | 版本详情，校验版本属于目标文档 |
 | POST /v1/collections/:collection/documents/:id/restorations | 草稿模式恢复为新草稿；直接生效且保留历史时完整校验并要求生效写权限，生成新生效修订 |
 | GET /v1/collections/:collection/documents/:id/version-diff | 比较两个属于本资源的修订，仅返回可读取字段 |
-| POST /v1/collections/:collection/documents/:id/publication-schedules | 定时发布确定修订；执行时复查主体、授权和当前状态 |
+| POST /v1/collections/:collection/documents/:id/publication-schedules | action=publish/unpublish 的定时发布或撤回，支持 locale；执行时复查对应权限、修订和当前状态 |
 | DELETE /v1/collections/:collection/documents/:id/publication-schedules/:scheduleId | 有权限且属于本资源的待执行计划取消 |
 | POST /v1/collections/:collection/batches | 有界批量更新、复制、回收/恢复；逐项授权、revision 和真实结果 |
 | GET /v1/collections/:collection/jobs | 内容/资产任务与计划分页发现；先按当前详情及来源授权投影状态、计数，再过滤及分页 |

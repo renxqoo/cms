@@ -40,7 +40,9 @@ export interface RelationshipQuery {
 }
 
 interface RelationshipBase {
+  placeholder?: string | undefined;
   label: string;
+  labelContent?: ReactNode;
   collections: readonly { id: string; label: string }[];
   options: readonly RelationshipOption[];
   appearance: 'select' | 'drawer';
@@ -51,6 +53,8 @@ interface RelationshipBase {
   displayPreview?: boolean;
   filterOption?(this: void, option: RelationshipOption): boolean;
   loadOptions?(this: void, query: RelationshipQuery): Promise<readonly RelationshipOption[]>;
+  canCreate?(this: void, collection: string): boolean;
+  canEdit?(this: void, value: RelationshipValue): boolean;
   onCreate?(this: void, collection: string): void;
   onEdit?(this: void, value: RelationshipValue): void;
 }

@@ -1,51 +1,39 @@
+import { copyLocaleInputSchema } from './documents/copy-locale-input.ts';
 import { z } from 'zod';
+import { validationInputSchema } from './documents/validation-input.ts';
+import { editorPreviewInputSchema } from './editor/preview-input.ts';
 import { editorInputSchema } from './editor/input.ts';
+import { fieldOptionsInputSchema } from './editor/field-options-input.ts';
+import { hierarchyInputSchemas } from './hierarchy/input.ts';
+import { queryPresetInputSchemas } from './queries/preset-contracts.ts';
+import { collaborationInputSchemas } from './collaboration/input.ts';
+import { documentOrderInputSchemas } from './documents/order-contracts.ts';
+import { joinInputSchemas } from './joins/input.ts';
+import {
+  documentReadShape,
+  documentListShape,
+  contentLocaleSchema,
+} from './queries/input-shapes.ts';
+import type { QueryInputLimits } from './queries/input-shapes.ts';
+import { groupingInputSchemas } from './queries/grouping-contracts.ts';
 
-export interface ContentInputLimits {
-  defaultPageSize: number;
-  maxPageSize: number;
+export interface ContentInputLimits extends QueryInputLimits {
+  maxArrayItems: number;
   maxBatchItems: number;
-  maxLocales: number;
-  maxFields: number;
-  maxQueryNodes: number;
+  maxSyncBatchItems: number;
 }
 
 const id = z.uuid().transform((value) => value.toLowerCase());
 const revision = z.number().int().min(1).max(2_147_483_647);
 const collection = z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/);
-const locale = z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/);
+const locale = contentLocaleSchema;
 const data = z.record(z.string(), z.unknown());
 const scope = { collection };
 const target = { ...scope, id };
 const mutation = { ...target, revision };
 const localized = { locale: locale.optional() };
-function readShape(limits: ContentInputLimits) {
-  return {
-    ...localized,
-    fallback: z.array(locale).max(limits.maxLocales).optional(),
-    mode: z.enum(['editing', 'published']).default('editing'),
-    select: z.array(z.string().min(1).max(256)).max(limits.maxFields).optional(),
-    depth: z.number().int().min(0).optional(),
-  };
-}
-
 const file = { uploadId: id.optional() };
 const folder = { folderId: id.nullable().optional() };
-
-function listShape(limits: ContentInputLimits) {
-  return {
-    page: z.number().int().min(1).max(2_147_483_647).default(1),
-    pageSize: z.number().int().min(1).max(limits.maxPageSize).default(limits.defaultPageSize),
-    q: z.string().max(256).optional(),
-    where: z.unknown().optional(),
-    sort: z
-      .array(z.strictObject({ field: z.string().min(1).max(256), order: z.enum(['asc', 'desc']) }))
-      .max(limits.maxQueryNodes)
-      .optional(),
-    trashed: z.boolean().default(false),
-    folderId: id.nullable().optional(),
-  };
-}
 
 function localeData(limits: ContentInputLimits) {
   return z
@@ -79,16 +67,8 @@ function updateSchema(limits: ContentInputLimits) {
   ]);
 }
 
-function documentSchemas(limits: ContentInputLimits) {
+function previewTicketSchemas() {
   return {
-    'languages.setDefault': z.strictObject({
-      ...mutation,
-      collection: z.literal('languages'),
-      expectedDefaultCode: z.string().min(1).max(32),
-    }),
-    'documents.list': z.strictObject({ ...scope, ...readShape(limits), ...listShape(limits) }),
-    'documents.create': createSchema(limits),
-    'documents.get': z.strictObject({ ...target, ...readShape(limits) }),
     'documents.createPreviewTicket': z.strictObject({
       collection: z.literal('models'),
       id,
@@ -100,8 +80,36 @@ function documentSchemas(limits: ContentInputLimits) {
       id,
       ticketId: id,
     }),
+  };
+}
+
+function documentSchemas(limits: ContentInputLimits) {
+  return {
+    'languages.setDefault': z.strictObject({
+      ...mutation,
+      collection: z.literal('languages'),
+      expectedDefaultCode: z.string().min(1).max(32),
+    }),
+    'documents.list': z.strictObject({
+      ...scope,
+      ...documentReadShape(limits),
+      ...documentListShape(limits),
+    }),
+    'documents.create': createSchema(limits),
+    'documents.validate': validationInputSchema(limits.maxLocales),
+    'documents.get': z.strictObject({ ...target, ...documentReadShape(limits) }),
+    ...previewTicketSchemas(),
     'documents.update': updateSchema(limits),
     'documents.archive': z.strictObject(mutation),
+    'documents.copyLocale': copyLocaleInputSchema,
+    'documents.renameFile': z.strictObject({
+      ...mutation,
+      locale: z
+        .string()
+        .regex(/^(?!all$)[a-zA-Z][a-zA-Z0-9_-]{0,31}$/)
+        .optional(),
+      filename: z.string().min(1).max(255),
+    }),
     'documents.copy': z.union([
       z.strictObject({ ...mutation, ...localized, data: data.optional(), ...folder }),
       z.strictObject({ ...mutation, dataByLocale: localeData(limits), ...folder }),
@@ -118,13 +126,13 @@ function documentSchemas(limits: ContentInputLimits) {
 }
 
 function versionSchemas(limits: ContentInputLimits) {
-  const read = readShape(limits);
+  const read = documentReadShape(limits);
   return {
     'versions.list': z.strictObject({
       ...target,
       ...localized,
-      page: listShape(limits).page,
-      pageSize: listShape(limits).pageSize,
+      page: documentListShape(limits).page,
+      pageSize: documentListShape(limits).pageSize,
     }),
     'versions.get': z.strictObject({
       ...target,
@@ -176,15 +184,20 @@ function taskSchemas(limits: ContentInputLimits) {
       ...mutation,
       ...localized,
       versionId: id,
-      action: z.enum(['publish', 'unpublish']).default('publish'),
+      action: z.enum(['publish', 'unpublish']).optional(),
       executeAt: z.iso.datetime(),
     }),
-    'content.cancelPublicationSchedule': z.strictObject({ ...target, scheduleId: id }),
-    'content.getJob': z.strictObject({ ...scope, jobId: id }),
+    'content.cancelPublicationSchedule': z.strictObject({
+      ...target,
+      ...localized,
+      scheduleId: id,
+    }),
+    'content.getJob': z.strictObject({ ...scope, ...localized, jobId: id }),
     'content.listJobs': z.strictObject({
       ...scope,
-      page: listShape(limits).page,
-      pageSize: listShape(limits).pageSize,
+      ...localized,
+      page: documentListShape(limits).page,
+      pageSize: documentListShape(limits).pageSize,
       action: z.enum(['batch', 'publication', 'extension', 'process', 'reprocess']).optional(),
       status: z
         .enum(['queued', 'running', 'succeeded', 'partial', 'failed', 'cancelled'])
@@ -197,17 +210,28 @@ function taskSchemas(limits: ContentInputLimits) {
 
 export function contentInputSchemas(limits: ContentInputLimits) {
   return {
+    ...hierarchyInputSchemas(limits),
     ...documentSchemas(limits),
+    ...collaborationInputSchemas,
     ...versionSchemas(limits),
     ...taskSchemas(limits),
-    'collections.list': z.strictObject({}),
-    'collections.get': z.strictObject(scope),
+    ...queryPresetInputSchemas(limits),
+    ...documentOrderInputSchemas(limits.maxBatchItems),
+    ...joinInputSchemas(limits),
+    ...groupingInputSchemas(limits),
+    'collections.list': z.strictObject({ locale: locale.optional() }),
+    'collections.get': z.strictObject({ ...scope, locale: locale.optional() }),
     'collections.editor': editorInputSchema(limits.maxLocales),
-    'resources.list': z.strictObject({ ...readShape(limits), ...listShape(limits) }),
+    'collections.fieldOptions': fieldOptionsInputSchema(limits),
+    'collections.previewEditor': editorPreviewInputSchema(limits.maxSyncBatchItems),
+    'resources.list': z.strictObject({
+      ...documentReadShape(limits),
+      ...documentListShape(limits),
+    }),
     'resources.references': z.strictObject({
       ...target,
-      page: listShape(limits).page,
-      pageSize: listShape(limits).pageSize,
+      page: documentListShape(limits).page,
+      pageSize: documentListShape(limits).pageSize,
     }),
     'folders.list': z.strictObject(scope),
     'folders.create': z.strictObject({

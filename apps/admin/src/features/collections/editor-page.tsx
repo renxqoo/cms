@@ -1,6 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { Banner } from '@new-cms/ui/feedback';
 import { ClientInteractionBoundary } from '../../components/client-interaction-boundary';
 import { useShell } from '../../components/shell/shell-provider';
@@ -11,11 +12,14 @@ import { ContentEditor } from './editor-workspace';
 export function DocumentEditorPage({
   collectionKey,
   documentId = null,
+  viewPath,
 }: {
   collectionKey: string;
   documentId?: string | null;
+  viewPath?: string | undefined;
 }) {
   const params = useSearchParams();
+  const [editorSessionId] = useState(() => crypto.randomUUID());
   const access = useAccessControl();
   const selectedLocale = params.get('locale');
   const locale = selectedLocale === '' ? null : selectedLocale;
@@ -39,6 +43,8 @@ export function DocumentEditorPage({
           documentId={documentId}
           locale={locale}
           intent={intent}
+          editorSessionId={editorSessionId}
+          viewPath={viewPath}
           initialUploadId={params.get('uploadId') ?? undefined}
         />
       ) : (

@@ -7,6 +7,7 @@ coverage/
 *.tsbuildinfo
 .next/
 .next-e2e/
+.next-e2e-suite/
 playwright-report/
 test-results/
 /apps/admin/public/generated/editor/
@@ -15,3 +16,5 @@ test-results/
 .data/
 
 /apps/admin/next-env.d.ts
+
+/apps/admin/.generated/og-worker.mjs

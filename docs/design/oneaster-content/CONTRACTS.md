@@ -25,7 +25,7 @@ CMS 原生 envelope 提供 UUID `id`、revision、发布指针、历史和时间
 | presentation | featured、sortOrder、relatedModels；关系保存内部 UUID |
 | seo | 标题和描述默认来自当前语言 title/summary，可覆盖；分享图可选；allowIndex boolean 默认 true，false 时详情可访问但noindex且排除sitemap/索引型翻译链接 |
 
-草稿允许业务必填暂缺，但已有值必须类型合法、唯一、无越权引用。发布完整校验。空集合返回真实空列表，必需站点配置未发布返回明确不可用状态。
+草稿集合显式使用 drafts.validate:false，允许业务必填和自定义 validator 暂未满足；类型、结构、存储界限、唯一性、选项候选与引用授权始终执行。发布和独立校验接口执行完整的所选规则，自定义 validator 不作为跳过校验草稿的安全边界。自动保存间隔显式为 10000 毫秒，计划发布启用。空集合返回真实空列表，必需站点配置未发布返回明确不可用状态。
 
 ## 2. 调用配置、场景和模板
 

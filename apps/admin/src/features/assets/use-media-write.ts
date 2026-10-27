@@ -9,7 +9,6 @@ import { attachFile, verifyAttachment } from './attachment';
 import type { AttachmentInput } from './attachment';
 
 export function useMediaWrite(props: DocumentMediaProps) {
-  const { document, editor, collection } = props;
   const access = useAccessControl();
   const [replacing, setReplacing] = useState(false);
   const [image, setImage] = useState(false);
@@ -19,13 +18,11 @@ export function useMediaWrite(props: DocumentMediaProps) {
   useEffect(() => () => pending.current?.abort(), []);
   const { localBusy, changeBusy, changed } = useMediaLifecycle(props);
   const reprocess = useReprocess({
-    collection: collection.key,
-    id: document?.id ?? '',
-    revision: document?.revision ?? 1,
+    ...processingTarget(props),
     onChanged: changed,
     onBusyChange: changeBusy,
   });
-  const writable = mediaWritable(editor);
+  const writable = mediaWritable(props.editor);
   const externalBusy = props.busy === true && !localBusy;
   const attachment: AttachmentInput = {
     props,
@@ -79,4 +76,14 @@ function mediaWritable(editor: DocumentMediaProps['editor']) {
   return editor.actions.some(
     (action) => action.operationId === 'documents.update' && action.state !== 'denied',
   );
+}
+
+function processingTarget(props: DocumentMediaProps) {
+  return {
+    collection: props.collection.key,
+    id: props.document?.id ?? '',
+    revision: props.document?.revision ?? 1,
+    locale: props.editor.locale,
+    editorSessionId: props.editorSessionId,
+  };
 }

@@ -42,6 +42,7 @@ interface ManagementListProps<Row> {
   rowKey: (row: Row) => string;
   page: number;
   pageSize: number;
+  pageSizeOptions?: readonly number[] | undefined;
   total: number;
   loading: boolean;
   error?: string | null | undefined;
@@ -53,6 +54,7 @@ interface ManagementListProps<Row> {
   onSortChange?: ((value: DataTableSort | null) => void) | undefined;
   onRetry?: (() => void) | undefined;
   filters?: ReactNode;
+  renderEmpty?: (fallback: ReactNode) => ReactNode;
 }
 
 export function ManagementList<Row>(props: ManagementListProps<Row>) {
@@ -86,7 +88,7 @@ export function ManagementList<Row>(props: ManagementListProps<Row>) {
           sort={props.sort ?? null}
           {...(props.onSortChange ? { onSortChange: props.onSortChange } : {})}
           loadingLabel={t.loading}
-          emptyLabel={t.empty}
+          emptyLabel={props.renderEmpty ? props.renderEmpty(t.empty) : t.empty}
           retryLabel={t.retry}
           {...(props.onRetry ? { onRetry: props.onRetry } : {})}
         />
@@ -96,7 +98,7 @@ export function ManagementList<Row>(props: ManagementListProps<Row>) {
   );
 }
 
-function ManagementSearch({
+export function ManagementSearch({
   value,
   onSearch,
 }: {
@@ -131,11 +133,21 @@ export function managementListState(
   };
 }
 
-function ManagementPagination<Row>({
+export function ManagementPagination({
   props,
   locale,
 }: {
-  props: ManagementListProps<Row>;
+  props: Pick<
+    ManagementListProps<never>,
+    | 'page'
+    | 'pageSize'
+    | 'pageSizeOptions'
+    | 'total'
+    | 'loading'
+    | 'error'
+    | 'onPageChange'
+    | 'onPageSizeChange'
+  > & { totalLabel?: ReactNode };
   locale: 'zh' | 'en';
 }) {
   const t = copy[locale];
@@ -153,14 +165,18 @@ function ManagementPagination<Row>({
         total={props.total}
         onPageChange={props.onPageChange}
         onPageSizeChange={({ pageSize }) => props.onPageSizeChange(pageSize)}
-        pageSizeOptions={[10, 20, 50, 100]}
+        pageSizeOptions={[
+          ...new Set([...(props.pageSizeOptions ?? [10, 20, 50, 100]), props.pageSize]),
+        ]}
         pageSizeLabel={t.pageSize}
         previousLabel={t.previous}
         nextLabel={t.next}
         pageLabel={
           locale === 'zh' ? `第 ${props.page} / ${pages} 页` : `Page ${props.page} of ${pages}`
         }
-        totalLabel={locale === 'zh' ? `共 ${props.total} 条` : `${props.total} records`}
+        totalLabel={
+          props.totalLabel ?? (locale === 'zh' ? `共 ${props.total} 条` : `${props.total} records`)
+        }
       />
     </ListFooter>
   ) : null;

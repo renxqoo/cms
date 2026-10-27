@@ -1,32 +1,15 @@
 import { assertRawQueryBudget } from './query-budget.ts';
 import { assertSelect } from '../fields/structure.ts';
 import { z } from 'zod';
+import { whereSchema } from './where-schema.ts';
+import { normalizedJoinQueries } from '../joins/input.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
-import type { CollectionDefinition, ContentLimits, Where, JsonValue } from '../definition.ts';
+import type { CollectionDefinition, ContentLimits, Where } from '../definition.ts';
 import type { QueryInput } from '../model.ts';
 
-const jsonSchema: z.ZodType<JsonValue> = z.lazy(() =>
-  z.union([
-    z.string(),
-    z.number().finite(),
-    z.boolean(),
-    z.null(),
-    z.array(jsonSchema),
-    z.record(z.string(), jsonSchema),
-  ]),
-);
-const whereSchema: z.ZodType<Where> = z.lazy(() =>
-  z.union([
-    z.strictObject({ and: z.array(whereSchema).min(1) }),
-    z.strictObject({ or: z.array(whereSchema).min(1) }),
-    z.strictObject({
-      field: z.string().min(1).max(512),
-      operator: z.enum(['eq', 'ne', 'in', 'notIn', 'exists', 'gt', 'gte', 'lt', 'lte', 'contains']),
-      value: jsonSchema,
-    }),
-  ]),
-);
 const querySchema = z.strictObject({
+  context: z.literal('admin').optional(),
+  joins: z.unknown().optional(),
   where: whereSchema.optional(),
   policy: whereSchema.optional(),
   q: z.string().max(512).optional(),
@@ -76,6 +59,7 @@ export function parseQuery(input: {
   validatePage({ page, pageSize, depth: query.depth ?? 0 }, input.limits);
   assertSelect(input.collection, query.select);
   const { where, policy } = query;
+  const joins = normalizedJoinQueries(input.collection, query.joins, input.limits);
 
   if (where) assertWhereBudget(where, input.limits);
   if (policy) assertWhereBudget(policy, input.limits);
@@ -87,11 +71,13 @@ export function parseQuery(input: {
     pageSize,
     ...(where ? { where } : {}),
     ...(policy ? { policy } : {}),
+    ...(joins === undefined ? {} : { joins }),
     ...optionalQuery(query),
   };
 }
 function optionalQuery(query: z.infer<typeof querySchema>) {
   return {
+    ...(query.context ? { context: query.context } : {}),
     ...(query.q === undefined ? {} : { q: query.q }),
     ...(query.sort ? { sort: query.sort } : {}),
     ...(query.select ? { select: query.select } : {}),

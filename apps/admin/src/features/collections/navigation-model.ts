@@ -4,7 +4,7 @@ import type { Collection } from '../../contracts/content';
 import { contentMessages } from './messages';
 import { collectionHref } from './query';
 
-type CollectionEntry = Pick<Collection, 'key' | 'label' | 'upload'>;
+type CollectionEntry = Pick<Collection, 'key' | 'label' | 'upload' | 'admin'>;
 
 export function collectionMenuEntry(groups: readonly ShellGroup[]) {
   return groups
@@ -19,24 +19,62 @@ export function collectionNavigation(input: {
 }) {
   const entry = collectionMenuEntry(input.groups);
   if (!entry) return input.groups;
-  const items = input.collections.map((collection) => ({
-    href: collectionHref(collection.key),
-    label: collection.label,
-    icon: collection.upload ? adminIcons.resources : adminIcons.collections,
-  }));
-  const replaced = new Set([entry.href, ...items.map((item) => item.href)]);
+  const sections = collectionSections(input.collections, entry);
+  const replaced = new Set([
+    entry.href,
+    ...input.collections.map((collection) => collectionHref(collection.key)),
+  ]);
   const result: ShellGroup[] = [];
   for (const group of input.groups) {
     if (group.items.includes(entry))
-      result.push({
-        id: 'collection-navigation',
-        label: entry.label,
-        items: items.length > 0 ? items : [{ ...entry, label: input.overviewLabel }],
-      });
+      result.push(
+        ...(sections.length > 0
+          ? sections
+          : [
+              {
+                id: 'collection-navigation',
+                label: entry.label,
+                items: [{ ...entry, label: input.overviewLabel }],
+              },
+            ]),
+      );
+
     const remaining = group.items.filter((item) => !replaced.has(item.href));
     if (remaining.length > 0) result.push({ ...group, items: remaining });
   }
   return result;
+}
+
+export function navigableCollection(collection: Pick<Collection, 'admin'>): boolean {
+  return collection.admin?.hidden !== true && collection.admin?.group !== false;
+}
+
+function collectionSections(
+  collections: readonly CollectionEntry[],
+  entry: NonNullable<ReturnType<typeof collectionMenuEntry>>,
+): ShellGroup[] {
+  const sections = new Map<string, ShellGroup>();
+  for (const collection of collections.filter(navigableCollection)) {
+    const label =
+      typeof collection.admin?.group === 'string' ? collection.admin.group : entry.label;
+    const id =
+      typeof collection.admin?.group === 'string'
+        ? `collection-navigation:${encodeURIComponent(label)}`
+        : 'collection-navigation';
+    const section = sections.get(id) ?? { id, label, items: [] };
+    sections.set(id, {
+      ...section,
+      items: [
+        ...section.items,
+        {
+          href: collectionHref(collection.key),
+          label: collection.label,
+          icon: collection.upload ? adminIcons.resources : adminIcons.collections,
+        },
+      ],
+    });
+  }
+  return [...sections.values()];
 }
 
 export function collectionBreadcrumbs(input: {

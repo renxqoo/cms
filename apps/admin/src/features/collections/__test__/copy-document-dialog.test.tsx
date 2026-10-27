@@ -64,10 +64,7 @@ function copyRequest(input: PageRequest): Promise<ApiResult<unknown>> {
 function props(overrides: Partial<Props> = {}): Props {
   return {
     snapshot: { collection, editor: descriptor(), document: record() },
-    services: {
-      collections: [],
-      searchReferences: () => Promise.resolve({ rows: [], total: 0, page: 1, pageSize: 20 }),
-    },
+    collections: [collection],
     busy: false,
     failure: null,
     onClose: vi.fn<() => void>(),

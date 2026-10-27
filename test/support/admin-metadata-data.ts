@@ -1,0 +1,52 @@
+import { collectionSchema } from '../../apps/admin/src/contracts/content.ts';
+import { documentSchema } from '../../apps/admin/src/contracts/documents.ts';
+export const metadataCollection = collectionSchema.parse({
+  key: 'articles',
+  label: '文章',
+  schemaVersion: 1,
+  mode: 'drafts',
+  history: true,
+  singleton: false,
+  orderable: false,
+  defaultLocale: 'en',
+  locales: ['en', 'zh'],
+  defaultSort: [{ field: 'title', order: 'asc' }],
+  dataSchema: {},
+  fields: [
+    {
+      id: 'title',
+      path: 'title',
+      type: 'text',
+      label: '标题',
+      required: true,
+      localized: true,
+      queryable: true,
+      sortable: true,
+    },
+  ],
+  behaviorHash: 'behavior',
+  mappingFingerprint: 'mapping',
+  upload: false,
+  drafts: { validate: true, autosave: { intervalMs: 10000 }, schedule: true },
+  capabilities: {
+    autosave: true,
+    publication: true,
+    schedules: true,
+    history: true,
+    trash: true,
+    purge: true,
+  },
+  admin: { description: '只使用当前用户有权读取的内容' },
+});
+export const metadataDocument = documentSchema.parse({
+  collection: 'articles',
+  id: '10000000-0000-4000-8000-000000000003',
+  revision: 1,
+  versionId: '10000000-0000-4000-8000-000000000004',
+  publishedVersionId: null,
+  trashedAt: null,
+  folderId: null,
+  createdAt: '2026-10-27T00:00:00.000Z',
+  updatedAt: '2026-10-27T00:00:00.000Z',
+  data: { title: '私有文章标题' },
+});

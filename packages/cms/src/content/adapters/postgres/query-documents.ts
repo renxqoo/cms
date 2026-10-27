@@ -7,7 +7,7 @@ import type { ContentLimits, Where } from '../../definition.ts';
 import type { ContentMapping, QueryInput, RevisionRow, StoredPage } from '../../model.ts';
 import type { QueryContext } from './query-context.ts';
 import { parameter, trustedContext } from './query-context.ts';
-import { compileOrder, compileSearch, compileWhere } from './compile-query.ts';
+import { compileOrder, compileSortValues, compileWhere } from './compile-query.ts';
 import {
   documentProjection,
   documentRow,
@@ -18,8 +18,14 @@ import type { RawDocumentRow } from './document-store.ts';
 import { loadValueRows, revisionRow, migrateData, dataSchemaSql } from './revision-data.ts';
 import { decodeFields } from './value-codec.ts';
 import { assertWhereBudget } from '../../queries/parse-query.ts';
+import { compileSearch } from './compile-search.ts';
+import { groupMembership } from './group-values.ts';
+import type { JsonValue } from '../../definition.ts';
 
 export interface QueryOptions {
+  valueReadableFields?: readonly string[];
+  grouping?: { field: string; value: JsonValue };
+  orderScope?: string;
   projection?: readonly string[];
   orderByPublished?: boolean;
   scan?: boolean;
@@ -58,13 +64,47 @@ export function contextFor(input: QueryOptions, budget = { nodes: 0 }): QueryCon
     indexAliases: new Map(),
     relationDepth: 0,
     budget,
+    ...(input.orderScope === undefined ? {} : { orderScope: input.orderScope }),
+    ...(input.grouping ? { grouping: input.grouping } : {}),
+    ...(input.valueReadableFields ? { valueReadableFields: input.valueReadableFields } : {}),
   };
 }
 export function matchingSql(
   context: QueryContext,
   where?: Where,
-  orderByPublished = false,
-): { sql: string; values: unknown[] } {
+  options: {
+    orderByPublished?: boolean;
+    sortProjection?: boolean;
+    rowNumber?: boolean;
+    sort?: false;
+    selectProjection?: (context: QueryContext) => string;
+  } = {},
+): { sql: string; values: unknown[]; sort: readonly ('asc' | 'desc')[] } {
+  const filters = matchingFilters(context, where);
+  const sorts =
+    options.sort === false || (options.orderByPublished && !options.sortProjection)
+      ? []
+      : compileSortValues(context);
+  const order = options.orderByPublished
+    ? 'r.created_at DESC,d.id ASC'
+    : compileOrder(context, sorts);
+  const extra = options.sortProjection
+    ? sorts.map(({ expression }, index) => `,${expression} AS "sort_${index}"`).join('')
+    : '';
+  const ordinal =
+    options.rowNumber === false ? '' : `,row_number() OVER(ORDER BY ${order}) AS ordinal`;
+  const pointer = revisionPointer(context);
+  const projection =
+    options.selectProjection?.(context) ??
+    `${documentProjection},r.id AS "versionId",r.revision AS "versionNumber",r.schema_version AS "schemaVersion",${dataSchemaSql('r', context.collection.definition.schemaVersion)} AS "dataSchemaVersion",r.kind,r.actor_id AS "actorId",r.created_at AS "versionCreatedAt"`;
+  const from = `FROM content_documents d JOIN content_revisions r ON r.id=${pointer} ${[...context.joins.values()].join(' ')} WHERE ${filters.join(' AND ')}`;
+  return {
+    sql: `SELECT ${projection}${ordinal}${extra} ${from}`,
+    values: context.values,
+    sort: sorts.map((value) => value.order),
+  };
+}
+function matchingFilters(context: QueryContext, where?: Where): string[] {
   const filters = [
     `d.collection_id=${parameter(context, context.collection.definition.id)}`,
     context.query.trashed ? 'd.trashed_at IS NOT NULL' : 'd.trashed_at IS NULL',
@@ -79,14 +119,28 @@ export function matchingSql(
     assertWhereBudget(context.query.where, context.limits);
     filters.push(compileWhere(context.query.where, context));
   }
-  for (const policy of [context.query.policy, where])
-    if (policy) {
-      assertWhereBudget(policy, context.limits);
-      filters.push(compileWhere(policy, trustedContext(context)));
-    }
+  if (context.query.policy) filters.push(trustedFilter(context, context.query.policy, false));
+  if (where) filters.push(trustedFilter(context, where, true));
+  if (context.grouping) filters.push(groupMembership(context, context.grouping));
   const search = compileSearch(context);
   if (search) filters.push(search);
-  const order = orderByPublished ? 'r.created_at DESC,d.id ASC' : compileOrder(context);
+  return filters;
+}
+function trustedFilter(context: QueryContext, where: Where, order: boolean): string {
+  assertWhereBudget(where, context.limits);
+  const trusted = trustedContext(context);
+  const sql = compileWhere(where, trusted);
+  if (order && trusted.nearOrder && queryableNear(context, where))
+    context.nearOrder = trusted.nearOrder;
+  return sql;
+}
+
+function queryableNear(context: QueryContext, where: Where): boolean {
+  if ('and' in where) return where.and.every((child) => queryableNear(context, child));
+  if ('or' in where) return where.or.every((child) => queryableNear(context, child));
+  return where.operator !== 'near' || context.queryableFields.includes(where.field);
+}
+function revisionPointer(context: QueryContext): string {
   const pointer =
     context.query.mode === 'published'
       ? publicationExpression(
@@ -97,18 +151,14 @@ export function matchingSql(
           ),
         )
       : 'd.current_version_id';
-  const from = `FROM content_documents d JOIN content_revisions r ON r.id=${pointer} ${[...context.joins.values()].join(' ')} WHERE ${filters.join(' AND ')}`;
-  return {
-    sql: `SELECT ${documentProjection},r.id AS "versionId",r.revision AS "versionNumber",r.schema_version AS "schemaVersion",${dataSchemaSql('r', context.collection.definition.schemaVersion)} AS "dataSchemaVersion",r.kind,r.actor_id AS "actorId",r.created_at AS "versionCreatedAt",row_number() OVER(ORDER BY ${order}) AS ordinal ${from}`,
-    values: context.values,
-  };
+  return pointer;
 }
 export function querySql(
   context: QueryContext,
   where: Where | undefined,
   options: { orderByPublished?: boolean; scan?: boolean } = {},
 ): { sql: string; values: unknown[] } {
-  const matches = matchingSql(context, where, options.orderByPublished);
+  const matches = matchingSql(context, where, options);
   const limit = parameter(context, context.query.pageSize);
   if (options.scan)
     return { sql: `${matches.sql} ORDER BY d.id ASC LIMIT ${limit}`, values: context.values };

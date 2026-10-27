@@ -25,3 +25,17 @@ it('finishes cleanup when an interrupted startup has not allocated every resourc
   await cleanupAll([() => null, () => closed.push('database')]);
   expect(closed).toEqual(['database']);
 });
+
+it('does not overlap database cleanup transactions that share PostgreSQL lock memory', async () => {
+  let active = 0;
+  let peak = 0;
+  async function close() {
+    active += 1;
+    peak = Math.max(peak, active);
+    await Promise.resolve();
+    active -= 1;
+  }
+  await cleanupAll([close, close]);
+  expect(peak).toBe(1);
+  expect(active).toBe(0);
+});

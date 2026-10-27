@@ -27,6 +27,7 @@ export async function pruneDocumentVersions(
   state: RetentionState,
   input: { runtime: ContentRuntime; documentId: string },
 ): Promise<number> {
+  if (state.collection.history && state.collection.history.maxVersions === 0) return 0;
   const protectedIds = await protectedVersions(state, input);
   if (!protectedIds) return 0;
   const now = await state.tx.query<{ now: Date }>('SELECT clock_timestamp() AS now');

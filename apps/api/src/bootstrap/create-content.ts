@@ -3,6 +3,7 @@ import {
   contentMappingFingerprint,
   contentBehaviorHash,
 } from '@new-cms/database/schema/generated/content';
+import type { AuthorReader } from '@new-cms/cms/access';
 import type { AccessAuthorization } from '@new-cms/cms/access';
 import type { AccessActorAuthorization } from '@new-cms/cms/access/composition';
 import {
@@ -45,6 +46,7 @@ interface ContentServiceInput {
   policy: CmsPolicy;
   authorize: AccessAuthorization;
   authorizeActor: AccessActorAuthorization;
+  resolveAuthor?: AuthorReader | undefined;
   storage: StorageConfig;
   clientOrigin: string;
   configuration: ReturnType<typeof contentConfiguration>;
@@ -83,6 +85,7 @@ export function createContentServices(input: ContentServiceInput) {
     uploadPolicy: contentUploadPolicy(imageLimits),
     authorize: input.authorize,
     authorizeActor: input.authorizeActor,
+    resolveAuthor: input.resolveAuthor,
     assets: assets.participants,
     uploadApi: assets.api,
     readAssetJob: assets.api.readJob,

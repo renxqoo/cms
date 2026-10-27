@@ -1,3 +1,4 @@
+import { assertDocumentOperation } from '../lifecycle/operation-controls.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import {
   authorizeStateOperation,
@@ -15,6 +16,7 @@ import type { EditorInput } from './input.ts';
 
 export interface EditorContext {
   state: ContentState;
+  registry: ContentRuntime['registry'];
   reader: ContentState;
   selected: ContentState;
   document: DocumentRow | null;
@@ -45,7 +47,7 @@ export async function operationState(
   if (!actor) fail('unauthenticated');
   const { predicate: _old, ...base } = state;
   const next = { ...base, actor, operationId: input.operationId, mode: input.mode };
-  const predicate = collectionPredicate(next);
+  const predicate = await collectionPredicate(next);
   return { ...next, ...(predicate ? { predicate } : {}) };
 }
 
@@ -139,6 +141,7 @@ export async function editorContext(
   input: { runtime: ContentRuntime; values: EditorInput },
 ): Promise<EditorContext> {
   const { runtime, values } = input;
+  assertDocumentOperation(state.collection, intentOperations[values.intent]);
   const query = readQuery(state, input);
   const selected = await operationState(state, {
     runtime,
@@ -148,6 +151,7 @@ export async function editorContext(
   if (values.intent === 'autosave' && state.collection.mode !== 'drafts') fail('invalid_input');
   const context: EditorContext = {
     state,
+    registry: runtime.registry,
     selected,
     reader: { ...selected, operationId: 'documents.get' },
     document: null,
@@ -181,7 +185,7 @@ async function requireCopyPrerequisites(
   const { predicate: _old, fallbackOverride: _fallback, ...reader } = context.reader;
   for (const locale of context.state.collection.locales.supported) {
     const localized = { ...reader, locale, mode: 'editing' as const };
-    const predicate = collectionPredicate(localized);
+    const predicate = await collectionPredicate(localized);
     await requireEditorDocument(
       { ...localized, ...(predicate ? { predicate } : {}) },
       {
@@ -197,6 +201,8 @@ function requiredOperations(
   context: EditorContext,
   operation: EditorAction['operationId'],
 ): string[] {
+  if (operation === 'documents.renameFile')
+    return ['documents.get', 'documents.update', 'assets.download'];
   if (operation !== 'versions.restore') return [];
   return context.state.collection.mode === 'direct'
     ? ['versions.get', 'documents.update']
@@ -259,6 +265,7 @@ export async function requireActionPrerequisites(
     operationId: EditorAction['operationId'];
   },
 ): Promise<void> {
+  assertDocumentOperation(context.state.collection, input.operationId);
   let required = context.requirements.get(input.operationId);
   if (!required) {
     required = checkActionPrerequisites(context, input);

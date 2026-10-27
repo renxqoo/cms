@@ -13,6 +13,9 @@ export { compileContent } from './adapters/postgres/compile-schema.ts';
 export { generateTypes } from './collections/generate-types.ts';
 export { generateDataSchemas, generateCollectionSchema } from './fields/data-schema.ts';
 export type * from './definition.ts';
+export type * from './collections/admin-types.ts';
+export type * from './joins/definition.ts';
+export type * from './queries/preset-access-contracts.ts';
 export type * from './model.ts';
 export function generateArtifacts(registry: ContentRegistry) {
   const mapping = compileContent(registry);

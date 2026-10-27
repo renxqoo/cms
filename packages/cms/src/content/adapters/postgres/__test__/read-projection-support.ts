@@ -123,6 +123,7 @@ export function saveProjection(kit: ProjectionFixture, data: DocumentData) {
       kind: 'save',
     });
     await kit.store.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'articles',
       id,
       expectedRevision: 0,

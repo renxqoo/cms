@@ -19,12 +19,14 @@ import { assetMessages } from './asset-messages';
 import { assetUiPolicy } from './policy';
 
 interface UploadQueueProps {
+  locale?: string | undefined;
   consumedMessage?: string;
   onProcessed?: (session: UploadSession, signal: AbortSignal) => Promise<ApiResult<unknown>>;
   collection: string;
   limits: NonNullable<CollectionEditor['upload']>;
   purpose: 'create' | 'replace';
   documentId?: string;
+  editorSessionId?: string;
   revision?: number;
   initialUploadId?: string;
   disabled?: boolean;
@@ -47,6 +49,8 @@ export function UploadQueue(props: UploadQueueProps) {
     createUploadController({
       collection: props.collection,
       purpose: props.purpose,
+      ...(props.locale ? { locale: props.locale } : {}),
+      ...(props.editorSessionId ? { editorSessionId: props.editorSessionId } : {}),
       ...(props.documentId ? { documentId: props.documentId } : {}),
       ...(props.revision ? { revision: props.revision } : {}),
       onResult: reportResult,
@@ -225,7 +229,7 @@ function useRestoreUpload(
 ) {
   const { can, reportResult, phase } = useAccessControl();
   const scope = { scopeKind: 'collection' as const, collectionKey: props.collection };
-  const { initialUploadId, collection, purpose, documentId, revision } = props;
+  const { initialUploadId, collection, purpose, documentId, revision, locale } = props;
   const canRestore = can('assets.readUpload', scope);
   useEffect(() => {
     if (!initialUploadId || !canRestore || phase !== 'ready') return () => {};
@@ -240,6 +244,7 @@ function useRestoreUpload(
         if (
           result.ok &&
           result.data.purpose === purpose &&
+          (locale === undefined || result.data.locale === locale) &&
           (purpose !== 'replace' ||
             (result.data.documentId === documentId && result.data.revision === revision))
         )
@@ -251,6 +256,7 @@ function useRestoreUpload(
     return () => abort.abort();
   }, [
     initialUploadId,
+    locale,
     collection,
     purpose,
     documentId,

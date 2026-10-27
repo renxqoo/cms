@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { FieldLabel } from './configured-field';
 import type { KeyboardEvent } from 'react';
 import { Collapsible } from '@new-cms/ui/layout';
 import { Button } from '@new-cms/ui/actions';
@@ -16,16 +17,32 @@ export function ContainerField({
   const [open, setOpen] = useState(true);
   const children = renderChildren(node.children ?? [], location, readOnly);
   if (node.type === 'row')
-    return <div className="grid min-w-0 gap-4 md:grid-cols-2">{children}</div>;
+    return (
+      <div className="min-w-0 space-y-4">
+        {node.components?.Label ? (
+          <p className="text-sm font-medium">
+            <FieldLabel node={node} location={location} readOnly={readOnly} />
+          </p>
+        ) : null}
+        {children}
+      </div>
+    );
   if (node.type === 'collapsible')
     return (
-      <Collapsible title={node.label} open={open} onOpenChange={setOpen} keepMounted>
+      <Collapsible
+        title={<FieldLabel node={node} location={location} readOnly={readOnly} />}
+        open={open}
+        onOpenChange={setOpen}
+        keepMounted
+      >
         {children}
       </Collapsible>
     );
   return (
     <fieldset className="min-w-0 space-y-4 rounded-xl border border-border/60 p-4">
-      <legend className="px-1 text-sm font-medium">{node.label}</legend>
+      <legend className="px-1 text-sm font-medium">
+        <FieldLabel node={node} location={location} readOnly={readOnly} />
+      </legend>
       {children}
     </fieldset>
   );
@@ -64,6 +81,11 @@ export function TabsField({
   }
   return (
     <section className="min-w-0 space-y-4" aria-label={node.label}>
+      {node.components?.Label ? (
+        <h3 className="text-sm font-medium">
+          <FieldLabel node={node} location={location} readOnly={readOnly} />
+        </h3>
+      ) : null}
       <div
         role="tablist"
         aria-label={node.label}

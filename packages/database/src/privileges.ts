@@ -48,9 +48,16 @@ const runtimeTables = [
   'cms_migrations',
 ];
 const contentTables: Readonly<Record<string, readonly RuntimeTablePrivilege[]>> = {
+  content_order_control: ['SELECT', 'INSERT', 'UPDATE'],
+  content_document_order: ['SELECT', 'INSERT', 'UPDATE'],
   content_folders: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+  content_hierarchy_validation: ['SELECT', 'INSERT', 'UPDATE'],
   content_documents: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
   content_publications: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+  content_publication_references: ['SELECT', 'INSERT', 'DELETE'],
+  content_query_presets: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
+  content_query_preset_references: ['SELECT', 'INSERT', 'DELETE'],
+  content_document_leases: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
   content_preview_grants: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
   content_revisions: ['SELECT', 'INSERT', 'DELETE'],
   content_references: ['SELECT', 'INSERT', 'DELETE'],
@@ -240,6 +247,43 @@ async function assertPrivileges(
   await assertSchema(tx, context);
   await assertTables(tx, context, tables);
   await assertAuditGuard(tx, context);
+  await assertOrderGuard(tx, context);
+  await assertGeodesicFunction(tx, context);
+}
+
+async function assertOrderGuard(tx: SqlExecutor, context: RoleContext): Promise<void> {
+  const result = await tx.query<{ safe: boolean }>(
+    `SELECT (SELECT count(*)=2 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+      JOIN pg_proc p ON p.oid=t.tgfoid JOIN pg_namespace f ON f.oid=p.pronamespace
+      WHERE n.nspname=$1 AND ((c.relname='content_documents' AND t.tgname='content_documents_track_order' AND t.tgtype=13)
+        OR (c.relname='content_schema_control' AND t.tgname='content_schema_track_order' AND t.tgtype=5))
+        AND NOT t.tgisinternal AND t.tgenabled IN ('O','A') AND t.tgqual IS NULL AND t.tgnargs=0
+        AND f.nspname=$1 AND p.proname='cms_track_document_order' AND p.pronargs=0 AND p.prorettype='trigger'::regtype
+        AND NOT p.prosecdef AND NOT EXISTS(SELECT 1 FROM aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a WHERE a.grantee=0 AND a.privilege_type='EXECUTE'))
+      AND EXISTS(SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+        JOIN pg_proc p ON p.oid=t.tgfoid JOIN pg_namespace f ON f.oid=p.pronamespace
+        WHERE n.nspname=$1 AND c.relname='content_document_order' AND t.tgname='content_document_order_identity_guard' AND t.tgtype=19
+          AND NOT t.tgisinternal AND t.tgenabled IN('O','A') AND t.tgqual IS NULL AND t.tgnargs=0
+          AND f.nspname=$1 AND p.proname='cms_guard_document_order_identity' AND p.pronargs=0 AND p.prorettype='trigger'::regtype AND NOT p.prosecdef
+          AND NOT EXISTS(SELECT 1 FROM aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a WHERE a.grantee=0 AND a.privilege_type='EXECUTE')) AS safe`,
+    [context.schema],
+  );
+  if (result.rows[0]?.safe !== true)
+    throw new Error('Document order tracking is unavailable or unsafe');
+}
+
+async function assertGeodesicFunction(tx: SqlExecutor, context: RoleContext): Promise<void> {
+  const result = await tx.query<{ valid: boolean }>(
+    `SELECT p.provolatile='i' AND p.proparallel='s' AND p.proisstrict AND NOT p.prosecdef AND p.prorettype=701
+      AND has_function_privilege($1,p.oid,'EXECUTE')
+      AND NOT has_function_privilege($1,p.oid,'EXECUTE WITH GRANT OPTION')
+      AND NOT EXISTS(SELECT 1 FROM aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a WHERE a.grantee=0 AND a.privilege_type='EXECUTE') AS valid
+     FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname=$2
+      AND p.proname='cms_wgs84_distance' AND p.proargtypes='701 701 701 701'::oidvector`,
+    [context.roleName, context.schema],
+  );
+  if (result.rows.length !== 1 || result.rows[0]?.valid !== true)
+    throw new Error('WGS84 runtime function is unavailable or unsafe');
 }
 
 export async function assertRuntimePrivileges(
@@ -283,6 +327,12 @@ export async function grantRuntimePrivileges(
         `GRANT ${privileges.join(',')} ON TABLE ${schema}.${identifier(table)} TO ${role}`,
       );
     }
+    await tx.query(
+      `REVOKE ALL ON FUNCTION ${schema}.cms_wgs84_distance(double precision,double precision,double precision,double precision) FROM ${role}`,
+    );
+    await tx.query(
+      `GRANT EXECUTE ON FUNCTION ${schema}.cms_wgs84_distance(double precision,double precision,double precision,double precision) TO ${role}`,
+    );
     await assertPrivileges(tx, context, tables);
   });
 }

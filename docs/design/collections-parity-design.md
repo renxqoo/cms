@@ -1,6 +1,6 @@
 # Collections 产品能力对齐
 
-状态：实施中，2026-10-26。用户授权对齐本地 Payload `aebbf75b93e218be4b53a3c7922e0bc82924830b` 的 Collections 产品能力；保留 Hono、PostgreSQL、独立 identity/access 和现有前端技术栈。GraphQL、多数据库及集合充当认证主体不在本次范围。参考行为，不复制源码。
+本轮交付范围，2026-10-27。用户授权对齐本地 Payload `aebbf75b93e218be4b53a3c7922e0bc82924830b` 的 Collections 产品能力；保留 Hono、PostgreSQL、独立 identity/access 和现有前端技术栈。GraphQL、多数据库及集合充当认证主体不在本次范围。参考行为，不复制源码。自定义预设权限参数按全局对象保存，不接受 localized 字段；参数的多语言保存按本次用户要求留待后续，本轮先交付已完成的实现。
 
 ## 交付范围与所有权
 
@@ -11,9 +11,16 @@
 | 协作与预览 | 可续期、释放、到期及授权接管的文档锁；可信预览 URL 与实时草稿消息、设备尺寸和资源清理 | content/editor、admin/features/collections |
 | 发布 | 按语言独立发布及撤回、定时发布和撤回；唯一性、关系查询、版本裁剪和固定媒体与各语言发布修订一致 | content/documents、versions、jobs |
 | 排序与层级 | 文档自定义排序、树及标签、稳定父子关系、路径与循环约束；可访问的后台操作 | content、admin/features/collections |
+| 字段与候选校验 | 原生 slug、日期时区、多值、全部语言读取，选择项、块与关系候选过滤；独立只读验证及逐字段错误 | content/fields、editor、documents、admin/features/fields |
+| 编辑与资源流程 | 草稿验证、自动保存和排程开关、版本保留、作者、批量权限、复制语言、内联关系编辑、文件命名及可选文件创建 | content、assets、admin |
+| 关联与列表呈现 | 多态 Join 分页、过滤、数量与独立顺序，列表分组、细粒度预设共享及本地化元数据 | content/queries、documents、admin/features/collections |
 | 配置与扩展 | 条件字段、虚拟字段、后台标题与列配置、自定义组件和完整生命周期；扩展不能绕过授权、验证、预算或审计 | content/collections、fields、editor、admin |
 
 公共导出、HTTP/DTO、持久化、部署配置、后台任务、前端入口和测试均受影响。新增能力通过现有业务装配、操作目录、严格输入和 OpenAPI/BFF 接入，不引入第二套内容引擎。现有首页视觉不变。
+
+空集合 schema 自动激活仅由应用生成流程显式选择；通用生成 API 保持准备、回填、激活的明确步骤，不提前改变既有 writer 的可写版本。
+反向关联的分页、固定与请求筛选、多个目标统一排序及独立顺序流遵循 [Collections 反向关联](collections-join-parity.md)；读返回、类型、JSON Schema、HTTP 和后台使用同一分页契约。
+原生 slug、日期时区、全语言读取、独立验证和复用编辑器的关联操作遵循 [原生字段与候选验证](collections-native-fields.md)。
 
 ## 发布与迁移协议
 
@@ -28,3 +35,7 @@
 ## 核销规则
 
 各项实际实现及验证分别记录在专项文档。仅通过单测或仅存在配置项不构成能力完成。每个操作验证公开接口、权限即时变更、异常、并发、取消及恢复；新界面验证桌面、窄屏、键盘及焦点。最终统一执行 lint、typecheck、build、test，报告真实用例与 coverage；未核销项目不声明完成。
+
+服务器测试文件顺序执行，文件内部的并发事务回归保持不变。完整应用迁移和最小权限 GRANT 涉及大量物理表，跨文件并发会耗尽本地 PostgreSQL 共享锁内存；隔离装置的 DDL 和清理仍通过跨进程协调释放。浏览器验证使用独立 `.next-e2e-suite` 目录，可观看的隔离装置使用 `.next-e2e`，日常应用构建使用 `.next`，各自的产物和开发锁互不覆盖。演示进程固定 API 9091、Admin 9092，自动旅程使用独立随机端口及临时数据库。
+
+分组查询及列表视图契约见 [分组与查询视图](collections-query-views.md)。

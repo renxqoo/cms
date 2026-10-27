@@ -4,12 +4,19 @@ import type { SqlExecutor } from '@new-cms/database/client';
 import type {
   CollectionDefinition,
   ContentLimits,
+  JsonValue,
   DocumentData,
   ReferenceValue,
   Where,
   SortField,
 } from '../../definition.ts';
-import type { DocumentRow, QueryInput, RevisionRow, StoredPage } from '../../model.ts';
+import type {
+  DocumentRow,
+  QueryInput,
+  RevisionRow,
+  StoredPage,
+  StoredJoinPage,
+} from '../../model.ts';
 
 export interface StoreCollection {
   collection: string;
@@ -44,6 +51,7 @@ export interface ReadRevisionInput extends StoreCollection {
   fallback?: readonly string[];
 }
 export interface UpdatePointersInput extends StoreDocument {
+  actorId: string;
   expectedRevision: number;
   revision: number;
   currentVersionId: string;
@@ -67,6 +75,7 @@ export interface InboundReference {
   fieldId: string;
   onDelete: ReferenceValue['onDelete'];
   active: boolean;
+  sourceView: 'current' | 'published' | 'history';
 }
 export interface CollectionsQueryInput {
   collections: readonly Omit<
@@ -77,7 +86,37 @@ export interface CollectionsQueryInput {
   pageSize: number;
   sort: readonly SortField[];
 }
+export interface JoinedQueryInput extends Omit<CollectionsQueryInput, 'collections'> {
+  groups: readonly {
+    key: string;
+    page?: number;
+    pageSize?: number;
+    collections: CollectionsQueryInput['collections'];
+    copies?: number;
+  }[];
+  count: boolean;
+  maxRows?: number;
+}
 export interface ContentStore {
+  queryDistinct(
+    tx: SqlExecutor,
+    input: Omit<
+      Parameters<ContentStore['queryDocuments']>[1],
+      'projection' | 'scan' | 'orderByPublished' | 'grouping'
+    > & { field: string; order: 'asc' | 'desc' },
+  ): Promise<{ rows: JsonValue[]; total: number; page: number; pageSize: number }>;
+  conflictingUniqueFields(
+    tx: SqlExecutor,
+    input: {
+      collection: string;
+      id?: string;
+      dataByLocale: Readonly<Record<string, DocumentData>>;
+    },
+  ): Promise<{ fields: string[]; locale: string | null }[]>;
+  queryJoinedDocuments(
+    tx: SqlExecutor,
+    input: JoinedQueryInput & { limits: ContentLimits },
+  ): Promise<ReadonlyMap<string, StoredJoinPage>>;
   readDocument(tx: SqlExecutor, input: ReadDocumentInput): Promise<DocumentRow>;
   lockDocuments(tx: SqlExecutor, input: { ids: readonly string[] }): Promise<void>;
   insertDocument(tx: SqlExecutor, input: InsertDocumentInput): Promise<void>;
@@ -95,6 +134,9 @@ export interface ContentStore {
   queryDocuments(
     tx: SqlExecutor,
     input: {
+      grouping?: { field: string; value: JsonValue };
+      valueReadableFields?: readonly string[];
+      orderScope?: string;
       projection?: readonly string[];
       orderByPublished?: boolean;
       scan?: boolean;
@@ -125,8 +167,13 @@ export interface ContentStore {
       limit: number;
     },
   ): Promise<RevisionRow[]>;
-  syncActiveUnique(tx: SqlExecutor, input: StoreDocument): Promise<void>;
+  syncActiveProjections(tx: SqlExecutor, input: StoreDocument): Promise<void>;
   inboundReferences(tx: SqlExecutor, input: InboundInput): Promise<InboundReference[]>;
+  hasPresetReferences(tx: SqlExecutor, id: string): Promise<boolean>;
+  writePresetReferences(
+    tx: SqlExecutor,
+    input: { id: string; references: readonly ReferenceValue[] },
+  ): Promise<void>;
   writeReferences(
     tx: SqlExecutor,
     input: {

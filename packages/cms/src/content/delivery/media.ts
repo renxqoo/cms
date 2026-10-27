@@ -103,29 +103,27 @@ function privateReader(runtime: ContentRuntime, options: ContentDeliveryOptions)
     if (!parsed.success) fail('invalid_input');
     const { assets } = runtime;
     if (!assets) fail('not_found');
-    return runtime.database.readOnlyTransaction(
-      async (executor) => {
-        const tx = budgetedExecutor(executor, options.policy.maxSqlQueries);
-        const grant = await readPreviewGrant(tx, options, { grant: parsed.data.grant });
-        const row = await assertPreviewIssuer(runtime, tx, grant);
-        const source = await assets.describeBinding(tx, parsed.data);
-        if (
-          source.collectionKey !== 'models' ||
-          source.documentId !== grant.document_id ||
-          source.revisionId !== grant.revision_id ||
-          !(await matches(runtime, tx, { source, row, locale: grant.locale }))
-        )
-          fail('not_found');
-        return assets.openBinding(tx, {
-          bindingId: parsed.data.bindingId,
-          ...(signal ? { signal } : {}),
-        });
-      },
-      AbortSignal.any([
-        AbortSignal.timeout(options.policy.readTimeoutMs),
-        ...(signal ? [signal] : []),
-      ]),
-    );
+    const deadline = AbortSignal.any([
+      AbortSignal.timeout(options.policy.readTimeoutMs),
+      ...(signal ? [signal] : []),
+    ]);
+    return runtime.database.readOnlyTransaction(async (executor) => {
+      const tx = budgetedExecutor(executor, options.policy.maxSqlQueries);
+      const grant = await readPreviewGrant(tx, options, { grant: parsed.data.grant });
+      const row = await assertPreviewIssuer(runtime, tx, { grant, signal: deadline });
+      const source = await assets.describeBinding(tx, parsed.data);
+      if (
+        source.collectionKey !== 'models' ||
+        source.documentId !== grant.document_id ||
+        source.revisionId !== grant.revision_id ||
+        !(await matches(runtime, tx, { source, row, locale: grant.locale }))
+      )
+        fail('not_found');
+      return assets.openBinding(tx, {
+        bindingId: parsed.data.bindingId,
+        ...(signal ? { signal } : {}),
+      });
+    }, deadline);
   };
 }
 export function createPublicMediaApi(runtime: ContentRuntime, options: ContentDeliveryOptions) {

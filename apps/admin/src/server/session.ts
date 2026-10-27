@@ -35,7 +35,9 @@ export function sessionCookie(config: AdminConfig, token?: string, expiresAt?: s
   return `${config.cookieName}=${token ?? ''}; Path=/; HttpOnly; SameSite=Lax; Expires=${expiry}${token ? '' : '; Max-Age=0'}${config.secureCookie ? '; Secure' : ''}`;
 }
 
-export const getCurrentSession = cache(async function getCurrentSession(): Promise<ApiResult<Me>> {
+export const getCurrentSession = cache(async function getCurrentSession(
+  signal?: AbortSignal,
+): Promise<ApiResult<Me>> {
   let config: AdminConfig;
   try {
     config = loadAdminConfig();
@@ -50,5 +52,10 @@ export const getCurrentSession = cache(async function getCurrentSession(): Promi
       ? sessionToken(`${config.cookieName}=${values[0]?.value ?? ''}`, config)
       : undefined;
   if (!token) return failure('unauthenticated', 401);
-  return requestBackend({ operation: 'access.me', response: meSchema, token });
+  return requestBackend({
+    operation: 'access.me',
+    response: meSchema,
+    token,
+    ...(signal ? { signal } : {}),
+  });
 });

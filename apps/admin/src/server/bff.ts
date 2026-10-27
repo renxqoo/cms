@@ -1,7 +1,7 @@
 import 'server-only';
 import { meSchema } from '../contracts/auth';
 import { acceptsIdempotencyKey, matchOperation } from '../contracts/operations';
-import type { OperationDefinition } from '../contracts/operations';
+import type { OperationDefinition } from '../contracts/operation-definition';
 import { errorSchema } from '../api/result';
 import { loadAdminConfig } from './config';
 import type { AdminConfig } from './config';
@@ -80,6 +80,14 @@ async function forwardRequest(request: Request, context: RequestContext): Promis
   const { operation, config, url } = context;
   checkQuery(url, operation);
   const key = idempotency(request, operation);
+  const editorSessionId = request.headers.get('x-cms-editor-session');
+  if (
+    editorSessionId !== null &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      editorSessionId,
+    )
+  )
+    throw new TransportError('invalid_input', 400);
   const token =
     operation.access === 'protected'
       ? sessionToken(request.headers.get('cookie'), config)
@@ -102,6 +110,7 @@ async function forwardRequest(request: Request, context: RequestContext): Promis
       token,
       body,
       idempotencyKey: key,
+      editorSessionId: editorSessionId ?? undefined,
       method: request.method,
       lifetime,
     });

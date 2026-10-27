@@ -74,6 +74,10 @@ it.each([
     'packages/cms/src/content/jobs/run.ts',
     'import { jobs } from "@new-cms/database/schema/content-work";',
   ],
+  [
+    'packages/cms/src/content/collaboration/leases.ts',
+    'import { leases } from "@new-cms/database/schema/content-admin";',
+  ],
   ['apps/api/src/http/roles.ts', 'import { CmsError } from "@new-cms/cms/platform/contracts";'],
   [
     'apps/api/src/bootstrap/runtime.ts',

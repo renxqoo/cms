@@ -24,9 +24,9 @@ function validate(data: unknown, mode: 'draft' | 'publish' = 'publish') {
     applyDefaults: true,
   });
 }
-it('validates every scalar, compound and display field without changing caller data', () => {
+it('validates every scalar, compound and display field without changing caller data', async () => {
   const data = articleData();
-  expect(validate(data)).toEqual(data);
+  expect(await validate(data)).toEqual(data);
   expect(data['sections']).toEqual([
     {
       id: '10000000-0000-4000-8000-000000000001',
@@ -34,9 +34,9 @@ it('validates every scalar, compound and display field without changing caller d
       items: [{ id: '10000000-0000-4000-8000-000000000002', label: 'Nested' }],
     },
   ]);
-  expect(validate({ title: 'Title' })).toEqual({ title: 'Title', enabled: false });
-  expect(validate({}, 'draft')).toEqual({ enabled: false });
-  expect(() => validate({})).toThrowError('invalid input');
+  expect(await validate({ title: 'Title' })).toEqual({ title: 'Title', enabled: false });
+  expect(await validate({}, 'draft')).toEqual({ enabled: false });
+  await expect(validate({})).rejects.toThrowError('invalid input');
 });
 it.each<[string, JsonValue]>([
   ['score', -1],
@@ -55,19 +55,21 @@ it.each<[string, JsonValue]>([
   ['extra', { constructor: 'bad' }],
   ['sections', [{ id: randomUUID(), bad: true }]],
   ['layout', [{ blockType: 'unknown' }]],
-])('rejects invalid %s values', (field, value) => {
-  expect(() => validate(articleData({ [field]: value }))).toThrowError('invalid input');
+])('rejects invalid %s values', async (field, value) => {
+  await expect(validate(articleData({ [field]: value }))).rejects.toThrowError('invalid input');
 });
-it('rejects unknown fields and structural identity collisions while preserving zero/false/null', () => {
-  expect(() => validate(articleData({ unknown: true }))).toThrowError('invalid input');
+it('rejects unknown fields and structural identity collisions while preserving zero/false/null', async () => {
+  await expect(validate(articleData({ unknown: true }))).rejects.toThrowError('invalid input');
   const item = { id: randomUUID(), heading: 'One' };
-  expect(() => validate(articleData({ sections: [item, item] }))).toThrowError('invalid input');
-  expect(validate(articleData({ score: 0, enabled: false, seo: null }))).toMatchObject({
+  await expect(validate(articleData({ sections: [item, item] }))).rejects.toThrowError(
+    'invalid input',
+  );
+  expect(await validate(articleData({ score: 0, enabled: false, seo: null }))).toMatchObject({
     score: 0,
     enabled: false,
     seo: null,
   });
-  const result = validate(articleData({ sections: [{ heading: 'Generated' }] }));
+  const result = await validate(articleData({ sections: [{ heading: 'Generated' }] }));
   const { sections } = result;
   if (!Array.isArray(sections)) throw new Error('Expected sections');
   const [section] = sections;
@@ -80,25 +82,25 @@ it.each([
   '//evil.test',
   '\\evil.test',
   'https:\n//evil.test',
-])('rejects unsafe rich text link %s', (url) => {
-  expect(() =>
+])('rejects unsafe rich text link %s', async (url) => {
+  await expect(
     validate(
       articleData({ body: { version: 1, children: [{ type: 'link', url, children: [] }] } }),
     ),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
 });
-it('rejects unknown rich text nodes, versions and over-budget nested content', () => {
-  expect(() => validate(articleData({ body: { version: 2, children: [] } }))).toThrowError(
+it('rejects unknown rich text nodes, versions and over-budget nested content', async () => {
+  await expect(validate(articleData({ body: { version: 2, children: [] } }))).rejects.toThrowError(
     'invalid input',
   );
-  expect(() =>
+  await expect(
     validate(articleData({ body: { version: 1, children: [{ type: 'html', text: '<script>' }] } })),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
   const collection = createRegistry({
     collections: contentDefinitions(),
     limits: contentLimits(),
   }).get('articles');
-  expect(() =>
+  await expect(
     validateData({
       collection,
       data: articleData(),
@@ -106,11 +108,11 @@ it('rejects unknown rich text nodes, versions and over-budget nested content', (
       locale: 'en',
       limits: contentLimits({ maxDataBytes: 10 }),
     }),
-  ).toThrowError('payload too large');
+  ).rejects.toThrowError('payload too large');
 });
-it('extracts ordered polymorphic and rich text media references through nested data', () => {
+it('extracts ordered polymorphic and rich text media references through nested data', async () => {
   const id = randomUUID();
-  const data = validate(
+  const data = await validate(
     articleData({
       author: { collection: 'pages', id },
       related: [{ collection: 'pages', id }],
@@ -133,13 +135,13 @@ it('extracts ordered polymorphic and rich text media references through nested d
     { collection: 'pages', id, path: 'body.children.0', media: true },
   ]);
 });
-it('rejects garbage data shapes at the public validation boundary', () => {
+it('rejects garbage data shapes at the public validation boundary', async () => {
   for (const input of [null, [], true, 'text', 1])
-    expect(() => validate(input)).toThrowError('invalid input');
+    await expect(validate(input)).rejects.toThrowError('invalid input');
   const input: DocumentData = { title: 'A', score: NaN };
-  expect(() => validate(input)).toThrowError('invalid input');
+  await expect(validate(input)).rejects.toThrowError('invalid input');
 });
-it('schema path remapping preserves stable array identities and rich text node positions', () => {
+it('schema path remapping preserves stable array identities and rich text node positions', async () => {
   const [from] = contentDefinitions();
   if (!from) throw new Error('Missing article');
   const to = {
@@ -167,7 +169,10 @@ it('schema path remapping preserves stable array identities and rich text node p
     remapReferencePath({ from: to, to: from, path: 'content.children.0', fieldId: 'body' }),
   ).toBe('body.children.0');
   expect(() => remapReferencePath({ from, to, path: 'missing' })).toThrowError('invalid input');
-  const instances = dataFieldInstances({ fields: from.fields, data: validate(articleData()) });
+  const instances = dataFieldInstances({
+    fields: from.fields,
+    data: await validate(articleData()),
+  });
   expect(
     instances.some(
       (instance) =>
@@ -176,17 +181,21 @@ it('schema path remapping preserves stable array identities and rich text node p
     ),
   ).toBe(true);
 });
-it('deep legal JSON below the byte budget is rejected before recursive serialization can overflow', () => {
+it('deep legal JSON below the byte budget is rejected before recursive serialization can overflow', async () => {
   const source = `${'['.repeat(20000)}0${']'.repeat(20000)}`;
   expect(Buffer.byteLength(source)).toBeLessThan(contentLimits().maxDataBytes);
   const value: unknown = JSON.parse(source);
-  expect(() => validate({ title: 'Title', extra: value })).toThrowError('payload too large');
+  await expect(validate({ title: 'Title', extra: value })).rejects.toThrowError(
+    'payload too large',
+  );
   const cycle: Record<string, unknown> = {};
   cycle['self'] = cycle;
-  expect(() => validate({ title: 'Title', extra: cycle })).toThrowError('invalid input');
-  expect(() => validate({ title: 'Title', extra: BigInt(1) })).toThrowError('invalid input');
+  await expect(validate({ title: 'Title', extra: cycle })).rejects.toThrowError('invalid input');
+  await expect(validate({ title: 'Title', extra: BigInt(1) })).rejects.toThrowError(
+    'invalid input',
+  );
 });
-it('trusted field validators must return synchronous booleans', () => {
+it('trusted field validators must return synchronous booleans', async () => {
   const validation = { version: '1', run: () => true };
   Reflect.set(validation, 'run', () => Promise.resolve(false));
   const [definition] = contentDefinitions();
@@ -195,7 +204,7 @@ it('trusted field validators must return synchronous booleans', () => {
     ...definition,
     fields: [{ id: 'sample', name: 'sample', type: 'text' as const, validate: validation }],
   };
-  expect(() =>
+  await expect(
     validateData({
       collection,
       data: { sample: 'Value' },
@@ -203,5 +212,5 @@ it('trusted field validators must return synchronous booleans', () => {
       locale: 'en',
       limits: contentLimits(),
     }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('invalid input');
 });

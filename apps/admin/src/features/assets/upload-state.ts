@@ -26,7 +26,9 @@ export interface QueuedUpload {
   completeKey: string;
 }
 export interface UploadQueueOptions {
+  locale?: string | undefined;
   collection: string;
+  editorSessionId?: string;
   purpose: 'create' | 'replace';
   documentId?: string;
   revision?: number;

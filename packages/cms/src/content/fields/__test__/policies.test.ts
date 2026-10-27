@@ -6,12 +6,9 @@ import {
   articleData,
 } from '../../../../../../test/support/content.ts';
 import { createRegistry } from '../../collections/create-registry.ts';
-import {
-  projectData,
-  assertWritableData,
-  queryableFields,
-  collectionMetadata,
-} from '../policies.ts';
+import { projectData } from '../policy-read.ts';
+import { assertWritableData } from '../policy-write.ts';
+import { queryableFields, collectionMetadata } from '../policy-metadata.ts';
 import type {
   FieldDefinition,
   FieldPolicyContext,
@@ -65,18 +62,25 @@ function collection(fields?: readonly FieldDefinition[]): CollectionDefinition {
     limits: contentLimits(),
   }).get('articles');
 }
-it('reads only allowed fields, including nested groups/arrays/blocks and projection selections', () => {
+it('reads only allowed fields, including nested groups/arrays/blocks and projection selections', async () => {
   const original = collection();
   const definition = collection(
     original.fields.map((field) =>
       field.id === 'slug' ? { ...field, access: { read: deny } } : field,
     ),
   );
-  const full = projectData({ collection: definition, data: articleData(), context });
+  const full = await projectData({
+    limits: contentLimits(),
+    functions: { budget: { used: 0 } },
+    collection: definition,
+    data: articleData(),
+    context,
+  });
   expect(full['slug']).toBeUndefined();
   expect(full['score']).toBe(0);
   expect(
-    projectData({
+    await projectData({
+      ...scope(),
       collection: definition,
       data: articleData(),
       context,
@@ -84,7 +88,8 @@ it('reads only allowed fields, including nested groups/arrays/blocks and project
     }),
   ).toEqual({ title: 'Alpha', seo: { description: 'Search description' } });
   expect(
-    projectData({
+    await projectData({
+      ...scope(),
       collection: definition,
       data: articleData({ seo: null, sections: null, layout: null }),
       context,
@@ -119,7 +124,8 @@ it('reads only allowed fields, including nested groups/arrays/blocks and project
     },
   ]);
   expect(
-    projectData({
+    await projectData({
+      ...scope(),
       collection: nested,
       data: {
         group: { secret: 'hidden' },
@@ -130,7 +136,7 @@ it('reads only allowed fields, including nested groups/arrays/blocks and project
     }),
   ).toEqual({ group: {}, rows: [{ id: 'a' }], blocks: [{ id: 'b', blockType: 'example' }] });
 });
-it('denies writes at each nested boundary and read-only joins cannot be written', () => {
+it('denies writes at each nested boundary and read-only joins cannot be written', async () => {
   const original = collection();
   for (const type of ['text', 'group', 'array', 'blocks'] as const) {
     const denied: FieldDefinition = {
@@ -142,9 +148,14 @@ it('denies writes at each nested boundary and read-only joins cannot be written'
       ...(type === 'blocks' ? { blocks: [{ id: 'b', key: 'b', label: 'B', fields: [] }] } : {}),
     };
     const definition = collection([denied]);
-    expect(() =>
-      assertWritableData({ collection: definition, data: { denied: null }, context }),
-    ).toThrowError('forbidden');
+    await expect(
+      assertWritableData({
+        ...scope(),
+        collection: definition,
+        data: { denied: null },
+        context,
+      }),
+    ).rejects.toThrowError('forbidden');
   }
   const nested = collection([
     {
@@ -154,24 +165,35 @@ it('denies writes at each nested boundary and read-only joins cannot be written'
       fields: [{ id: 'secret', name: 'secret', type: 'text', access: { write: deny } }],
     },
   ]);
-  expect(() =>
-    assertWritableData({ collection: nested, data: { group: { secret: 'value' } }, context }),
-  ).toThrowError('forbidden');
-  expect(() =>
-    assertWritableData({ collection: original, data: articleData(), context }),
-  ).not.toThrow();
+  await expect(
+    assertWritableData({
+      ...scope(),
+      collection: nested,
+      data: { group: { secret: 'value' } },
+      context,
+    }),
+  ).rejects.toThrowError('forbidden');
+  await expect(
+    assertWritableData({
+      ...scope(),
+      collection: original,
+      data: articleData(),
+      context,
+    }),
+  ).resolves.toBeUndefined();
   const pages = createRegistry({ collections: contentDefinitions(), limits: contentLimits() }).get(
     'pages',
   );
-  expect(() =>
+  await expect(
     assertWritableData({
+      ...scope(),
       collection: pages,
       data: { articles: [] },
       context: { ...context, collectionKey: 'pages' },
     }),
-  ).toThrowError('forbidden');
+  ).rejects.toThrowError('forbidden');
 });
-it('query and metadata protect parent boundaries and data-dependent hidden field names', () => {
+it('query and metadata protect parent boundaries and data-dependent hidden field names', async () => {
   const definition = collection([
     { id: 'public', name: 'public', type: 'text' },
     { id: 'secret', name: 'secret', type: 'text', access: { read: deny } },
@@ -184,8 +206,19 @@ it('query and metadata protect parent boundaries and data-dependent hidden field
       fields: [{ id: 'child', name: 'child', type: 'text' }],
     },
   ]);
-  expect(queryableFields({ collection: definition, context })).toEqual(['public', 'known']);
-  const metadata = collectionMetadata({ collection: definition, context });
+  expect(
+    await queryableFields({
+      ...scope(),
+      collection: definition,
+      context,
+    }),
+  ).toEqual(['public', 'known']);
+  const metadata = await collectionMetadata({
+    limits: contentLimits(),
+    functions: { budget: { used: 0 } },
+    collection: definition,
+    context,
+  });
   expect(JSON.stringify(metadata)).not.toContain('secret');
   expect(JSON.stringify(metadata)).not.toContain('child');
   expect(metadata).toMatchObject({
@@ -193,7 +226,7 @@ it('query and metadata protect parent boundaries and data-dependent hidden field
   });
   expect(JSON.stringify(metadata)).not.toContain('run');
 });
-it('readonly descendants survive partial merge and cannot be deleted by null, row removal or a block-type replacement', () => {
+it('readonly descendants survive partial merge and cannot be deleted by null, row removal or a block-type replacement', async () => {
   const definition = collection([
     {
       id: 'group',
@@ -231,38 +264,41 @@ it('readonly descendants survive partial merge and cannot be deleted by null, ro
     blocks: [{ id: 'block', blockType: 'protected', secret: 'retained' }],
   };
   const next = { ...previous, group: { secret: 'retained', visible: 'new' } };
-  expect(() =>
+  await expect(
     assertWritableData({
+      ...scope(),
       collection: definition,
       data: { group: { visible: 'new' } },
       previous,
       next,
       context,
     }),
-  ).not.toThrow();
-  expect(() =>
+  ).resolves.toBeUndefined();
+  await expect(
     assertWritableData({
+      ...scope(),
       collection: definition,
       data: { group: { secret: 'retained' } },
       previous,
       next,
       context,
     }),
-  ).toThrowError('forbidden');
+  ).rejects.toThrowError('forbidden');
   for (const patch of [
     { group: null },
     { rows: [] },
     { blocks: [{ id: 'block', blockType: 'empty' }] },
   ])
-    expect(() =>
+    await expect(
       assertWritableData({
+        ...scope(),
         collection: definition,
         data: patch,
         previous,
         next: { ...previous, ...patch },
         context,
       }),
-    ).toThrowError('forbidden');
+    ).rejects.toThrowError('forbidden');
   const allowed = collection([
     {
       id: 'group',
@@ -271,17 +307,18 @@ it('readonly descendants survive partial merge and cannot be deleted by null, ro
       fields: [{ id: 'secret', name: 'secret', type: 'text', access: { write: allow } }],
     },
   ]);
-  expect(() =>
+  await expect(
     assertWritableData({
+      ...scope(),
       collection: allowed,
       data: { group: null },
       previous: { group: { secret: 'old' } },
       next: { group: null },
       context,
     }),
-  ).not.toThrow();
+  ).resolves.toBeUndefined();
 });
-it('write context receives previous and final snapshots while explicit hidden values never bypass policy by equality', () => {
+it('write context receives previous and final snapshots while explicit hidden values never bypass policy by equality', async () => {
   const definition = collection([
     {
       id: 'value',
@@ -296,33 +333,48 @@ it('write context receives previous and final snapshots while explicit hidden va
       },
     },
   ]);
-  expect(() =>
+  await expect(
     assertWritableData({
+      ...scope(),
       collection: definition,
       data: { value: 'next' },
       previous: { value: 'old' },
       next: { value: 'next' },
       context,
     }),
-  ).not.toThrow();
-  expect(() =>
+  ).resolves.toBeUndefined();
+  await expect(
     assertWritableData({
+      ...scope(),
       collection: definition,
       data: { value: 'old' },
       previous: { value: 'old' },
       next: { value: 'old' },
       context,
     }),
-  ).toThrowError('forbidden');
-  expect(() =>
-    projectData({ collection: definition, data: { value: 'old' }, context, select: ['typo'] }),
-  ).toThrowError('invalid input');
-  expect(() =>
-    projectData({
-      collection: definition,
-      data: { value: 'old' },
-      context,
-      select: ['value', 'value'],
-    }),
-  ).toThrowError('invalid input');
+  ).rejects.toThrowError('forbidden');
+  await expect(
+    async () =>
+      await projectData({
+        ...scope(),
+        collection: definition,
+        data: { value: 'old' },
+        context,
+        select: ['typo'],
+      }),
+  ).rejects.toThrowError('invalid input');
+  await expect(
+    async () =>
+      await projectData({
+        ...scope(),
+        collection: definition,
+        data: { value: 'old' },
+        context,
+        select: ['value', 'value'],
+      }),
+  ).rejects.toThrowError('invalid input');
 });
+
+function scope() {
+  return { limits: contentLimits(), functions: { budget: { used: 0 } } };
+}

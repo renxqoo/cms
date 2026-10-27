@@ -50,6 +50,7 @@ it('schema backfill allocates shared default array IDs once so every localized c
       data: {},
     });
     await oldStore.updateDocumentPointers(tx, {
+      actorId,
       collection: 'records',
       id,
       revision: 1,

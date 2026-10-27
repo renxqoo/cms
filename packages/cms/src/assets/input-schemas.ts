@@ -3,6 +3,10 @@ import type { CmsPolicy } from '@new-cms/cms/platform/contracts';
 
 const collection = z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/);
 const id = z.uuid().transform((value) => value.toLowerCase());
+const locale = z
+  .string()
+  .regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/)
+  .optional();
 const revision = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const variant = z.strictObject({
   name: z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/),
@@ -30,6 +34,7 @@ export const imageRecipeSchema = z.strictObject({
 const resourceSchemas = {
   'assets.createUpload': z.strictObject({
     collection,
+    locale,
     purpose: z.enum(['create', 'replace']),
     documentId: id.optional(),
     revision: revision.optional(),
@@ -59,6 +64,8 @@ const resourceSchemas = {
       .regex(/^[a-z][a-z0-9_-]{0,63}$/)
       .optional(),
     mode: z.enum(['editing', 'published']).default('editing'),
+    locale,
+    fallback: z.array(z.string().regex(/^[a-zA-Z][a-zA-Z0-9-]{0,31}$/)).optional(),
   }),
   'assets.downloadBinding': z.strictObject({
     collection,
@@ -70,8 +77,16 @@ const resourceSchemas = {
       .regex(/^[a-z][a-z0-9_-]{0,63}$/)
       .optional(),
     mode: z.enum(['editing', 'published']).default('editing'),
+    locale,
+    fallback: z.array(z.string().regex(/^[a-zA-Z][a-zA-Z0-9-]{0,31}$/)).optional(),
   }),
-  'assets.reprocess': z.strictObject({ collection, id, revision, recipe: imageRecipeSchema }),
+  'assets.reprocess': z.strictObject({
+    collection,
+    id,
+    revision,
+    locale,
+    recipe: imageRecipeSchema,
+  }),
 };
 
 export function assetsInputSchemas(policy: Pick<CmsPolicy, 'defaultPageSize' | 'maxPageSize'>) {
@@ -81,6 +96,7 @@ export function assetsInputSchemas(policy: Pick<CmsPolicy, 'defaultPageSize' | '
     ...resourceSchemas,
     'assets.listUploads': z.strictObject({
       collection,
+      locale,
       page,
       pageSize,
       status: z

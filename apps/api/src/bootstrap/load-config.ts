@@ -17,7 +17,7 @@ const environmentSchema = z.object({
   CMS_MCP_RESOURCE: z.url().default('http://127.0.0.1:3002/mcp'),
   CMS_MCP_BRIDGE_SECRET: z.string().min(32).optional(),
   API_HOST: z.string().default('127.0.0.1'),
-  API_PORT: z.coerce.number().int().min(0).max(65535).default(3001),
+  API_PORT: z.coerce.number().int().min(0).max(65535).default(9091),
   API_ALLOWED_HOSTS: z.string().default('localhost,127.0.0.1,[::1]'),
   API_ALLOWED_ORIGINS: z.string().default(''),
   SMTP_HOST: z.string().optional(),
@@ -174,7 +174,7 @@ function requireDatabaseTls(env: { NODE_ENV: string; DATABASE_URL: string }): vo
 }
 
 function oauthConfiguration(env: z.infer<typeof environmentSchema>): OAuthConfiguration {
-  const issuer = new URL(env.CMS_API_ORIGIN ?? `http://127.0.0.1:${env.API_PORT || 3001}`);
+  const issuer = new URL(env.CMS_API_ORIGIN ?? `http://127.0.0.1:${env.API_PORT || 9091}`);
   const resource = new URL(env.CMS_MCP_RESOURCE);
   if (!validOAuthUrl(issuer, '/') || !validOAuthUrl(resource, '/mcp'))
     throw new Error('Invalid OAuth issuer or MCP resource');

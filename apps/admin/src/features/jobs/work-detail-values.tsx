@@ -55,7 +55,8 @@ function ContentValues({
     <>
       <WorkValues
         values={[
-          [t.action, t[detail.action]],
+          [t.action, detail.publicationAction ? t[detail.publicationAction] : t[detail.action]],
+          ...(detail.locale ? [[t.locale, detail.locale] as const] : []),
           [t.document, detail.documentId],
           [t.revision, detail.expectedRevision],
           [t.version, detail.requestedVersionId],

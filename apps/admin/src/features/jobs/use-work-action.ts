@@ -14,6 +14,7 @@ interface WorkActionInput<T> {
   allowed: boolean;
   idempotent?: boolean;
   body?: unknown;
+  query?: Readonly<Record<string, string>>;
 }
 
 export function useWorkAction<T>(input: WorkActionInput<T>) {
@@ -41,6 +42,7 @@ export function useWorkAction<T>(input: WorkActionInput<T>) {
     const result = await requestApi({
       operation: input.operation,
       params: input.params,
+      ...(input.query ? { query: input.query } : {}),
       response: input.response,
       signal: controller.signal,
       ...(input.idempotent ? { idempotencyKey: intent.current } : {}),

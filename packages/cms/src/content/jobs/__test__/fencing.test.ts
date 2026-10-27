@@ -1,3 +1,4 @@
+import { prepareHierarchyNode } from '../../documents/project-data.ts';
 import { relationScopes } from '../../documents/relation-scopes.ts';
 import { randomUUID } from 'node:crypto';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -6,6 +7,7 @@ import { createContentStore } from '../../adapters/postgres/store.ts';
 import { contentInputSchemas } from '../../input-schemas.ts';
 import { executeJobItem } from '../execute-item.ts';
 import type { JobRow, JobItemRow } from '../store.ts';
+import { collectionPredicate } from '../../runtime.ts';
 import type { ContentRuntime } from '../../types.ts';
 import {
   createContentFixture,
@@ -118,13 +120,16 @@ it('does not let a stale copy claim create duplicate documents after a newer gen
   if (!old || !item) throw new Error('Claim missing');
   await kit.content.maintenance();
   const runtime: ContentRuntime = {
+    prepareHierarchyNode: (state, input) => prepareHierarchyNode(state, { ...input, runtime }),
     ...kit.contentOptions,
+    evaluateCollectionPolicy: collectionPredicate,
     resolveRelationScopes: (state) => relationScopes(state, runtime),
     resolveCollection: (_tx, key) => Promise.resolve(kit.registry.get(key)),
     store: createContentStore({ mapping: kit.artifacts.mapping, limits: kit.limits }),
     schemas: contentInputSchemas({
       ...kit.limits,
       maxBatchItems: kit.contentOptions.workPolicy.maxBatchItems,
+      maxSyncBatchItems: kit.contentOptions.workPolicy.maxSyncBatchItems,
     }),
   };
   await expect(executeJobItem(runtime, { job: old, item })).rejects.toMatchObject({

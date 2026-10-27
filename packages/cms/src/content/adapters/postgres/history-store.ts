@@ -3,7 +3,7 @@ import type { SqlExecutor } from '@new-cms/database/client';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { ContentLimits } from '../../definition.ts';
 import type { ContentMapping, RevisionRow } from '../../model.ts';
-import type { ContentStore, StoreDocument } from './store-contract.ts';
+import type { ContentStore, StoreDocument, InboundReference } from './store-contract.ts';
 import { readDocument } from './document-store.ts';
 import { revisionProjection, revisionRow } from './revision-data.ts';
 
@@ -43,9 +43,9 @@ async function listVersions(
 }
 async function verifyPublications(tx: SqlExecutor, mapping: ContentMapping): Promise<void> {
   const publicationMigration = await tx.query(
-    "SELECT 1 FROM cms_migrations WHERE name='0014_localized_publications.sql'",
+    "SELECT 1 FROM cms_migrations WHERE name IN('0014_localized_publications.sql','0017_publication_references.sql')",
   );
-  if (publicationMigration.rowCount !== 1) fail('temporarily_unavailable');
+  if (publicationMigration.rowCount !== 2) fail('temporarily_unavailable');
   const publicationLocales = mapping.collections
     .filter(
       (collection) =>
@@ -55,9 +55,10 @@ async function verifyPublications(tx: SqlExecutor, mapping: ContentMapping): Pro
     .map(({ definition }) => ({
       collection_id: definition.id,
       locales: definition.localizeStatus ? definition.locales.supported : ['*'],
+      schema_version: definition.schemaVersion,
     }));
   const validPublications = await tx.query(
-    `SELECT 1 FROM content_publications p JOIN jsonb_to_recordset($1::jsonb) c(collection_id text,locales jsonb) USING(collection_id) WHERE NOT c.locales ? p.locale LIMIT 1`,
+    `SELECT 1 FROM content_publications p JOIN jsonb_to_recordset($1::jsonb) c(collection_id text,locales jsonb,schema_version integer) USING(collection_id) WHERE NOT c.locales ? p.locale OR NOT c.schema_version=ANY(p.completed_schema_versions) LIMIT 1`,
     [JSON.stringify(publicationLocales)],
   );
   if (validPublications.rowCount !== 0) fail('temporarily_unavailable');
@@ -151,21 +152,19 @@ async function purge(
   await tx.query('DELETE FROM content_documents WHERE id=$1', [input.id]);
 }
 
+interface RawInboundReference extends Omit<InboundReference, 'sourceCollection'> {
+  sourceCollectionId: string;
+}
+
 async function inboundReferences(
   tx: SqlExecutor,
   input: Parameters<ContentStore['inboundReferences']>[1],
   options: { mapping: ContentMapping; limits: ContentLimits },
 ) {
   await readDocument(tx, { ...options, ...input });
-  const filters = [
-    'x.target_document_id=$1',
-    'x.projection_schema_version=(CASE WHEN EXISTS(SELECT 1 FROM content_schema_backfills b WHERE b.revision_id=x.source_revision_id AND b.target_schema_version=c.schema_version) THEN c.schema_version ELSE r.schema_version END)',
-  ];
+  const filters = ['x.target_document_id=$1'];
   const values: unknown[] = [input.id];
-  if (input.active)
-    filters.push(
-      '(d.current_version_id=x.source_revision_id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=d.id AND p.version_id=x.source_revision_id))',
-    );
+  if (input.active) filters.push('x.active');
   if (input.excludeDocumentId) {
     values.push(input.excludeDocumentId);
     filters.push(`x.source_document_id<>$${values.length}::uuid`);
@@ -178,17 +177,18 @@ async function inboundReferences(
   )
     fail('invalid_input');
   values.push(limit);
-  const result = await tx.query<{
-    sourceDocumentId: string;
-    sourceRevisionId: string;
-    sourceCollectionId: string;
-    schemaVersion: number;
-    path: string;
-    fieldId: string;
-    onDelete: 'restrict' | 'nullify' | 'cascade';
-    active: boolean;
-  }>(
-    `SELECT x.source_document_id AS "sourceDocumentId",x.source_revision_id AS "sourceRevisionId",x.source_collection_id AS "sourceCollectionId",x.projection_schema_version AS "schemaVersion",x.source_path AS path,x.field_id AS "fieldId",x.on_delete AS "onDelete",(d.current_version_id=x.source_revision_id OR EXISTS(SELECT 1 FROM content_publications p WHERE p.document_id=d.id AND p.version_id=x.source_revision_id)) AS active FROM content_references x JOIN content_documents d ON d.id=x.source_document_id JOIN content_schema_control c ON c.collection_id=x.source_collection_id JOIN content_revisions r ON r.id=x.source_revision_id WHERE ${filters.join(' AND ')} ORDER BY x.source_document_id,x.source_revision_id,x.source_path LIMIT $${values.length}`,
+  const result = await tx.query<RawInboundReference>(
+    `WITH incoming AS (
+      SELECT x.*,d.current_version_id=x.source_revision_id AS active,CASE WHEN d.current_version_id=x.source_revision_id THEN 'current' ELSE 'history' END AS source_view
+      FROM content_references x JOIN content_documents d ON d.id=x.source_document_id JOIN content_schema_control c ON c.collection_id=x.source_collection_id JOIN content_revisions r ON r.id=x.source_revision_id
+      WHERE x.target_document_id=$1 AND x.projection_schema_version=(CASE WHEN EXISTS(SELECT 1 FROM content_schema_backfills b WHERE b.revision_id=x.source_revision_id AND b.target_schema_version=c.schema_version) THEN c.schema_version ELSE r.schema_version END)
+    ),published AS (
+      SELECT x.source_revision_id,x.source_document_id,x.source_collection_id,x.projection_schema_version,x.field_id,x.source_path,x.target_document_id,x.target_collection_id,x.on_delete,x.media,true AS active,'published' AS source_view
+      FROM content_publication_references x JOIN content_publications p ON p.document_id=x.source_document_id AND p.locale=x.publication_locale AND p.version_id=x.source_revision_id JOIN content_schema_control c ON c.collection_id=x.source_collection_id AND c.schema_version=x.projection_schema_version
+      WHERE x.target_document_id=$1
+    )
+    SELECT x.source_document_id AS "sourceDocumentId",x.source_revision_id AS "sourceRevisionId",x.source_collection_id AS "sourceCollectionId",x.projection_schema_version AS "schemaVersion",x.source_path AS path,x.field_id AS "fieldId",x.on_delete AS "onDelete",x.active,x.source_view AS "sourceView"
+    FROM (SELECT * FROM incoming UNION ALL SELECT * FROM published) x WHERE ${filters.join(' AND ')} ORDER BY x.source_document_id,x.source_revision_id,x.source_path,x.source_view LIMIT $${values.length}`,
     values,
   );
   return result.rows.map((row) => ({

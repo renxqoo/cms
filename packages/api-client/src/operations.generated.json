@@ -1308,7 +1308,7 @@
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "properties": {},
+      "properties": { "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" } },
       "additionalProperties": false
     }
   },
@@ -1327,6 +1327,43 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
+        "joins": {
+          "anyOf": [
+            { "type": "boolean", "const": false },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string", "minLength": 1, "maxLength": 512 },
+              "additionalProperties": {
+                "anyOf": [
+                  { "type": "boolean", "const": false },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "page": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+                      "pageSize": { "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+                      "sort": {
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                            "order": { "type": "string", "enum": ["asc", "desc"] }
+                          },
+                          "required": ["field", "order"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "where": {},
+                      "count": { "type": "boolean" }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "fallback": {
           "maxItems": 20,
@@ -1340,6 +1377,7 @@
           "items": { "type": "string", "minLength": 1, "maxLength": 256 }
         },
         "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "context": { "type": "string", "const": "admin" },
         "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
         "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
         "q": { "type": "string", "maxLength": 256 },
@@ -1369,6 +1407,889 @@
           ]
         }
       },
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "queryPresets.preview",
+    "method": "POST",
+    "path": "/v1/collections/:collection/query-presets/preview",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "query-presets preview",
+    "tool": "queryPresets_preview",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "name": { "default": "", "type": "string", "maxLength": 128 },
+        "query": {
+          "type": "object",
+          "properties": {
+            "where": {},
+            "sort": {
+              "maxItems": 100,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                  "order": { "type": "string", "enum": ["asc", "desc"] }
+                },
+                "required": ["field", "order"],
+                "additionalProperties": false
+              }
+            },
+            "columns": {
+              "maxItems": 500,
+              "type": "array",
+              "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+            },
+            "q": { "type": "string", "maxLength": 256 },
+            "groupBy": {
+              "type": "object",
+              "properties": {
+                "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                "order": { "type": "string", "enum": ["asc", "desc"] }
+              },
+              "required": ["field", "order"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["sort", "columns", "q"],
+          "additionalProperties": false
+        },
+        "access": {
+          "type": "object",
+          "properties": {
+            "read": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "update": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "delete": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["read", "update", "delete"],
+          "additionalProperties": false
+        },
+        "action": { "type": "string", "enum": ["read", "update", "delete"] }
+      },
+      "required": ["collection", "query", "access", "action"],
+      "additionalProperties": false,
+      "$defs": {
+        "__schema0": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "null" },
+            { "type": "array", "items": { "$ref": "#/$defs/__schema0" } },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": { "$ref": "#/$defs/__schema0" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "queryPresets.fieldOptions",
+    "method": "POST",
+    "path": "/v1/collections/:collection/query-presets/options",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "query-presets field-options",
+    "tool": "queryPresets_fieldOptions",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "name": { "default": "", "type": "string", "maxLength": 128 },
+        "query": {
+          "type": "object",
+          "properties": {
+            "where": {},
+            "sort": {
+              "maxItems": 100,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                  "order": { "type": "string", "enum": ["asc", "desc"] }
+                },
+                "required": ["field", "order"],
+                "additionalProperties": false
+              }
+            },
+            "columns": {
+              "maxItems": 500,
+              "type": "array",
+              "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+            },
+            "q": { "type": "string", "maxLength": 256 },
+            "groupBy": {
+              "type": "object",
+              "properties": {
+                "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                "order": { "type": "string", "enum": ["asc", "desc"] }
+              },
+              "required": ["field", "order"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["sort", "columns", "q"],
+          "additionalProperties": false
+        },
+        "access": {
+          "type": "object",
+          "properties": {
+            "read": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "update": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "delete": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["read", "update", "delete"],
+          "additionalProperties": false
+        },
+        "action": { "type": "string", "enum": ["read", "update", "delete"] },
+        "path": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "relationTo": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "targetId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "q": { "type": "string", "maxLength": 256 },
+        "page": { "default": 1, "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "exclusiveMinimum": 0, "maximum": 100 }
+      },
+      "required": ["collection", "query", "access", "action", "path", "relationTo"],
+      "additionalProperties": false,
+      "$defs": {
+        "__schema0": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "null" },
+            { "type": "array", "items": { "$ref": "#/$defs/__schema0" } },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": { "$ref": "#/$defs/__schema0" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "documents.join",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/joins/:fieldId",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents join",
+    "tool": "documents_join",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "fieldId": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,47}$" },
+        "locale": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "page": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "pageSize": { "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+        "sort": {
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+              "order": { "type": "string", "enum": ["asc", "desc"] }
+            },
+            "required": ["field", "order"],
+            "additionalProperties": false
+          }
+        },
+        "where": {},
+        "count": { "type": "boolean" },
+        "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "fallback": { "maxItems": 20, "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["collection", "id", "fieldId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.reorderJoin",
+    "method": "POST",
+    "path": "/v1/collections/:collection/documents/:id/joins/:fieldId/order",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents reorder-join",
+    "tool": "documents_reorderJoin",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "fieldId": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,47}$" },
+        "locale": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "version": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "ids": {
+          "minItems": 1,
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "targetId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "position": { "type": "string", "enum": ["before", "after"] }
+      },
+      "required": ["collection", "id", "fieldId", "version", "ids", "targetId", "position"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.order",
+    "method": "GET",
+    "path": "/v1/collections/:collection/document-order",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents order",
+    "tool": "documents_order",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" }
+      },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.reorder",
+    "method": "POST",
+    "path": "/v1/collections/:collection/document-order",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents reorder",
+    "tool": "documents_reorder",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "version": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "ids": {
+          "minItems": 1,
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "targetId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "position": { "type": "string", "enum": ["before", "after"] }
+      },
+      "required": ["collection", "version", "ids", "targetId", "position"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "queryPresets.list",
+    "method": "GET",
+    "path": "/v1/collections/:collection/query-presets",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "query-presets list",
+    "tool": "queryPresets_list",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "default": 20, "type": "integer", "exclusiveMinimum": 0, "maximum": 100 }
+      },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "queryPresets.create",
+    "method": "POST",
+    "path": "/v1/collections/:collection/query-presets",
+    "idempotency": "required",
+    "successStatus": 201,
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "query-presets create",
+    "tool": "queryPresets_create",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "query": {
+          "type": "object",
+          "properties": {
+            "where": {},
+            "sort": {
+              "maxItems": 100,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                  "order": { "type": "string", "enum": ["asc", "desc"] }
+                },
+                "required": ["field", "order"],
+                "additionalProperties": false
+              }
+            },
+            "columns": {
+              "maxItems": 500,
+              "type": "array",
+              "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+            },
+            "q": { "type": "string", "maxLength": 256 },
+            "groupBy": {
+              "type": "object",
+              "properties": {
+                "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                "order": { "type": "string", "enum": ["asc", "desc"] }
+              },
+              "required": ["field", "order"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["sort", "columns", "q"],
+          "additionalProperties": false
+        },
+        "access": {
+          "type": "object",
+          "properties": {
+            "read": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "update": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "delete": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["read", "update", "delete"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["collection", "name", "query"],
+      "additionalProperties": false,
+      "$defs": {
+        "__schema0": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "null" },
+            { "type": "array", "items": { "$ref": "#/$defs/__schema0" } },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": { "$ref": "#/$defs/__schema0" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "queryPresets.update",
+    "method": "PATCH",
+    "path": "/v1/collections/:collection/query-presets/:id",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "query-presets update",
+    "tool": "queryPresets_update",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "query": {
+          "type": "object",
+          "properties": {
+            "where": {},
+            "sort": {
+              "maxItems": 100,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                  "order": { "type": "string", "enum": ["asc", "desc"] }
+                },
+                "required": ["field", "order"],
+                "additionalProperties": false
+              }
+            },
+            "columns": {
+              "maxItems": 500,
+              "type": "array",
+              "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+            },
+            "q": { "type": "string", "maxLength": 256 },
+            "groupBy": {
+              "type": "object",
+              "properties": {
+                "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                "order": { "type": "string", "enum": ["asc", "desc"] }
+              },
+              "required": ["field", "order"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["sort", "columns", "q"],
+          "additionalProperties": false
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "name", "query", "version"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "queryPresets.share",
+    "method": "PUT",
+    "path": "/v1/collections/:collection/query-presets/:id/sharing",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "query-presets share",
+    "tool": "queryPresets_share",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "access": {
+          "type": "object",
+          "properties": {
+            "read": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "update": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            },
+            "delete": {
+              "type": "object",
+              "properties": {
+                "constraint": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+                "users": {
+                  "maxItems": 1000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "propertyNames": { "type": "string" },
+                  "additionalProperties": { "$ref": "#/$defs/__schema0" }
+                },
+                "initialSnapshot": { "type": "string" }
+              },
+              "required": ["constraint"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["read", "update", "delete"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["collection", "id", "version", "access"],
+      "additionalProperties": false,
+      "$defs": {
+        "__schema0": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "null" },
+            { "type": "array", "items": { "$ref": "#/$defs/__schema0" } },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": { "$ref": "#/$defs/__schema0" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "queryPresets.delete",
+    "method": "DELETE",
+    "path": "/v1/collections/:collection/query-presets/:id",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "query-presets delete",
+    "tool": "queryPresets_delete",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "version": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "version"],
       "additionalProperties": false
     }
   },
@@ -1415,7 +2336,10 @@
     "inputSchema": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "properties": { "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" } },
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+      },
       "required": ["collection"],
       "additionalProperties": false
     }
@@ -1482,6 +2406,473 @@
     }
   },
   {
+    "id": "collections.fieldOptions",
+    "method": "POST",
+    "path": "/v1/collections/:collection/editor/options",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "collections field-options",
+    "tool": "collections_fieldOptions",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "candidate": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                    "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                    "mode": { "default": "editing", "type": "string", "const": "editing" },
+                    "intent": { "type": "string", "const": "create" },
+                    "initialSnapshot": { "type": "string", "minLength": 1 },
+                    "data": { "type": "object", "additionalProperties": {} }
+                  },
+                  "required": ["collection", "intent", "data"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                    "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                    "mode": { "default": "editing", "type": "string", "const": "editing" },
+                    "intent": { "type": "string", "enum": ["update", "autosave", "copy"] },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "revision": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+                    "data": { "type": "object", "additionalProperties": {} }
+                  },
+                  "required": ["collection", "intent", "id", "revision", "data"],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            {
+              "minItems": 1,
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                      "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                      "mode": { "default": "editing", "type": "string", "const": "editing" },
+                      "intent": { "type": "string", "const": "create" },
+                      "initialSnapshot": { "type": "string", "minLength": 1 },
+                      "data": { "type": "object", "additionalProperties": {} }
+                    },
+                    "required": ["collection", "intent", "data"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                      "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                      "mode": { "default": "editing", "type": "string", "const": "editing" },
+                      "intent": { "type": "string", "enum": ["update", "autosave", "copy"] },
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 2147483647
+                      },
+                      "data": { "type": "object", "additionalProperties": {} }
+                    },
+                    "required": ["collection", "intent", "id", "revision", "data"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "path": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "relationTo": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "q": { "type": "string", "maxLength": 256 },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "page": { "default": 1, "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "exclusiveMinimum": 0, "maximum": 100 }
+      },
+      "required": ["collection", "candidate", "path", "relationTo"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "hierarchy.tree",
+    "method": "GET",
+    "path": "/v1/collections/:collection/hierarchy",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "hierarchy tree",
+    "tool": "hierarchy_tree",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "page": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pageSize": { "type": "integer", "exclusiveMinimum": 0, "maximum": 100 }
+      },
+      "required": ["collection"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "hierarchy.move",
+    "method": "POST",
+    "path": "/v1/collections/:collection/hierarchy/moves",
+    "idempotency": "required",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "hierarchy move",
+    "tool": "hierarchy_move",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "items": {
+          "minItems": 1,
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "revision": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+            },
+            "required": ["id", "revision"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["collection", "parentId", "items"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.getLock",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/lock",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents get-lock",
+    "tool": "documents_getLock",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "editorId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      },
+      "required": ["collection", "id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.acquireLock",
+    "method": "PUT",
+    "path": "/v1/collections/:collection/documents/:id/lock",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents acquire-lock",
+    "tool": "documents_acquireLock",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "editorId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "generation": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "editorId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.releaseLock",
+    "method": "DELETE",
+    "path": "/v1/collections/:collection/documents/:id/lock",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents release-lock",
+    "tool": "documents_releaseLock",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "editorId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "generation": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "editorId", "generation"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.unlock",
+    "method": "POST",
+    "path": "/v1/collections/:collection/documents/:id/unlocks",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents unlock",
+    "tool": "documents_unlock",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "editorId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "generation": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["collection", "id", "editorId", "generation"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.preview",
+    "method": "GET",
+    "path": "/v1/collections/:collection/documents/:id/preview",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents preview",
+    "tool": "documents_preview",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+      },
+      "required": ["collection", "id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "collections.previewEditor",
+    "method": "POST",
+    "path": "/v1/collections/:collection/editor/preview",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "collections preview-editor",
+    "tool": "collections_previewEditor",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                "mode": { "default": "editing", "type": "string", "const": "editing" },
+                "intent": { "type": "string", "const": "create" },
+                "initialSnapshot": { "type": "string", "minLength": 1 },
+                "data": { "type": "object", "additionalProperties": {} }
+              },
+              "required": ["collection", "intent", "data"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                "mode": { "default": "editing", "type": "string", "const": "editing" },
+                "intent": { "type": "string", "enum": ["update", "autosave", "copy"] },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+                "data": { "type": "object", "additionalProperties": {} }
+              },
+              "required": ["collection", "intent", "id", "revision", "data"],
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "candidates": {
+              "minItems": 1,
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                      "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                      "mode": { "default": "editing", "type": "string", "const": "editing" },
+                      "intent": { "type": "string", "const": "create" },
+                      "initialSnapshot": { "type": "string", "minLength": 1 },
+                      "data": { "type": "object", "additionalProperties": {} }
+                    },
+                    "required": ["collection", "intent", "data"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+                      "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" },
+                      "mode": { "default": "editing", "type": "string", "const": "editing" },
+                      "intent": { "type": "string", "enum": ["update", "autosave", "copy"] },
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 2147483647
+                      },
+                      "data": { "type": "object", "additionalProperties": {} }
+                    },
+                    "required": ["collection", "intent", "id", "revision", "data"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "required": ["collection", "candidates"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
     "id": "content.listJobs",
     "method": "GET",
     "path": "/v1/collections/:collection/jobs",
@@ -1497,6 +2888,7 @@
       "type": "object",
       "properties": {
         "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
         "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
         "action": {
@@ -1533,6 +2925,43 @@
       "type": "object",
       "properties": {
         "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "joins": {
+          "anyOf": [
+            { "type": "boolean", "const": false },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string", "minLength": 1, "maxLength": 512 },
+              "additionalProperties": {
+                "anyOf": [
+                  { "type": "boolean", "const": false },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "page": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+                      "pageSize": { "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+                      "sort": {
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                            "order": { "type": "string", "enum": ["asc", "desc"] }
+                          },
+                          "required": ["field", "order"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "where": {},
+                      "count": { "type": "boolean" }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "fallback": {
           "maxItems": 20,
@@ -1546,6 +2975,7 @@
           "items": { "type": "string", "minLength": 1, "maxLength": 256 }
         },
         "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "context": { "type": "string", "const": "admin" },
         "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
         "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
         "q": { "type": "string", "maxLength": 256 },
@@ -1577,6 +3007,277 @@
       },
       "required": ["collection"],
       "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.distinct",
+    "method": "GET",
+    "path": "/v1/collections/:collection/distinct-values",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents distinct",
+    "tool": "documents_distinct",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "fallback": {
+          "maxItems": 20,
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+        },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "context": { "type": "string", "const": "admin" },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "type": "string", "maxLength": 256 },
+        "where": {},
+        "trashed": { "default": false, "type": "boolean" },
+        "folderId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "order": { "type": "string", "enum": ["asc", "desc"] }
+      },
+      "required": ["collection", "field", "order"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.groups",
+    "method": "GET",
+    "path": "/v1/collections/:collection/document-groups",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents groups",
+    "tool": "documents_groups",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "joins": {
+          "anyOf": [
+            { "type": "boolean", "const": false },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string", "minLength": 1, "maxLength": 512 },
+              "additionalProperties": {
+                "anyOf": [
+                  { "type": "boolean", "const": false },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "page": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+                      "pageSize": { "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+                      "sort": {
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                            "order": { "type": "string", "enum": ["asc", "desc"] }
+                          },
+                          "required": ["field", "order"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "where": {},
+                      "count": { "type": "boolean" }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "fallback": {
+          "maxItems": 20,
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" }
+        },
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "select": {
+          "maxItems": 500,
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "depth": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "context": { "type": "string", "const": "admin" },
+        "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "q": { "type": "string", "maxLength": 256 },
+        "where": {},
+        "sort": {
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+              "order": { "type": "string", "enum": ["asc", "desc"] }
+            },
+            "required": ["field", "order"],
+            "additionalProperties": false
+          }
+        },
+        "trashed": { "default": false, "type": "boolean" },
+        "folderId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "groupBy": {
+          "type": "object",
+          "properties": {
+            "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+            "order": { "type": "string", "enum": ["asc", "desc"] }
+          },
+          "required": ["field", "order"],
+          "additionalProperties": false
+        },
+        "groupPageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
+        "queryByGroup": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+              "pageSize": { "type": "integer", "minimum": 1, "maximum": 100 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["collection", "groupBy"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.validate",
+    "method": "POST",
+    "path": "/v1/collections/:collection/validations",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents validate",
+    "tool": "documents_validate",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "mode": { "default": "publish", "type": "string", "enum": ["draft", "publish"] },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "data": {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": {}
+            }
+          },
+          "required": ["collection", "data"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "mode": { "default": "publish", "type": "string", "enum": ["draft", "publish"] },
+            "dataByLocale": {
+              "type": "object",
+              "propertyNames": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+              "additionalProperties": {
+                "type": "object",
+                "propertyNames": { "type": "string" },
+                "additionalProperties": {}
+              },
+              "minProperties": 1,
+              "maxProperties": 20
+            }
+          },
+          "required": ["collection", "dataByLocale"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "mode": { "default": "publish", "type": "string", "enum": ["draft", "publish"] },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+            "data": {
+              "type": "object",
+              "propertyNames": { "type": "string" },
+              "additionalProperties": {}
+            }
+          },
+          "required": ["collection", "id", "revision", "data"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+            "mode": { "default": "publish", "type": "string", "enum": ["draft", "publish"] },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+            "dataByLocale": {
+              "type": "object",
+              "propertyNames": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+              "additionalProperties": {
+                "type": "object",
+                "propertyNames": { "type": "string" },
+                "additionalProperties": {}
+              },
+              "minProperties": 1,
+              "maxProperties": 20
+            }
+          },
+          "required": ["collection", "id", "revision", "dataByLocale"],
+          "additionalProperties": false
+        }
+      ]
     }
   },
   {
@@ -1682,6 +3383,43 @@
           "format": "uuid",
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         },
+        "joins": {
+          "anyOf": [
+            { "type": "boolean", "const": false },
+            {
+              "type": "object",
+              "propertyNames": { "type": "string", "minLength": 1, "maxLength": 512 },
+              "additionalProperties": {
+                "anyOf": [
+                  { "type": "boolean", "const": false },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "page": { "type": "integer", "exclusiveMinimum": 0, "maximum": 2147483647 },
+                      "pageSize": { "type": "integer", "exclusiveMinimum": 0, "maximum": 100 },
+                      "sort": {
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "field": { "type": "string", "minLength": 1, "maxLength": 256 },
+                            "order": { "type": "string", "enum": ["asc", "desc"] }
+                          },
+                          "required": ["field", "order"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "where": {},
+                      "count": { "type": "boolean" }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "fallback": {
           "maxItems": 20,
@@ -1757,6 +3495,67 @@
         }
       },
       "required": ["collection", "id", "ticketId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.copyLocale",
+    "method": "POST",
+    "path": "/v1/collections/:collection/documents/:id/locale-copies",
+    "idempotency": "required",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents copy-locale",
+    "tool": "documents_copyLocale",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "fromLocale": { "type": "string", "pattern": "^(?!all$)[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "toLocale": { "type": "string", "pattern": "^(?!all$)[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "overwrite": { "default": false, "type": "boolean" }
+      },
+      "required": ["collection", "id", "revision", "fromLocale", "toLocale"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "documents.renameFile",
+    "method": "POST",
+    "path": "/v1/collections/:collection/documents/:id/file-renames",
+    "idempotency": "required",
+    "module": "content",
+    "access": "permission",
+    "scopeKind": "collection",
+    "bindingConfigurable": true,
+    "command": "documents rename-file",
+    "tool": "documents_renameFile",
+    "transport": "json",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "locale": { "type": "string", "pattern": "^(?!all$)[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "filename": { "type": "string", "minLength": 1, "maxLength": 255 }
+      },
+      "required": ["collection", "id", "revision", "filename"],
       "additionalProperties": false
     }
   },
@@ -2334,7 +4133,7 @@
           "format": "uuid",
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         },
-        "action": { "default": "publish", "type": "string", "enum": ["publish", "unpublish"] },
+        "action": { "type": "string", "enum": ["publish", "unpublish"] },
         "executeAt": {
           "type": "string",
           "format": "date-time",
@@ -2366,6 +4165,7 @@
           "format": "uuid",
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "scheduleId": {
           "type": "string",
           "format": "uuid",
@@ -2545,6 +4345,7 @@
       "type": "object",
       "properties": {
         "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "jobId": {
           "type": "string",
           "format": "uuid",
@@ -2719,6 +4520,7 @@
       "type": "object",
       "properties": {
         "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "purpose": { "type": "string", "enum": ["create", "replace"] },
         "documentId": {
           "type": "string",
@@ -2750,6 +4552,7 @@
       "type": "object",
       "properties": {
         "collection": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "page": { "default": 1, "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
         "pageSize": { "default": 20, "type": "integer", "minimum": 1, "maximum": 100 },
         "status": {
@@ -2909,7 +4712,12 @@
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         },
         "variant": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
-        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] }
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "fallback": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" }
+        }
       },
       "required": ["collection", "id"],
       "additionalProperties": false
@@ -2947,7 +4755,12 @@
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         },
         "variant": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$" },
-        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] }
+        "mode": { "default": "editing", "type": "string", "enum": ["editing", "published"] },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
+        "fallback": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,31}$" }
+        }
       },
       "required": ["collection", "id", "bindingId"],
       "additionalProperties": false
@@ -2977,6 +4790,7 @@
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         },
         "revision": { "type": "integer", "exclusiveMinimum": 0, "maximum": 9007199254740991 },
+        "locale": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,31}$" },
         "recipe": {
           "type": "object",
           "properties": {

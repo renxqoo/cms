@@ -1,10 +1,12 @@
 import { sql } from 'drizzle-orm';
 import {
+  check,
   boolean,
   char,
   foreignKey,
   pgTable,
   uuid,
+  varchar,
   text,
   bigint,
   integer,
@@ -96,9 +98,14 @@ export const assetUploads = pgTable(
     failureCode: text('failure_code'),
     jobId: uuid('job_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    authorizationLocale: varchar('authorization_locale', { length: 32 }),
     delegationId: uuid('delegation_id'),
   },
   (table): PgTableExtraConfigValue[] => [
+    check(
+      'asset_uploads_authorization_locale_check',
+      sql`${table.authorizationLocale} IS NOT NULL OR ${table.status} IN('consumed','failed','cancelled','expired')`,
+    ),
     index('asset_uploads_delegation_idx')
       .on(table.delegationId)
       .where(sql`${table.delegationId} IS NOT NULL`),

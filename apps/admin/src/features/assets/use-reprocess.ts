@@ -7,11 +7,13 @@ import { useAccessControl } from '../access-control/provider';
 import { createProcessingController } from './image-processing';
 
 export function useReprocess(input: {
+  locale?: string | undefined;
   collection: string;
   id: string;
   revision: number;
   onChanged: () => void | Promise<void>;
   onBusyChange: (busy: boolean) => void;
+  editorSessionId?: string | undefined;
 }) {
   const { reportResult } = useAccessControl();
   const [controller] = useState(() => createProcessingController({ ...input, reportResult }));

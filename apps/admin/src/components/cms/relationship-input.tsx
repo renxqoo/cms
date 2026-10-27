@@ -99,7 +99,7 @@ function RelationshipBrowser({ props }: { props: RelationshipInputProps }) {
       <div className="flex flex-wrap gap-2">
         <Input
           aria-label={props.labels.search}
-          placeholder={props.labels.search}
+          placeholder={props.placeholder ?? props.labels.search}
           value={query}
           disabled={props.readOnly}
           onChange={(event) => setQuery(event.currentTarget.value)}
@@ -154,7 +154,7 @@ export function RelationshipInput(props: RelationshipInputProps) {
   const values = relationshipValues(props);
   return (
     <fieldset className="min-w-0 space-y-3">
-      <legend className="mb-2 text-sm font-medium">{props.label}</legend>
+      <legend className="mb-2 text-sm font-medium">{props.labelContent ?? props.label}</legend>
       <RelationshipSelection props={props} />
       {!props.readOnly ? (
         <>
@@ -184,16 +184,19 @@ export function RelationshipInput(props: RelationshipInputProps) {
               </Button>
             ) : null}
             {props.onCreate
-              ? props.collections.map((collection) => (
-                  <Button
-                    key={collection.id}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => props.onCreate?.(collection.id)}
-                  >
-                    {props.labels.create} {collection.label}
-                  </Button>
-                ))
+              ? props.collections
+                  .filter((collection) => props.canCreate?.(collection.id) !== false)
+                  .map((collection) => (
+                    <Button
+                      key={collection.id}
+                      variant="outline"
+                      size="sm"
+                      disabled={props.mode === 'multiple' && values.length >= props.maxRows}
+                      onClick={() => props.onCreate?.(collection.id)}
+                    >
+                      {props.labels.create} {collection.label}
+                    </Button>
+                  ))
               : null}
           </div>
         </>

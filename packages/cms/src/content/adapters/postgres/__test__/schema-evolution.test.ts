@@ -33,6 +33,7 @@ const original: CollectionDefinition = {
 async function fixture(
   next: (definition: CollectionDefinition) => CollectionDefinition,
   previous = original,
+  activateEmpty = false,
 ) {
   const kit = await createTestDatabase({ migrationScope: 'library' });
   resources.push(kit);
@@ -46,15 +47,34 @@ async function fixture(
   );
   const oldStore = createContentStore({ mapping: first.mapping, limits });
   const registry = createRegistry({ collections: [next(previous)], limits });
-  const evolution = generateEvolution({ previous: first.snapshot, registry });
+  const evolution = generateEvolution({ previous: first.snapshot, registry, activateEmpty });
   const store = createContentStore({ mapping: evolution.mapping, limits });
   return { ...kit, limits, first, oldStore, store, evolution, registry, actorId };
 }
 type Fixture = Awaited<ReturnType<typeof fixture>>;
+it('activates a reviewed schema evolution immediately only when affected collections have no documents or history', async () => {
+  const kit = await fixture(converted, original, true);
+  await kit.database.query(kit.evolution.sql);
+  await kit.database.transaction((tx) => kit.store.verifyReady(tx));
+  const control = await kit.database.query<{
+    schema_version: number;
+    prepared_schema_version: null;
+  }>(
+    'SELECT schema_version,prepared_schema_version FROM content_schema_control WHERE collection_id=$1',
+    [kit.registry.get('articles').id],
+  );
+  expect(control.rows).toEqual([{ schema_version: 2, prepared_schema_version: null }]);
+});
 async function save(
   kit: Fixture,
   data: DocumentData,
-  options: { id?: string; store?: typeof kit.oldStore; draft?: boolean; versionId?: string } = {},
+  options: {
+    id?: string;
+    store?: typeof kit.oldStore;
+    draft?: boolean;
+    versionId?: string;
+    locale?: string;
+  } = {},
 ) {
   const { id, store = kit.oldStore } = options;
   const documentId = id ?? randomUUID();
@@ -63,7 +83,12 @@ async function save(
     let revision = 1;
     let publishedVersionId: string | null = null;
     if (id) {
-      const current = await store.readDocument(tx, { collection: 'articles', id, lock: true });
+      const current = await store.readDocument(tx, {
+        collection: 'articles',
+        id,
+        lock: true,
+        ...(options.locale ? { locale: options.locale } : {}),
+      });
       revision = current.revision + 1;
       ({ publishedVersionId } = current);
     } else
@@ -79,19 +104,21 @@ async function save(
       actorId: kit.actorId,
       revision,
       schemaVersion: store.definition('articles').schemaVersion,
-      locale: 'en',
+      locale: options.locale ?? 'en',
       data,
       kind: 'save',
     });
     await store.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'articles',
       id: documentId,
       expectedRevision: revision - 1,
       revision,
       currentVersionId: versionId,
       publishedVersionId: options.draft ? null : (publishedVersionId ?? versionId),
+      ...(options.locale ? { locale: options.locale } : {}),
     });
-    await store.syncActiveUnique(tx, { collection: 'articles', id: documentId });
+    await store.syncActiveProjections(tx, { collection: 'articles', id: documentId });
     return { id: documentId, versionId };
   });
 }
@@ -220,6 +247,7 @@ it('an existing draft backfill marker cannot bypass publish validation after the
   await backfill(kit);
   await kit.database.transaction((tx) =>
     kit.oldStore.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'articles',
       id: first.id,
       expectedRevision: 1,
@@ -239,6 +267,7 @@ it('an existing draft backfill marker cannot bypass publish validation after the
   expect(status.rows).toEqual([{ status: 'preparing' }]);
   await kit.database.transaction((tx) =>
     kit.oldStore.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'articles',
       id: first.id,
       expectedRevision: 2,
@@ -278,6 +307,7 @@ it('a tail page containing a different historical revision still validates the n
   await backfill(kit);
   await kit.database.transaction((tx) =>
     kit.oldStore.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: 'articles',
       id: missing.id,
       expectedRevision: 2,
@@ -597,7 +627,26 @@ it('removing the final relation leaves an empty active projection while original
     await kit.database.transaction((tx) =>
       kit.oldStore.inboundReferences(tx, { collection: 'articles', id: target.id, active: true }),
     ),
-  ).toHaveLength(1);
+  ).toEqual([
+    expect.objectContaining({
+      sourceDocumentId: source.id,
+      path: 'en:related',
+      sourceView: 'current',
+      active: true,
+    }),
+    expect.objectContaining({
+      sourceDocumentId: source.id,
+      path: 'en:related',
+      sourceView: 'published',
+      active: true,
+    }),
+    expect.objectContaining({
+      sourceDocumentId: source.id,
+      path: 'zh:related',
+      sourceView: 'published',
+      active: true,
+    }),
+  ]);
   await kit.database.query(kit.evolution.sql);
   await backfill(kit);
   await kit.database.transaction((tx) => kit.store.activateSchema(tx));
@@ -611,4 +660,98 @@ it('removing the final relation leaves an empty active projection while original
       kit.store.purgeDocument(tx, { collection: 'articles', id: target.id }),
     ),
   ).rejects.toMatchObject({ code: 'resource_in_use' });
+});
+
+it('renames published language slots through the explicit locale map without merging independently published revisions', async () => {
+  const before = { ...original, localizeStatus: true };
+  const kit = await fixture(
+    (previous) => ({
+      ...previous,
+      schemaVersion: 2,
+      previousSchemas: [previous],
+      locales: { default: 'en', supported: ['en', 'zh-CN'], fallback: { 'zh-CN': ['en'] } },
+      migrations: [
+        {
+          from: 1,
+          version: 'rename-published-zh',
+          localeMap: { en: 'en', 'zh-CN': 'zh' },
+          transform: (data) => data,
+        },
+      ],
+    }),
+    before,
+  );
+  const english = await save(kit, { title: 'English live' }, { locale: 'en' });
+  const chinese = await save(kit, { title: '中文已发布' }, { id: english.id, locale: 'zh' });
+  await kit.database.query(kit.evolution.sql);
+  await backfill(kit);
+  await expect(save(kit, { title: 'Old writer' }, { id: english.id })).rejects.toMatchObject({
+    code: 'temporarily_unavailable',
+  });
+  await kit.database.transaction((tx) => kit.store.activateSchema(tx));
+  await kit.database.transaction((tx) => kit.store.verifyReady(tx));
+  expect(
+    await kit.database.transaction((tx) =>
+      kit.store.readDocument(tx, { collection: 'articles', id: english.id, locale: 'en' }),
+    ),
+  ).toMatchObject({ publishedVersionId: english.versionId });
+  expect(
+    await kit.database.transaction((tx) =>
+      kit.store.readDocument(tx, { collection: 'articles', id: english.id, locale: 'zh-CN' }),
+    ),
+  ).toMatchObject({
+    publishedVersionId: chinese.versionId,
+    publications: { en: english.versionId, 'zh-CN': chinese.versionId },
+  });
+  expect(
+    await kit.database.transaction((tx) =>
+      kit.store.readRevisionData(tx, {
+        collection: 'articles',
+        documentId: english.id,
+        versionId: chinese.versionId,
+        locale: 'zh-CN',
+      }),
+    ),
+  ).toMatchObject({ title: '中文已发布' });
+});
+
+it('removes a retired published language only through its explicit schema locale map', async () => {
+  const before = { ...original, localizeStatus: true };
+  const kit = await fixture(
+    (previous) => ({
+      ...previous,
+      schemaVersion: 2,
+      previousSchemas: [previous],
+      locales: { default: 'en', supported: ['en'], fallback: {} },
+      migrations: [
+        {
+          from: 1,
+          version: 'remove-published-zh',
+          localeMap: { en: 'en' },
+          transform: (data) => data,
+        },
+      ],
+    }),
+    before,
+  );
+  const english = await save(kit, { title: 'English remains public' }, { locale: 'en' });
+  await save(kit, { title: '中文归档语言' }, { id: english.id, locale: 'zh' });
+  await kit.database.query(kit.evolution.sql);
+  await backfill(kit);
+  await kit.database.transaction((tx) => kit.store.activateSchema(tx));
+  await kit.database.transaction((tx) => kit.store.verifyReady(tx));
+  expect(
+    await kit.database.transaction((tx) =>
+      kit.store.readDocument(tx, { collection: 'articles', id: english.id, locale: 'en' }),
+    ),
+  ).toMatchObject({
+    publishedVersionId: english.versionId,
+    publications: { en: english.versionId },
+  });
+  expect(
+    await kit.database.query(
+      'SELECT locale FROM content_publications WHERE document_id=$1 ORDER BY locale',
+      [english.id],
+    ),
+  ).toMatchObject({ rows: [{ locale: 'en' }] });
 });

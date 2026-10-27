@@ -93,6 +93,7 @@ it('does not require private manifests in upload summaries or accept invalid byt
     declaredBytes: 12,
     createdAt: time,
     purpose: 'create',
+    locale: 'en',
     documentId: null,
     revision: null,
     status: 'pending',

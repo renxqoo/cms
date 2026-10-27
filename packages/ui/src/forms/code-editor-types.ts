@@ -1,4 +1,5 @@
 import type { editor } from 'monaco-editor';
+import type { ReactNode } from 'react';
 
 export interface CodeEditorProps {
   value: string;
@@ -6,6 +7,7 @@ export interface CodeEditorProps {
   language: string;
   theme: 'light' | 'dark';
   label: string;
+  labelContent?: ReactNode;
   loadingLabel: string;
   errorLabel: string;
   retryLabel: string;

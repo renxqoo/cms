@@ -21,6 +21,9 @@ export function expansionCost(view: DocumentView, budget: ExpansionBudget): numb
 
 export function documentJson(view: DocumentView, budget: ExpansionBudget): DocumentData {
   const result = {
+    ...(view.componentProps ? { componentProps: view.componentProps } : {}),
+    ...(view.createdBy === undefined ? {} : { createdBy: view.createdBy }),
+    ...(view.updatedBy === undefined ? {} : { updatedBy: view.updatedBy }),
     id: view.id,
     collection: view.collection,
     revision: view.revision,

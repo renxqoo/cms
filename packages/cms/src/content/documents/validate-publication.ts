@@ -1,10 +1,13 @@
+import { observeHooks } from '../hooks/api.ts';
+import { functionScope } from '../hooks/invoke.ts';
 import { publicationLocales } from './publication-locales.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import { targetReadContext } from '../queries/resolve-locale.ts';
 import { validateData } from '../fields/validate-data.ts';
+import { assertFieldOptions } from '../fields/filter-options.ts';
 import { authorizeReferences, referencesForLocale } from './revision-data.ts';
 import type { ContentRuntime, ContentState } from '../types.ts';
-import type { ReferenceValue, DocumentData } from '../definition.ts';
+import type { DocumentData } from '../definition.ts';
 
 interface PublicationInput {
   runtime: ContentRuntime;
@@ -44,7 +47,7 @@ function validateApplication(
 async function validateLocale(
   state: ContentState,
   input: PublicationInput & { locale: string; media: PublicationMedia },
-): Promise<ReferenceValue[]> {
+): Promise<void> {
   const { runtime, locale } = input;
   const data = await runtime.store.readRevisionData(state.tx, {
     collection: state.collection.key,
@@ -56,22 +59,43 @@ async function validateLocale(
       ...(state.collection.publicationLocalesField ? { fallback: [] } : {}),
     }),
   });
-  const validated = validateData({
+  const validated = await validateData({
     collection: state.collection,
     data,
     mode: 'publish',
     locale,
     limits: runtime.limits,
     applyDefaults: false,
+    functions: functionScope({ ...state, locale }),
   });
-  for (const extension of state.collection.extensions ?? [])
-    if (extension.validate && !extension.validate(validated)) fail('invalid_input');
+  await observeHooks(
+    { ...state, locale },
+    {
+      stage: 'beforePublish',
+      limits: runtime.limits,
+      context: { data: validated, documentId: input.documentId },
+    },
+  );
   validateApplication(state, { runtime, locale, data: validated, media: input.media });
-  return referencesForLocale({
-    collection: state.collection,
-    data: validated,
-    locale,
-    limits: runtime.limits,
+  await validateReferences({ ...state, locale }, { ...input, data: validated });
+}
+async function validateReferences(
+  state: ContentState,
+  input: PublicationInput & { data: DocumentData },
+): Promise<void> {
+  await assertFieldOptions(state, {
+    runtime: input.runtime,
+    data: input.data,
+    documentId: input.documentId,
+  });
+  await authorizeReferences(state, {
+    runtime: input.runtime,
+    references: referencesForLocale({
+      collection: state.collection,
+      data: input.data,
+      locale: state.locale,
+      limits: input.runtime.limits,
+    }),
   });
 }
 export async function validatePublicationRevision(
@@ -94,8 +118,5 @@ export async function validatePublicationRevision(
           revisionIds: [input.versionId],
         })
       : [];
-  const references: ReferenceValue[] = [];
-  for (const locale of locales)
-    references.push(...(await validateLocale(state, { ...input, locale, media })));
-  await authorizeReferences(state, { runtime: input.runtime, references });
+  for (const locale of locales) await validateLocale(state, { ...input, locale, media });
 }

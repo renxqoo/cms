@@ -1,3 +1,4 @@
+import { policyScope } from '../hooks/invoke.ts';
 import { randomUUID } from 'node:crypto';
 import { actorReference } from '@new-cms/cms/access';
 import type { ActorReference } from '@new-cms/cms/platform/contracts';
@@ -22,9 +23,9 @@ import {
 import { targetState } from './relation-scopes.ts';
 import { lockRevisionResources } from './revision-data.ts';
 import { historicalLocale } from '../fields/remap-locale.ts';
-import { remapReferencePath } from '../fields/remap-reference-path.ts';
-import { collectReferences } from '../fields/collect-references.ts';
-import { projectData } from '../fields/policies.ts';
+import { selectRevisionBindings } from './media-bindings.ts';
+import { targetReadContext } from '../queries/resolve-locale.ts';
+import { projectData } from '../fields/policy-read.ts';
 import { saveInTransaction } from './save-document.ts';
 
 export function uploadSettings(
@@ -54,6 +55,11 @@ export async function mediaState(
     collectionKey: string;
     mode?: 'editing' | 'published';
     evaluatePolicy?: boolean;
+    locale?: string | undefined;
+    fallback?: readonly string[];
+    editorSessionId?: string | undefined;
+    background?: boolean;
+    signal?: AbortSignal;
   },
 ): Promise<ContentState> {
   const actor = await input.runtime.authorizeActor(tx, {
@@ -63,46 +69,38 @@ export async function mediaState(
   });
   const collection = await input.runtime.resolveCollection(tx, input.collectionKey);
   const state = {
+    hookBudget: { used: 0 },
+    hookLimits: input.runtime.limits,
     tx,
     actor,
     collection,
-    ctx: { requestId: randomUUID(), ip: 'internal' },
+    ctx: {
+      requestId: randomUUID(),
+      ip: 'internal',
+      ...(input.signal ? { signal: input.signal } : {}),
+      ...(input.editorSessionId ? { editorSessionId: input.editorSessionId } : {}),
+    },
     operationId: input.operationId,
-    locale: resolveLocale(collection),
+    locale: resolveLocale(collection, input.locale),
     mode: input.mode ?? 'editing',
     actorAuthorization: true,
+    backgroundWork: input.background === true,
+    ...(input.fallback ? { fallbackOverride: input.fallback } : {}),
   };
-  const predicate = input.evaluatePolicy === false ? undefined : collectionPredicate(state);
+  const predicate = input.evaluatePolicy === false ? undefined : await collectionPredicate(state);
   return { ...state, ...(predicate ? { predicate } : {}) };
 }
 
-async function bindingReadState(
+async function downloadReadState(
   state: ContentState,
   input: {
     runtime: ContentRuntime;
     request: ContentAuthorizationInput;
-    binding?: { sourcePath: string };
-    schemaVersion: number;
   },
 ): Promise<ContentState> {
-  const separator = input.binding?.sourcePath.indexOf(':') ?? -1;
-  const sourceLocale =
-    input.binding && separator >= 0 ? input.binding.sourcePath.slice(0, separator) : undefined;
-  const locale =
-    sourceLocale === undefined
-      ? state.locale
-      : state.collection.locales.supported.find(
-          (candidate) =>
-            historicalLocale({
-              current: state.collection,
-              schemaVersion: input.schemaVersion,
-              locale: candidate,
-            }) === sourceLocale,
-        );
-  if (locale === undefined) fail('not_found');
-  const localized = { ...state, locale: resolveLocale(state.collection, locale) };
-  const predicate = collectionPredicate(localized);
-  const reader = { ...localized, ...(predicate ? { predicate } : {}) };
+  const { predicate: _old, ...base } = state;
+  const predicate = await collectionPredicate(base);
+  const reader = { ...base, ...(predicate ? { predicate } : {}) };
   if (!input.request.documentId) fail('not_found');
   await ensureVisible(reader, { runtime: input.runtime, id: input.request.documentId });
   await assetOperationPolicy(reader, input);
@@ -145,11 +143,7 @@ async function downloadSource(
     versionId,
   });
   const binding = await downloadBinding(state, { ...input, versionId });
-  const reader = await bindingReadState(state, {
-    ...input,
-    schemaVersion: version.schemaVersion,
-    ...(binding ? { binding } : {}),
-  });
+  const reader = await downloadReadState(state, input);
   if (
     input.request.versionId &&
     versionId !== document.currentVersionId &&
@@ -188,6 +182,13 @@ async function downloadAuthorization(
     operationId: 'assets.download',
     id: targetId,
   });
+  const result = {
+    upload: uploadSettings(input.runtime, target.collection),
+    documentId: source.document.id,
+    revision: source.document.revision,
+    revisionId: source.versionId,
+  };
+  if (input.request.action === 'inspectUpload') return result;
   if (!input.runtime.assets) fail('temporarily_unavailable');
   const grant =
     source.binding?.authorizedManifest ??
@@ -197,10 +198,7 @@ async function downloadAuthorization(
       mediaDocumentId: source.document.id,
     }));
   return {
-    upload: uploadSettings(input.runtime, target.collection),
-    documentId: source.document.id,
-    revision: source.document.revision,
-    revisionId: source.versionId,
+    ...result,
     manifestId: grant.manifestId,
   };
 }
@@ -215,40 +213,40 @@ async function assertReadableBinding(
     binding: { sourcePath: string; mediaDocumentId: string; mediaCollectionKey: string };
   },
 ): Promise<void> {
-  const separator = input.binding.sourcePath.indexOf(':');
-  const { locale } = state;
-  const rawPath =
-    separator >= 0 ? input.binding.sourcePath.slice(separator + 1) : input.binding.sourcePath;
-  const sourcePath = remapReferencePath({
-    from: input.runtime.store.definition(state.collection.key, input.schemaVersion),
-    to: state.collection,
-    path: rawPath,
+  if (!input.runtime.assets) fail('temporarily_unavailable');
+  const read = targetReadContext({
+    collection: state.collection,
+    locale: state.locale,
+    ...(state.fallbackOverride ? { fallback: state.fallbackOverride } : {}),
   });
   const data = await input.runtime.store.readRevisionData(state.tx, {
     collection: state.collection.key,
     documentId: input.documentId,
     versionId: input.versionId,
-    locale,
-    fallback: [],
+    ...read,
   });
-  const projected = projectData({
+  const projected = await projectData({
+    ...policyScope(state),
     collection: state.collection,
     data,
-    context: policyContext({ ...state, locale }, data),
+    context: { ...policyContext(state, data), documentId: input.documentId },
   });
-  const references = collectReferences({
-    limits: input.runtime.limits,
-    collection: state.collection,
+  const bindings = selectRevisionBindings(state, {
+    runtime: input.runtime,
     data: projected,
-    locale,
+    schemaVersion: input.schemaVersion,
+    locales: [read.locale, ...read.fallback],
+    bindings: await input.runtime.assets.listRevisionBindings(state.tx, {
+      revisionIds: [input.versionId],
+    }),
   });
+  assertBindingOrigin(state, { ...input, locales: [read.locale, ...read.fallback] });
   if (
-    !references.some(
-      (reference) =>
-        reference.media &&
-        reference.path === sourcePath &&
-        reference.id === input.binding.mediaDocumentId &&
-        reference.collection === input.binding.mediaCollectionKey,
+    !bindings.some(
+      (binding) =>
+        binding.sourcePath === input.binding.sourcePath &&
+        binding.mediaDocumentId === input.binding.mediaDocumentId &&
+        binding.mediaCollectionKey === input.binding.mediaCollectionKey,
     )
   )
     fail('not_found');
@@ -257,19 +255,29 @@ async function assertReadableBinding(
 export function createMediaAuthorizer(runtime: ContentRuntime): ContentAuthorizer {
   return async function authorizeContent(tx: SqlExecutor, request: ContentAuthorizationInput) {
     const executor = budgetedExecutor(tx, runtime.limits.maxSqlQueries);
-    if (request.action !== 'download') await lockContentMutation(executor, runtime);
+    const reading = request.action === 'download' || request.action === 'inspectUpload';
+    if (!reading) await lockContentMutation(executor, runtime);
     const operationId = mediaOperation(request.action);
     const state = await mediaState(executor, {
       runtime,
       actor: actorReference(request.actor),
       operationId,
+      editorSessionId: request.editorSessionId,
+      ...(request.signal ? { signal: request.signal } : {}),
+      locale: request.locale,
+      background: request.background === true,
       collectionKey: request.collectionKey,
       ...(request.mode ? { mode: request.mode } : {}),
-      ...(request.action === 'download' ? { evaluatePolicy: false } : {}),
+      ...(request.fallback ? { fallback: request.fallback } : {}),
+      ...(reading ? { evaluatePolicy: false } : {}),
     });
-    if (request.action === 'download') return downloadAuthorization(state, { runtime, request });
+    if (reading)
+      return {
+        ...(await downloadAuthorization(state, { runtime, request })),
+        locale: state.locale,
+      };
     await assetOperationPolicy(state, { runtime, request });
-    return mutationAuthorization(state, { runtime, request });
+    return { ...(await mutationAuthorization(state, { runtime, request })), locale: state.locale };
   };
 }
 
@@ -319,11 +327,13 @@ export function createProcessingCommitter(runtime: ContentRuntime) {
     tx: SqlExecutor,
     input: {
       actor: ContentState['actor'];
+      locale?: string | undefined;
       collectionKey: string;
       documentId: string;
       revision: number;
       uploadId: string;
       jobId: string;
+      signal?: AbortSignal;
     },
   ): Promise<{ revisionId: string }> {
     await lockContentMutation(tx, runtime);
@@ -332,6 +342,9 @@ export function createProcessingCommitter(runtime: ContentRuntime) {
       actor: actorReference(input.actor),
       operationId: 'documents.update',
       collectionKey: input.collectionKey,
+      background: true,
+      ...(input.signal ? { signal: input.signal } : {}),
+      locale: input.locale,
     });
     const result = await saveInTransaction(state, {
       runtime,
@@ -348,7 +361,7 @@ export function createProcessingCommitter(runtime: ContentRuntime) {
 }
 
 function mediaOperation(action: ContentAuthorizationInput['action']): string {
-  if (action === 'download') return 'documents.get';
+  if (action === 'download' || action === 'inspectUpload') return 'documents.get';
   return action === 'upload' ? 'documents.create' : 'documents.update';
 }
 
@@ -370,6 +383,24 @@ async function assetOperationPolicy(
     operationId,
     scope: { scopeKind: 'collection', collectionKey: state.collection.key },
   });
-  const predicate = collectionPredicate({ ...state, actor, operationId });
+  const predicate = await collectionPredicate({ ...state, actor, operationId });
   if (predicate) fail('forbidden');
+}
+
+function assertBindingOrigin(
+  state: ContentState,
+  input: { schemaVersion: number; binding: { sourcePath: string }; locales: readonly string[] },
+): void {
+  const origin = input.binding.sourcePath.slice(0, input.binding.sourcePath.indexOf(':'));
+  if (
+    !input.locales.some(
+      (locale) =>
+        historicalLocale({
+          current: state.collection,
+          schemaVersion: input.schemaVersion,
+          locale,
+        }) === origin,
+    )
+  )
+    fail('forbidden');
 }

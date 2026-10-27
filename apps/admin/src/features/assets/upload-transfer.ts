@@ -87,6 +87,9 @@ export async function completeUpload(input: UploadTask) {
   updateUpload(runtime, id, { status: 'processing', uncertainStep: 'complete' });
   const result = await requestApi({
     operation: 'assets.completeUpload',
+    ...(runtime.options.editorSessionId
+      ? { editorSessionId: runtime.options.editorSessionId }
+      : {}),
     params: { collection: runtime.options.collection, uploadId: current.session.id },
     body: {},
     response: uploadSessionSchema,
@@ -105,9 +108,11 @@ export async function transferUpload(input: UploadTask) {
   updateUpload(runtime, id, { status: 'uploading', error: null, uncertainStep: 'create' });
   const created = await requestApi({
     operation: 'assets.createUpload',
+    ...(options.editorSessionId ? { editorSessionId: options.editorSessionId } : {}),
     params: { collection: options.collection },
     body: {
       purpose: options.purpose,
+      ...(options.locale ? { locale: options.locale } : {}),
       filename: file.name,
       mimeType: file.type,
       bytes: file.size,
@@ -127,6 +132,7 @@ export async function transferUpload(input: UploadTask) {
   }
   const written = await requestApi({
     operation: 'assets.writeUpload',
+    ...(options.editorSessionId ? { editorSessionId: options.editorSessionId } : {}),
     params: { collection: options.collection, uploadId: created.data.id },
     body: file,
     response: bytesReceiptSchema,

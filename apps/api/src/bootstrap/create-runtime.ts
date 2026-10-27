@@ -67,6 +67,7 @@ function createServices(config: ApplicationConfig) {
     policy: config.policy,
     authorize: core.access.authorize,
     authorizeActor: core.access.authorizeActor,
+    resolveAuthor: core.access.readAuthor,
     storage: config.storage,
     clientOrigin: config.delivery.clientOrigin,
     configuration,

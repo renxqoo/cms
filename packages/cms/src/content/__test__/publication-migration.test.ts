@@ -44,10 +44,10 @@ it('blocks readiness until existing global publications are expanded and preserv
     await expect(content.verifyReady()).rejects.toMatchObject({ code: 'temporarily_unavailable' });
     const migration = createPublicationMigrator({
       database: kit.database,
-      registry,
+      mapping: compileContent(registry),
+      limits: kit.limits,
       policy: kit.policy,
       resourceLockKey: kit.contentOptions.workPolicy.resourceLockKey,
-      maxPageSize: kit.limits.maxPageSize,
     });
     expect(await migration.migratePage({ collection: 'articles', pageSize: 1 })).toEqual({
       processed: 1,
@@ -104,10 +104,10 @@ it('does not silently collapse independently published languages when the config
   });
   const migration = createPublicationMigrator({
     database: kit.database,
-    registry,
+    mapping: compileContent(registry),
+    limits: kit.limits,
     policy: kit.policy,
     resourceLockKey: kit.contentOptions.workPolicy.resourceLockKey,
-    maxPageSize: kit.limits.maxPageSize,
   });
   await expect(
     migration.migratePage({ collection: 'articles', pageSize: 10 }),
@@ -142,10 +142,10 @@ it('migrates global publications using registered and disabled languages without
   const registry = createRegistry({ collections, limits: kit.limits });
   const options = {
     database: kit.database,
-    registry,
+    mapping: compileContent(registry),
+    limits: kit.limits,
     policy: kit.policy,
     resourceLockKey: kit.contentOptions.workPolicy.resourceLockKey,
-    maxPageSize: kit.limits.maxPageSize,
   };
   await expect(
     createPublicationMigrator(options).migratePage({ collection: 'articles', pageSize: 10 }),
@@ -163,7 +163,7 @@ it('migrates global publications using registered and disabled languages without
   });
   await expect(migration.migratePage({ collection: 'articles', pageSize: 10 })).resolves.toEqual({
     processed: 1,
-    complete: true,
+    complete: false,
   });
   expect(
     (

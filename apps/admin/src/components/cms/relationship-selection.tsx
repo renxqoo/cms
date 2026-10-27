@@ -46,7 +46,7 @@ function SelectedValue({
       {!available ? (
         <span className="text-xs text-destructive">{props.labels.unavailable}</span>
       ) : null}
-      {!props.readOnly && props.onEdit ? (
+      {!props.readOnly && props.onEdit && props.canEdit?.(value) !== false ? (
         <Button
           size="xs"
           variant="ghost"

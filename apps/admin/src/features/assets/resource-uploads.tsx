@@ -149,6 +149,7 @@ function ResourceUploadQueue(props: {
       collection={props.collection.key}
       limits={props.editor.upload}
       purpose="create"
+      locale={props.editor.locale}
       disabled={props.disabled}
       onBusyChange={props.onBusyChange}
       onProcessed={save}

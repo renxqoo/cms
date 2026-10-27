@@ -15,7 +15,9 @@ interface ProcessingState {
   error: ApiFailure | null;
 }
 interface ProcessingOptions {
+  locale?: string | undefined;
   collection: string;
+  editorSessionId?: string | undefined;
   id: string;
   onChanged: () => void | Promise<void>;
   onBusyChange: (busy: boolean) => void;
@@ -67,8 +69,13 @@ async function ensureJob(runtime: Runtime, controller: AbortController): Promise
   if (intent.jobId) return intent.jobId;
   const receipt = await requestApi({
     operation: 'assets.reprocess',
+    ...(options.editorSessionId ? { editorSessionId: options.editorSessionId } : {}),
     params: { collection: options.collection, id: options.id },
-    body: { revision: intent.revision, recipe: intent.recipe },
+    body: {
+      revision: intent.revision,
+      recipe: intent.recipe,
+      ...(options.locale ? { locale: options.locale } : {}),
+    },
     response: receiptSchema,
     signal: controller.signal,
     idempotencyKey: intent.key,
@@ -102,6 +109,7 @@ async function read(runtime: Runtime, controller: AbortController) {
   if (!jobId || !live(runtime, controller)) return;
   const result = await requestApi({
     operation: 'content.getJob',
+    ...(runtime.options.locale ? { query: { locale: runtime.options.locale } } : {}),
     params: { collection: runtime.options.collection, jobId },
     response: assetJobSchema,
     signal: controller.signal,

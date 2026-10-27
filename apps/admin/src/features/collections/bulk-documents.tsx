@@ -19,9 +19,12 @@ import { useApiQuery } from '../management-shared/query';
 import { ManagementDialog } from '../management-shared/management-dialog';
 import { ManagementFeedback } from '../management-shared/feedback';
 import { useAppNavigation } from '../../components/shell/navigation/provider';
-import { readBulkEditor } from './bulk-read';
+import { useCandidatePresentation } from './use-candidate-presentation';
+import { readBulkEditor, bulkEditorLayout } from './bulk-read';
 import { referenceServices } from './reference-services';
 import type { ContentMessages } from './messages';
+import { allowedBulkActions, bulkOperations } from './bulk-actions';
+import type { BulkAction } from './bulk-actions';
 import { contentEditorPolicy } from './policy';
 import { useContentMutation } from './use-content-mutation';
 
@@ -35,19 +38,18 @@ interface BulkProps {
   onCompleted: () => void;
 }
 const actionSchema = z.enum(['update', 'copy', 'archive', 'restoreTrash']);
-type BulkAction = z.infer<typeof actionSchema>;
-const operations = {
-  update: 'documents.update',
-  copy: 'documents.copy',
-  archive: 'documents.archive',
-  restoreTrash: 'documents.restoreTrash',
-} as const;
 
 function useBulkModel(props: BulkProps) {
   const { collection, documents, locale } = props;
   const access = useAccessControl();
   const { reportResult } = access;
-  const [action, setAction] = useState<BulkAction>(props.trashed ? 'restoreTrash' : 'archive');
+  const actions = allowedBulkActions(collection, props.trashed).filter((action) =>
+    access.can(bulkOperations[action], { scopeKind: 'collection', collectionKey: collection.key }),
+  );
+  const [chosenAction, setAction] = useState<BulkAction>(
+    props.trashed ? 'restoreTrash' : 'archive',
+  );
+  const action = actions.includes(chosenAction) ? chosenAction : (actions[0] ?? null);
   const [descriptor, setDescriptor] = useState<ApiResult<CollectionEditor> | null>(null);
   const [value, setValue] = useState<FieldData>({});
   const [errors, setErrors] = useState<Readonly<Record<string, string>>>({});
@@ -56,12 +58,44 @@ function useBulkModel(props: BulkProps) {
   const mutation = useContentMutation();
   const catalog = useApiQuery({
     operation: 'collections.list',
+    query: { locale },
     response: collectionListSchema,
     enabled: access.can('collections.list'),
   });
+  const metadata = useMemo(
+    () =>
+      descriptor?.ok
+        ? { ...descriptor.data, layout: bulkEditorLayout(descriptor.data.layout) }
+        : null,
+    [descriptor],
+  );
+  const snapshot = useMemo(
+    () =>
+      metadata && documents[0] ? { collection, editor: metadata, document: documents[0] } : null,
+    [metadata, documents, collection],
+  );
+  const presentation = useCandidatePresentation({
+    snapshot,
+    data: value,
+    documents,
+    active: action === 'update' && receipt === null,
+    report: reportResult,
+  });
   const services = useMemo(
-    () => referenceServices(catalog.data?.rows ?? [], reportResult),
-    [catalog.data, reportResult],
+    () =>
+      referenceServices(
+        catalog.data?.rows ?? [],
+        reportResult,
+        metadata
+          ? {
+              collection: collection.key,
+              documents,
+              locale,
+              data: writablePatch(metadata.layout, {}, value),
+            }
+          : undefined,
+      ),
+    [catalog.data, reportResult, metadata, collection.key, documents, locale, value],
   );
   useEffect(() => {
     if (action !== 'update' || receipt) return () => {};
@@ -77,17 +111,13 @@ function useBulkModel(props: BulkProps) {
     );
     return () => controller.abort();
   }, [action, collection, documents, locale, reportResult, receipt]);
-  const metadata = descriptor?.ok ? descriptor.data : null;
   const readError = descriptor && !descriptor.ok ? descriptor : null;
   const patch = metadata ? writablePatch(metadata.layout, {}, value) : {};
   const maximum =
     action === 'update'
       ? contentEditorPolicy.maximumBulkUpdates
       : contentEditorPolicy.maximumBulkItems;
-  const canWrite = access.can(operations[action], {
-    scopeKind: 'collection',
-    collectionKey: collection.key,
-  });
+  const canWrite = action !== null;
   function validity(name: string, error: string | null) {
     setErrors((previous) =>
       error === null
@@ -98,7 +128,9 @@ function useBulkModel(props: BulkProps) {
   return {
     props,
     action,
+    actions,
     metadata,
+    presentation,
     readError,
     reading: action === 'update' && descriptor === null,
     value,
@@ -115,7 +147,7 @@ function useBulkModel(props: BulkProps) {
     validity,
     changeAction: (next: string) => {
       const parsed = actionSchema.safeParse(next);
-      if (parsed.success) {
+      if (parsed.success && actions.includes(parsed.data)) {
         setAction(parsed.data);
         setDescriptor(null);
       }
@@ -133,6 +165,8 @@ function bulkDisabled(model: BulkModel) {
     model.props.documents.length > model.maximum;
   const updateInvalid =
     !model.metadata ||
+    model.presentation.previewBusy ||
+    model.presentation.previewFailure !== null ||
     Object.keys(model.errors).length > 0 ||
     Object.keys(model.patch).length === 0;
   return base || (model.action === 'update' && updateInvalid);
@@ -140,6 +174,7 @@ function bulkDisabled(model: BulkModel) {
 
 function submitBulk(model: BulkModel) {
   const { action, props, patch } = model;
+  if (action === null || bulkDisabled(model)) return;
   void model.mutation.run(
     {
       operation: 'content.batch',
@@ -186,9 +221,14 @@ export function BulkDocuments(props: BulkProps) {
         <>
           <ManagementFeedback error={model.readError} />
           <ManagementFeedback
+            error={model.presentation.previewFailure}
+            onRetry={model.presentation.retry}
+          />
+          <ManagementFeedback
             error={mutation.error}
             {...(mutation.locked ? { onRetry: mutation.retry } : {})}
           />
+          {model.action === null ? <Banner tone="warning">{t.operationsDisabled}</Banner> : null}
           {props.documents.length > model.maximum ? (
             <Banner tone="warning">{t.bulkLimit}</Banner>
           ) : null}
@@ -200,19 +240,22 @@ export function BulkDocuments(props: BulkProps) {
       </p>
       <Field id="bulk-action" label={t.bulk}>
         <NativeSelect
-          value={model.action}
+          value={model.action ?? ''}
           disabled={model.receipt !== null || mutation.locked}
           onChange={(event) => model.changeAction(event.currentTarget.value)}
         >
-          {props.trashed ? (
-            <option value="restoreTrash">{t.bulkRestore}</option>
-          ) : (
-            <>
-              <option value="archive">{t.bulkArchive}</option>
-              <option value="copy">{t.bulkCopy}</option>
-              <option value="update">{t.bulkUpdate}</option>
-            </>
-          )}
+          {model.actions.map((action) => (
+            <option key={action} value={action}>
+              {
+                {
+                  archive: t.bulkArchive,
+                  copy: t.bulkCopy,
+                  update: t.bulkUpdate,
+                  restoreTrash: t.bulkRestore,
+                }[action]
+              }
+            </option>
+          ))}
         </NativeSelect>
       </Field>
       {model.action === 'update' && metadata ? (
@@ -226,9 +269,13 @@ export function BulkDocuments(props: BulkProps) {
           locale={props.locale}
           services={model.services}
           richTextNodes={metadata.richTextNodes}
+          visibility={model.presentation.visibility}
+          componentProps={model.presentation.componentProps}
+          choiceOptions={model.presentation.choiceOptions}
           readOnly={model.receipt !== null}
         />
       ) : null}
+      {model.presentation.previewBusy ? <p role="status">{t.loading}</p> : null}
       {model.readError ? <p>{t.bulkIncompatible}</p> : null}
       {model.receipt ? (
         <BulkReceipt receipt={model.receipt} collection={props.collection.key} t={t} />

@@ -44,6 +44,7 @@ function manifestSchema(): Schema {
 }
 function uploadSchema(): Schema {
   return object({
+    locale: nullable(text),
     id,
     collection: text,
     purpose: { enum: ['create', 'replace'] },

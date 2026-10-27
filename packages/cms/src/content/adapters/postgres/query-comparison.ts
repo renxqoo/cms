@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { geoComparison } from './query-geo.ts';
 import { fail } from '@new-cms/cms/platform/contracts';
 import type { FieldDefinition, JsonValue, QueryOperator } from '../../definition.ts';
 import type { FieldMapping } from '../../model.ts';
@@ -86,6 +87,23 @@ function orderedComparison(input: ComparisonInput): string {
   if (!token) fail('invalid_input');
   return `${expression}${token}${parameter(context, field ? validateScalar(value, field.field, context) : value)}`;
 }
+function wordComparison(input: ComparisonInput): string {
+  const { value, field, context } = input;
+  if (typeof value !== 'string' || field?.columnType !== 'text' || value.trim().length === 0)
+    fail('invalid_input');
+  const words = value.trim().split(/\s+/);
+  if (words.length > context.limits.maxQueryNodes) fail('invalid_input');
+  return `(${words.map((word) => containsComparison({ ...input, value: word })).join(' AND ')})`;
+}
+const specialComparisons: Partial<Record<QueryOperator, (input: ComparisonInput) => string>> = {
+  in: setComparison,
+  notIn: setComparison,
+  contains: containsComparison,
+  like: wordComparison,
+  near: geoComparison,
+  within: geoComparison,
+  intersects: geoComparison,
+};
 export function comparison(input: ComparisonInput): string {
   const { expression, operator, value, field, context } = input;
   if (operator === 'exists') {
@@ -106,12 +124,12 @@ export function comparison(input: ComparisonInput): string {
       context,
       ...(input.targetExpression ? { targetExpression: input.targetExpression } : {}),
     });
-  if (operator === 'in' || operator === 'notIn') return setComparison(input);
-  if (operator === 'contains') return containsComparison(input);
-  return orderedComparison(input);
+  return (specialComparisons[operator] ?? orderedComparison)(input);
 }
 const metadataSchemas: Readonly<Record<string, z.ZodType>> = {
   id: z.uuid(),
+  createdBy: z.uuid(),
+  updatedBy: z.uuid(),
   folderId: z.uuid(),
   revision: z.number().int().positive(),
   createdAt: z.iso.datetime({ offset: true }),
@@ -119,10 +137,21 @@ const metadataSchemas: Readonly<Record<string, z.ZodType>> = {
   trashedAt: z.iso.datetime({ offset: true }),
 };
 export function metadataComparison(input: ComparisonInput & { path: string }): string {
+  if (
+    ['createdBy', 'updatedBy'].includes(input.path) &&
+    !['eq', 'ne', 'in', 'notIn', 'exists'].includes(input.operator)
+  )
+    fail('invalid_input');
   const values =
     ['in', 'notIn'].includes(input.operator) && Array.isArray(input.value)
       ? input.value
       : [input.value];
+  if (
+    ['createdBy', 'updatedBy'].includes(input.path) &&
+    ['in', 'notIn'].includes(input.operator) &&
+    values.includes(null)
+  )
+    fail('invalid_input');
   if (input.operator !== 'exists')
     for (const value of values) {
       if (value !== null && !metadataSchemas[input.path]?.safeParse(value).success)

@@ -97,7 +97,7 @@ access/composition 的 authorizeActor(tx,{actorId,operationId,scope}) 仅供可�
 
 schema 转换不凭 JSON 引用创建文件能力。目标投影的每个 upload/富文本媒体引用必须能按稳定字段、子项路径及 localeMap 映回原修订的同媒体身份引用；字段重命名和语言映射保留原固定清单。新增媒体身份、替换身份或无法映射的引用位置在回填中返回 invalid_input，整页回滚并保持准备态；普通文档关系仍可显式转换。新增媒体字段先以可选 schema 上线，经现有受授权文档写入绑定清单，填充后再按需要提高 required 约束；不在离线回填中绕过资产授权或伪造 manifest。
 
-发布状态是文档级而非按语言独立。direct 生效和 drafts 发布都对全部配置 locale 的有效读取值执行完整校验，使用明确 fallback；原始各 locale 仍独立存储，不把回退值写成翻译。需要允许未完成翻译的部署可为相应语言显式配置 fallback；无回退且缺少 required 值时不能发布/直接生效。复制和历史恢复保持相同规则。
+drafts 集合可启用 localizeStatus，发布和撤回仅影响所选 locale，并只验证该语言；未发布语言不会因 fallback 而取得其他语言的发布资格。其他 drafts 集合保持文档级发布，direct 生效及文档级发布对全部配置 locale 的有效读取值执行完整校验。各 locale 原始值独立存储，不把回退值写成翻译。content_publications 是唯一发布记录，文档 DTO 的 publishedVersionId 是请求语言投影；查询、唯一保留、关系与历史裁剪使用实际各语言发布修订。迁移及计划契约见 [独立语言发布](collections-publication-parity.md)。
 
 创建、更新、自动保存和复制覆盖值支持互斥的两种写入粒度：locale/data，或非空 dataByLocale；不能混传。后者在一个事务内提交多个已注册 locale，逐语言校验写权及类型。所有语言共享的非 localized 字段、数组顺序、blockType 和 child ID 是单一事实，显式冲突拒绝；缺省值和新 ID 的规范化不能取决于对象键遍历顺序。
 

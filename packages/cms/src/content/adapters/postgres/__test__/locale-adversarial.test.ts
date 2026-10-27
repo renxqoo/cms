@@ -373,12 +373,15 @@ async function save(
   const versionId = randomUUID();
   const definition = kit.registry.get(collectionKey);
   const defaultLocale = definition.locales.default;
-  const normalized = Object.fromEntries(
-    Object.entries(dataByLocale).map(([locale, data]) => [
+  const normalized: Record<string, DocumentData> = {};
+  for (const [locale, data] of Object.entries(dataByLocale))
+    normalized[locale] = await validateData({
+      collection: definition,
+      data,
       locale,
-      validateData({ collection: definition, data, locale, mode: 'draft', limits: kit.limits }),
-    ]),
-  );
+      mode: 'draft',
+      limits: kit.limits,
+    });
   await kit.database.transaction(async (tx) => {
     await kit.store.insertDocument(tx, { collection: collectionKey, id, actorId: kit.actorId });
     await kit.store.insertRevision(tx, {
@@ -394,6 +397,7 @@ async function save(
       dataByLocale: normalized,
     });
     await kit.store.updateDocumentPointers(tx, {
+      actorId: kit.actorId,
       collection: collectionKey,
       id,
       revision: 1,

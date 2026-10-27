@@ -15,6 +15,8 @@ export interface ContentJobSummary {
   documentId: string | null;
   expectedRevision: number | null;
   requestedVersionId: string | null;
+  publicationAction?: 'publish' | 'unpublish';
+  locale?: string;
   total: number;
   succeeded: number;
   failed: number;

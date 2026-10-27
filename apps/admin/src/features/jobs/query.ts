@@ -30,6 +30,7 @@ export function parseJobsQuery(search: URLSearchParams) {
     uploadStatus: option(uploadSessionSchema.shape.status, search.get('status')),
     purpose: option(z.enum(['create', 'replace']), search.get('purpose')),
     documentId,
+    locale: option(z.string().regex(/^[a-zA-Z][a-zA-Z0-9-]{0,31}$/), search.get('locale')),
     jobId: option(z.uuid(), search.get('jobId')),
   };
 }
@@ -39,6 +40,7 @@ export function jobsApiQuery(query: JobsQuery) {
   return {
     page: query.page,
     pageSize: query.pageSize,
+    ...(query.locale ? { locale: query.locale } : {}),
     ...(query.documentId ? { documentId: query.documentId } : {}),
     ...(query.tab === 'jobs'
       ? {

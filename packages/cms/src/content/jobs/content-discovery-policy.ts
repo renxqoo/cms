@@ -14,49 +14,52 @@ export interface ContentDiscoveryInput {
 }
 
 export async function contentJobEligibility(input: ContentDiscoveryInput) {
-  const { state, policy, sql } = input;
-  const sources = ['content.batch', 'content.schedulePublication'];
-  sources.push(
-    ...contentOperations
-      .filter((operation) => operation.method !== 'GET')
-      .map((operation) => operation.id),
-  );
   const items: string[] = [];
-  const extensions: string[] = [];
-  for (const source of new Set(sources)) {
-    const original = await policy.policy(source, state.locale);
-    if (original === false) continue;
-    const result = await visibleFor(state, {
-      policy,
-      operations: [{ id: 'documents.get' }],
-      includeTrashed: true,
-      inheritPredicate: false,
-    });
-    const results = visibleDocuments(input, result);
-    const sourceId = sql.parameter(source);
-    if (source === 'content.batch' || source === 'content.schedulePublication')
-      items.push(...(await itemEligibility(input, { source, sourceId, results })));
-    const extension = await visibleFor(state, {
-      policy,
-      operations: [{ id: 'content.getJob' }, { id: source }, { id: 'documents.get' }],
-    });
-    const documents = visibleDocuments(input, extension);
-    extensions.push(`(j.source_operation=${sourceId} AND j.document_id IN (${documents}))`);
-  }
+  for (const source of ['content.batch', 'content.schedulePublication'])
+    items.push(...(await itemEligibility(input, source)));
+  const extensions = await extensionEligibility(input);
   return {
     items: items.length > 0 ? items.join(' OR ') : 'false',
     extensions: extensions.length > 0 ? extensions.join(' OR ') : 'false',
   };
 }
 
-async function itemEligibility(
-  input: ContentDiscoveryInput,
-  source: { source: string; sourceId: string; results: string },
-): Promise<string[]> {
+async function extensionEligibility(input: ContentDiscoveryInput): Promise<string[]> {
+  const { state, policy, sql } = input;
+  const sources = contentOperations
+    .filter((operation) => operation.method !== 'GET')
+    .map((operation) => operation.id);
+  const scopes = await state.tx.query<{ source: string; locale: string }>(
+    "SELECT DISTINCT source_operation AS source,source_locale AS locale FROM content_jobs WHERE collection_id=$1 AND action='extension' AND source_operation=ANY($2::text[]) AND source_locale=ANY($3::text[])",
+    [state.collection.id, sources, state.collection.locales.supported],
+  );
+  const extensions: string[] = [];
+  for (const { source, locale } of scopes.rows) {
+    const extension = await visibleFor(state, {
+      policy,
+      locale,
+      inheritPredicate: false,
+      operations: [
+        { id: state.operationId, locale },
+        { id: 'content.getJob', locale },
+        { id: source, locale },
+        { id: 'documents.get', locale },
+      ],
+    });
+    if (extension === false) continue;
+    const documents = visibleDocuments(input, extension);
+    extensions.push(
+      `(j.source_operation=${sql.parameter(source)} AND j.source_locale=${sql.parameter(locale)} AND j.document_id IN (${documents}))`,
+    );
+  }
+  return extensions;
+}
+
+async function itemEligibility(input: ContentDiscoveryInput, source: string): Promise<string[]> {
   const result: string[] = [];
   const { state, policy, sql } = input;
   const actions =
-    source.source === 'content.schedulePublication'
+    source === 'content.schedulePublication'
       ? (['publish', 'unpublish'] as const)
       : (['update', 'copy', 'archive', 'restoreTrash'] as const);
   for (const action of actions) {
@@ -65,17 +68,27 @@ async function itemEligibility(
       const visibility = await visibleFor(state, {
         policy,
         operations: [
-          { id: 'content.getJob', locale: state.locale },
-          { id: source.source, locale: state.locale },
+          { id: state.operationId, locale },
+          { id: 'content.getJob', locale },
+          { id: source, locale },
           { id: operation, locale },
         ],
         locale,
+        inheritPredicate: false,
         includeTrashed: true,
       });
       if (visibility === false) continue;
       const documents = visibleDocuments(input, visibility);
+      const readable = await visibleFor(state, {
+        policy,
+        operations: [{ id: 'documents.get', locale }],
+        locale,
+        includeTrashed: true,
+        inheritPredicate: false,
+      });
+      const results = visibleDocuments(input, readable);
       result.push(
-        `(j.source_operation=${source.sourceId} AND i.payload->>'action'=${sql.parameter(action)} AND i.payload->>'locale'=${sql.parameter(locale)} AND i.document_id IN (${documents}) AND COALESCE(i.result_document_id,i.document_id) IN (${source.results}))`,
+        `(j.source_operation=${sql.parameter(source)} AND i.payload->>'action'=${sql.parameter(action)} AND i.payload->>'locale'=${sql.parameter(locale)} AND i.document_id IN (${documents}) AND COALESCE(i.result_document_id,i.document_id) IN (${results}))`,
       );
     }
   }

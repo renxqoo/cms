@@ -56,7 +56,9 @@ packages/database/
     schema/
       identity.ts
       access.ts
-      content.ts
+      content.ts                    文档、修订、发布、引用与物理演进
+      content-admin.ts              查询视图、文档顺序、协作租约、预览与图校验状态
+      content-work.ts               后台任务和内容写入队列
       assets.ts
       audit.ts
       platform.ts
@@ -203,6 +205,8 @@ PostgreSQL 查询位于 CMS 模块内是本项目固定数据库的明确取舍�
 
 content/jobs 负责定时发布、版本裁剪及相关权限复查；assets/jobs 负责字节处理和物理清理。媒体自定义字段、文件夹归属和文档替换都进入 content，不另外写一套固定字段 files CRUD。content 固定历史所需清单后调用 assets 的事务参与能力；assets 不读取 content 私有表来猜测可删除性。
 
+content/collaboration 拥有文档编辑租约、占用授权与受信任预览协议，复用统一内容变更 fence；前端控制器负责页面实例心跳与取消。
+
 content/editor 从现有字段注册和真实读写上下文生成安全编辑描述符，不另建配置引擎。content/jobs 编排内容及资产任务、上传会话的资格与分页，assets/discovery 经 composition 提供限定actor/collection的参数化关系，content不硬编码资产表。assets/management 负责超管清理账本查询和幂等重试；HTTP只调用注入业务入口。精确契约见[Collections UI接口](collections-ui-api-design.md)。
 
 ## 6. 精确导出与依赖约定
@@ -264,6 +268,7 @@ http/content/publications.routes.ts 与协议 schema
 
 前端归属见[UI设计](admin-ui-design.md#3-目录与依赖)和[应用设计](admin-application-design.md)：apps/admin/src/app装配路由和服务端边界；proxy只传递实际受保护pathname，不承担身份验证。server只消费HTTP并拥有BFF和会话，contracts定义安全DTO和操作，api是唯一客户端请求能力，原始字节、上传进度及私有Blob继续走同一边界。features/auth与session拥有认证和真实布局装配，account/admins/roles/permissions/navigation/endpoints/audit拥有对应管理流程，access-control拥有主体实例的完整授权快照，management-shared提供有界读取及表格弹窗；fields提供安全metadata驱动的20类编辑节点；collections拥有目录、列表、字段编辑、版本、发布、回收站、批量、文件夹及多语言复制；assets拥有资源、上传队列、私有Blob和图片任务；jobs与asset-cleanups拥有可发现任务、上传会话及安全清理重试。离站保护按实例聚合，并在导航时读取已提交的实时嵌套状态。features/ui-lab保存隔离验收场景；components/shell提供共享布局和偏好，components/cms提供内容交互组合。packages/ui提供复用原语、表单、数据、布局和反馈组件，manifest逐项声明分组出口和styles.css；不开放根桶或通配路径。模块__test__就近，前端server/contracts/api使用独立Node测试项目，React装置在test/support。浏览器旅程位于e2e/*.browser.spec.ts，与既有Vitest进程旅程分开运行，共用test:e2e入口，逐spec连接独立真实API/Next世界。依赖检查约束ui不导入Next，所有前端生产代码不导入后端实现或数据库。
 
+发布指针、发布语言命名空间转换及有效引用投影分别归 `content/adapters/postgres/document-store.ts`、`publication-slots.ts`、`active-projections.ts`；媒体源绑定选择由 `content/documents/media-bindings.ts` 统一供文档投影和下载授权消费。租约校验通过内部 ContentRuntime 注入标准集合策略解释器，避免与通用运行器形成循环依赖。
 ## CLI/MCP 凭据扩展
 
 `apps/cli` 与 `apps/mcp` 只消费 `packages/api-client` 的显式 client/operations 入口，通过 HTTP 调用 API，不导入 CMS/database。生成命令 `tooling/generate-api-client.ts` 读取真实注册操作和 schema，lint/build 验证无漂移。CLI 的 SDK 命令、OAuth 回调和本地状态按职责分开；MCP 的入口/HTTP 生命周期、协议处理和工具映射分开。
@@ -271,3 +276,7 @@ http/content/publications.routes.ts 与协议 schema
 `identity/delegations` 拥有 OAuth/DCR、个人凭据存储、完整父链与有界维护；access 通过注入 identity participants 检查当前 RBAC、委托范围和个人管理子树。HTTP OAuth 适配只消费 identity 的公开业务 API。`ActorReference` 在内容、媒体、任务和幂等协议中显式携带 delegationId；历史任务来源 UUID 不因凭据清理而置空。新增物理表仍属于 database 的 identity schema owner。
 
 前端 `features/credentials` 包含个人凭据与授权同意流程；ResourcePermissionEditor 由两条流程复用，页面只装配。新单测就近放置，进程旅程 `e2e/cli-mcp-api.spec.ts` 使用真实 Node API/CLI/MCP 与 PostgreSQL，协议替身旅程保留用于传输异常及跨进程刷新锁。
+
+关系展开中的行投影归 `content/documents/stored-views.ts`，反向关系字段发现归 `join-fields.ts`，有界递归归 `expand-relations.ts`；调用方直接导入所属能力，不保留旧路径转发。候选结构与权限复核由 `content/editor/candidate-context.ts` 统一供条件呈现和关系候选使用；字段候选约束及最终写入复核归 `content/fields/filter-options.ts`，同级/块路径解析归 `sibling-data.ts`。一次性命令通过公开 schema 维护能力执行回填，不在应用层复制 SQL 或数据转换。
+
+原生字段规范化归 `content/collections/native-fields.ts` 与 `timezone-field.ts`；运行时 slug 生成归 `content/documents/native-slugs.ts`。独立只读候选验证归 `validate-document.ts`，全语言读取页的组织与字段合并分别归 `documents/all-locales.ts`、`fields/all-locales.ts`。前端时间转换归 `features/fields/timezone.ts`；候选预览调度归 `features/collections/use-candidate-presentation.ts`，复用主编辑器的关联抽屉归 `inline-editor-surface.tsx`，字段资格和取消归 `features/fields/reference-editor.tsx`。文档菜单由 `editor-menu.tsx` 组合既有菜单原语，编辑工具栏负责装配。

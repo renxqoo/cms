@@ -21,7 +21,14 @@ export function createJobColumns({
       header: t.id,
       cell: (row: JobSummary) => <span className="font-mono text-xs">{row.id}</span>,
     },
-    { key: 'action', header: t.action, cell: (row: JobSummary) => t[row.action] },
+    {
+      key: 'action',
+      header: t.action,
+      cell: (row: JobSummary) =>
+        row.kind === 'content' && row.publicationAction
+          ? `${t[row.publicationAction]} · ${row.locale ?? ''}`
+          : t[row.action],
+    },
     { key: 'status', header: t.status, cell: (row: JobSummary) => workStatus(row.status, t) },
     {
       key: 'created',

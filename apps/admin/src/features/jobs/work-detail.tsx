@@ -28,7 +28,10 @@ import { WorkValues } from './work-values';
 import { WorkDetailValues } from './work-detail-values';
 
 export type SelectedWork =
-  | { kind: 'job'; value: { id: string; collection: string; status: string } }
+  | {
+      kind: 'job';
+      value: { id: string; collection: string; status: string; locale?: string | undefined };
+    }
   | { kind: 'upload'; value: UploadSummary };
 
 function publicationOf(detail: UploadSession | JobDetail | null) {
@@ -47,6 +50,9 @@ function useWorkDetail(selected: SelectedWork) {
       ? { collection: value.collection, uploadId: value.id }
       : { collection: value.collection, jobId: value.id },
     response: upload ? uploadSessionSchema : jobDetailSchema,
+    ...(selected.kind === 'job' && selected.value.locale
+      ? { query: { locale: selected.value.locale } }
+      : {}),
     enabled: canRead,
     intervalMs: discoveryPolicy.detailIntervalMs,
     active: (data) => (upload ? activeUpload(data.status) : activeJob(data.status)),
@@ -82,15 +88,22 @@ function useWorkCancellation(
   const cancelAllowed =
     canRead &&
     access.can(upload ? 'assets.cancelUpload' : 'content.cancelPublicationSchedule', scope);
+  const contentLocale = cancellationLocale(selected, publication);
   const cancel = useWorkAction({
     operation: upload ? 'assets.cancelUpload' : 'content.cancelPublicationSchedule',
     params: upload
       ? { collection: value.collection, uploadId: value.id }
       : { collection: value.collection, id: publication?.documentId ?? '', scheduleId: value.id },
     response: emptyResponseSchema,
+    ...(contentLocale ? { query: { locale: contentLocale } } : {}),
     allowed: cancelAllowed && (upload || publication?.documentId != null),
   });
   return { cancel, cancelAllowed };
+}
+
+function cancellationLocale(selected: SelectedWork, publication: ReturnType<typeof publicationOf>) {
+  if (selected.kind === 'upload') return null;
+  return publication?.locale ?? selected.value.locale ?? null;
 }
 
 type WorkState = ReturnType<typeof useWorkDetail>;
@@ -210,7 +223,7 @@ function WorkActions({
           variant="outline"
           onClick={() =>
             router.push(
-              `/dashboard/collections/${selected.value.collection}/${publication.documentId}`,
+              `/dashboard/collections/${selected.value.collection}/${publication.documentId}${publication.locale ? `?locale=${encodeURIComponent(publication.locale)}` : ''}`,
             )
           }
         >

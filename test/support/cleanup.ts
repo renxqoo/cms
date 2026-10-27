@@ -1,7 +1,11 @@
 export async function cleanupAll(actions: readonly (() => unknown)[]): Promise<void> {
-  const results = await Promise.allSettled(actions.map((action) => Promise.resolve().then(action)));
-  const errors = results.flatMap((result) =>
-    result.status === 'rejected' ? [result.reason as unknown] : [],
-  );
+  const errors: unknown[] = [];
+  for (const action of actions) {
+    try {
+      await action();
+    } catch (error) {
+      errors.push(error);
+    }
+  }
   if (errors.length > 0) throw new AggregateError(errors, 'Test resource cleanup failed');
 }

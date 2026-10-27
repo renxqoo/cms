@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/google/fonts",
+  "revision": "a85815a42757630ce188fdad368c2dfc444d4773",
+  "files": [
+    {
+      "name": "noto-sans-sc.ttf",
+      "source": "https://raw.githubusercontent.com/google/fonts/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
+      "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+      "bytes": 17772300
+    },
+    {
+      "name": "OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc/OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
+      "bytes": 4388
+    }
+  ],
+  "derived": {
+    "name": "noto-sans-sc.ttf",
+    "tool": "fontTools 4.67.0",
+    "command": "fonttools varLib.instancer source.ttf wght=400 --output=noto-sans-sc.ttf",
+    "sha256": "4c21abe355a8174ef6370e979357c081f4f09714de6cd13b0cd10443517d732a",
+    "bytes": 10595892,
+    "unicodeCodePoints": 30890,
+    "removedVariableAxes": true
+  }
+}
