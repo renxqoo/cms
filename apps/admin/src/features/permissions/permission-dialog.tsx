@@ -38,6 +38,7 @@ interface DialogProps {
   onSaved: (permission: Permission) => void;
   source?: PermissionReadSource;
   onRetryDependencies?: () => void;
+  onRequireEndpointCatalog?: () => void;
 }
 
 type Flow = ReturnType<typeof usePermissionEditor>;
@@ -73,7 +74,7 @@ export function PermissionDialog(props: DialogProps) {
           permission={props.permission}
           flow={flow}
           source={source}
-          dependency={policy.dependency}
+          dependency={policy.dependency || (props.permission !== null && !policy.canDisable)}
           retry={props.onRetryDependencies}
         />
       }
@@ -83,7 +84,10 @@ export function PermissionDialog(props: DialogProps) {
     >
       <PermissionFields
         value={flow.draft}
-        onChange={flow.setDraft}
+        onChange={(draft) => {
+          flow.setDraft(draft);
+          if (draft.scopeKind === 'collection') props.onRequireEndpointCatalog?.();
+        }}
         collections={collections}
         creating={!props.permission}
         canDisable={policy.canDisable}

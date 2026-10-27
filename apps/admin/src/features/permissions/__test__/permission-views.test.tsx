@@ -408,6 +408,197 @@ it('creates and deletes through page dialogs and reloads actual results after bo
   expect(write?.params).toEqual({ id: '22222222-2222-4222-8222-222222222222' });
 });
 
+it.each(['create', 'update'])(
+  'regression: permission %s refreshes confirmed rows without fetching the unchanged endpoint catalog again',
+  async (operation) => {
+    let value = managementPermission();
+    let exists = operation === 'update';
+    api.request.mockImplementation((input) => {
+      if (input.operation === 'collections.list')
+        return Promise.resolve(managementSuccess({ rows: [collection] }));
+      if (input.operation === 'endpoints.list')
+        return Promise.resolve(
+          managementSuccess({ rows: [managementEndpoint()], total: 1, page: 1, pageSize: 100 }),
+        );
+      if (input.operation === `permissions.${operation}`) {
+        exists = true;
+        value = managementPermission({ name: 'Confirmed permission', version: 4 });
+        return Promise.resolve(managementSuccess(value));
+      }
+      return Promise.resolve(
+        managementSuccess({
+          rows: exists ? [value] : [],
+          total: exists ? 1 : 0,
+          page: 1,
+          pageSize: 20,
+        }),
+      );
+    });
+    renderManagement(<PermissionsPage />);
+    if (operation === 'create') {
+      await userEvent.click(screen.getByRole('button', { name: 'Create permission' }));
+      fireEvent.change(screen.getByRole('textbox', { name: 'Permission code' }), {
+        target: { value: 'team:confirmed' },
+      });
+    } else {
+      await screen.findByText('Read content');
+      await userEvent.click(screen.getByRole('button', { name: 'Actions: Read content' }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit permission' }));
+    }
+    const dialog = await screen.findByRole('dialog', {
+      name: operation === 'create' ? 'Create permission' : 'Edit permission',
+    });
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Name' }), {
+      target: { value: 'Confirmed permission' },
+    });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await screen.findByText('Confirmed permission');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(
+      api.request.mock.calls.filter(([input]) => input.operation === 'endpoints.list'),
+    ).toHaveLength(operation === 'create' ? 0 : 1);
+  },
+);
+
+it.each(['denied', 'partial'])(
+  'loads the complete endpoint fallback after choosing collection scope with %s collection visibility',
+  async (visibility) => {
+    if (visibility === 'denied') api.denied.add('collections.list');
+    const original = api.request.getMockImplementation();
+    const endpoints = Array.from({ length: 101 }, (_, index) =>
+      managementEndpoint({
+        operationId: 'collections.get',
+        scopeKind: 'collection',
+        collectionKey: index === 100 ? 'fallback' : `source_${index}`,
+      }),
+    );
+    api.request.mockImplementation((input) => {
+      if (input.operation === 'endpoints.list') {
+        const page = Number(input.query?.page);
+        return Promise.resolve(
+          managementSuccess({
+            rows: endpoints.slice((page - 1) * 100, page * 100),
+            total: 101,
+            page,
+            pageSize: 100,
+          }),
+        );
+      }
+      if (input.operation === 'permissions.create')
+        return Promise.resolve(
+          managementSuccess(
+            managementPermission({ scopeKind: 'collection', collectionKey: 'fallback' }),
+          ),
+        );
+      if (!original) throw new Error('Missing fixture response');
+      return original(input);
+    });
+    renderManagement(<PermissionsPage />);
+    await screen.findByText('Read content');
+    expect(
+      api.request.mock.calls.filter(([input]) => input.operation === 'endpoints.list'),
+    ).toHaveLength(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Create permission' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Create permission' });
+    expect(
+      api.request.mock.calls.filter(([input]) => input.operation === 'endpoints.list'),
+    ).toHaveLength(0);
+    fireEvent.change(within(dialog).getByRole('combobox', { name: 'Scope' }), {
+      target: { value: 'collection' },
+    });
+    await within(dialog).findByRole('option', { name: 'fallback (fallback)' });
+    expect(
+      api.request.mock.calls
+        .filter(([input]) => input.operation === 'endpoints.list')
+        .map(([input]) => input.query?.page),
+    ).toEqual([1, 2]);
+    expect(within(dialog).queryByRole('option', { name: 'Articles (articles)' }) !== null).toBe(
+      visibility === 'partial',
+    );
+    fireEvent.change(within(dialog).getByRole('combobox', { name: 'Collection' }), {
+      target: { value: 'fallback' },
+    });
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Permission code' }), {
+      target: { value: 'fallback:create' },
+    });
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Name' }), {
+      target: { value: 'Fallback creation' },
+    });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(
+      api.request.mock.calls.find(([input]) => input.operation === 'permissions.create')?.[0].body,
+    ).toMatchObject({ collectionKey: 'fallback', scopeKind: 'collection' });
+    expect(
+      api.request.mock.calls.filter(([input]) => input.operation === 'endpoints.list'),
+    ).toHaveLength(2);
+  },
+);
+
+it('blocks disabling after an endpoint catalog failure and retries the complete dependency catalog', async () => {
+  const original = api.request.getMockImplementation();
+  let unavailable = true;
+  api.request.mockImplementation((input) => {
+    if (input.operation === 'endpoints.list' && unavailable)
+      return Promise.resolve(failure('temporarily_unavailable', 503));
+    if (!original) throw new Error('Missing fixture response');
+    return original(input);
+  });
+  renderManagement(<PermissionsPage />);
+  await screen.findByText('Read content');
+  expect(
+    api.request.mock.calls.filter(([input]) => input.operation === 'endpoints.list'),
+  ).toHaveLength(0);
+  await userEvent.click(screen.getByRole('button', { name: 'Actions: Read content' }));
+  await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit permission' }));
+  const dialog = await screen.findByRole('dialog', { name: 'Edit permission' });
+  expect(within(dialog).getByRole('option', { name: 'Disabled' })).toBeDisabled();
+  const retry = await within(dialog).findByRole('button', {
+    name: 'Reload complete dependency catalogs',
+  });
+  unavailable = false;
+  await userEvent.click(retry);
+  await waitFor(() =>
+    expect(within(dialog).getByRole('option', { name: 'Disabled' })).toBeEnabled(),
+  );
+  expect(
+    api.request.mock.calls.filter(([input]) => input.operation === 'endpoints.list'),
+  ).toHaveLength(2);
+});
+
+it('cancels an unfinished dialog catalog read and starts a new complete read when reopened', async () => {
+  const original = api.request.getMockImplementation();
+  let pending: AbortSignal | undefined;
+  api.request.mockImplementation((input) => {
+    if (input.operation === 'endpoints.list' && !pending)
+      return new Promise((resolve) => {
+        pending = input.signal;
+        input.signal.addEventListener('abort', () => resolve(failure('request_cancelled', 0)), {
+          once: true,
+        });
+      });
+    if (!original) throw new Error('Missing fixture response');
+    return original(input);
+  });
+  renderManagement(<PermissionsPage />);
+  await screen.findByText('Read content');
+  await userEvent.click(screen.getByRole('button', { name: 'Actions: Read content' }));
+  await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit permission' }));
+  await screen.findByRole('dialog', { name: 'Edit permission' });
+  await waitFor(() => expect(pending).toBeDefined());
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(pending?.aborted).toBe(true));
+  await userEvent.click(screen.getByRole('button', { name: 'Actions: Read content' }));
+  await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit permission' }));
+  const reopened = await screen.findByRole('dialog', { name: 'Edit permission' });
+  await waitFor(() =>
+    expect(within(reopened).getByRole('option', { name: 'Disabled' })).toBeEnabled(),
+  );
+  expect(
+    api.request.mock.calls.filter(([input]) => input.operation === 'endpoints.list'),
+  ).toHaveLength(2);
+});
+
 it('allows closing untouched page dialogs without inventing a successful write', async () => {
   renderManagement(<PermissionsPage />);
   await screen.findByText('Read content');

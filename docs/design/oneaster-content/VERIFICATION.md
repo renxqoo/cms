@@ -16,7 +16,7 @@
 
 RSS前后primary147744/217744KiB、peer169008/244768KiB；数据库业务role连接前active/idle/total为0/7/7、后3/12/15，158次20ms采样的各状态最大值11/12/15（并非同一时刻相加），前后idle-in-transaction为0。实际max_locks_per_transaction=1024，观察连接不计业务role。入口bundle SHA256为8e6bb670bfc2535b07d05f9fa6fe3743b84855ec60e8c9840f07f554ab630311，包含字段级预览授权和公开媒体CORP修复。
 
-这是内部HTTP、5模型、短时同机样本；不包含TLS/远程数据库/真实S3成本，不能推导生产SLA或长期内存稳定性。Docker daemon不可用，不能将原生隔离PG与真实HTTP验收写成Docker部署脚本通过。尚未部署，线上数据库灾备、云存储与RTO/RPO由实际部署演练确定。
+这是内部HTTP、5模型、短时同机样本；不包含TLS/远程数据库/真实S3成本，不能推导生产SLA或长期内存稳定性。 当前默认公开IP预算为6000次/60秒；298.37req/s是短时突发样本，不代表可持续突破限流预算。Docker daemon不可用，不能将原生隔离PG与真实HTTP验收写成Docker部署脚本通过。尚未部署，线上数据库灾备、云存储与RTO/RPO由实际部署演练确定。
 
 ## 实际停止与重启节点
 
@@ -39,3 +39,11 @@ CMS main合并提交7c8d494（PR5）的源树与feature parent223ffa2逐文件�
 合并版本地lint/typecheck/build通过；APFS专用PG完整单元326文件2871项中6项SQL/setup超时，2865通过；原五文件按原配置/断言复跑32/32通过，不能拼接为本地完整绿。只读观察DROP DATABASE强制checkpoint与并行DDL/WAL竞争，同轮出现5个statement_timeout及一个30秒setup超时；缺历史等待图，未武断把其全归因于某次后发生的checkpoint。本地未通过结果完整保留，最终完整单元证据以上述相同源树Linux CI为准。合并版另跑真实两个Node进程的HA用例1/1通过，7.06秒。
 
 Client已通过PR13合main750f121；Backend按最新用户裁决仅PR，权限受阻后已提交[交付issue31](https://github.com/juyuanzhisuan/oneaster-backend/issues/31)，没有合入Backend main。源码候选、本地提交de75435与已校验Git bundle保留在授权工作区。
+
+## 权限目录按需读取回归
+
+合并后本地完整浏览器在RBAC原长旅程触发IP120/分钟限流；原文件单独执行仍复现，开发和生产均出现429。初始HTTP构造仅7次；独立实验在构造边界清桶仍有开发模式124次请求，说明不能仅靠测试清理解决。该实验全部恢复，最终代码没有清桶或修改限流。
+
+端点目录随新集合扩大到5页，权限表预读及保存后的重复重读放大了请求。权限create/update只修改权限与审计，Endpoint DTO定义/绑定不变。修复成功保存后仅刷新权限表，权限表和全局创建不预读目录；编辑既有权限、创建时选择collection才完整分页读取，保留无collection读取权限及部分可见时的端点fallback、失败重试与关闭取消。未更改单项期限、原RBAC断言、IP或每操作额度。
+
+六个症状回归与模块共34项通过；原RBAC开发/生产2/2通过，14.8秒，生产构建同时成功。此处是目标回归，不代替最后完整测试门。

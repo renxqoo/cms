@@ -12,9 +12,11 @@
 
 对象存储使用 `CMS_STORAGE_DRIVER=s3`、`CMS_S3_BUCKET`、`CMS_S3_REGION`，自定义 `CMS_S3_ENDPOINT` 在生产必须 HTTPS；仅在存储确实要求时设置 `CMS_S3_FORCE_PATH_STYLE=true`。凭据由 AWS SDK 的标准提供链注入，不写入业务文档、数据库内容或客户端。备份须覆盖对象版本和数据库中的 manifest/binding；只备份其中一方无法恢复完整公开媒体。
 
+`CMS_API_ORIGIN` 必须是所有API节点共享的稳定HTTPS公开origin，用作OAuth issuer；`CMS_MCP_RESOURCE` 为稳定HTTPS完整 `/mcp` URI。`CMS_MCP_BRIDGE_SECRET` 是API与MCP共享、至少32字符且独立于 `CMS_RATE_LIMIT_SECRET` 的服务秘密；不配置给浏览器或个人CLI调用者。生产API启动也校验这些值，不能只配置前端与数据库。MCP进程、host/origin限制及CLI登录步骤见[主线客户端运行说明](../cli-mcp-clients-implementation.md)和仓库README。
+
 `CMS_FRONTEND_URL`、管理来源 `API_ALLOWED_ORIGINS` 和 `ONEASTER_CLIENT_ORIGIN` 使用实际 HTTPS origin；后者是预览唯一跳转目的地。`API_ALLOWED_HOSTS` 明确列出实际入口主机。反向代理处理连接来源与 Host，应用不信任客户端伪造的 X-Forwarded-For 来放宽限流。共享 PostgreSQL 限流使所有节点合计消耗同一身份的窗口额度。
 
-client 构建和运行的 `ONEASTER_CONTENT_ORIGIN` 必须完全相同，指向新 CMS 稳定入口；更换来源须重建。`ONEASTER_API_ORIGIN` 指向同时提供 `/core/*` 与 `/oa/*` 的业务网关，文本 Studio 仍由真实 extensions 的 `/oa/api/studio/*` 管理运行与历史；不能把裸 Core 地址当作完整业务网关。`ONEASTER_LOGIN_ORIGIN`、登录代理凭据与会话加密配置独立注入。CMS 不保存供应商执行密钥，不把管理员会话提供给 client。移除旧 CMS 环境变量及路由配置。
+client 构建和运行的 `ONEASTER_CONTENT_ORIGIN` 必须完全相同，指向新 CMS 稳定入口；更换来源须重建。`ONEASTER_API_ORIGIN` 指向同时提供 `/core/*` 与 `/oa/*` 的业务网关，文本 Studio 仍由真实 extensions 的 `/oa/api/studio/*` 管理运行与历史；不能把裸 Core 地址当作完整业务网关。`ONEASTER_LOGIN_ORIGIN`、登录代理凭据与会话加密配置独立注入。CMS 不保存供应商执行密钥，不把管理员会话提供给 client。移除旧 CMS 环境变量及路由配置。 私有预览只能由交互式管理员会话签发；个人Key、API OAuth及MCP桥接后的委托凭据即使有文档权限也不能签发预览。持有grant的后续读取仍重查签发人的当前账户、角色、集合与字段权限。
 
 ## 初始化和启动
 

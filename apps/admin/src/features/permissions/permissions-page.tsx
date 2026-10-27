@@ -39,6 +39,10 @@ export function PermissionsPage() {
   const params = useSearchParams();
   const [search, update] = useQueryNavigation(params.toString());
   const query = parsePermissionQuery(new URLSearchParams(search));
+  const [editing, setEditing] = useState<{
+    permission: Permission | null;
+    endpointCatalog: boolean;
+  } | null>(null);
   const result = useApiQuery({
     operation: 'permissions.list',
     query: { ...query },
@@ -49,14 +53,13 @@ export function PermissionsPage() {
     operation: 'endpoints.list',
     response: endpointListSchema,
     key: endpointKey,
-    enabled: access.can('endpoints.list'),
+    enabled: access.can('endpoints.list') && editing?.endpointCatalog === true,
   });
   const collections = useApiQuery({
     operation: 'collections.list',
     response: collectionListSchema,
     enabled: access.can('collections.list'),
   });
-  const [editing, setEditing] = useState<{ permission: Permission | null } | null>(null);
   const [deleting, setDeleting] = useState<Permission | null>(null);
   function change(changes: Partial<PermissionQuery>) {
     router.push(update(changes, permissionQueryHref), { scroll: false });
@@ -65,7 +68,7 @@ export function PermissionsPage() {
     t,
     canUpdate: access.can('permissions.update'),
     canDelete: access.can('permissions.delete'),
-    edit: (permission) => setEditing({ permission }),
+    edit: (permission) => setEditing({ permission, endpointCatalog: true }),
     remove: setDeleting,
   });
   return (
@@ -76,7 +79,7 @@ export function PermissionsPage() {
         icon={<KeyRoundIcon />}
         actions={
           access.can('permissions.create') ? (
-            <Button onClick={() => setEditing({ permission: null })}>
+            <Button onClick={() => setEditing({ permission: null, endpointCatalog: false })}>
               <PlusIcon />
               {t.create}
             </Button>
@@ -106,10 +109,18 @@ export function PermissionsPage() {
           endpoints={endpoints.error ? null : endpoints.data}
           collections={collections.error ? null : (collections.data?.rows ?? null)}
           onClose={() => setEditing(null)}
+          onRequireEndpointCatalog={() =>
+            setEditing((current) =>
+              current && !current.endpointCatalog ? { ...current, endpointCatalog: true } : current,
+            )
+          }
+          onRetryDependencies={() => {
+            endpoints.reload();
+            collections.reload();
+          }}
           onSaved={() => {
             setEditing(null);
             result.reload();
-            endpoints.reload();
           }}
         />
       ) : null}
