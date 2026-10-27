@@ -68,6 +68,7 @@ export interface FieldServices {
 }
 
 export interface FieldRendererProps {
+  renderFields?: (input: NestedFieldInput) => ReactNode;
   active?: boolean;
   idPrefix: string;
   layout: readonly EditorNode[];
@@ -89,6 +90,16 @@ export interface FieldRendererProps {
   visibility?: Readonly<Record<string, boolean>>;
   componentProps?: Readonly<Record<string, FieldData>>;
   choiceOptions?: Readonly<Record<string, NonNullable<EditorNode['constraints']['options']>>>;
+}
+
+export interface NestedFieldInput {
+  readOnly: boolean;
+  idPrefix: string;
+  layout: readonly EditorNode[];
+  value: FieldData;
+  onChange: (value: FieldData) => void;
+  onValidityChange: (key: string, error: string | null) => void;
+  resetKey: string;
 }
 
 export type FieldPath = readonly (string | number)[];

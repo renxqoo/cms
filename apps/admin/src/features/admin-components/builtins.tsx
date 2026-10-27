@@ -1,6 +1,7 @@
 'use client';
 
 import { useShell } from '../../components/shell/shell-provider';
+import { ModelField } from './model-field';
 import type {
   FieldComponentProps,
   CellComponentProps,
@@ -45,9 +46,14 @@ function CollectionSection({ collection, children }: CollectionComponentProps) {
 const section = { 'cms/section': CollectionSection };
 
 export const builtinAdminComponents: AdminComponentRegistry = Object.freeze({
-  versions: { 'cms/character-count': '1', 'cms/monospace': '1', 'cms/section': '1' },
+  versions: {
+    'cms/character-count': '1',
+    'cms/monospace': '1',
+    'cms/section': '1',
+    'cms/model-field': '1',
+  },
   fields: {
-    Field: { 'cms/character-count': CharacterCount },
+    Field: { 'cms/character-count': CharacterCount, 'cms/model-field': ModelField },
     Description: { 'cms/character-count': CharacterCount },
     afterInput: { 'cms/character-count': CharacterCount },
   },

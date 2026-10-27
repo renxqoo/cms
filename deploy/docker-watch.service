@@ -1,0 +1,19 @@
+[Unit]
+Description=New CMS Docker liveness recovery
+After=docker.service
+Requires=docker.service
+ConditionPathExists=/opt/new-cms/docker/current/release.json
+
+[Service]
+Type=oneshot
+ExecStart=__BUN__ /opt/new-cms/docker/current/deploy/docker.ts watch
+User=root
+Group=root
+TimeoutStartSec=150
+MemoryMax=128M
+CPUQuota=25%
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/run /var/lib/new-cms-docker

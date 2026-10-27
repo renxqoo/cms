@@ -1,0 +1,22 @@
+[Unit]
+Description=PM2 process manager for New CMS
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=forking
+User=new-cms
+Group=new-cms
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/var/lib/new-cms
+Environment=PM2_HOME=/var/lib/new-cms/.pm2
+PIDFile=/var/lib/new-cms/.pm2/pm2.pid
+ExecStart=/usr/bin/node __PM2_SCRIPT__ resurrect
+ExecStop=/usr/bin/node __PM2_SCRIPT__ kill
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

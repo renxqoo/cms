@@ -167,10 +167,27 @@ function validateProduction(env: z.infer<typeof environmentSchema>): void {
 
 function requireDatabaseTls(env: { NODE_ENV: string; DATABASE_URL: string }): void {
   if (env.NODE_ENV !== 'production') return;
-  const modes = new URL(env.DATABASE_URL).searchParams.getAll('sslmode');
+  const url = new URL(env.DATABASE_URL);
+  const modes = url.searchParams.getAll('sslmode');
+  if (isLoopbackHost(url.hostname)) {
+    if (modes.length > 1)
+      throw new Error('Duplicate sslmode parameters are not allowed for the database URL');
+    return;
+  }
   if (modes.length !== 1 || modes[0] !== 'verify-full') {
     throw new Error('Verified PostgreSQL TLS is required in production');
   }
+}
+
+function isLoopbackHost(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '[::1]' ||
+    /^127(?:\.\d{1,3}){3}$/.test(hostname) ||
+    /^10(?:\.\d{1,3}){3}$/.test(hostname) ||
+    /^192\.168(?:\.\d{1,3}){2}$/.test(hostname) ||
+    /^172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}$/.test(hostname)
+  );
 }
 
 function oauthConfiguration(env: z.infer<typeof environmentSchema>): OAuthConfiguration {

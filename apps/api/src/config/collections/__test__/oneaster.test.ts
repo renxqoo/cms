@@ -12,9 +12,14 @@ function collection(key: string): CollectionDefinition {
   return result;
 }
 function field(key: string, name: string): FieldDefinition {
-  const result = collection(key).fields.find((item) => item.name === name);
+  const result = dataFields(collection(key).fields).find((item) => item.name === name);
   if (!result) throw new Error('Field is missing');
   return result;
+}
+function dataFields(fields: readonly FieldDefinition[]): FieldDefinition[] {
+  return fields.flatMap((item) =>
+    item.type === 'tabs' ? (item.tabs ?? []).flatMap((tab) => dataFields(tab.fields)) : [item],
+  );
 }
 it('registers editable OneAster business records without replacing original CMS collections', () => {
   const registry = applicationRegistry();
@@ -113,7 +118,7 @@ it('rejects unsupported body fields in a partial binding draft before publicatio
   ).toBe(false);
 });
 function nestedField(collectionKey: string, path: readonly string[]): FieldDefinition {
-  let { fields } = collection(collectionKey);
+  let fields: readonly FieldDefinition[] = dataFields(collection(collectionKey).fields);
   let found: FieldDefinition | undefined;
   for (const name of path) {
     found = fields.find((item) => item.name === name);

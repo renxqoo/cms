@@ -13,6 +13,7 @@ const contentFeatures = [
   'admin-rich-text',
   'admin-content-collaboration',
   'admin-content-editor',
+  'admin-model-editor',
   'admin-content-sidebar',
   'admin-content-workflow',
   'admin-content-conditions',

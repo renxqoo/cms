@@ -73,6 +73,22 @@ const h3 = z.strictObject({
     duration: z.number().int().min(4).max(15),
   }),
 });
+export function mediaRequestSchema(flowKey: string) {
+  if (flowKey === 'music.generate') return music;
+  if (flowKey === 'audio.transcribe') return transcription;
+  if (flowKey === 'video.seedance-25-text') return seedance25;
+  const flow = z.enum(h3Flows).parse(flowKey);
+  return z.strictObject({
+    input: h3.shape.input.extend({
+      resolution: z.enum(h3Resolutions[flow]),
+      duration: z
+        .number()
+        .int()
+        .min(flow === 'video.minimax-h3-max' ? 5 : 4)
+        .max(15),
+    }),
+  });
+}
 const h3Resolutions = {
   'video.minimax-h3': ['768P', '2K'],
   'video.minimax-h3-highspeed': ['768P'],

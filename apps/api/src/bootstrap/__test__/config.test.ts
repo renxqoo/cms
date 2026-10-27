@@ -83,6 +83,44 @@ it('rejects production database URLs that do not require certificate and hostnam
   }
 });
 
+it('accepts unencrypted production database URLs only for loopback and private-network hosts', () => {
+  for (const url of [
+    'postgresql://oneaster_cms@127.0.0.1:54330/oneaster_cms',
+    'postgresql://oneaster_cms@localhost:54330/oneaster_cms',
+    'postgresql://oneaster_cms@10.1.2.3:5432/oneaster_cms',
+    'postgresql://oneaster_cms@192.168.1.10:5432/oneaster_cms',
+    'postgresql://oneaster_cms@172.20.0.5:5432/oneaster_cms',
+  ]) {
+    expect(() =>
+      loadConfig({
+        ...base,
+        DATABASE_URL: url,
+        NODE_ENV: 'production',
+        ...oauthProduction,
+        CMS_MIGRATION_DATABASE_URL: url,
+        CMS_FRONTEND_URL: 'https://cms.example.test',
+        ONEASTER_CLIENT_ORIGIN: 'https://client.example.test',
+      }),
+    ).not.toThrow();
+  }
+  for (const url of [
+    'postgresql://oneaster_cms@240.0.0.1:5432/oneaster_cms',
+    'postgresql://oneaster_cms@db.oneaster.ai:5432/oneaster_cms',
+    'postgresql://oneaster_cms@127.0.0.1:54330/oneaster_cms?sslmode=verify-full&sslmode=disable',
+  ]) {
+    expect(() =>
+      loadConfig({
+        ...base,
+        DATABASE_URL: url,
+        NODE_ENV: 'production',
+        ...oauthProduction,
+        CMS_MIGRATION_DATABASE_URL: url,
+        CMS_FRONTEND_URL: 'https://cms.example.test',
+      }),
+    ).toThrow(Error);
+  }
+});
+
 it('rejects duplicate sslmode parameters before the driver can override the verified mode', () => {
   const env = {
     ...base,

@@ -4,6 +4,7 @@ export {
   flowKeys,
   profileFlows,
   modelIdSchema,
+  describeProfileRequest,
 } from './requests.ts';
 export type { ProfileKey, FlowKey, ProfileRequest } from './requests.ts';
 export {
@@ -14,6 +15,7 @@ export {
   inputModalities,
   outputModalities,
   stableKeySchema,
+  describeBindingCapabilities,
 } from './bindings.ts';
 export type { ApiBinding, TechnicalCapabilities } from './bindings.ts';
 export { renderIntegrationExamples } from './examples.ts';
