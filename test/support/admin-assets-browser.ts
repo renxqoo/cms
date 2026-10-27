@@ -10,6 +10,17 @@ export const mediaTargetSchema = z.object({
   versionId: z.uuid(),
 });
 
+export function readyUpload(page: Page) {
+  return page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' &&
+      /^\/api\/cms\/v1\/collections\/media\/uploads\/[0-9a-f-]+$/.test(
+        new URL(response.url()).pathname,
+      ) &&
+      response.status() === 200,
+  );
+}
+
 export async function privateDownload(page: Page, expected: Uint8Array) {
   const downloaded = page.waitForEvent('download');
   await page.getByRole('link', { name: '下载原件', exact: true }).first().click();

@@ -120,7 +120,6 @@ it('computes async and path virtuals for detail, list and inverse joins at depth
   expect(metadata.admin).toEqual({
     hidden: false,
     disableCopyToLocale: false,
-    enableQueryPresets: true,
     enableRichTextLink: true,
     enableRichTextRelationship: true,
     useAsTitle: 'display',

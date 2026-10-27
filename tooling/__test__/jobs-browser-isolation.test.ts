@@ -9,9 +9,11 @@ const files = [
   'e2e/admin-job-uploads.browser.spec.ts',
   'e2e/admin-job-access.browser.spec.ts',
   'e2e/admin-asset-cleanups.browser.spec.ts',
+  'e2e/admin-assets.browser.spec.ts',
+  'e2e/admin-asset-replacement.browser.spec.ts',
 ] as const;
 
-it('regression: independent work journeys use separate browser worlds in the default test command', async () => {
+it('regression: independent work and media journeys use separate browser worlds in the default test command', async () => {
   const manifest = z
     .object({ scripts: z.object({ test: z.string() }) })
     .parse(JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8')));
