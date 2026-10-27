@@ -19,7 +19,7 @@
 - 6个近置测试文件、31个规则/DTO/组件/生命周期用例通过，覆盖精确筛选、分页、kind投影、服务端会话拒绝、取消、未知写入、同意图重试、失权、请求取消与轮询边界。
 - 新模块诊断覆盖范围为features/jobs、features/asset-cleanups、contracts/jobs.ts、contracts/cleanups.ts及两个页面；本轮实际statements99.14%、branches93.41%、functions99.29%、lines99.66%，诊断范围内门槛通过，不能外推全仓覆盖率。仓库配置与90/85/90/90门槛未改。
 - bun check -p apps/admin通过；定向类型感知oxlint和oxfmt通过，Next生产构建由真实浏览器入口执行。
-- e2e/admin-jobs.browser.spec.ts开发Bun API/Next与生产Node API/Next共8条真实浏览器旅程通过：发布计划刷新发现及取消、390窄屏上传刷新发现及取消、普通管理员无集合任务/清理访问、清理202受理且保留期未绕过。
+- e2e/admin-jobs.browser.spec.ts、e2e/admin-job-uploads.browser.spec.ts、e2e/admin-job-access.browser.spec.ts与e2e/admin-asset-cleanups.browser.spec.ts各自使用独立world，开发Bun API/Next与生产Node API/Next共8条真实浏览器旅程：发布计划刷新发现及取消、390窄屏上传刷新发现及取消、普通管理员无集合任务/清理访问、清理202受理且保留期未绕过。
 
 清理旅程仅在隔离测试数据库中建立blocked pending前置账本，验证真实HTTP重试、审计/幂等和保留期结果。该前置状态不作为真实提供方删除故障的证据；存储失败仍由既有后端故障回归验证。页面旅程未接触部署数据库或真实云账号。
 

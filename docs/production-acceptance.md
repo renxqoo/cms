@@ -82,7 +82,7 @@ bun run admin:initialize --email owner@example.com
 
 ```sh
 bun run test:e2e e2e/admin-content-workflow.browser.spec.ts e2e/admin-content.browser.spec.ts e2e/admin-content-editor.browser.spec.ts e2e/admin-content-sidebar.browser.spec.ts e2e/admin-content-folders.browser.spec.ts e2e/admin-content-copy.browser.spec.ts
-bun run test:e2e e2e/admin-assets.browser.spec.ts e2e/admin-images.browser.spec.ts e2e/admin-article-media.browser.spec.ts e2e/admin-upload-recovery.browser.spec.ts e2e/admin-jobs.browser.spec.ts
+bun run test:e2e e2e/admin-assets.browser.spec.ts e2e/admin-images.browser.spec.ts e2e/admin-article-media.browser.spec.ts e2e/admin-upload-recovery.browser.spec.ts e2e/admin-jobs.browser.spec.ts e2e/admin-job-uploads.browser.spec.ts e2e/admin-job-access.browser.spec.ts e2e/admin-asset-cleanups.browser.spec.ts
 ```
 
 ## 5. 一致备份与恢复演练
