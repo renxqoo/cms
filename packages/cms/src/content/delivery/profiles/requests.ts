@@ -5,6 +5,7 @@ import {
   musicRequest,
   transcriptionRequest,
   seedance25Request,
+  mediaRequestSchema,
 } from './media-requests.ts';
 
 export const profileKeys = [
@@ -87,6 +88,19 @@ const runwayBase = {
 const runwayText = z.strictObject({ ...runwayBase, aspect_ratio: ratio });
 const runwayImage = z.strictObject({ ...runwayBase, image_task_id: z.uuid() });
 const task = <T extends z.ZodType>(input: T) => z.strictObject({ input });
+export function describeProfileRequest(input: { profileKey: string; flowKey: string }) {
+  const profile = z.enum(profileKeys).parse(input.profileKey);
+  const flow = z.enum(flowKeys).parse(input.flowKey);
+  if (!profileFlows[profile].includes(flow)) throw new Error('Flow does not match profile');
+  let schema: z.ZodType;
+  if (profile === 'core.chat') schema = chat;
+  else if (profile === 'core.image-tasks') schema = task(image);
+  else if (flow === 'video.seedance-text') schema = task(seedance);
+  else if (flow === 'video.runway-text') schema = task(runwayText);
+  else if (flow === 'video.runway-image') schema = task(runwayImage);
+  else schema = mediaRequestSchema(flow);
+  return z.json().parse(z.toJSONSchema(schema));
+}
 export const profileFlows: Readonly<Record<ProfileKey, readonly FlowKey[]>> = {
   'core.chat': ['chat.json', 'chat.sse'],
   'core.image-tasks': ['image.generate'],

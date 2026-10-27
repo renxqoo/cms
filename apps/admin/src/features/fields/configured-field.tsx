@@ -15,6 +15,7 @@ export function useComponentProps(props: ScalarProps): FieldComponentProps {
   const field = useFieldValue(props.location);
   const { value: data } = useFields();
   return {
+    ...(field.renderFields ? { renderFields: field.renderFields } : {}),
     node: props.node,
     id: `${field.idPrefix}-${props.location.path.map(String).join('-')}`,
     name: props.location.path.map(String).join('.'),

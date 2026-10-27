@@ -96,6 +96,21 @@ const availableOutputs = {
   'core.music-tasks': ['audio'],
   'core.transcriptions': ['text'],
 };
+export function describeBindingCapabilities(input: {
+  profileKey: string;
+  flowKeys: readonly string[];
+}) {
+  const profile = z.enum(profileKeys).parse(input.profileKey);
+  if (!input.flowKeys.every((flow) => (profileFlows[profile] as readonly string[]).includes(flow)))
+    throw new Error('Flow does not match profile');
+  const inputs = [profile === 'core.transcriptions' ? 'audio' : 'text'];
+  if (input.flowKeys.includes('video.runway-image')) inputs.push('image');
+  return {
+    inputModalities: inputs,
+    outputModalities: availableOutputs[profile],
+    capabilities: input.flowKeys.includes('chat.sse') ? ['streaming'] : [],
+  };
+}
 function subset(actual: readonly string[], allowed: readonly string[]) {
   return actual.every((item) => allowed.includes(item));
 }

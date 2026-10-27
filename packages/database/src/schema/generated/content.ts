@@ -6806,4 +6806,4 @@ export const table_cu_fac1ffad8f8a01b78464605c = pg.pgTable("cu_fac1ffad8f8a01b7
   pg.foreignKey({name:"fk_cdbdc2532df6ca877ce9eb19",columns:[t.document_id],foreignColumns:[ref_content_documents.id] }).onDelete("cascade")]);
 
 export const contentMappingFingerprint = "aaaca4d646813d3007b2b2348822183618a13c57bc3099c27b2c01f664c0218c";
-export const contentBehaviorHash = "577c6c126c16a0b62b7a257335bf98bc654b70579ea9d68152badc37be303d92";
+export const contentBehaviorHash = "b1e1a38bed030709a5723a0220bac291669a6f5d8e6accf05da8f750efd72b16";

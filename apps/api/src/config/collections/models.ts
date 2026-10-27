@@ -29,6 +29,8 @@ import {
 import { validProvenance } from './parameter-validation.ts';
 import { parameterReference } from './parameter-reference.ts';
 import { validParameterValues } from './parameter-value.ts';
+import { presentModels } from './model-presentation.ts';
+import { modelBindingDefaults } from './model-defaults.ts';
 function bindingsRule(
   value: JsonValue,
   context: { data: DocumentData; mode: 'draft' | 'publish' },
@@ -80,6 +82,11 @@ function apiBindings(): FieldDefinition {
       20,
     ),
     defaultValue: [],
+    hooks: {
+      beforeValidate: [
+        { version: 'model-binding-defaults.v1', run: ({ value }) => modelBindingDefaults(value) },
+      ],
+    },
     validate: { version: 'core-bindings.v2', run: bindingsRule },
   };
 }
@@ -145,103 +152,105 @@ function specifications() {
     ]),
   ]);
 }
-export const models = collection(
-  'models',
-  [
-    field('modelId', 'text', {
-      localized: false,
-      required: true,
-      unique: true,
-      maxLength: 200,
-      validate: {
-        version: 'model-identity.v1',
-        run: (value) => modelIdSchema.safeParse(value).success,
-      },
-    }),
-    field('slug', 'text', {
-      localized: false,
-      required: true,
-      unique: true,
-      maxLength: 120,
-      validate: slugRule,
-    }),
-    localizedRequired('title', 256),
-    localizedRequired('summary', 2000),
-    field('contentLocales', 'json', { required: true, validate: localeRule }),
-    relationship('developer', 'developers'),
-    text('family', 256, false),
-    media('logo'),
-    text('version', 200, false),
-    select('versionKind', ['rolling', 'snapshot']),
-    field('releaseDate', 'date'),
-    url('officialUrl'),
-    {
-      ...select('primaryCategory', ['text', 'image', 'video', 'embedding', 'audio']),
-      required: true,
-    },
-    group(
-      'technicalCapabilities',
-      [
-        select('inputs', inputModalities, true),
-        select('outputs', outputModalities, true),
-        select('tasks', modelTasks, true),
-        select('features', modelFeatures, true),
-      ],
-      {
+export const models = presentModels(
+  collection(
+    'models',
+    [
+      field('modelId', 'text', {
+        localized: false,
         required: true,
+        unique: true,
+        maxLength: 200,
         validate: {
-          version: 'technical-declaration.v1',
-          run: (value, context) =>
-            context.mode === 'draft' ||
-            (value !== null &&
-              typeof value === 'object' &&
-              !Array.isArray(value) &&
-              Array.isArray(value['inputs']) &&
-              value['inputs'].length > 0 &&
-              Array.isArray(value['outputs']) &&
-              value['outputs'].length > 0),
+          version: 'model-identity.v1',
+          run: (value) => modelIdSchema.safeParse(value).success,
         },
+      }),
+      field('slug', 'text', {
+        localized: false,
+        required: true,
+        unique: true,
+        maxLength: 120,
+        validate: slugRule,
+      }),
+      localizedRequired('title', 256),
+      localizedRequired('summary', 2000),
+      field('contentLocales', 'json', { required: true, validate: localeRule }),
+      relationship('developer', 'developers'),
+      text('family', 256, false),
+      media('logo'),
+      text('version', 200, false),
+      select('versionKind', ['rolling', 'snapshot']),
+      field('releaseDate', 'date'),
+      url('officialUrl'),
+      {
+        ...select('primaryCategory', ['text', 'image', 'video', 'embedding', 'audio']),
+        required: true,
       },
-    ),
-    parameterReference(),
-    specifications(),
-    apiBindings(),
-    field('defaultBindingKey', 'text', { maxLength: 80, defaultValue: null }),
-    contentFields(),
-    rows(
-      'showcase',
-      [
-        field('key', 'text', { required: true, maxLength: 80, validate: slugRule }),
-        localizedRequired('title', 256),
-        text('description', 2000),
-        text('prompt', 10000),
-        { ...select('mediaType', ['text', 'image', 'video', 'audio', 'none']), required: true },
-        media('media'),
-        media('poster'),
-        text('alt', 512),
-        text('outputText', 100000),
-        field('settings', 'json', {
-          validate: {
-            version: 'parameter-values.v1',
-            run: (value, context) => context.mode === 'draft' || validParameterValues(value),
-          },
-        }),
-        field('provenance', 'json', {
+      group(
+        'technicalCapabilities',
+        [
+          select('inputs', inputModalities, true),
+          select('outputs', outputModalities, true),
+          select('tasks', modelTasks, true),
+          select('features', modelFeatures, true),
+        ],
+        {
           required: true,
-          validate: { version: 'showcase-provenance.v1', run: validProvenance },
-        }),
-      ],
-      100,
-    ),
-    group('presentation', [
-      field('featured', 'boolean', { defaultValue: false }),
-      field('sortOrder', 'number', { min: 0, precision: 0, defaultValue: 0 }),
-      relationship('relatedModels', 'models', true),
-    ]),
-    seoFields(),
-  ],
-  {
-    search: ['modelId', 'title', 'summary', 'family'],
-    defaultSort: [{ field: 'presentation.sortOrder', order: 'asc' }],
-  },
+          validate: {
+            version: 'technical-declaration.v1',
+            run: (value, context) =>
+              context.mode === 'draft' ||
+              (value !== null &&
+                typeof value === 'object' &&
+                !Array.isArray(value) &&
+                Array.isArray(value['inputs']) &&
+                value['inputs'].length > 0 &&
+                Array.isArray(value['outputs']) &&
+                value['outputs'].length > 0),
+          },
+        },
+      ),
+      parameterReference(),
+      specifications(),
+      apiBindings(),
+      field('defaultBindingKey', 'text', { maxLength: 80, defaultValue: null }),
+      contentFields(),
+      rows(
+        'showcase',
+        [
+          field('key', 'text', { required: true, maxLength: 80, validate: slugRule }),
+          localizedRequired('title', 256),
+          text('description', 2000),
+          text('prompt', 10000),
+          { ...select('mediaType', ['text', 'image', 'video', 'audio', 'none']), required: true },
+          media('media'),
+          media('poster'),
+          text('alt', 512),
+          text('outputText', 100000),
+          field('settings', 'json', {
+            validate: {
+              version: 'parameter-values.v1',
+              run: (value, context) => context.mode === 'draft' || validParameterValues(value),
+            },
+          }),
+          field('provenance', 'json', {
+            required: true,
+            validate: { version: 'showcase-provenance.v1', run: validProvenance },
+          }),
+        ],
+        100,
+      ),
+      group('presentation', [
+        field('featured', 'boolean', { defaultValue: false }),
+        field('sortOrder', 'number', { min: 0, precision: 0, defaultValue: 0 }),
+        relationship('relatedModels', 'models', true),
+      ]),
+      seoFields(),
+    ],
+    {
+      search: ['modelId', 'title', 'summary', 'family'],
+      defaultSort: [{ field: 'presentation.sortOrder', order: 'asc' }],
+    },
+  ),
 );

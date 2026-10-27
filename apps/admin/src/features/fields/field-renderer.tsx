@@ -44,8 +44,24 @@ function FieldTree({
 }
 
 export function FieldRenderer(props: FieldRendererProps) {
+  const value = {
+    ...props,
+    renderFields: (input: Parameters<NonNullable<FieldRendererProps['renderFields']>>[0]) => (
+      <FieldRenderer
+        {...input}
+        idPrefix={`${props.idPrefix}-${input.idPrefix}`}
+        locale={props.locale}
+        services={props.services}
+        readOnly={props.readOnly === true || input.readOnly}
+        {...(props.active === undefined ? {} : { active: props.active })}
+        {...(props.componentProps ? { componentProps: props.componentProps } : {})}
+        {...(props.visibility ? { visibility: props.visibility } : {})}
+        {...(props.choiceOptions ? { choiceOptions: props.choiceOptions } : {})}
+      />
+    ),
+  };
   return (
-    <FieldsProvider value={props}>
+    <FieldsProvider value={value}>
       <FieldTree
         key={props.resetKey}
         layout={props.layout}

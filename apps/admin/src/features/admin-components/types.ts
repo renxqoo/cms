@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { Collection, CollectionField } from '../../contracts/content';
 import type { CollectionEditor, EditorNode } from '../../contracts/editor';
 import type { Document } from '../../contracts/documents';
-import type { FieldData, JsonValue } from '../fields/types';
+import type { FieldData, JsonValue, NestedFieldInput } from '../fields/types';
 
 export type FieldComponentSlot =
   | 'Field'
@@ -45,6 +45,7 @@ export type CollectionComponentSlot =
   | 'Icon'
   | 'SmallIcon';
 export interface FieldComponentProps {
+  renderFields?: (input: NestedFieldInput) => ReactNode;
   node: EditorNode;
   id: string;
   name: string;

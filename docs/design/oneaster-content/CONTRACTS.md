@@ -35,6 +35,8 @@ tasks 受控词表包括 chat、reasoning、coding、image-generation、image-ed
 
 `scenarios[]` 包含 key、本地化 title/description、flowKey 和 requestValues。requestValues 只保存样例 body/query/path/file 引用；modelId、平台地址、认证占位符由受控 renderer 注入。示例值不作为业务默认值或真实执行结果。场景必须通过最终合同校验。
 
+模型编辑器按[字段编辑约定](MODEL-EDITOR.md)提供分区、语言选择、来源表单和请求参数表单，保持原存储字段与公开数据形状。请求表单由现有 profile/flow 请求合同生成，编辑行身份不进入示例请求。接入输入、输出及能力由已选 profile/flow 确定，保存前统一生成；缺省模板为 core.http，单场景接入自动提供默认场景。运营声明的模型技术能力仍独立维护，最终发布继续检查技术范围及请求有效性。
+
 parameterReference 的字段类型为 text/textarea/select/number/boolean/url/array/object，预设以稳定key关联输入值。它表达资料中介绍的参数，不作为Core执行参数来源；有binding时公开API参数说明与示例按实际profile合同生成，允许复用文案但不双存约束。无binding时保留独立的资料参数编辑面板、加载/reset/校验/焦点和复制，复制形状为 `{modelId,scenarioKey,inputs}`，明确标记本地资料映射。参考字段不提供调用地址或真实执行按钮。
 
 `ApiProfile` 是装配配置，包含稳定 key、协议、操作、请求定义、modelId 注入规则、参数合同、响应处理和流程。公开定义只输出必要安全元数据，不输出密钥或上游内部地址。

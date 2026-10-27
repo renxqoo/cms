@@ -1,0 +1,11 @@
+[Unit]
+Description=Check New CMS Docker liveness every minute
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=60
+AccuracySec=5
+Unit=new-cms-docker-watch.service
+
+[Install]
+WantedBy=timers.target

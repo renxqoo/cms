@@ -147,3 +147,96 @@ it('publishes native optional parameter metadata cleared to null without accepti
   );
   expect(published.status).toBe(200);
 });
+
+it('model editor provides sections and derived integration metadata without changing stored field paths', async () => {
+  fixture = await productionFixture();
+  const request = api(fixture);
+  const response = await request('GET', '/v1/collections/models/editor?intent=create&locale=en');
+  expect(response.status).toBe(200);
+  const editor = z
+    .object({
+      layout: z.array(
+        z.object({
+          type: z.string(),
+          tabs: z.array(z.object({ name: z.string().optional(), label: z.string() })).optional(),
+        }),
+      ),
+    })
+    .parse(await response.json());
+  expect(editor.layout[0]?.type).toBe('tabs');
+  expect(editor.layout[0]?.tabs?.map((tab) => tab.label)).toEqual([
+    'Basic information',
+    'Technical information and parameters',
+    'Integrations',
+    'Content',
+    'Samples',
+    'Presentation and SEO',
+  ]);
+  expect(editor.layout[0]?.tabs?.every((tab) => tab.name === undefined)).toBe(true);
+  const created = await request('POST', '/v1/collections/models/documents', {
+    body: {
+      locale: 'en',
+      data: {
+        ...base('Editor-Chat'),
+        apiBindings: [
+          {
+            key: 'chat',
+            profileKey: 'core.chat',
+            enabledFlowKeys: ['chat.json'],
+            scenarios: [
+              {
+                key: 'hello',
+                title: 'Hello',
+                flowKey: 'chat.json',
+                requestValues: { messages: [{ role: 'user', content: 'Hello' }], max_tokens: 64 },
+              },
+            ],
+          },
+        ],
+        defaultBindingKey: 'chat',
+      },
+    },
+  });
+  expect(created.status).toBe(201);
+  const document = z
+    .object({
+      id: z.uuid(),
+      data: z.object({
+        modelId: z.string(),
+        apiBindings: z.array(
+          z.object({
+            inputModalities: z.array(z.string()),
+            outputModalities: z.array(z.string()),
+            capabilities: z.array(z.string()),
+            recipeKeys: z.array(z.string()),
+            defaultScenarioKey: z.string(),
+          }),
+        ),
+      }),
+    })
+    .parse(await created.json());
+  expect(document.data.modelId).toBe('Editor-Chat');
+  expect(document.data.apiBindings[0]).toEqual({
+    inputModalities: ['text'],
+    outputModalities: ['text'],
+    capabilities: [],
+    recipeKeys: ['core.http'],
+    defaultScenarioKey: 'hello',
+  });
+  const updated = await request(
+    'GET',
+    `/v1/collections/models/editor?intent=update&id=${document.id}&locale=en`,
+  );
+  expect(updated.status).toBe(200);
+  const metadata = z
+    .object({ componentProps: z.record(z.string(), z.record(z.string(), z.unknown())) })
+    .parse(await updated.json());
+  const requests = Object.values(metadata.componentProps).filter(
+    (props) => props['kind'] === 'request',
+  );
+  expect(requests).toHaveLength(1);
+  expect(JSON.parse(z.string().parse(requests[0]?.['schema']))).toMatchObject({
+    type: 'object',
+    properties: { messages: { type: 'array' }, max_tokens: { type: 'integer' } },
+  });
+});
