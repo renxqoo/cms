@@ -29,3 +29,13 @@ RSS前后primary147744/217744KiB、peer169008/244768KiB；数据库业务role连
 停止仅此world独立PG（不停止Node）后，两节点readyz和稳定CMS目录/详情均503，明确temporarily unavailable且不返回空集合成功。client两页SSR仍用200页面壳展示明确unavailable，未误报404或空业务成功。恢复同datadir、无重seed/无Node重启后，两个Node自行重连，readiness200；5模型目录、完整5项索引、同媒体SHA256/HEAD/Range、三页实际业务SSR再次正确。随后所有本轮真实QA进程与独立PG正常关闭，最终Core工具账本复核310微点、所有预留0。
 
 本轮最新发布边界：用户最新要求CMS/client先提交、push并合main，再完成验证；oneaster-backend最后仅提交PR、不合main，PR无法提交可提交issue。Backend本地已验证提交de75435；当前GitHub身份对该private仓库只有pull、push=false、allow_forking=false，HTTPS与SSH身份一致，403阻止分支上传和有效PR创建。没有绕过访问控制或将私有代码发布到无关仓库。
+
+## 合并版完整检查与CI总预算
+
+CMS main合并提交7c8d494（PR5）的源树与feature parent223ffa2逐文件相同。main CI40422247715实际使用Bun1.4.4、Node26.9.0、PG17服务，数据库1024锁预算、4GB WAL、30min checkpoint及fsync/full_page_writes/synchronous_commit均on的核验通过；lint/typecheck/build通过。完整单元326文件2871项全部通过，覆盖率statements93.83%、branches88.60%、functions96.38%、lines96.34%，配置所有范围门禁通过；另5文件14项Bun/Node/CLI/MCP跨进程旅程通过。浏览器组持续通过，但完整工作流被20分钟job总时限取消，不能把该次run写为完整test命令通过。
+
+本次只将CI总墙钟预算20改为30分钟，以容纳已增长的整套浏览器旅程；保留全部include、server并行度2、显式并发/双Node用例、SQL5秒/锁2秒/单项测试期限及覆盖率门禁。调整后完整CI另行记录，不把旧部分结果冒称新run已完成。
+
+合并版本地lint/typecheck/build通过；APFS专用PG完整单元326文件2871项中6项SQL/setup超时，2865通过；原五文件按原配置/断言复跑32/32通过，不能拼接为本地完整绿。只读观察DROP DATABASE强制checkpoint与并行DDL/WAL竞争，同轮出现5个statement_timeout及一个30秒setup超时；缺历史等待图，未武断把其全归因于某次后发生的checkpoint。本地未通过结果完整保留，最终完整单元证据以上述相同源树Linux CI为准。合并版另跑真实两个Node进程的HA用例1/1通过，7.06秒。
+
+Client已通过PR13合main750f121；Backend按最新用户裁决仅PR，权限受阻后已提交[交付issue31](https://github.com/juyuanzhisuan/oneaster-backend/issues/31)，没有合入Backend main。源码候选、本地提交de75435与已校验Git bundle保留在授权工作区。
