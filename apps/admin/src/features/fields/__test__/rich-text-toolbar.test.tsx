@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { Harness, node } from './support';
 
 const paragraph = {
@@ -64,14 +65,21 @@ it('regression: list toggling restores paragraph content and its active toolbar 
   render(<Harness layout={[node('Body', { type: 'richText' })]} initial={{ Body: paragraph }} />);
   await screen.findByRole('toolbar');
   const list = screen.getByRole('button', { name: 'List' });
-  fireEvent.click(list);
-  await waitFor(() => expect(list).toBePressed());
+  await userEvent.click(list);
+  await waitFor(() => expect(list, 'List insertion selects the list toolbar action').toBePressed());
   expect(screen.getByRole('listitem')).toHaveTextContent('Story');
-  fireEvent.click(list);
-  await waitFor(() => expect(list).not.toBePressed());
+  await userEvent.click(list);
+  await waitFor(() =>
+    expect(list, 'List removal clears the list toolbar action').not.toBePressed(),
+  );
   expect(data()).toEqual({ Body: paragraph });
   expect(screen.queryByRole('list')).not.toBeInTheDocument();
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Paragraph' })).toBePressed());
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Paragraph' }),
+      'List removal selects the paragraph toolbar action',
+    ).toBePressed(),
+  );
 });
 
 it('provides Chinese labels and a writing prompt for an empty editor', async () => {
